@@ -1,0 +1,11 @@
+{
+  "include": [
+    "Common.json",
+    "Map_10Cell.json",
+    "CMD_10Cell.json",
+    "CMD_EOS.json",
+    "Sensor_180Ray_3_2pi.json"
+  ],
+
+  "max_range": 2.0
+}

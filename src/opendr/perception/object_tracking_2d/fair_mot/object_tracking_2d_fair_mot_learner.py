@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 import os
 import json
+import time
 import torch
 import ntpath
 import shutil
@@ -76,6 +77,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         image_std=[0.289, 0.274, 0.278],
         frame_rate=30,
         min_box_area=100,
+        use_pretrained_backbone=True,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking2DFairMotLearner, self).__init__(
@@ -121,10 +123,13 @@ class ObjectTracking2DFairMotLearner(Learner):
         self.image_std = image_std
         self.frame_rate = frame_rate
         self.min_box_area = min_box_area
+        self.use_pretrained_backbone = use_pretrained_backbone
 
         main_batch_size = self.batch_size // len(self.gpus)
         rest_batch_size = (self.batch_size - main_batch_size)
         self.chunk_sizes = [main_batch_size]
+        self.infers_count = 0
+        self.infers_time = 0
 
         for i in range(len(self.gpus) - 1):
             worker_chunk_size = rest_batch_size // (len(self.gpus) - 1)
@@ -375,7 +380,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         for image, frame_id in zip(batch, frame_ids):
 
-            img0 = image.numpy().transpose(1, 2, 0)[..., ::-1]  # BGR
+            img0 = image.convert("channels_last", "bgr")  # BGR
             img, _, _, _ = letterbox(img0, height=img_size[1], width=img_size[0])
 
             # Normalize RGB
@@ -385,6 +390,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
             blob = torch.from_numpy(img).to(self.device).unsqueeze(0)
 
+            t0 = time.time()
             online_targets = self.tracker.update(blob, img0)
             online_tlwhs = []
             online_ids = []
@@ -414,6 +420,10 @@ class ObjectTracking2DFairMotLearner(Learner):
                     online_scores
                 )
             ])
+
+            t0 = time.time() - t0
+            self.infers_count += 1
+            self.infers_time += t0
 
             results.append(result)
 
@@ -650,7 +660,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         self.heads = heads
 
-        self.model = create_model(self.backbone, heads, self.head_conv)
+        self.model = create_model(self.use_pretrained_backbone, self.backbone, heads, self.head_conv)
         self.model.to(self.device)
         self.model.ort_session = None
         self.model.heads_names = heads.keys()

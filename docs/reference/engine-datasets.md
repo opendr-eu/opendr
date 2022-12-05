@@ -5,23 +5,23 @@ The *engine.datasets* module contains classes representing different types of da
 ### Class engine.datasets.Dataset
 Bases: `abc.ABC`
 
-Dataset abstract class for representing different types of datasets.
+[Dataset](/src/opendr/engine/datasets.py#L21) abstract class for representing different types of datasets.
 This class serves as the basis for more complicated datasets.
 
 
-The [Dataset](#class-engine.datasets.Dataset) class has the following public methods:
+The *Dataset* class has the following public methods:
 #### Dataset()
 
 ### Class engine.datasets.DatasetIterator
 Bases: `engine.datasets.Dataset`
 
-DatasetIterator serves as an abstraction layer over the different types of datasets.
+[DatasetIterator](/src/opendr/engine/datasets.py#L31) serves as an abstraction layer over the different types of datasets.
 In this way it provides the opportunity to users to implement different kinds of datasets, while providing a uniform interface.
-DatasetIterator should return a tuple of ([engine.data.Data](#class_engine.data.Data), [engine.target.Target](#class_engine.target.Target)) using the index operator `dataset_iterator[idx]`
+DatasetIterator should return a tuple of (`engine.data.Data`, [`engine.target.Target`](/src/opendr/engine/target.py)) using the index operator `dataset_iterator[idx]`
 
-The [DatasetIterator](#class-engine.datasets.DatasetIterator) class has the following public methods:
+The *DatasetIterator* class has the following public methods:
 #### DatasetIterator()
-Construct a new [DatasetIterator](#class-engine.datasets.DatasetIterator) object.
+Construct a new *DatasetIterator* object.
 
 ### Examples
 * **Creation of a new DatasetIterator class**.  
@@ -60,9 +60,9 @@ Bases: `engine.datasets.Dataset`
 ExternalDataset provides a way for handling well-known external dataset formats (e.g., COCO, PascalVOC, Imagenet, etc.) directly by OpenDR, without requiring any special effort from the users for writing a specific loader.
 
 
-The [ExternalDataset](#class-engine.datasets.ExternalDataset) class has the following public methods:
+The [ExternalDataset](/src/opendr/engine/datasets.py#L101) class has the following public methods:
 #### ExternalDataset(path, dataset_type)
-Construct a new [ExternalDataset](#class-engine.datasets.ExternalDataset) object based on *dataset_type*.
+Construct a new *ExternalDataset* object based on *dataset_type*.
 *dataset_type* is expected to be a string with a name of the dataset type like "voc", "coco", "imagenet", "kitti", etc.
 
 #### path()
@@ -87,9 +87,9 @@ Bases: `engine.datasets.DatasetIterator`
 
 MappedDatasetIterator allows to transform elements of the original DatasetIterator.
 
-The [MappedDatasetIterator](#class-engine.datasets.MappedDatasetIterator) class has the following public methods:
+The [MappedDatasetIterator](/src/opendr/engine/datasets.py#L66) class has the following public methods:
 #### MappedDatasetIterator(original, map_function)
-Construct a new [MappedDatasetIterator](#class-engine.datasets.MappedDatasetIterator) object based on existing *original* [DatasetIterator](#class-engine.datasets.DatasetIterator) and the *map_function*.
+Construct a new *MappedDatasetIterator* object based on existing *original* [DatasetIterator](/src/opendr/engine/datasets.py#L31) and the *map_function*.
 
 ### Examples
 * **Generation of a MappedDatasetIterator from an existing DatasetIterator**.  
@@ -134,8 +134,8 @@ Bases: `engine.datasets.DatasetIterator`
 
 PointCloudsDatasetIterator allows to load point cloud data from disk stored in a [NumPy](https://numpy.org) format.
 
-The [PointCloudsDatasetIterator](#class-engine.datasets.PointCloudsDatasetIterator) class has the following public methods:
+The [PointCloudsDatasetIterator](/src/opendr/engine/datasets.py#L165) class has the following public methods:
 #### PointCloudsDatasetIterator(path, num_point_features=4)
-  Construct a new [PointCloudsDatasetIterator](#class-engine.datasets.PointCloudsDatasetIterator) object based on path* and *num_point_features*.
+  Construct a new *PointCloudsDatasetIterator* object based on path* and *num_point_features*.
   *path* is expected to be a string.
   *num_point_features* is expected to be a number representing the number of features per point.

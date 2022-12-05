@@ -1,0 +1,519 @@
+<launch>
+
+    <!--
+    ###############################################################################################################
+    #                                                                                                             #
+    #    ARGUMENTS                                                                                                #
+    #                                                                                                             #
+    ###############################################################################################################
+    -->
+    <!-- ___________________________________________________________
+        Main arguments
+    ____________________________________________________________ -->
+    <arg name="do_slam" default="true"
+         doc="(bool)[Default: true] Run the OpenSlam Gmapping Node." />
+    <arg name="do_plots" default="true"
+         doc="(bool)[Default: true] Run the fmp_plot and occ_map_saver nodes to save the statistical and occupation plots of the map."/>
+    <arg name="do_error" default="false"
+         doc="(bool)[Default: true] Run the pose_error_calc node to save each pose and the relative error of the SLAM corrected pose w.r.t
+         the ground-truth pose."/>
+    <arg name="do_gtmap" default="false"
+         doc="(bool)[Default: true] Run the gt_mapping node for generating the Ground-Truth map."/>
+    <arg name="do_odo" default="false"
+         doc="(bool)[Default: true] Run the gt_mapping node for generation the Pure Odometry map."/>
+    <arg name="do_rviz" default="true"
+         doc="(bool)[Default: true] Run RVIZ to visualize the progress graphically in real time."/>
+    <arg name="do_gsp_debug" default="true"
+         doc="(bool)[Default: true] Output all of the GridSlam Processor data to a csv file." />
+    <arg name="do_coll_err" default="false"
+         doc="(bool)[Default: false] Collect error values from multiple runs in a single csv file." />
+
+
+    <arg name="bag" default="10Loop"
+         doc="(string)[Default: 10Loop] Bag file to be opened.
+         If a specific file is to be desired, use the bag_file argument.
+         Can take values of:
+                 * 10Loop: for the 10Loop Simulation ROSBag
+                 * 10Cell: for the 10Cell Simulation ROSBag"/>
+
+    <arg name="mm" default="ref"
+         doc="(string)[Default: ref] Map Model.
+         Can take values of
+             * ref for Reflection Map or
+             * dec for Exponential Decay Map."/>
+
+    <arg name="pw" default="cmh"
+         doc="(string)[Default: cmh] Particle weighting method.
+         Can take values of
+             * cmh for Closest Mean Hit,
+             * fsm for Forward Sensor Model and
+             * ml  for Measurement Likelihood."/>
+
+    <!-- Pseudo-parsing to booleans for easier logic-->
+    <arg name="mm_dcy" value="$(eval mm.lower() == 'dec')"/>
+
+    <arg name="pw_fsm" value="$(eval pw.lower() == 'fsm')"/>
+    <arg name="pw_ml" value="$(eval pw.lower() == 'ml' )"/>
+    <arg name="pw_cmh" value="$(eval (pw.lower() == 'cmh' or
+                                                ( not pw_fsm and
+                                                  not pw_ml)
+                                               ))"/>
+
+    <arg name="alpha0" default="1.0"
+         doc="(float)[Default: 1.0] Value for the alpha parameter of the prior distribution."/>
+    <arg name="beta0" default="$(eval 0.000001 if mm_dcy else 1.0)"
+         doc="(float)[Default: 1 for Ref, 1e-6 for Dec] Value for the beta parameter of the prior distribution."/>
+
+    <arg name="exp_pfx" default="exp"
+         doc="(string)[Default: exp] Prefix for the experiment directory."/>
+
+    <arg name="resolution" default="0.2"
+         doc="(float)[Default: 0.05] Map resolution in [m]."/>
+
+    <arg name="occ_threshold" default="0.25"
+         doc="(float)[Default: 0.25] Threshold for determining whether a cell is occupied or free."/>
+
+    <arg name="ocuw" default="0.2"
+         doc="(float)[Default: 0.0] Weight of a Uniform Distribution to be added to the measurement likelihoods to avoid overconfidence" />
+
+    <arg name="doPoseImprove" default="false"
+         doc="(bool)[Default: true] Run scan matching for pose improvement if true."/>
+
+    <arg name="publishAvgPose" default="false"
+        doc="(bool)[Default: true] Use weighted average pose over all particles instead of only the most likely." />
+
+    <arg name="sim_pause" default="false"
+         doc="(bool)[Default: false] Start the ROSbag in a paused state.
+         Recommended to allow for the other nodes to initialize."/>
+
+    <arg name="sim_quiet" default="false"
+         doc="(bool)[Default: false] Run the ROSbag quietly." />
+
+    <!-- ___________________________________________________________
+        Path Arguments / Variables
+    ____________________________________________________________ -->
+    <!-- Package Path -->
+    <arg name="path_pk" value="$(find map_simulator)"/>
+    <!-- URDF Robot Descriptor Path -->
+    <arg name="path_urdf" value="$(arg path_pk)/urdf"/>
+    <!-- Configuration Files Path -->
+    <arg name="path_cfg" value="$(arg path_pk)/cfg"/>
+    <arg name="path_cfg_rviz" value="$(arg path_cfg)/rviz"/>
+    <arg name="cfg_rviz_file" default="$(arg path_cfg_rviz)/experiment.rviz"
+         doc="(string)[Default: $(find map_simulator)/cfg/rviz/experiment.rviz] Path to an RVIZ configuration file."/>
+    <!-- Data-sets Path -->
+    <arg name="path_data" value="$(find slam_datasets)"/>
+    <!-- Save files Path -->
+    <arg name="ts" default="880910_052410"
+         doc="(string)[Default: 880910_052410] Timestamp to be used for the save directory.
+             It should be set to ts:=`date +'%Y%M%D_%h%m%s'`"/>
+    <arg name="pfx_mm" default="$(eval 'dec' if mm_dcy else 'rfl')"/>
+    <arg name="pfx_pw" default="$(eval 'fsm' if pw_fsm else ('ml' if pw_ml else 'cmh'))"/>
+    <arg name="path_prefix" default="$(env HOME)/Desktop/Experiments/IndividualExperiments"
+         doc="Main directory where experiment sub-folders will be created" />
+    <arg name="path_save"
+         default="$(arg path_prefix)/$(arg exp_pfx)_$(arg ts)_$(arg pfx_mm)_$(arg pfx_pw)"
+         doc="(string)[Default: ~/Desktop/Experiments/IndividualExperiments/${exp_pfx}_${ts}_${pfx_mm}_${pfx_pw}/]
+              Path for saving the experiment results."/>
+    <arg name="path_log" default="$(arg path_save)/log"
+         doc="(string)[Default: ${path_save}/log] Path for storing the nodes' logs."/>
+    <arg name="path_save_img" default="$(arg path_save)/img"
+         doc="(string)[Default: ${path_save}/img] Path for storing the result images." />
+    <arg name="path_save_occ" default="$(arg path_save)/img/occ"
+         doc="(string)[Default: ${path_save}/img/occ] Path for storing the result occupancy images." />
+    <arg name="path_save_err" default="$(arg path_save)/err"
+         doc="(string)[Default: ${path_save}/err] Path for storing the pose error file." />
+    <arg name="path_err_coll_path" default="$(arg path_save)/err"
+         doc="(string)[Default: ${path_save}/err] Path for storing the accumulated pose error file." />
+    <arg name="path_err_coll_pfx" default="err_coll"
+         doc="(string)[Default: err_coll] Prefix for the collected error file names." />
+
+    <arg name="bag_file" default="$(arg path_data)/Freiburg/101/fr101.raw.2.bag"
+         doc="(string)[Default: path to either Robot_10Loop or Robot_10Cell bags depending on $bag]
+              Explicit path to ROSBag to execute if neither 10Loop nor 10Cell are desired."/>
+
+
+    <!--
+    ###############################################################################################################
+    #                                                                                                             #
+    #    ENVIRONMENT VARIABLES                                                                                                #
+    #                                                                                                             #
+    ###############################################################################################################
+    -->
+
+    <env name="ROS_LOG_DIR" value="$(arg path_log)" />
+
+     <!--
+    ###############################################################################################################
+    #                                                                                                             #
+    #    GLOBAL PARAMETERS                                                                                        #
+    #                                                                                                             #
+    ###############################################################################################################
+    -->
+    <param name="use_sim_time" value="true"/>
+
+    <!-- URDF Robot Descriptor files for RVIZ -->
+    <param name="robot_urdf_odo" textfile="$(arg path_urdf)/simple_robot_red.urdf" if="$(arg do_rviz)"/>
+    <param name="robot_urdf_gt" textfile="$(arg path_urdf)/simple_robot_green.urdf" if="$(arg do_rviz)"/>
+    <param name="robot_urdf_slam" textfile="$(arg path_urdf)/simple_robot_blue.urdf" if="$(arg do_rviz)"/>
+
+     <!--
+    ###############################################################################################################
+    #                                                                                                             #
+    #    NODES                                                                                                    #
+    #                                                                                                             #
+    ###############################################################################################################
+    -->
+    <group ns="SLAM">
+        <node pkg="gmapping" type="slam_gmapping" name="slam" output="log" if="$(arg do_slam)" required="true">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <remap from="/SLAM/scan" to="base_scan"/>
+            <!-- Publication  Remaps -->
+            <remap from="/SLAM/map" to= "map"/>
+            <remap from="/SLAM/fmp_alpha" to="fmp_alpha" />
+            <remap from="/SLAM/fmp_beta"  to="fmp_beta" />
+            <remap from="/SLAM/map_model" to="map_model" />
+
+            <!--
+            =========================================================================================================
+                Parameters
+            =========================================================================================================
+            -->
+            <param name="outputLog" value="$(arg path_log)/gsp_debug_$(arg ts)_$(arg pfx_mm)_$(arg pfx_pw).csv" if="$(arg do_gsp_debug)"/>
+            <param name="redirectOutputPath" value="$(arg path_log)/gsp_debug_$(arg ts)_$(arg pfx_mm)_$(arg pfx_pw)_err.txt" />
+            <!-- ___________________________________________________________
+                TF Frames
+            ____________________________________________________________ -->
+            <!-- The frame attached to the map. (string, default "map") -->
+            <param name="map_frame" value="map"/>
+            <!-- The frame attached to the odometry system. (string, default "odom") -->
+            <param name="odom_frame" value="odom"/>
+            <!-- The frame attached to the mobile base. (string, default "base_link") -->
+            <param name="base_frame" value="base_link"/>
+
+            <!-- ____________________________________________________________
+                 Map Parameters
+                 ____________________________________________________________ -->
+            <!-- Initial map size (in metres) -->
+            <param name="xmin" value="-100.0"/> <!-- (float, default -100.0) -->
+            <param name="ymin" value="-100.0"/> <!-- (float, default -100.0) -->
+            <param name="xmax" value="100.0"/>  <!-- (float, default  100.0) -->
+            <param name="ymax" value="100.0"/>  <!-- (float, default  100.0) -->
+            <!-- Resolution of the map (in metres per occupancy grid block) (float, default 0.05) -->
+            <param name="delta" value="$(arg resolution)"/>
+
+            <!-- Threshold for determining the occupancy value of each cell -->
+            <param name="occ_thresh" value="$(arg occ_threshold)"/>
+
+            <!-- ____________________________________________________________
+                 Measurement Model Parameters
+            ____________________________________________________________ -->
+            <!-- The maximum range of the sensor. If regions with no obstacles within the range of the sensor should appear
+                 as free space in the map, set maxUrange < maximum range of the real sensor <= maxRange. (float) -->
+            <param name="maxRange" value="10.0"/>
+            <!-- The maximum usable range of the laser. A beam is cropped to this value. (float, default 80.0) -->
+            <param name="maxUrange" value="10.0"/>
+
+            <!-- ____________________________________________________________
+                 Odometry Model Parameters
+                 ____________________________________________________________ -->
+            <!-- Odometry error in translation as a function of translation (rho/rho) (float, default 0.1) -->
+            <param name="srr" value="0.1"/>
+            <!-- Odometry error in translation as a function of rotation (rho/theta) (float, default 0.2) -->
+            <param name="srt" value="0.2"/>
+            <!-- Odometry error in rotation as a function of translation (theta/rho) (float, default 0.1) -->
+            <param name="str" value="0.1"/>
+            <!-- Odometry error in rotation as a function of rotation (theta/theta) (float, default 0.2) -->
+            <param name="stt" value="0.2"/>
+
+            <!-- ____________________________________________________________
+                 Scan Matcher Parameters
+                 ____________________________________________________________ -->
+            <!-- The sigma used by the greedy endpoint matching (float, default 0.05) -->
+            <param name="sigma" value="0.05"/>
+            <!-- The kernel in which to look for a correspondence (int, default 1) -->
+            <param name="kernelSize" value="1"/>
+
+            <!-- The optimization step in translation (float, default 0.05) -->
+            <param name="lstep" value="0.4"/>
+            <!-- The optimization step in rotation (float, default 0.05) -->
+            <param name="astep" value="0.1"/>
+
+            <!-- The number of iterations of the scanmatcher (int, default 5) -->
+            <param name="iterations" value="5"/>
+            <!-- The sigma of a beam used for likelihood computation (float, default 0.075) -->
+            <param name="lsigma" value="0.075"/>
+
+            <!-- Gain to be used while evaluating the likelihood, for smoothing the resampling
+            effects (float, default 3.0) -->
+            <param name="ogain" value="3.0"/>
+            <!-- Number of beams to skip in each scan. Take only every (n+1)th laser ray for computing a match
+            (0 = take all rays) (int, default 0) -->
+            <param name="lskip" value="1"/>
+            <!-- Minimum score for considering the outcome of the scan matching good. Can avoid jumping pose estimates in
+            large open spaces when using laser scanners with limited range (e.g. 5m). Scores go up to 600+, try 50 for example
+            when experiencing jumping estimate issues. (float, default 0.0) -->
+            <param name="minimumScore" value="00.0"/>
+
+            <!-- ____________________________________________________________
+                 Update Parameters
+                 ____________________________________________________________ -->
+            <!-- Process a scan each time the robot translates this far (float, default 1.0) -->
+            <param name="linearUpdate" value="0.2" />
+            <!-- Process a scan each time the robot rotates this far (float, default 0.5) -->
+            <param name="angularUpdate" value="0.5"/>
+            <!-- Process a scan if the last scan processed is older than the update time in seconds. A value less than zero
+            will turn time based updates off. (float, default: -1.0) -->
+            <param name="temporalUpdate" value="5"/>
+
+            <!-- How long (in seconds) between updates to the map. Lowering this number updates the occupancy grid more
+                 often, at the expense of greater computational load. (float, default 5.0) -->
+            <param name="map_update_interval" value="5.0" /> <!-- 0.25"/> -->
+
+            <!-- How long (in seconds) between transform publications. To disable broadcasting transforms, set to 0.
+            (float, default 0.05) -->
+            <param name="transform_publish_period" value="0.05"/>
+            <!-- Threshold on gmapping's occupancy values. Cells with greater occupancy are considered occupied (i.e., set to
+            100 in the resulting sensor_msgs/LaserScan). New in 1.1.0.  (float, default 0.25) -->
+
+
+            <!-- ____________________________________________________________
+                 Particle Filter Parameters
+                 ____________________________________________________________ -->
+            <!-- Number of particles in the filter (int, default 30) -->
+            <param name="particles" value="30"/>
+            <!-- The Neff based resampling threshold (float, default 0.5) -->
+            <param name="resampleThreshold" value="0.5"/>
+
+            <!-- Translational sampling range for the likelihood (float, default 0.01) -->
+            <param name="llsamplerange" value="0.01"/>
+            <!-- Translational sampling step for the likelihood (float, default 0.01) -->
+            <param name="llsamplestep" value="0.01"/>
+            <!-- Angular sampling range for the likelihood (float, default 0.005) -->
+            <param name="lasamplerange" value="0.005"/>
+            <!-- Angular sampling step for the likelihood (float, default 0.005) -->
+            <param name="lasamplestep" value="0.005"/>
+
+            <!-- ____________________________________________________________
+                 Full Map Posterior Parameters
+            ____________________________________________________________ -->
+
+            <param name="mapModel" value="ReflectionModel" unless="$(arg mm_dcy)"/>
+            <param name="mapModel" value="ExpDecayModel" if="$(arg mm_dcy)"/>
+
+            <param name="partWeighting" value="ClosestMeanHitLikelihood" if="$(arg pw_cmh)"/>
+            <param name="partWeighting" value="ForwardSensorModel" if="$(arg pw_fsm)"/>
+            <param name="partWeighting" value="MeasurementLikelihood" if="$(arg pw_ml)"/>
+
+            <param name="overconfidenceUniformWeight" value="$(arg ocuw)" />
+            <param name="doImprovedPose" value="$(arg doPoseImprove)" />
+
+            <param name="autoShutdown" value="true" />
+            <param name="publishFullPosterior" value="false" />
+
+            <param name="alpha0" value="$(arg alpha0)" type="double"/>
+            <param name="beta0" value="$(arg beta0)" type="double"/>
+
+        </node>
+
+
+        <node name="occ_map_saver" pkg="map_simulator" type="occ_map_saver" output="log" if="$(arg do_plots)">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <remap from="map" to="/SLAM/map" />
+            <!-- Publication  Remaps -->
+
+            <!--
+            =========================================================================================================
+                Parameters
+            =========================================================================================================
+            -->
+            <param name="file_prefix" value="slam_map"/>
+            <param name="save_dir" value="$(arg path_save_occ)"/>
+        </node>
+
+
+        <group ns="fmp_plotter" if="false">
+            <remap from="map_model" to="/SLAM/map_model" />
+            <remap from="fmp_alpha" to="/SLAM/fmp_alpha" />
+            <remap from="fmp_beta"  to="/SLAM/fmp_beta"  />
+
+            <node name="fmp_plot_stat" pkg="map_simulator" type="fmp_plot" output="log" if="$(arg do_plots)">
+                <!--
+                =========================================================================================================
+                    Topic Remaps
+                =========================================================================================================
+                -->
+                <!-- Subscription Remaps -->
+
+                <!-- Publication  Remaps -->
+
+                <!--
+                =========================================================================================================
+                    Parameters
+                =========================================================================================================
+                -->
+                <param name="save_dir" value="$(arg path_save_img)"/>
+
+                <param name="pub_img" value="false"/>
+                <param name="save_img" value="true"/>
+
+                <param name="img_stat" value="true"/>
+                <param name="img_mlm" value="false"/>
+                <param name="img_para" value="false"/>
+            </node>
+
+            <node name="fmp_plot_mlm" pkg="map_simulator" type="fmp_plot" output="log" if="$(arg do_plots)">
+                <!--
+                =========================================================================================================
+                    Topic Remaps
+                =========================================================================================================
+                -->
+                <!-- Subscription Remaps -->
+                <!-- Publication  Remaps -->
+
+                <!--
+                =========================================================================================================
+                    Parameters
+                =========================================================================================================
+                -->
+                <param name="save_dir" value="$(arg path_save_img)"/>
+
+                <param name="pub_img" value="false"/>
+                <param name="save_img" value="true"/>
+
+                <param name="img_stat" value="false"/>
+                <param name="img_mlm" value="true"/>
+                <param name="img_para" value="false"/>
+            </node>
+
+            <node name="fmp_plot_para" pkg="map_simulator" type="fmp_plot" output="log" if="$(arg do_plots)">
+                <!--
+                =========================================================================================================
+                    Topic Remaps
+                =========================================================================================================
+                -->
+                <!-- Subscription Remaps -->
+                <!-- Publication  Remaps -->
+
+                <!--
+                =========================================================================================================
+                    Parameters
+                =========================================================================================================
+                -->
+                <param name="save_dir" value="$(arg path_save_img)"/>
+
+                <param name="pub_img" value="false"/>
+                <param name="save_img" value="true"/>
+
+                <param name="img_stat" value="false"/>
+                <param name="img_mlm" value="false"/>
+                <param name="img_para" value="true"/>
+            </node>
+        </group>
+    </group>
+
+    <group ns="GT">
+        <!-- Ground-Truth occupancy map generator -->
+        <node name="gt_mapper" pkg="map_simulator" type="gt_mapping" output="log" if="$(arg do_gtmap)">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <remap from="/map" to="/SLAM/map" />
+            <!-- Publication  Remaps -->
+
+            <!--
+            =========================================================================================================
+                Parameters
+            =========================================================================================================
+            -->
+            <param name="occ_threshold" value="$(arg occ_threshold)"/>
+        </node>
+
+        <!-- Ground-Truth occupancy map saver -->
+        <node name="gt_occ_map_saver" pkg="map_simulator" type="occ_map_saver" output="log"
+              if="$(eval do_plots and do_gtmap)">
+            <!-- Subscription Remaps -->
+            <remap from="map" to="/GT/map"/>
+
+            <param name="file_prefix" value="gt_map"/>
+            <param name="save_dir" value="$(arg path_save_occ)"/>
+        </node>
+    </group>
+
+    <group ns="ODO">
+        <!-- Pure-Odometry occupancy map generator -->
+        <node name="odom_mapper" pkg="map_simulator" type="gt_mapping" output="log" if="$(arg do_odo)">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <remap from="/map" to="/SLAM/map" />
+            <remap from="/GT/base_scan" to="/SLAM/base_scan"/>
+            <!-- Publication  Remaps -->
+            <remap from="/GT/map" to="/ODO/map"/>
+
+            <!-- Parameters -->
+            <param name="occ_threshold" value="$(arg occ_threshold)"/>
+            <param name="gt_prefix" value="ODO"/>
+            <param name="map_frame" value="map"/>
+            <param name="ref_frame" value="odom"/>
+            <param name="laser_frame" value="laser_link"/>
+        </node>
+
+        <!-- Pure-Odometry occupancy map saver -->
+        <node name="odo_occ_map_saver" pkg="map_simulator" type="occ_map_saver" output="log"
+              if="$(eval do_plots and do_odo)">
+            <!-- Subscription Remaps -->
+            <remap from="map" to="/ODO/map"/>
+            <!-- Publication  Remaps -->
+
+            <param name="file_prefix" value="odo_map"/>
+            <param name="save_dir" value="$(arg path_save_occ)"/>
+        </node>
+
+    </group>
+
+
+    <node name="pose_err" pkg="map_simulator" type="pose_error_calc" output="log" if="$(arg do_error)">
+        <param name="log_err" value="true"/>
+        <param name="log_dir" value="$(arg path_save_err)"/>
+        <param name="err_prefix" value="pose_error"/>
+    </node>
+
+    <node name="err_coll" pkg="map_simulator" type="err_collector" output="log" if="$(arg do_coll_err)">
+        <param name="file_path" value="$(arg path_err_coll_path)"/>
+        <param name="file_prefix" value="$(arg path_err_coll_pfx)"/>
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz"
+          args="-d $(arg cfg_rviz_file)" if="$(arg do_rviz)"/>
+
+    <node name="sim" pkg="rosbag" type="play" output="screen" args="$(eval '--clock ' + bag_file + (' --pause' if arg('sim_pause') else '') + (' --quiet' if arg('sim_quiet') and not arg('sim_pause') else '') )">
+        <!--
+        =========================================================================================================
+            Topic Remaps
+        =========================================================================================================
+        -->
+        <!-- Subscription Remaps -->
+        <!-- Publication  Remaps -->
+        <remap from="base_scan" to="/SLAM/base_scan" />
+        <remap from="odo/base_scan" to="/ODO/base_scan" />
+
+    </node>
+
+</launch>

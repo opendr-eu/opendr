@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import json
 import logging
 import os
@@ -24,6 +23,7 @@ import warnings
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Union, Tuple
 
+import PIL.ImageOps
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -58,6 +58,7 @@ class EfficientPsLearner(Learner):
     """
 
     def __init__(self,
+                 config_file: str,
                  lr: float=.07,
                  iters: int=160,
                  batch_size: int=1,
@@ -71,9 +72,10 @@ class EfficientPsLearner(Learner):
                  device: str="cuda:0",
                  num_workers: int=1,
                  seed: Optional[float]=None,
-                 config_file: str=str(Path(__file__).parent / 'configs' / 'singlegpu_sample.py')
                  ):
         """
+        :param config_file: path to a config file that contains the model and the data loading pipelines
+        :type config_file: str
         :param lr: learning rate [training]
         :type lr: float
         :param iters: number of iterations [training]
@@ -100,8 +102,6 @@ class EfficientPsLearner(Learner):
         :type num_workers: int
         :param seed: random seed to shuffle the data during training [training]
         :type seed: float, optional
-        :param config_file: path to a config file that contains the model and the data loading pipelines
-        :type config_file: str
         """
         super().__init__(lr=lr, iters=iters, batch_size=batch_size, optimizer=optimizer, temp_path=temp_path,
                          device=device)
@@ -306,20 +306,21 @@ class EfficientPsLearner(Learner):
             warnings.warn('The current model has not been trained.')
         self.model.eval()
 
-        # Build the data pipeline
-        test_pipeline = Compose(self._cfg.test_pipeline[1:])
-        device = next(self.model.parameters()).device
-
-        # Convert to the format expected by the mmdetection API
         single_image_mode = False
         if isinstance(batch, Image):
             batch = [batch]
             single_image_mode = True
+
+        # Convert to the format expected by the mmdetection API
         mmdet_batch = []
+        device = next(self.model.parameters()).device
         for img in batch:
-            # Convert from OpenDR convention (RGB) to the expected channel order (BGR)
-            img_bgr = cv2.cvtColor(img.numpy(), cv2.COLOR_RGB2BGR)
-            mmdet_img = {'filename': None, 'img': img_bgr, 'img_shape': img_bgr.shape, 'ori_shape': img_bgr.shape}
+            # Change the processing size according to the input image
+            self._cfg.test_pipeline[1:][0]['img_scale'] = batch[0].data.shape[1:]
+            test_pipeline = Compose(self._cfg.test_pipeline[1:])
+            # Convert from OpenDR convention (CHW/RGB) to the expected format (HWC/BGR)
+            img_ = img.convert('channels_last', 'bgr')
+            mmdet_img = {'filename': None, 'img': img_, 'img_shape': img_.shape, 'ori_shape': img_.shape}
             mmdet_img = test_pipeline(mmdet_img)
             mmdet_batch.append(scatter(collate([mmdet_img], samples_per_gpu=1), [device])[0])
 
@@ -346,8 +347,7 @@ class EfficientPsLearner(Learner):
 
         if single_image_mode:
             return results[0]
-        else:
-            return results
+        return results
 
     def save(self, path: str) -> bool:
         """
@@ -456,15 +456,15 @@ class EfficientPsLearner(Learner):
         """
         if mode == 'model':
             models = {
-                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_cityscapes.pth',
-                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/models/model_kitti.pth'
+                'cityscapes': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_cityscapes.pth',
+                'kitti': f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/models/model_kitti.pth'
             }
             if trained_on not in models.keys():
                 raise ValueError(f'Could not find model weights pre-trained on {trained_on}. '
                                  f'Valid options are {list(models.keys())}')
             url = models[trained_on]
         elif mode == 'test_data':
-            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/test_data/test_data.zip'
+            url = f'{OPENDR_SERVER_URL}perception/panoptic_segmentation/efficient_ps/test_data.zip'
         else:
             raise ValueError('Invalid mode. Valid options are ["model", "test_data"]')
 
@@ -482,8 +482,12 @@ class EfficientPsLearner(Learner):
 
             return update_to
 
-        with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') as pbar:
-            urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+        if os.path.exists(filename) and os.path.isfile(filename):
+            print(f'File already downloaded: {filename}')
+        else:
+            with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f'Downloading {filename}') \
+                    as pbar:
+                urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         return filename
 
     @staticmethod
@@ -521,7 +525,7 @@ class EfficientPsLearner(Learner):
         PALETTE.append([0, 0, 0])
         colors = np.array(PALETTE, dtype=np.uint8)
 
-        image_img = PilImage.fromarray(image.data)
+        image_img = PilImage.fromarray(image.convert('channels_last', 'rgb'))
 
         # Extract class information from semantic segmentation
         semantics = prediction[1].data.copy()
@@ -559,7 +563,7 @@ class EfficientPsLearner(Learner):
             plt.axis('off')
             plt.title('semantic map')
             plt.subplot(grid_spec[3])
-            plt.imshow(contours_img)
+            plt.imshow(PIL.ImageOps.invert(contours_img.convert(mode='RGB')))  # Convert white to black contours
             plt.axis('off')
             plt.title('contours map')
             fig.canvas.draw()
@@ -572,7 +576,8 @@ class EfficientPsLearner(Learner):
             visualization_img.save(figure_filename)
         if show_figure:
             visualization_img.show()
-        return Image(data=np.array(visualization_img))
+        # Explicitly convert from HWC/RGB (PIL) to CHW/RGB (OpenDR)
+        return Image(data=np.array(visualization_img).transpose((2, 0, 1)), guess_format=False)
 
     @property
     def config(self) -> dict:
@@ -604,6 +609,6 @@ class EfficientPsLearner(Learner):
         """
         if not isinstance(value, int):
             raise TypeError('num_workers should be an integer.')
-        elif value <= 0:
+        if value <= 0:
             raise ValueError('num_workers should be positive.')
         self._num_workers = value

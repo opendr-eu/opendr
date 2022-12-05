@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,13 +13,15 @@
 # limitations under the License.
 
 import unittest
-import cv2
 import shutil
-import os
 import torch
-from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.engine.datasets import ExternalDataset
+from opendr.engine.data import Image
 import warnings
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
 def rmfile(path):
@@ -45,7 +47,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "pose_estimation",
                                     "lightweight_open_pose", "lw_open_pose_temp")
-        cls.pose_estimator = LightweightOpenPoseLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.pose_estimator = LightweightOpenPoseLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                         checkpoint_after_iter=0, num_workers=1)
         # Download all required files for testing
         cls.pose_estimator.download(mode="pretrained")
@@ -93,7 +95,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         self.pose_estimator.model = None
         self.pose_estimator.load(os.path.join(self.temp_dir, "openpose_default"))
 
-        img = cv2.imread(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
+        img = Image.open(os.path.join(self.temp_dir, "dataset", "image", "000000000785.jpg"))
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
         self.assertGreater(len(self.pose_estimator.infer(img)[0].data), 0,
                            msg="Returned pose must have non-zero number of keypoints.")

@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,14 @@ import torch
 import unittest
 import numpy as np
 
-from opendr.perception.activity_recognition.cox3d.cox3d_learner import CoX3DLearner
-from opendr.perception.activity_recognition.datasets.kinetics import KineticsDataset
+from opendr.perception.activity_recognition import CoX3DLearner
+from opendr.perception.activity_recognition import KineticsDataset
 from opendr.engine.data import Image
 from pathlib import Path
 from logging import getLogger
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 logger = getLogger(__name__)
 
@@ -38,7 +41,7 @@ class TestCoX3DLearner(unittest.TestCase):
         # Download model weights
         CoX3DLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
         cls.learner = CoX3DLearner(
-            device="cpu", temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
+            device=device, temp_path=str(cls.temp_dir), iters=1, batch_size=2, backbone=_BACKBONE, num_workers=0,
         )
 
         # Download mini dataset
@@ -103,17 +106,17 @@ class TestCoX3DLearner(unittest.TestCase):
         self.learner.model.clean_model_state()
 
         # Input is Tensor
-        results1 = self.learner.infer(batch)
+        results1 = self.learner.infer(batch.to(device))
         # Results is a batch with each item summing to 1.0
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
         # Input is Image
-        results2 = self.learner.infer(Image(batch[0], dtype=np.float))
-        assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-6)
+        results2 = self.learner.infer([Image(batch[0], dtype=np.float32), Image(batch[1], dtype=np.float32)])
+        assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-4)
 
         # Input is List[Image]
         results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
-        assert all([torch.allclose(r1.confidence, r3.confidence, atol=1e-6) for (r1, r3) in zip(results1, results3)])
+        assert all([torch.allclose(r1.confidence, r3.confidence, atol=1e-4) for (r1, r3) in zip(results1, results3)])
 
     def test_optimize(self):
         self.learner.ort_session = None

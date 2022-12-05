@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,9 +82,12 @@ class CenterNetDetectorLearner(Learner):
         self.wh_weight = wh_weight
         self.center_reg_weight = center_reg_weight
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                self.ctx = mx.gpu(0)
+                if self.device == 'cuda':
+                    self.ctx = mx.gpu(0)
+                else:
+                    self.ctx = mx.gpu(int(self.device.split(':')[1]))
             else:
                 self.ctx = mx.cpu()
         else:
@@ -147,9 +150,12 @@ class CenterNetDetectorLearner(Learner):
             print('Saving models as {}'.format(save_prefix))
 
         # get net & set device
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:
@@ -310,9 +316,12 @@ class CenterNetDetectorLearner(Learner):
         autograd.set_training(False)
 
         # NOTE: multi-gpu is a little bugged
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if mx.context.num_gpus() > 0:
-                ctx = [mx.gpu(0)]
+                if self.device == 'cuda':
+                    ctx = [mx.gpu(0)]
+                else:
+                    ctx = [mx.gpu(int(self.device.split(':')[1]))]
             else:
                 ctx = [mx.cpu()]
         else:
@@ -395,16 +404,9 @@ class CenterNetDetectorLearner(Learner):
 
         self._model.set_nms(nms_thresh=0.45, nms_topk=400)
 
-        if isinstance(img, Image):
-            _img = img.numpy()
-        elif isinstance(img, np.ndarray):
-            _img = img
-        else:
-            if img is not None:
-                error_msg = "Input should be of type Image or numpy array."
-            else:
-                error_msg = "Input image is of type None."
-            raise ValueError(error_msg)
+        if not isinstance(img, Image):
+            img = Image(img)
+        _img = img.convert("channels_last", "rgb")
 
         height, width, _ = _img.shape
         img_mx = mx.image.image.nd.from_numpy(np.float32(_img))

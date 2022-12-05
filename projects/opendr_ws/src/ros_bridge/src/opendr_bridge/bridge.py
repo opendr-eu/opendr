@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from opendr.engine.data import Image
-from opendr.engine.target import Pose, BoundingBox, BoundingBoxList
+from opendr.engine.data import Image, Timeseries, PointCloud
+from opendr.engine.target import (
+    Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D,
+    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList
+)
 
-import cv2
 import numpy as np
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
-     Detection3DArray, Detection3D, BoundingBox3D
+     Detection3DArray, Detection3D, BoundingBox3D as BoundingBox3DMsg, ObjectHypothesis, Classification2D
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
-from std_msgs.msg import ColorRGBA
-from sensor_msgs.msg import Image as ImageMsg
+from std_msgs.msg import ColorRGBA, String, Header
+from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
+import rospy
+from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
+from ros_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
 
 class ROSBridge:
@@ -48,75 +53,145 @@ class ROSBridge:
         :rtype: engine.data.Image
         """
         cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
-        # Convert from OpenCV standard (BGR) to OpenDR standard (RGB)
-        cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
         image = Image(np.asarray(cv_image, dtype=np.uint8))
         return image
 
     def to_ros_image(self, image: Image, encoding: str='passthrough') -> ImageMsg:
         """
         Converts an OpenDR image into a ROS image message
-        :param image: OpenDR image (RGB) to be converted
+        :param image: OpenDR image to be converted
         :type image: engine.data.Image
         :param encoding: encoding to be used for the conversion (inherited from CvBridge)
         :type encoding: str
         :return: ROS image
         :rtype: sensor_msgs.msg.Image
         """
-        # Convert from the OpenDR standard (RGB) to OpenCV standard (BGR)
-        bgr_image = cv2.cvtColor(image.numpy(), cv2.COLOR_RGB2BGR)
-        message = self._cv_bridge.cv2_to_imgmsg(bgr_image, encoding=encoding)
+        # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
+        message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
         return message
 
-    def to_ros_pose(self, pose):
+    def to_ros_pose(self, pose: Pose):
         """
-        Converts an OpenDR pose into a Detection2DArray msg that can carry the same information
-        Each keypoint is represented as a bbox centered at the keypoint with zero width/height. The subject id is also
-        embedded on each keypoint (stored in ObjectHypothesisWithPose).
-        :param pose: OpenDR pose to be converted
+        Converts an OpenDR Pose into a OpenDRPose2D msg that can carry the same information, i.e. a list of keypoints,
+        the pose detection confidence and the pose id.
+        Each keypoint is represented as an OpenDRPose2DKeypoint with x, y pixel position on input image with (0, 0)
+        being the top-left corner.
+        :param pose: OpenDR Pose to be converted to OpenDRPose2D
         :type pose: engine.target.Pose
         :return: ROS message with the pose
-        :rtype: vision_msgs.msg.Detection2DArray
+        :rtype: ros_bridge.msg.OpenDRPose2D
         """
         data = pose.data
-        keypoints = Detection2DArray()
-        for i in range(data.shape[0]):
-            keypoint = Detection2D()
-            keypoint.bbox = BoundingBox2D()
-            keypoint.results.append(ObjectHypothesisWithPose())
-            keypoint.bbox.center = Pose2D()
-            keypoint.bbox.center.x = data[i][0]
-            keypoint.bbox.center.y = data[i][1]
-            keypoint.bbox.size_x = 0
-            keypoint.bbox.size_y = 0
-            keypoint.results[0].id = pose.id
-            if pose.confidence:
-                keypoint.results[0].score = pose.confidence
-            keypoints.detections.append(keypoint)
-        return keypoints
+        # Setup ros pose
+        ros_pose = OpenDRPose2D()
+        ros_pose.pose_id = int(pose.id)
+        if pose.confidence:
+            ros_pose.conf = pose.confidence
 
-    def from_ros_pose(self, ros_pose):
+        # Add keypoints to pose
+        for i in range(data.shape[0]):
+            ros_keypoint = OpenDRPose2DKeypoint()
+            ros_keypoint.kpt_name = pose.kpt_names[i]
+            ros_keypoint.x = data[i][0]
+            ros_keypoint.y = data[i][1]
+            # Add keypoint to pose
+            ros_pose.keypoint_list.append(ros_keypoint)
+        return ros_pose
+
+    def from_ros_pose(self, ros_pose: OpenDRPose2D):
         """
-        Converts a ROS message with pose payload into an OpenDR pose
-        :param ros_pose: the pose to be converted (represented as vision_msgs.msg.Detection2DArray)
-        :type ros_pose: vision_msgs.msg.Detection2DArray
-        :return: an OpenDR pose
+        Converts an OpenDRPose2D message into an OpenDR Pose.
+        :param ros_pose: the ROS pose to be converted
+        :type ros_pose: ros_bridge.msg.OpenDRPose2D
+        :return: an OpenDR Pose
         :rtype: engine.target.Pose
         """
-        keypoints = ros_pose.detections
-        data = []
-        pose_id, confidence = None, None
+        ros_keypoints = ros_pose.keypoint_list
+        keypoints = []
+        pose_id, confidence = ros_pose.pose_id, ros_pose.conf
 
-        for keypoint in keypoints:
-            data.append(keypoint.bbox.center.x)
-            data.append(keypoint.bbox.center.y)
-            confidence = keypoint.results[0].score
-            pose_id = keypoint.results[0].id
-        data = np.asarray(data).reshape((-1, 2))
+        for ros_keypoint in ros_keypoints:
+            keypoints.append(int(ros_keypoint.x))
+            keypoints.append(int(ros_keypoint.y))
+        data = np.asarray(keypoints).reshape((-1, 2))
 
         pose = Pose(data, confidence)
         pose.id = pose_id
         return pose
+
+    def to_ros_category(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = category.data
+        result.score = category.confidence
+        return result
+
+    def to_ros_category_description(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_ros_category(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the objecthypothesis to be converted
+        :type ros_face: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
+
+    def to_ros_face(self, category):
+        """
+        Converts an OpenDR category into a ObjectHypothesis msg that can carry the Category.data and Category.confidence.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.data and category.confidence
+        :rtype: vision_msgs.msg.ObjectHypothesis
+        """
+        result = ObjectHypothesis()
+        result.id = category.data
+        result.score = category.confidence
+        return result
+
+    def to_ros_face_id(self, category):
+        """
+        Converts an OpenDR category into a string msg that can carry the Category.description.
+        :param category: OpenDR category to be converted
+        :type category: engine.target.Category
+        :return: ROS message with the category.description
+        :rtype: std_msgs.msg.String
+        """
+        result = String()
+        result.data = category.description
+        return result
+
+    def from_ros_face(self, ros_hypothesis):
+        """
+        Converts a ROS message with category payload into an OpenDR category
+        :param ros_hypothesis: the objecthypothesis to be converted
+        :type ros_face: vision_msgs.msg.ObjectHypothesis
+        :return: an OpenDR category
+        :rtype: engine.target.Category
+        """
+        category = Category(prediction=ros_hypothesis.id, description=None,
+                            confidence=ros_hypothesis.score)
+        return category
 
     def to_ros_boxes(self, box_list):
         """
@@ -138,7 +213,7 @@ class ROSBridge:
             ros_box.bbox.center.y = box.top + box.height / 2.
             ros_box.bbox.size_x = box.width
             ros_box.bbox.size_y = box.height
-            ros_box.results[0].id = box.name
+            ros_box.results[0].id = int(box.name)
             if box.confidence:
                 ros_box.results[0].score = box.confidence
             ros_boxes.detections.append(ros_box)
@@ -160,11 +235,45 @@ class ROSBridge:
             height = box.bbox.size_y
             left = box.bbox.center.x - width / 2.
             top = box.bbox.center.y - height / 2.
-            id = box.results[0].id
-            bbox = BoundingBox(top=top, left=left, width=width, height=height, name=id)
+            _id = int(box.results[0].id)
+            bbox = BoundingBox(top=top, left=left, width=width, height=height, name=_id)
             bboxes.data.append(bbox)
 
         return bboxes
+
+    def from_ros_tracking_annotation(self, ros_detections, ros_tracking_ids, frame=-1):
+        """
+        Converts a pair of ROS messages with bounding boxes and tracking ids into an OpenDR TrackingAnnotationList
+        :param ros_detections: The boxes to be converted.
+        :type ros_detections: vision_msgs.msg.Detection2DArray
+        :param ros_tracking_ids: The tracking ids corresponding to the boxes.
+        :type ros_tracking_ids: std_msgs.msg.Int32MultiArray
+        :param frame: The frame index to assign to the tracking boxes.
+        :type frame: int
+        :return: An OpenDR TrackingAnnotationList
+        :rtype: engine.target.TrackingAnnotationList
+        """
+        ros_boxes = ros_detections.detections
+        boxes = []
+
+        for idx, (box, tracking_id) in enumerate(zip(ros_boxes, ros_tracking_ids)):
+            width = box.bbox.size_x
+            height = box.bbox.size_y
+            left = box.bbox.center.x - width / 2.
+            top = box.bbox.center.y - height / 2.
+            id = box.results[0].id
+            bbox = TrackingAnnotation(
+                name=id,
+                left=left,
+                top=top,
+                width=width,
+                height=height,
+                id=tracking_id,
+                frame=frame
+            )
+            boxes.append(bbox)
+
+        return TrackingAnnotationList(boxes)
 
     def to_ros_bounding_box_list(self, bounding_box_list):
         """
@@ -185,7 +294,7 @@ class ROSBridge:
             detection.bbox.center.y = bounding_box.top + bounding_box.height / 2.0
             detection.bbox.size_x = bounding_box.width
             detection.bbox.size_y = bounding_box.height
-            detection.results[0].id = bounding_box.name
+            detection.results[0].id = int(bounding_box.name)
             detection.results[0].score = bounding_box.confidence
             detections.detections.append(detection)
         return detections
@@ -250,7 +359,7 @@ class ROSBridge:
         keypoints = Detection3DArray()
         for i in range(data.shape[0]):
             keypoint = Detection3D()
-            keypoint.bbox = BoundingBox3D()
+            keypoint.bbox = BoundingBox3DMsg()
             keypoint.results.append(ObjectHypothesisWithPose())
             keypoint.bbox.center = Pose3D()
             keypoint.bbox.center.position.x = data[i, 0]
@@ -334,3 +443,179 @@ class ROSBridge:
         for i in range(len(ros_colors)):
             colors[i] = np.array([ros_colors[i].r, ros_colors[i].g, ros_colors[i].b])
         return colors
+
+    def from_ros_image_to_depth(self, message, encoding='mono16'):
+        """
+        Converts a ROS image message into an OpenDR grayscale depth image
+        :param message: ROS image to be converted
+        :type message: sensor_msgs.msg.Image
+        :param encoding: encoding to be used for the conversion
+        :type encoding: str
+        :return: OpenDR image
+        :rtype: engine.data.Image
+        """
+        cv_image = self._cv_bridge.imgmsg_to_cv2(message, desired_encoding=encoding)
+        cv_image = np.expand_dims(cv_image, axis=-1)
+        image = Image(np.asarray(cv_image, dtype=np.uint8))
+        return image
+
+    def from_category_to_rosclass(self, prediction, source_data=None):
+        '''
+        Converts OpenDR Category into Classification2D message with class label, confidence, timestamp and corresponding input
+        :param prediction: classification prediction
+        :type prediction: engine.target.Category
+        :param source_data: corresponding input or None
+        :return classification
+        :rtype: vision_msgs.msg.Classification2D
+        '''
+        classification = Classification2D()
+        classification.header = Header()
+        classification.header.stamp = rospy.get_rostime()
+
+        result = ObjectHypothesis()
+        result.id = prediction.data
+        result.score = prediction.confidence
+        classification.results.append(result)
+        if source_data is not None:
+            classification.source_img = source_data
+        return classification
+
+    def from_rosarray_to_timeseries(self, ros_array, dim1, dim2):
+        '''
+        Converts ROS array into OpenDR Timeseries object
+        :param ros_array: data to be converted
+        :type ros_array: std_msgs.msg.Float32MultiArray
+        :param dim1: 1st dimension
+        :type dim1: int
+        :param dim2: 2nd dimension
+        :type dim2: int
+        :rtype: engine.data.Timeseries
+        '''
+        data = np.reshape(ros_array.data, (dim1, dim2))
+        data = Timeseries(data)
+        return data
+
+    def from_ros_point_cloud(self, point_cloud: PointCloudMsg):
+        """
+        Converts a ROS PointCloud message into an OpenDR PointCloud
+        :param message: ROS PointCloud to be converted
+        :type message: sensor_msgs.msg.PointCloud
+        :return: OpenDR PointCloud
+        :rtype: engine.data.PointCloud
+        """
+
+        points = np.empty([len(point_cloud.points), 3 + len(point_cloud.channels)], dtype=np.float32)
+
+        for i in range(len(point_cloud.points)):
+            point = point_cloud.points[i]
+            x, y, z = point.x, point.y, point.z
+
+            points[i, 0] = x
+            points[i, 1] = y
+            points[i, 2] = z
+
+            for q in range(len(point_cloud.channels)):
+                points[i, 3 + q] = point_cloud.channels[q].values[i]
+
+        result = PointCloud(points)
+
+        return result
+
+    def to_ros_point_cloud(self, point_cloud: PointCloud):
+        """
+        Converts an OpenDR PointCloud message into a ROS PointCloud
+        :param: OpenDR PointCloud
+        :type: engine.data.PointCloud
+        :return message: ROS PointCloud
+        :rtype message: sensor_msgs.msg.PointCloud
+        """
+
+        ros_point_cloud = PointCloudMsg()
+
+        header = Header()
+        header.stamp = rospy.Time.now()
+        ros_point_cloud.header = header
+
+        channels_count = point_cloud.data.shape[-1] - 3
+
+        channels = [ChannelFloat32Msg("channel_" + str(i), []) for i in range(channels_count)]
+        points = []
+
+        for point in point_cloud.data:
+            point_msg = Point32Msg()
+            point_msg.x = point[0]
+            point_msg.y = point[1]
+            point_msg.z = point[2]
+            points.append(point_msg)
+            for i in range(channels_count):
+                channels[i].values.append(point[3 + i])
+
+        ros_point_cloud.points = points
+        ros_point_cloud.channels = channels
+
+        return ros_point_cloud
+
+    def from_ros_boxes_3d(self, ros_boxes_3d: Detection3DArray, classes):
+        """
+        Converts a ROS Detection3DArray message into an OpenDR BoundingBox3D object.
+        :param ros_boxes_3d: The ROS boxes to be converted.
+        :type ros_boxes_3d: vision_msgs.msg.Detection3DArray
+        :param classes: The array of classes to transform an index into a string name.
+        :type classes: [str]
+        :return: An OpenDR BoundingBox3DList object.
+        :rtype: engine.target.BoundingBox3DList
+        """
+        boxes = []
+
+        for ros_box in ros_boxes_3d:
+
+            box = BoundingBox3D(
+                name=classes[ros_box.results[0].id],
+                truncated=0,
+                occluded=0,
+                bbox2d=None,
+                dimensions=np.array([
+                    ros_box.bbox.size.position.x,
+                    ros_box.bbox.size.position.y,
+                    ros_box.bbox.size.position.z,
+                ]),
+                location=np.array([
+                    ros_box.bbox.center.position.x,
+                    ros_box.bbox.center.position.y,
+                    ros_box.bbox.center.position.z,
+                ]),
+                rotation_y=ros_box.bbox.center.rotation.y,
+                score=ros_box.results[0].score,
+            )
+            boxes.append(box)
+
+        result = BoundingBox3DList(boxes)
+        return result
+
+    def to_ros_boxes_3d(self, boxes_3d: BoundingBox3DList, classes):
+        """
+        Converts an OpenDR BoundingBox3DList object into a ROS Detection3DArray message.
+        :param boxes_3d: The OpenDR boxes to be converted.
+        :type boxes_3d: engine.target.BoundingBox3DList
+        :param classes: The array of classes to transform from string name into an index.
+        :type classes: [str]
+        :return: ROS message with the boxes
+        :rtype: vision_msgs.msg.Detection3DArray
+        """
+        ros_boxes_3d = Detection3DArray()
+        for i in range(len(boxes_3d)):
+            box = Detection3D()
+            box.bbox = BoundingBox3DMsg()
+            box.results.append(ObjectHypothesisWithPose())
+            box.bbox.center = Pose3D()
+            box.bbox.center.position.x = boxes_3d[i].location[0]
+            box.bbox.center.position.y = boxes_3d[i].location[1]
+            box.bbox.center.position.z = boxes_3d[i].location[2]
+            box.bbox.center.orientation = QuaternionMsg(x=0, y=float(boxes_3d[i].rotation_y), z=0, w=0)
+            box.bbox.size.x = boxes_3d[i].dimensions[0]
+            box.bbox.size.y = boxes_3d[i].dimensions[1]
+            box.bbox.size.z = boxes_3d[i].dimensions[2]
+            box.results[0].id = int(classes.index(boxes_3d[i].name))
+            box.results[0].score = boxes_3d[i].confidence
+            ros_boxes_3d.detections.append(box)
+        return ros_boxes_3d

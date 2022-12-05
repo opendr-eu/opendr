@@ -1,0 +1,12 @@
+<launch>
+
+    <!--map_simulator.py [-p] [-s <search_paths>] [-h] -i <input_file> [-o <output_file>] [<param_name>:<param_value>]..-->
+    <arg name="search_paths" default=""/>
+    <arg name="input_file" default="$(find map_simulator)/scenarios/robots/Robot_10Loop_noisy_3_2pi_180rays.json"/>
+    <arg name="output_file" default="$(find map_simulator)/rosbags/Robot_10Loop_noisy_3_2pi_180rays.bag"/>
+
+
+    <node pkg="map_simulator" type="mapsim2d.py" name="mapsim2d" output="screen" required="true"
+          args="-s &quot;$(arg search_paths)&quot; -i &quot;$(arg input_file)&quot; -o &quot;$(arg output_file)&quot;"/>
+
+</launch>

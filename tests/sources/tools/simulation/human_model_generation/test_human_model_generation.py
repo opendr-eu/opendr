@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import unittest
-import cv2
+from opendr.engine.data import Image
 import shutil
 import os
-from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
+from opendr.simulation.human_model_generation import PIFuGeneratorLearner
 
 
 def rmdir(_dir):
@@ -44,10 +44,10 @@ class TestPIFuGeneratorLearner(unittest.TestCase):
 
     def test_infer(self):
 
-        img_rgb = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
-                                          "demos", "imgs_input", "rgb", "result_0004.jpg"))
-        img_msk = cv2.imread(os.path.join(os.environ['OPENDR_HOME'], "projects", "simulation", "human_model_generation",
-                                          "demos", "imgs_input", "msk", "result_0004.jpg"))
+        img_rgb = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "python", "simulation",
+                                          "human_model_generation", "demos", "imgs_input", "rgb", "result_0004.jpg"))
+        img_msk = Image.open(os.path.join(os.environ['OPENDR_HOME'], "projects", "python", "simulation",
+                                          "human_model_generation", "demos", "imgs_input", "msk", "result_0004.jpg"))
         model_3D = self.learner.infer(imgs_rgb=[img_rgb], imgs_msk=[img_msk], extract_pose=False)
 
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785

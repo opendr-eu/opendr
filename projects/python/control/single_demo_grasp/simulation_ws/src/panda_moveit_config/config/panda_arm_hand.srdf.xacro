@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--This does not replace URDF, and is not an extension of URDF.
+    This is a format for representing semantic information about the robot structure.
+    A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
+  <xacro:include filename="$(find panda_moveit_config)/config/panda_arm.xacro" />
+  <xacro:include filename="$(find panda_moveit_config)/config/hand.xacro" />
+  <xacro:panda_arm />
+  <xacro:hand />
+  <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
+  <!--LINKS: When a link is specified, the parent joint of that link (if it exists) is automatically included-->
+  <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
+  <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
+  <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+  <group name="panda_arm_hand">
+    <group name="panda_arm" />
+    <group name="hand" />
+  </group>
+  <group_state name="open" group="hand">
+    <joint name="panda_finger_joint1" value="0.035" />
+    <joint name="panda_finger_joint2" value="0.035" />
+  </group_state>
+  <group_state name="close" group="hand">
+    <joint name="panda_finger_joint1" value="0" />
+    <joint name="panda_finger_joint2" value="0" />
+  </group_state>
+  <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+  <end_effector name="hand" parent_link="panda_link8" group="hand" parent_group="panda_arm" />
+  <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+  <disable_collisions link1="panda_hand" link2="panda_link4" reason="Never" />
+  <disable_collisions link1="panda_hand" link2="panda_link6" reason="Never" />
+  <disable_collisions link1="panda_hand" link2="panda_link7" reason="Default" />
+  <disable_collisions link1="panda_hand" link2="panda_link8" reason="Adjacent" />
+  <disable_collisions link1="panda_leftfinger" link2="panda_link4" reason="Never" />
+  <disable_collisions link1="panda_leftfinger" link2="panda_link6" reason="Never" />
+  <disable_collisions link1="panda_leftfinger" link2="panda_link7" reason="Never" />
+  <disable_collisions link1="panda_leftfinger" link2="panda_link8" reason="Never" />
+  <disable_collisions link1="panda_link4" link2="panda_rightfinger" reason="Never" />
+  <disable_collisions link1="panda_link6" link2="panda_rightfinger" reason="Never" />
+  <disable_collisions link1="panda_link7" link2="panda_rightfinger" reason="Never" />
+  <disable_collisions link1="panda_link8" link2="panda_rightfinger" reason="Never" />
+</robot>

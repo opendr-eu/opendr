@@ -36,7 +36,7 @@ class DeepSort(object):
         )
 
     def update(self, bbox_xywh, confidences, cls_ids, ori_img, is_new):
-        self.height, self.width = ori_img.shape[:2]
+        self.width, self.height = ori_img.shape[:2]
         # generate detections
         features = self._get_features(bbox_xywh, ori_img)
         bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
@@ -120,8 +120,8 @@ class DeepSort(object):
     def _get_features(self, bbox_xywh, ori_img):
         im_crops = []
         for box in bbox_xywh:
-            x1, y1, x2, y2 = self._xywh_to_xyxy(box)
-            im = ori_img[y1:y2, x1:x2]
+            x1, y1, x2, y2 = self._tlwh_to_xyxy(box)
+            im = ori_img[x1:x2, y1:y2]
             im_crops.append(im)
         if im_crops:
             features = self.extractor(im_crops)

@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   vision_msgs
   std_msgs
+  audio_common_msgs
 )
 
 ###################################
@@ -28,7 +29,11 @@ include_directories(
 
 catkin_install_python(PROGRAMS
    scripts/pose_estimation.py
+   scripts/fall_detection.py
+   scripts/object_detection_2d_nanodet.py
+   scripts/object_detection_2d_yolov5.py
    scripts/object_detection_2d_detr.py
    scripts/object_detection_2d_gem.py
+   scripts/semantic_segmentation_bisenet.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )

@@ -1,0 +1,43 @@
+#VRML_SIM R2021a utf8
+WorldInfo {
+  coordinateSystem "NUE"
+  contactProperties [
+      ContactProperties {
+        material1 "default"
+        coulombFriction [
+          1.8, 0, 0.2
+        ]
+        bounce 0
+      }
+  ]
+}
+
+Viewpoint {
+  orientation 0.19779220897305072 -0.9502567346504345 -0.2406041984693015 4.035735278597207
+  position 1.2028512700537703 1.2725346584971713 -0.9352932130281382
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 2 2
+  floorTileSize 0.25 0.25
+  wallHeight 0.05
+}
+panda_arm_hand {
+  translation -0.23 0 0
+  rotation 1 0 0 -1.5707953071795862
+  controller "<extern>"
+  supervisor TRUE
+}
+
+#adding objects to the world from .proto files in proto directories
+Housing {}
+CylinderPneumatic{}
+BallBearing {}
+CommonLine{}
+CranfieldFace{}
+FuelLine{}
+Pendulum{}
+RodEnd{}

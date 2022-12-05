@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
 import os
 import json
 import torch
@@ -75,6 +76,9 @@ class ObjectTracking2DDeepSortLearner(Learner):
         self.model_optimizer = torch.optim.SGD(
             self.tracker.deepsort.extractor.net.parameters(), lr, momentum=0.9, weight_decay=5e-4
         )
+
+        self.infers_count = 0
+        self.infers_time = 0
 
     def save(self, path, verbose=False):
         """
@@ -258,7 +262,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
 
         return result
 
-    def infer(self, batch, frame_ids=None):
+    def infer(self, batch, frame_ids=None, swap_left_top=False):
 
         if self.tracker is None:
             raise ValueError("No model loaded or created")
@@ -280,8 +284,14 @@ class ObjectTracking2DDeepSortLearner(Learner):
 
         for image, frame_id in zip(batch, frame_ids):
 
-            result = self.tracker.infer(image, frame_id)
+            t0 = time.time()
+
+            result = self.tracker.infer(image, frame_id, swap_left_top=swap_left_top)
             results.append(result)
+
+            t0 = time.time() - t0
+            self.infers_count += 1
+            self.infers_time += t0
 
         if is_single_image:
             results = results[0]
@@ -418,7 +428,8 @@ class ObjectTracking2DDeepSortLearner(Learner):
         def map_dataset(dataset):
 
             def image_to_pil(image: Image):
-                return PilImage.fromarray(image.numpy())
+
+                return PilImage.fromarray(image.convert('channels_last'))
 
             return MappedDatasetIterator(dataset, lambda data: (image_to_pil(data[0]), data[1].data))
 

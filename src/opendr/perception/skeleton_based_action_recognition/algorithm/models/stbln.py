@@ -117,7 +117,7 @@ class STBLN(nn.Module):
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer1': ST_GCN_block(3, 64, num_point, num_point, symmetric, cuda_, residual=False),
+            {'layer1': ST_GCN_block(in_channels, 64, num_point, num_point, symmetric, cuda_, residual=False),
              'layer2': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
              'layer3': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),
              'layer4': ST_GCN_block(64, 64, num_point, num_point, symmetric, cuda_),

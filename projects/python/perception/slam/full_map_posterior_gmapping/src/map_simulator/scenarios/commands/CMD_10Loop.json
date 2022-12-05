@@ -1,0 +1,39 @@
+{
+  "commands": [
+    {"type": "comment", "txt": "First Loop (Square aligned with grid)"},
+    {"type": "linear", "end_position": [9.5, 0.5], "steps": 19 },
+    {"type": "rotation", "end_orientation": 1.5707963268, "steps": 4, "dir": "ccw"},
+    {"type": "linear", "end_position": [9.5, 9.5], "steps": 19 },
+    {"type": "rotation", "end_orientation": 3.1415926536, "steps": 4, "dir": "ccw"},
+    {"type": "linear", "end_position": [0.5, 9.5], "steps": 19 },
+    {"type": "rotation", "end_orientation": -1.5707963268, "steps": 4, "dir": "ccw"},
+    {"type": "linear", "end_position": [0.5, 0.5], "steps": 19 },
+    {"type": "rotation", "end_orientation": 0.0, "steps": 4, "dir": "ccw"},
+
+    {"type": "comment", "txt": "Connection to 2nd loop"},
+    {"type": "interpolation", "end_position":  [1.5068, 0.9178], "end_orientation": -1.4056881796, "steps":  4},
+
+    {"type": "comment", "txt": "Second Loop (Offset 0.5m from center obstacle with round corners)"},
+    {"type": "circular", "center": [2.0, 1.0], "end_position":  [2.0707, 0.505], "steps":  4, "dir": "ccw"},
+    {"type": "linear", "end_position": [9.0707, 1.505], "steps": 19 },
+    {"type": "circular", "center": [9.0, 2.0], "end_position":  [9.495, 2.071], "steps":  4, "dir": "ccw"},
+    {"type": "linear", "end_position": [8.495, 9.071], "steps": 19 },
+    {"type": "circular", "center": [8.0 , 9.0], "end_position":  [7.863 , 9.481], "steps":  4, "dir": "ccw"},
+    {"type": "linear", "end_position": [0.863, 7.481], "steps": 19 },
+    {"type": "circular", "center": [1.0 , 7.0], "end_position":  [0.507 , 6.918], "steps":  4, "dir": "ccw"},
+    {"type": "linear", "end_position": [1.5068, 0.9178], "steps": 19 },
+
+    {"type": "comment", "txt": "Connection to 3nd loop"},
+    {"type": "interpolation", "end_position":  [1.041, 0.429], "end_orientation": 0.07103490056, "steps":  4},
+
+    {"type": "comment", "txt": "Third Loop (Bisection between walls)"},
+    {"type": "linear", "end_position": [9.571, 1.036], "steps": 19 },
+    {"type": "rotation", "end_orientation": 1.5707963268, "steps": 4, "dir": "ccw"},
+    {"type": "linear", "end_position": [8.959, 9.644], "steps": 19 },
+    {"type": "rotation", "end_orientation": 3.1415926536, "steps": 4, "dir": "ccw"},
+    {"type": "linear", "end_position": [0.377, 8.442], "steps": 19 },
+    {"type": "rotation", "end_orientation": -1.5707963268, "steps": 4, "dir": "ccw"},
+    {"type": "linear", "end_position": [1.041, 0.429], "steps": 19 },
+    {"type": "rotation", "end_orientation": 0.0, "steps": 4, "dir": "ccw"}
+  ]
+}

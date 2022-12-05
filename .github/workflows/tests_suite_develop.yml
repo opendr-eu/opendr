@@ -1,0 +1,390 @@
+name: Test Suite (develop)
+
+# note: this workflow is only triggered by the nightly scheduled run.
+# it is identical to master's workflow, but targets the develop branch.
+on:
+  schedule:
+    - cron:  '0 23 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-sources:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
+        include:
+          - os: ubuntu-18.04
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
+          - os: ubuntu-20.04
+            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
+          - os: macos-10.15
+            DEPENDENCIES_INSTALLATION: "brew install clang-format@11 cppcheck; ln /usr/local/bin/clang-format-11 /usr/local/bin/clang-format"
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
+      with:
+        submodules: true
+        ref: develop
+    - name: Set up Python 3.8
+      if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Sources
+      if: matrix.os == 'ubuntu-20.04' || github.event.pull_request.draft == false
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
+        export OPENDR_HOME=$PWD
+        export OPENDR_DEVICE=cpu
+        pip install -r tests/requirements.txt
+        python -m unittest discover -s tests
+  test-tools:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/object_detection_3d
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - control/mobile_manipulation
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
+          - simulation/human_model_generation
+          - perception/facial_expression_recognition
+          - control/single_demo_grasp
+          - planning/end_to_end_planning
+          # - perception/object_tracking_3d
+        include:
+          - os: ubuntu-20.04
+            DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
+            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        ref: develop
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Tools
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
+        export OPENDR_HOME=$PWD
+        export OPENDR_DEVICE=cpu
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        export DISABLE_BCOLZ_AVX2=true
+        export ROS_DISTRO=noetic
+        make install_compilation_dependencies
+        make install_runtime_dependencies
+        pip install -r tests/sources/requirements.txt
+        if [ ${{ matrix.package }} = "ctests" ]; then
+            make ctests
+        else
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        fi
+  build-wheel:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        ref: develop
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install prerequisites
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+    - name: Build Wheel
+      run:
+        ./bin/build_wheel.sh
+    - name: Upload wheel as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheel-artifact
+        path:
+          dist/*.tar.gz
+  build-docker:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        ref: develop
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
+    - name: Build image
+      run: |
+        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
+        docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
+    - name: Upload image artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: docker-artifact
+        path:
+          cpu_test.zip
+  test-wheel:
+    needs: build-wheel
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
+          - perception/facial_expression_recognition
+          # - perception/object_detection_3d
+          # - control/mobile_manipulation
+          # - simulation/human_model_generation
+          # - control/single_demo_grasp
+          # - perception/object_tracking_3d
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        ref: develop
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        path: artifact
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
+    - name: Test Wheel
+      run: |
+        export DISABLE_BCOLZ_AVX2=true
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install wheel
+        while read f; do
+          package=$(sed "s/_/-/g" <<< $f)
+          arr=(${package//// })
+          # Get the tool name (if there is a base path before)
+          if [ ! -z ${arr[1]} ]; then
+              package=${arr[1]}
+          fi
+          echo "Installing $package package"
+          if [ "$package" == "opendr" ]; then
+            pip install ./artifact/wheel-artifact/opendr-toolkit-*.tar.gz
+          else
+            pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+          fi
+        done < packages.txt
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+  test-wheel-separate:
+    needs: build-wheel
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
+          - perception/facial_expression_recognition
+          # - perception/object_detection_3d
+          # - control/mobile_manipulation
+          # - simulation/human_model_generation
+          # - control/single_demo_grasp
+          # - perception/object_tracking_3d
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        ref: develop
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        path: artifact
+    - name: Get branch name
+      id: branch-name
+      uses: tj-actions/branch-names@v5.1
+    - name: Test Wheel
+      run: |
+        export DISABLE_BCOLZ_AVX2=true
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install wheel
+        # Install engine and requirements for other packages
+        pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
+        # The following two are dependecies for some other packages and pip cannot automatically install them if they are not on a repo
+        pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+        pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
+        # Install specific package for testing
+        package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
+        arr=(${package//// })
+        if [ ! -z ${arr[1]} ]; then
+            package=${arr[1]}
+        fi
+        echo "Installing $package package"
+        # Utils contains hyperparameter tuning
+        if [ "$package" == "utils" ]; then
+              pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+        else
+              pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+        fi
+        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+  test-docker:
+    needs: build-docker
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/object_tracking_2d
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
+          - perception/facial_expression_recognition
+          - perception/object_detection_3d
+          - control/mobile_manipulation
+          - simulation/human_model_generation
+          - control/single_demo_grasp
+          - planning/end_to_end_planning
+          # - perception/object_tracking_3d
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        path: artifact
+    - name: Test docker
+      run: |
+        docker load < ./artifact/docker-artifact/cpu_test.zip
+        docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
+        docker start toolkit
+        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+  delete-docker-artifacts:
+    needs: [build-docker, test-docker]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete docker artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: docker-artifact
+  delete-wheel-artifacts:
+    needs: [build-wheel, test-wheel, test-wheel-separate]
+    if: ${{ always() }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Delete wheel artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: wheel-artifact

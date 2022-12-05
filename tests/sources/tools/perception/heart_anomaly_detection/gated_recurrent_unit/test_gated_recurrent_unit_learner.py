@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,7 @@ import numpy as np
 import random
 
 # OpenDR imports
-from opendr.perception.heart_anomaly_detection.gated_recurrent_unit.gated_recurrent_unit_learner import (
-    GatedRecurrentUnitLearner,
-    get_AF_dataset
-)
+from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, get_AF_dataset
 from opendr.engine.datasets import DatasetIterator
 from opendr.engine.data import Timeseries
 from opendr.engine.target import Category

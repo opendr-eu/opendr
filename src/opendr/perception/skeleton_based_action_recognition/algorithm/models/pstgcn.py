@@ -118,9 +118,9 @@ class PSTGCN(nn.Module):
     def __init__(self, topology, block_size, num_class, num_point, num_person, in_channels, graph_type, cuda_=False):
         super(PSTGCN, self).__init__()
 
-        if graph_type == 'ntu':
+        if graph_type == 'ntu' or num_point == 25:
             self.graph = NTUGraph()
-        elif graph_type == 'openpose':
+        elif graph_type == 'openpose' or num_point == 18:
             self.graph = KineticsGraph()
 
         A = self.graph.A

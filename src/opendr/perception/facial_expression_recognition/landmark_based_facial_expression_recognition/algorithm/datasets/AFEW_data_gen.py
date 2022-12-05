@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@ import numpy as np
 import torch
 import argparse
 import pickle
+import pandas
+from pathlib import Path
+
+AFEW_CLASSES = pandas.read_csv(Path(__file__).parent / 'AFEW_labels.csv', verbose=True, index_col=0).to_dict()["name"]
 
 
 def tile(a, dim, n_tile):

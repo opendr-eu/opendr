@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,9 +90,9 @@ class LightweightOpenPoseLearner(Learner):
         self.backbone = backbone.lower()
         self.half = half_precision
 
-        supportedBackbones = ["mobilenet", "mobilenetv2", "shufflenet"]
-        if self.backbone not in supportedBackbones:
-            raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supportedBackbones))
+        supported_backbones = ["mobilenet", "mobilenetv2", "shufflenet"]
+        if self.backbone not in supported_backbones:
+            raise ValueError(self.backbone + " not a valid backbone. Supported backbones:" + str(supported_backbones))
         if self.backbone == "mobilenet":
             self.use_stride = mobilenet_use_stride
         else:
@@ -126,6 +126,9 @@ class LightweightOpenPoseLearner(Learner):
 
         self.ort_session = None  # ONNX runtime inference session
         self.model_train_state = True
+
+        if self.device == "cpu":
+            torch.set_flush_denormal(True)
 
     def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
             silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
@@ -275,13 +278,13 @@ class LightweightOpenPoseLearner(Learner):
         if not self.weights_only and self.checkpoint_load_iter != 0:
             try:
                 optimizer.load_state_dict(checkpoint['optimizer'])
-                if self.device == "cuda":
+                if "cuda" in self.device:
                     # Move optimizer state to cuda
                     # Taken from https://github.com/pytorch/pytorch/issues/2830#issuecomment-336194949
                     for state in optimizer.state.values():
                         for k, v in state.items():
                             if torch.is_tensor(v):
-                                state[k] = v.cuda()
+                                state[k] = v.to(self.device)
                 scheduler.load_state_dict(checkpoint['scheduler'])
                 num_iter = checkpoint['iter']
                 current_epoch = checkpoint['current_epoch']
@@ -290,11 +293,11 @@ class LightweightOpenPoseLearner(Learner):
         elif self.checkpoint_load_iter != 0:
             num_iter = self.checkpoint_load_iter
 
-        if self.device == "cuda":
+        if "cuda" in self.device:
             self.model = DataParallel(self.model)
         self.model.train()
-        if self.device == "cuda":
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
 
         if epochs is not None:
             self.epochs = epochs
@@ -307,11 +310,11 @@ class LightweightOpenPoseLearner(Learner):
             batch_per_iter_idx = 0
 
             pbar = None
-            pbarDesc = ""
+            pbar_desc = ""
             batch_index = 0
             if not silent:
-                pbarDesc = "Epoch #" + str(epochId) + " progress"
-                pbar = tqdm(desc=pbarDesc, total=batches, bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+                pbar_desc = "Epoch #" + str(epochId) + " progress"
+                pbar = tqdm(desc=pbar_desc, total=batches, bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
             for batch_data in train_loader:
                 if batch_per_iter_idx == 0:
                     optimizer.zero_grad()
@@ -320,12 +323,12 @@ class LightweightOpenPoseLearner(Learner):
                 paf_masks = batch_data['paf_mask']
                 keypoint_maps = batch_data['keypoint_maps']
                 paf_maps = batch_data['paf_maps']
-                if self.device == "cuda":
-                    images = images.cuda()
-                    keypoint_masks = keypoint_masks.cuda()
-                    paf_masks = paf_masks.cuda()
-                    keypoint_maps = keypoint_maps.cuda()
-                    paf_maps = paf_maps.cuda()
+                if "cuda" in self.device:
+                    images = images.to(self.device)
+                    keypoint_masks = keypoint_masks.to(self.device)
+                    paf_masks = paf_masks.to(self.device)
+                    keypoint_maps = keypoint_maps.to(self.device)
+                    paf_maps = paf_maps.to(self.device)
 
                 stages_output = self.model(images)
                 losses = []
@@ -396,7 +399,7 @@ class LightweightOpenPoseLearner(Learner):
                     eval_results_list.append(eval_results)
                     if not silent:
                         # Re-initialize outer tqdm
-                        pbar = tqdm(desc=pbarDesc, initial=batch_index, total=batches,
+                        pbar = tqdm(desc=pbar_desc, initial=batch_index, total=batches,
                                     bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
                     if logging:
                         file_writer.add_scalar(tag="Average Precision @IoU=0.5:0.95, area = all",
@@ -450,7 +453,7 @@ class LightweightOpenPoseLearner(Learner):
         if logging:
             file_writer.close()
         # Return a dict of lists of PAF and Heatmap losses per stage and a list of all evaluation results dictionaries
-        if self.half and self.device == 'cuda':
+        if self.half and 'cuda' in self.device:
             self.model.half()
 
         return {"paf_losses": paf_losses, "heatmap_losses": heatmap_losses, "eval_results_list": eval_results_list}
@@ -518,8 +521,8 @@ class LightweightOpenPoseLearner(Learner):
             raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
 
         self.model = self.model.eval()  # Change model state to evaluation
-        if self.device == "cuda":
-            self.model = self.model.cuda()
+        if "cuda" in self.device:
+            self.model = self.model.to(self.device)
             if self.half:
                 self.model.half()
 
@@ -530,8 +533,8 @@ class LightweightOpenPoseLearner(Learner):
 
         pbar_eval = None
         if not silent:
-            pbarDesc = "Evaluation progress"
-            pbar_eval = tqdm(desc=pbarDesc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+            pbar_desc = "Evaluation progress"
+            pbar_eval = tqdm(desc=pbar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
         for sample in data:
             file_name = sample['file_name']
             img = sample['img']
@@ -603,7 +606,9 @@ class LightweightOpenPoseLearner(Learner):
         """
         if not isinstance(img, Image):
             img = Image(img)
-        img = img.numpy()
+
+        # Bring image into the appropriate format for the implementation
+        img = img.convert(format='channels_last', channel_order='bgr')
 
         height, width, _ = img.shape
         scale = self.base_height / height
@@ -614,8 +619,8 @@ class LightweightOpenPoseLearner(Learner):
         padded_img, pad = pad_width(scaled_img, self.stride, self.pad_value, min_dims)
 
         tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
-        if self.device == "cuda":
-            tensor_img = tensor_img.cuda()
+        if "cuda" in self.device:
+            tensor_img = tensor_img.to(self.device)
             if self.half:
                 tensor_img = tensor_img.half()
 
@@ -744,6 +749,7 @@ class LightweightOpenPoseLearner(Learner):
                                                           groups=self.shufflenet_groups)
         else:
             raise UserWarning("Tried to initialize model while model is already initialized.")
+        self.model.to(self.device)
 
     def __save(self, path, optimizer, scheduler, iter_, current_epoch):
         """
@@ -803,8 +809,8 @@ class LightweightOpenPoseLearner(Learner):
         #     load_from_mobilenet(self.model, checkpoint)
         # else:
         load_state(self.model, checkpoint)
-        if self.device == "cuda":
-            self.model.cuda()
+        if "cuda" in self.device:
+            self.model.to(self.device)
             if self.half:
                 self.model.half()
         self.model.train(False)
@@ -854,13 +860,18 @@ class LightweightOpenPoseLearner(Learner):
         :type do_constant_folding: bool, optional
         """
         width = 344
-        if self.device == "cuda":
-            inp = torch.randn(1, 3, self.base_height, width).cuda()
+        if "cuda" in self.device:
+            inp = torch.randn(1, 3, self.base_height, width).to(self.device)
         else:
             inp = torch.randn(1, 3, self.base_height, width)
+        if self.half:
+            inp = inp.half()
         input_names = ['data']
-        output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
-                        'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
+        if self.num_refinement_stages == 2:
+            output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
+                            'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
+        else:
+            output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs']
 
         torch.onnx.export(self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
                           do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
@@ -1024,7 +1035,9 @@ class LightweightOpenPoseLearner(Learner):
         """
         if not isinstance(img, Image):
             img = Image(img)
-        img = img.numpy()
+
+        # Bring image into the appropriate format for the implementation
+        img = img.convert(format='channels_last', channel_order='bgr')
 
         img_mean = self.img_mean  # Defaults to (128, 128, 128)
         img_scale = self.img_scale  # Defaults to 1 / 256
@@ -1046,8 +1059,8 @@ class LightweightOpenPoseLearner(Learner):
             padded_img, pad = pad_width(scaled_img, stride, pad_value, min_dims)
 
             tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
-            if self.device == "cuda":
-                tensor_img = tensor_img.cuda()
+            if "cuda" in self.device:
+                tensor_img = tensor_img.to(self.device)
                 if self.half:
                     tensor_img = tensor_img.half()
             stages_output = self.model(tensor_img)

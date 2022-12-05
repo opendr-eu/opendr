@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,18 +15,16 @@
 import sys
 import unittest
 import shutil
-import os
 import torch
-from opendr.perception.object_tracking_2d.datasets.mot_dataset import (
+from opendr.perception.object_tracking_2d import (
     MotDataset,
     MotDatasetIterator,
     RawMotDatasetIterator,
 )
-from opendr.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner import (
-    ObjectTracking2DFairMotLearner,
-)
+from opendr.perception.object_tracking_2d import ObjectTracking2DFairMotLearner
+import os
 
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 print("Using device:", DEVICE)
 print("Using device:", DEVICE, file=sys.stderr)
@@ -97,9 +95,10 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
-            starting_param = list(learner.model.parameters())[0].clone()
+            starting_param = list(learner.model.parameters())[-1].clone()
 
             learner.fit(
                 dataset,
@@ -108,7 +107,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 val_split_paths=self.train_split_paths,
                 verbose=True,
             )
-            new_param = list(learner.model.parameters())[0].clone()
+            new_param = list(learner.model.parameters())[-1].clone()
             self.assertFalse(torch.equal(starting_param, new_param))
 
             print("Fit", name, "ok", file=sys.stderr)
@@ -127,6 +126,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
             starting_param = list(learner.model.parameters())[0].clone()
@@ -158,6 +158,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
             learner.load(model_path, verbose=True)
             result = learner.eval(eval_dataset)
@@ -178,6 +179,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
             learner.load(model_path, verbose=True)
             result = learner.infer(eval_dataset[0][0], 10)
@@ -206,6 +208,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
             learner.save(save_path, True)
@@ -217,6 +220,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
             learner2.load(save_path)
 
@@ -235,6 +239,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
                 device=DEVICE,
+                use_pretrained_backbone=False,
             )
 
             with self.assertRaises(Exception):

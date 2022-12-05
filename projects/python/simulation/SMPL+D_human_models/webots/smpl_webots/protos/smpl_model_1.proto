@@ -1,0 +1,38 @@
+#VRML_SIM V8.5 utf8
+# Skin node representing a man with predefined mesh and appearance.
+
+PROTO smpl_model_1 [
+  field SFVec3f    translation 0 0 0
+  field SFRotation rotation    0 1 0 0
+  field SFVec3f    scale       0.01 0.01 0.01
+  field SFString   name        "model-204"
+  field SFString   model       "model-204"
+  field SFBool     castShadows TRUE
+]
+{
+  Skin {
+    translation IS translation
+    rotation IS rotation
+    scale IS scale
+    name IS name
+    model IS model
+    appearance [
+      Appearance {
+        material Material {
+          ambientIntensity 0.307537
+          diffuseColor 1 0.95 0.85
+          emissiveColor 0.196078 0.101961 0.101961
+          shininess 0.5
+          specularColor 0.027451 0.027451 0.027451
+        }
+        texture ImageTexture {
+          url [
+            "textures/model-204/texture.jpg"
+          ]
+        }
+        name "material"
+      }
+    ]
+    castShadows IS castShadows
+  }
+}

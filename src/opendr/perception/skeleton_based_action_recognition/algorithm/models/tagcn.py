@@ -143,9 +143,10 @@ class TAGCN(nn.Module):
     def __init__(self, num_class, num_point, num_person, in_channels, graph_type, num_frames=300,
                  num_selected_frames=100, cuda_=False):
         super(TAGCN, self).__init__()
-        if graph_type == 'ntu':
+
+        if graph_type == 'ntu' or num_point == 25:
             self.graph = NTUGraph()
-        elif graph_type == 'openpose':
+        elif graph_type == 'openpose' or num_point == 18:
             self.graph = KineticsGraph()
 
         A = self.graph.A
@@ -153,7 +154,7 @@ class TAGCN(nn.Module):
         weights_init(self.data_bn, bs=1)
 
         self.layers = nn.ModuleDict(
-            {'layer1': GraphConvolution(3, 64, A, cuda_),
+            {'layer1': GraphConvolution(in_channels, 64, A, cuda_),
              'layer2': GraphConvolution(64, 64, A, cuda_),
              'layer3': TempAttnUnit(num_frames, num_selected_frames, cuda_),
              'layer4': ST_GCN_block(64, 128, A, cuda_, stride=2),

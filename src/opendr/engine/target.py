@@ -1,4 +1,4 @@
-# Copyright 2020 Aristotle University of Thessaloniki
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -204,6 +204,31 @@ class Keypoint(Target):
     def __str__(self):
         return str(self.data)
 
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            if key != 0 and key != 1:
+                raise ValueError('Keypoint contains 2 ' + str(Pose.num_kpts) + ' data points. Index ' + str(
+                    key) + ' is not within the supported range.')
+            else:
+                return self.data[key]
+        elif isinstance(key, str):
+            if key == 'x':
+                return self.data[0]
+            elif key == 'y':
+                return self.data[1]
+            else:
+                raise ValueError('Only \'x\' and \'y\' keys are supported, ' + key + ' is not supported.')
+        else:
+            raise ValueError('Only string and integers are supported for retrieving data points of keypoint.')
+
+    @property
+    def x(self):
+        return self.data[0]
+
+    @property
+    def y(self):
+        return self.data[1]
+
 
 class Pose(Target):
     """
@@ -289,9 +314,13 @@ class Pose(Target):
             )
 
     def __str__(self):
-        """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
+        """
+        Returns pose in a human-readable format, that contains the pose ID, detection confidence and
+        the matched kpt_names and keypoints x,y position.
+        """
 
-        out_string = ""
+        out_string = "Pose ID: " + str(self.id)
+        out_string += "\nDetection confidence: " + str(self.confidence) + "\nKeypoints name-position:\n"
         # noinspection PyUnresolvedReferences
         for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
             out_string += name + ": " + str(kpt) + "\n"
@@ -301,13 +330,8 @@ class Pose(Target):
         """  Allows for accessing keypoint position using either integers or keypoint names """
         if isinstance(key, int):
             if key >= Pose.num_kpts or key < 0:
-                raise ValueError(
-                    "Pose supports "
-                    + str(Pose.num_kpts)
-                    + " keypoints. Keypoint id "
-                    + str(key)
-                    + " is not within the supported range"
-                )
+                raise ValueError('Pose supports ' + str(Pose.num_kpts) + ' keypoints. Keypoint id ' + str(
+                    key) + ' is not within the supported range.')
             else:
                 return self.data[key]
         elif isinstance(key, str):
@@ -726,7 +750,7 @@ class BoundingBox3DList(Target):
     def __init__(self, bounding_boxes_3d):
         super().__init__()
         self.data = bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -919,7 +943,7 @@ class TrackingAnnotation3DList(Target):
     def __init__(self, tracking_bounding_boxes_3d):
         super().__init__()
         self.data = tracking_bounding_boxes_3d
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):
@@ -1086,6 +1110,14 @@ class Heatmap(Target):
         """
         # Since this class stores the data as NumPy arrays, we can directly return the data.
         return self.data
+
+    def opencv(self):
+        """
+        Required to support the ros bridge for images.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        return self.numpy()
 
     def shape(self) -> Tuple[int, ...]:
         """

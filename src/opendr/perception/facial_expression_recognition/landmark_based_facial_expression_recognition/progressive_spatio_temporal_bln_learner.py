@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,6 +45,10 @@ from opendr.perception.facial_expression_recognition.\
     landmark_based_facial_expression_recognition.algorithm.models.pstbln import PSTBLN
 from opendr.perception.facial_expression_recognition.\
     landmark_based_facial_expression_recognition.algorithm.feeders.feeder import Feeder
+from opendr.perception.facial_expression_recognition.\
+    landmark_based_facial_expression_recognition.algorithm.datasets.AFEW_data_gen import AFEW_CLASSES
+from opendr.perception.facial_expression_recognition.\
+    landmark_based_facial_expression_recognition.algorithm.datasets.CASIA_CK_data_gen import CK_CLASSES, CASIA_CLASSES
 
 
 class ProgressiveSpatioTemporalBLNLearner(Learner):
@@ -94,10 +98,17 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
 
         if self.dataset_name is None:
             raise ValueError(self.dataset_name +
-                             "is not a valid dataset name. Supported datasets: nturgbd_cv, nturgbd_cs, kinetics")
-        if self.device == 'cuda':
+                             "is not a valid dataset name. Supported datasets: casia, ck+, afew")
+        if 'cuda' in self.device:
             self.output_device = self.device_indices[0] if type(self.device_indices) is list else self.device_indices
         self.__init_seed(1)
+
+        if self.dataset_name.lower() == 'casia':
+            self.classes_dict = CASIA_CLASSES
+        elif self.dataset_name.lower() == 'ck+':
+            self.classes_dict = CK_CLASSES
+        elif self.dataset_name.lower() == 'afew':
+            self.classes_dict = AFEW_CLASSES
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, monte_carlo_dropout=True, mcdo_repeats=100,
@@ -151,7 +162,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         else:
             self.logging = False
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if type(self.device_indices) is list:
                 if len(self.device_indices) > 1:
                     self.model = nn.DataParallel(self.model, device_ids=self.device_indices,
@@ -218,7 +229,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             for batch_idx, (data, label, index) in enumerate(process):
                 self.global_step += 1
                 # get data
-                if self.device == 'cuda':
+                if 'cuda' in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -340,7 +351,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         process = tqdm(val_loader)
         for batch_idx, (data, label, index) in enumerate(process):
             with torch.no_grad():
-                if self.device == "cuda":
+                if "cuda" in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -354,7 +365,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                     for i in range(len(output)):
                         list_output.append(output[i].cpu())
                     output = torch.stack(list_output).mean(axis=0)
-                    if self.device == "cuda":
+                    if "cuda" in self.device:
                         output = output.cuda(self.output_device)
                 else:
                     output = self.model(data)
@@ -452,7 +463,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         else:
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTBLN), self.logging_path)
-            if self.device == 'cuda':
+            if 'cuda' in self.device:
                 self.model = PSTBLN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
                                     in_channels=self.in_channels, topology=self.topology, blocksize=self.blocksize,
                                     cuda_=True).cuda(self.output_device)
@@ -527,7 +538,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         np.save(os.path.join(self.parent_dir, 'Topology.npy'), self.topology)
         return self.topology
 
-    def infer(self, facial_landmarks_batch, monte_carlo_dropout=True, mcdo_repeats=100):
+    def infer(self, facial_landmarks_batch, monte_carlo_dropout=False, mcdo_repeats=1):
         """
         This method performs inference on the batch provided.
         :param facial_landmarks_batch: Object that holds a batch of data to run inference on.
@@ -541,7 +552,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
             facial_landmarks_batch = SkeletonSequence(facial_landmarks_batch)
         facial_landmarks_batch = torch.from_numpy(facial_landmarks_batch.numpy())
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             facial_landmarks_batch = Variable(facial_landmarks_batch.float().cuda(self.output_device),
                                               requires_grad=False)
         else:
@@ -569,18 +580,21 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                     print('mean predicted probability for each lass is:', mean_probs)
                     print('uncertainty of the predictions for each lass is:', std_probs)
                     output = torch.stack(list_output).mean(axis=0)
-                    if self.device == "cuda":
+                    if "cuda" in self.device:
                         output = output.cuda(self.output_device)
                 else:
                     output = self.model(facial_landmarks_batch)
 
         m = nn.Softmax(dim=0)
         softmax_predictions = m(output.data[0])
+        class_confidence = float(torch.max(softmax_predictions))
         class_ind = int(torch.argmax(softmax_predictions))
-        category = Category(prediction=class_ind, confidence=softmax_predictions)
+        class_description = self.classes_dict[class_ind]
+        category = Category(prediction=class_ind, confidence=class_confidence, description=class_description)
+
         return category
 
-    def optimize(self, do_constant_folding=False):
+    def optimize(self, do_constant_folding=True):
         """
         Optimize method converts the model to ONNX format and saves the
         model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
@@ -602,7 +616,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
 
         self.__load_from_onnx(os.path.join(self.parent_dir, self.experiment_name, "onnx_model_temp.onnx"))
 
-    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=True):
+    def __convert_to_onnx(self, output_name, do_constant_folding=False, verbose=False):
         """
         Converts the loaded regular PyTorch model to an ONNX model and saves it to disk.
         :param output_name: path and name to save the model, e.g. "/models/onnx_model.onnx"
@@ -622,8 +636,16 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                                                  " CK+, AFEW")
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
-        if self.device == "cuda":
-            onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
+
+        if "cuda" in self.device:
+            print("[WARN] Temporarily moving model to CPU for ONNX exporting.")
+            # This is a hack due to https://github.com/pytorch/pytorch/issues/72175
+            # Some parts of the model do not make it to GPU, exporting it through CPU
+            self.model.cpu()
+            self.model.cuda_ = False
+            for x in self.model.layers:
+                self.model.layers[x].bln.cuda_ = False
+            onnx_input = Variable(onnx_input.float(), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
         # Export the model
@@ -637,6 +659,13 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                           output_names=['onnx_output'],  # the model's output names
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
+
+        # This is a hack due to https://github.com/pytorch/pytorch/issues/72175 (see above)
+        if "cuda" in self.device:
+            self.model.cuda_ = True
+            for x in self.model.layers:
+                self.model.layers[x].bln.cuda_ = True
+            self.model.cuda(self.output_device)
 
     def save(self, path, model_name, verbose=True):
         """
@@ -728,7 +757,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                 raise e
             if verbose:
                 print("Loading checkpoint")
-            if self.device == "cuda":
+            if "cuda" in self.device:
                 weights = OrderedDict(
                     [[k.split('module.')[-1], v.cuda(self.output_device)] for k, v in weights.items()])
             else:
@@ -897,7 +926,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __init_seed(self, seed):
-        if self.device == "cuda":
+        if "cuda" in self.device:
             torch.cuda.manual_seed_all(seed)
             torch.backends.cudnn.enabled = True
             torch.backends.cudnn.deterministic = True

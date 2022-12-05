@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class DataWrapper:
     def __getitem__(self, i):
         x, y = self.dataset.__getitem__(i)
         # change from rows x cols x channels to channels x rows x cols
-        x = np.transpose(x.numpy(), axes=(2, 0, 1))
+        x = x.convert("channels_first")
         return torch.from_numpy(x).float(), torch.tensor([y.data, ]).long()
 
 

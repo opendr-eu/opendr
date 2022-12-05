@@ -1,0 +1,20 @@
+{
+  "commands": [
+    {"type": "sleep", "duration": 1.0},
+    {"type": "bool_msg", "topic": "doLocOnly", "desc": "Start of Localization-Only SLAM." },
+    {"type": "sleep", "duration": 1.0},
+
+    {"type": "comment", "txt": "Localization-Only Loop (Offset 0.5m from center obstacle with round corners)"},
+    {"type": "pose", "position":  [1.5068, 0.9178], "orientation": [1.7359071674], "deterministic": true, "scans": 0,
+    "desc": "Move to initial position in a deterministic way to start with no error and make no scans."},
+
+    {"type": "linear", "end_position": [0.507 , 6.918], "steps": 20 },
+    {"type": "circular", "center": [1.0, 7.0], "end_position":  [0.863, 7.481], "steps":  5, "dir": "cw"},
+    {"type": "linear", "end_position": [7.863 , 9.481], "steps": 20 },
+    {"type": "circular", "center": [8.0 , 9.0], "end_position":  [8.495, 9.071], "steps":  5, "dir": "cw"},
+    {"type": "linear", "end_position": [9.495, 2.071], "steps": 20 },
+    {"type": "circular", "center": [9.0, 2.0], "end_position":  [9.0707, 1.505], "steps":  5, "dir": "cw"},
+    {"type": "linear", "end_position": [2.0707, 0.505], "steps": 20 },
+    {"type": "circular", "center": [2.0, 1.0], "end_position":  [1.5068, 0.9178], "steps":  5, "dir": "cw"}
+  ]
+}

@@ -1,0 +1,121 @@
+<launch>
+
+    <!--
+    ###############################################################################################################
+    #                                                                                                             #
+    #    ARGUMENTS                                                                                                #
+    #                                                                                                             #
+    ###############################################################################################################
+    -->
+    <!-- ___________________________________________________________
+        Main arguments
+    ____________________________________________________________ -->
+    <arg name="ts"
+        doc="(string)[Default: 880910_052410] Timestamp to be used for the save directory.
+            It should be set to ts:=`date +'%Y%M%D_%h%m%s'`"/>
+    <arg name="occ_threshold" default="0.25"
+         doc="(float)[Default: 0.25] Threshold for determining whether a cell is occupied or free."/>
+    <arg name="max_scan_buffer_len" default="10000"
+         doc="(int)[Default: 10000] Maximum size for the scan buffer."/>
+    <arg name="resolution" default="0.2"
+         doc="(float)[Default: 0.2] Map resolution in [m]."/>
+
+    <arg name="do_rviz" default="true"
+         doc="(bool)[Default: true] Run RVIZ to visualize the progress graphically in real time."/>
+
+    <arg name="sim_pause" default="false"
+         doc="(bool)[Default: false] Start the ROSbag in a paused state.
+         Recommended to allow for the other nodes to initialize."/>
+
+    <arg name="sim_quiet" default="false"
+         doc="(bool)[Default: false] Run the ROSbag quietly." />
+
+    <!-- ___________________________________________________________
+        Path Arguments / Variables
+    ____________________________________________________________ -->
+    <arg name="path_save"
+         default="$(env HOME)/Desktop/Experiments/DataSetGT/$(arg ts)"
+         doc="(string)[Default: ~/Desktop/Experiments/DataSetGT/]
+              Path for saving the experiment results."/>
+    <arg name="path_save_occ" default="$(arg path_save)/img/occ"
+         doc="(string)[Default: ${path_save}/img/occ] Path for storing the result occupancy images." />
+
+    <!-- Package Path -->
+    <arg name="path_pk" value="$(find map_simulator)"/>
+    <!-- URDF Robot Descriptor Path -->
+    <arg name="path_urdf" value="$(arg path_pk)/urdf"/>
+    <!-- Configuration Files Path -->
+    <arg name="path_cfg" value="$(arg path_pk)/cfg"/>
+    <arg name="path_cfg_rviz" value="$(arg path_cfg)/rviz"/>
+    <arg name="cfg_rviz_file" default="$(arg path_cfg_rviz)/gt_map.rviz"
+         doc="(string)[Default: $(find map_simulator)/cfg/rviz/experiment.rviz] Path to an RVIZ configuration file."/>
+    <!-- Data-sets Path -->
+    <arg name="path_data" value="$(find slam_datasets)"/>
+    <arg name="bag_file" default="$(arg path_data)/Freiburg/079/fr079-complete.gfs.2.bag"
+         doc="(string)[Default: path to either Robot_10Loop or Robot_10Cell bags depending on $bag]
+              Explicit path to ROSBag to execute if neither 10Loop nor 10Cell are desired."/>
+
+    <!--
+    ###############################################################################################################
+    #                                                                                                             #
+    #    GLOBAL PARAMETERS                                                                                        #
+    #                                                                                                             #
+    ###############################################################################################################
+    -->
+    <param name="use_sim_time" value="true"/>
+
+
+    <group ns="GT">
+        <!-- Ground-Truth occupancy map generator -->
+
+        <node name="map_odom" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 map odom"/>
+
+        <node name="gt_mapper" pkg="map_simulator" type="gt_mapping" output="screen" required="true">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <!--<remap from="/map" to="/GT/map" />-->
+            <!-- Publication  Remaps -->
+
+            <!--
+            =========================================================================================================
+                Parameters
+            =========================================================================================================
+            -->
+            <param name="ref_frame" value="odom"/>
+            <param name="occ_threshold" value="$(arg occ_threshold)"/>
+            <param name="max_scan_buffer_len" value="$(arg max_scan_buffer_len)"/>
+            <param name="standalone" value="true"/>
+            <param name="resolution" value="$(arg resolution)"/>
+        </node>
+
+        <!-- Ground-Truth occupancy map saver -->
+        <node name="gt_occ_map_saver" pkg="map_simulator" type="occ_map_saver">
+            <!-- Subscription Remaps -->
+            <remap from="map" to="/GT/map"/>
+
+            <param name="file_prefix" value="gt_map"/>
+            <param name="save_dir" value="$(arg path_save_occ)"/>
+            <param name="ref_frame" value="odom"/>
+        </node>
+
+
+        <node name="rviz" pkg="rviz" type="rviz"
+              args="-d $(arg cfg_rviz_file)" if="$(arg do_rviz)"/>
+
+        <node name="sim" pkg="rosbag" type="play" output="screen" args="$(eval '--clock ' + bag_file + (' --pause' if arg('sim_pause') else '') + (' --quiet' if arg('sim_quiet') and not arg('sim_pause') else '') )">
+            <!--
+            =========================================================================================================
+                Topic Remaps
+            =========================================================================================================
+            -->
+            <!-- Subscription Remaps -->
+            <!-- Publication  Remaps -->
+            <remap from="/base_scan" to="/GT/base_scan" />
+        </node>
+
+    </group>
+</launch>

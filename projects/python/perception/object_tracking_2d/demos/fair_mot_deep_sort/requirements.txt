@@ -1,0 +1,5 @@
+flask
+numpy
+opencv-contrib-python
+imutils
+pandas

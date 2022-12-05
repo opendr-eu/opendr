@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -72,8 +72,14 @@ class RetinaFaceLearner(Learner):
                                                 checkpoint_load_iter=checkpoint_load_iter, temp_path=temp_path,
                                                 device=device)
         self.device = device
-        if device == 'cuda':
-            self.gpu_id = 0
+        if 'cuda' in device:
+            if mx.context.num_gpus() > 0:
+                if device == 'cuda':
+                    self.gpu_id = 0
+                else:
+                    self.gpu_id = int(self.device.split(':')[1])
+            else:
+                self.gpu_id = -1
         else:
             # use cpu
             self.gpu_id = -1
@@ -102,13 +108,19 @@ class RetinaFaceLearner(Learner):
 
     def __get_ctx(self):
         ctx = []
-        if 'CUDA_VISIBLE_DEVICES' in os.environ and self.device == 'cuda':
+        if 'CUDA_VISIBLE_DEVICES' in os.environ and 'cuda' in self.device:
             cvd = os.environ['CUDA_VISIBLE_DEVICES'].strip()
-        elif self.device == 'cuda' and mx.context.num_gpus() > 0:
-            cvd = ['0']
+        elif 'cuda' in self.device and mx.context.num_gpus() > 0:
+            if 'cuda' in self.device:
+                if self.device == 'cuda':
+                    cvd = ['0']
+                else:
+                    cvd = [self.device.split(':')[1]]
+            else:
+                cvd = [self.device.split(':')[1]]
         else:
             cvd = []
-        if len(cvd) > 0 and self.device == 'cuda':
+        if len(cvd) > 0 and 'cuda' in self.device:
             if isinstance(cvd, str):
                 visibles_ids = cvd.split(',')
             elif isinstance(cvd, list):
@@ -631,12 +643,9 @@ class RetinaFaceLearner(Learner):
 
         self.detector.nms_threshold = nms_threshold
 
-        if isinstance(img, Image):
-            _img = img.numpy()
-        elif isinstance(img, np.ndarray):
-            _img = img
-        else:
-            raise ValueError("Input should be of type Image or numpy array.")
+        if not isinstance(img, Image):
+            img = Image(img)
+        _img = img.convert("channels_last", "rgb")
 
         im_shape = _img.shape
         target_size = scales[0]

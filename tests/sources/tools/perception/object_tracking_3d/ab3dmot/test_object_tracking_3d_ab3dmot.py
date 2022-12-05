@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@ import sys
 import unittest
 import shutil
 import os
-from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_learner import (
-    ObjectTracking3DAb3dmotLearner
-)
-from opendr.perception.object_tracking_3d.datasets.kitti_tracking import KittiTrackingDatasetIterator
+from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner
+from opendr.perception.object_tracking_3d import KittiTrackingDatasetIterator
 
 
 def rmfile(path):

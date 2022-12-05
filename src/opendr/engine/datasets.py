@@ -1,4 +1,4 @@
-# Copyright 2020 Aristotle University of Thessaloniki
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ class PointCloudsDatasetIterator(DatasetIterator):
 
         self.path = path
         self.num_point_features = num_point_features
-        self.files = os.listdir(path)
+        self.files = sorted(os.listdir(path))
 
     def __getitem__(self, idx):
         data = np.fromfile(

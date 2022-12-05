@@ -51,6 +51,7 @@ Thumbs.db
 
 # IDE files
 .vscode
+.idea
 
 # Local rules #
 ###############
@@ -64,10 +65,10 @@ Thumbs.db
 logs/
 temp/
 
+# proto cache
+.*.cache
+
 # ROS interface
 projects/opendr_ws/.catkin_workspace
 projects/opendr_ws/devel/
-
-models/*
-plots/*
-fonts/*
+projects/python/control/eagerx/eagerx_ws/

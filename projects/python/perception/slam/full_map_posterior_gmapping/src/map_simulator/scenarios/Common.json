@@ -1,0 +1,41 @@
+{
+  "map_frame" : "map",
+  "odom_frame": "odom",
+  "base_frame": "base_link",
+  "laser_frame": "laser_link",
+
+  "gt_prefix": "GT",
+  "odo_prefix": "odo",
+
+  "scan_topic": "base_scan",
+
+  "base_to_laser_tf": [[0.05, 0.0], [0]],
+
+  "move_noise_type": "odom",
+
+  "deterministic": false,
+
+  "pose_sigma": [[0.01, 0.0 , 0.0],
+                 [0.0 , 0.01, 0.0],
+                 [0.0 , 0.0 , 0.1]],
+
+  "odometry_alpha": [0.01, 0.05 , 0.01, 0.05],
+
+  "max_range": 20.0,
+
+  "meas_per_move": 1,
+
+  "measurement_sigma": [[0.005, 0.0],
+                        [0.0, 0.0]],
+
+  "start_position": [0.5, 0.5],
+  "start_orientation": [0.0],
+
+  "scan_time_interval" : 50.0,
+  "move_time_interval" : 500.0,
+  "initial_timestamp" : null,
+
+  "render_move_pause": 0.15,
+  "render_sense_pause": 0.05,
+  "render_margin": 1.0
+}

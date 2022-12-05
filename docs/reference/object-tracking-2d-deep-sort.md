@@ -8,7 +8,7 @@ Bases: `engine.learners.Learner`
 The *ObjectTracking2DDeepSortLearner* class is a wrapper of the Deep SORT[[1]](#object-tracking-2d-1) implementation found on [ZQPei/deep_sort_pytorch](https://github.com/ZQPei/deep_sort_pytorch)[[2]](#object-tracking-2d-2).
 It can be used to perform 2d object tracking on images and train new models.
 
-The [ObjectTracking2DDeepSortLearner](#src.perception.object_tracking_2d.fair_mot.object_tracking_2d_fair_mot_learner.py) class has the
+The [ObjectTracking2DDeepSortLearner](/src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py) class has the
 following public methods:
 
 #### `ObjectTracking2DDeepSortLearner` constructor
@@ -101,7 +101,7 @@ ObjectTracking2DDeepSortLearner.infer(self, batch, frame_ids)
 ```
 
 This method is used to 2d object tracking on an image.
-Returns a list of [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) objects if the list of [ImageWithDetections](#class_engine.data.ImageWithDetections) is given or a single [TrackingAnnotationList](#class_engine.target.TrackingAnnotationList) if a single [ImageWithDetections](#class_engine.data.ImageWithDetections) is given.
+Returns a list of [TrackingAnnotationList](/src/opendr/engine/target.py#L545) objects if the list of [ImageWithDetections](/src/opendr/engine/data.py#L358) is given or a single [TrackingAnnotationList](/src/opendr/engine/target.py#L545) if a single [ImageWithDetections](/src/opendr/engine/data.py#L358) is given.
 
 Parameters:
 - **batch**: *engine.data.ImageWithDetections* or a *list of engine.data.ImageWithDetections*  
@@ -119,7 +119,7 @@ Provided with the path "/my/path/name" (absolute or relative), it creates the "n
 Inside this folder, the model is saved as "name.pth" or "name.onnx" and the metadata file as "name.json".
 If the directory already exists, the files are overwritten.
 
-If [`self.optimize`](#ObjectTracking2DDeepSortLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
+If [`self.optimize`](/src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py#L425) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the `self.temp_path` it was saved previously during conversion.
 
 Parameters:
 - **path**: *str*  
@@ -356,6 +356,36 @@ Parameters:
 
   print(result)
   ```
+
+#### Performance Evaluation
+
+The tests were conducted on the following computational devices:
+- Intel(R) Xeon(R) Gold 6230R CPU on server
+- Nvidia Jetson TX2
+- Nvidia Jetson Xavier AGX
+- Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors
+
+Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU.
+Inner FPS refers to the speed of the model when the data is ready.
+We report FPS (single sample per inference) as the mean of 100 runs.
+
+Full FPS Evaluation of DeepSORT and FairMOT on MOT20 dataset
+| Model    | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
+| -------- | --------- | ------------ | ----------------- |
+| DeepSORT | 2.71      | 6.36         | 16.07             |
+| FairMOT  | 0.79      | 2.36         | 10.42             |
+
+Inner FPS Evaluation (model only) of DeepSORT and FairMOT on MOT20 dataset.
+| Model    | TX2 (FPS) | Xavier (FPS) | RTX 2080 Ti (FPS) |
+| -------- | --------- | ------------ | ----------------- |
+| DeepSORT | 2.71      | 6.36         | 16.07             |
+| FairMOT  | 0.79      | 2.36         | 17.16             |
+
+Energy (Joules) of DeepSORT and FairMOT on embedded devices.
+| Model    | TX2 (Joules) | Xavier (Joules) |
+| -------- | ------------ | --------------- |
+| DeepSORT | 11.27        | 3.72            |
+| FairMOT  | 41.24        | 12.85           |
 
 #### References
 <a name="#object-tracking-2d-1" href="https://arxiv.org/abs/1703.07402">[1]</a> Simple Online and Realtime Tracking with a Deep Association Metric,

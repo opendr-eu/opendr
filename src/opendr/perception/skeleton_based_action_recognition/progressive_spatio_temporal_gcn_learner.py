@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 # OpenDR skeleton_based_action_recognition imports
 from opendr.perception.skeleton_based_action_recognition.algorithm.models.pstgcn import PSTGCN
 from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.feeder import Feeder
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_CLASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_CLASSES
 
 
 class ProgressiveSpatioTemporalGCNLearner(Learner):
@@ -97,9 +99,14 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         if self.graph_type is None:
             raise ValueError(self.graph_type +
                              "is not a valid graph type. Supported graphs: ntu, openpose")
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
         self.__init_seed(1)
+
+        if self.dataset_name in ['nturgbd_cv', 'nturgbd_cs']:
+            self.classes_dict = NTU60_CLASSES
+        elif self.dataset_name == 'kinetics':
+            self.classes_dict = KINETICS400_CLASSES
 
     def fit(self, dataset, val_dataset, logging_path='', silent=False, verbose=True,
             momentum=0.9, nesterov=True, weight_decay=0.0001, train_data_filename='train_joints.npy',
@@ -149,7 +156,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         else:
             self.logging = False
 
-        if self.device == 'cuda':
+        if 'cuda' in self.device:
             if type(self.device_ind) is list:
                 if len(self.device_ind) > 1:
                     self.model = nn.DataParallel(self.model, device_ids=self.device_ind,
@@ -221,7 +228,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             for batch_idx, (data, label, index) in enumerate(process):
                 self.global_step += 1
                 # get data
-                if self.device == 'cuda':
+                if 'cuda' in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -267,7 +274,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 checkpoints_folder = os.path.join(self.parent_dir,
                                                   '{}_checkpoints'.format(self.experiment_name))
                 checkpoint_name = self.experiment_name + '-' + str(
-                                len(self.topology)) + '-' + str(self.topology[-1])
+                    len(self.topology)) + '-' + str(self.topology[-1])
                 self.ort_session = None
                 self.save(path=checkpoints_folder, model_name=checkpoint_name)
             eval_results = self.eval(val_dataset, val_loader=val_loader, epoch=epoch,
@@ -339,7 +346,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         process = tqdm(val_loader)
         for batch_idx, (data, label, index) in enumerate(process):
             with torch.no_grad():
-                if self.device == "cuda":
+                if "cuda" in self.device:
                     data = Variable(data.float().cuda(self.output_device), requires_grad=False)
                     label = Variable(label.long().cuda(self.output_device), requires_grad=False)
                 else:
@@ -448,7 +455,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         else:
             if self.logging:
                 shutil.copy2(inspect.getfile(PSTGCN), self.logging_path)
-            if self.device == 'cuda':
+            if 'cuda' in self.device:
                 self.model = PSTGCN(num_class=self.num_class, num_point=self.num_point, num_person=self.num_person,
                                     in_channels=self.in_channels, graph_type=self.graph_type,
                                     topology=self.topology, block_size=self.blocksize,
@@ -486,10 +493,10 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 if layer_iter > 0 or block_iter > 0:
                     if block_iter == 0:
                         checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology) - 1) + '-' + str(self.topology[-2])
+                            len(self.topology) - 1) + '-' + str(self.topology[-2])
                     else:
                         checkpoint_name = self.experiment_name + '-' + str(
-                                        len(self.topology)) + '-' + str(self.topology[-1] - 1)
+                            len(self.topology)) + '-' + str(self.topology[-1] - 1)
 
                     checkpoints_folder = os.path.join(self.parent_dir, '{}_checkpoints'.format(self.experiment_name))
                     self.ort_session = None
@@ -538,7 +545,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
             skeletonseq_batch = SkeletonSequence(skeletonseq_batch)
         skeletonseq_batch = torch.from_numpy(skeletonseq_batch.numpy())
 
-        if self.device == "cuda":
+        if "cuda" in self.device:
             skeletonseq_batch = Variable(skeletonseq_batch.float().cuda(self.output_device), requires_grad=False)
         else:
             skeletonseq_batch = Variable(skeletonseq_batch.float(), requires_grad=False)
@@ -560,11 +567,12 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         m = nn.Softmax(dim=0)
         softmax_predictions = m(output.data[0])
         class_ind = int(torch.argmax(softmax_predictions))
-        category = Category(prediction=class_ind, confidence=softmax_predictions)
+        class_description = self.classes_dict[class_ind]
+        category = Category(prediction=class_ind, confidence=softmax_predictions, description=class_description)
 
         return category
 
-    def optimize(self, do_constant_folding=False):
+    def optimize(self, do_constant_folding=True):
         """
         Optimize method converts the model to ONNX format and saves the
         model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
@@ -598,8 +606,18 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         c, t, v, m = [self.in_channels, 300, self.num_point, self.num_person]
         n = self.batch_size
         onnx_input = torch.randn(n, c, t, v, m)
-        if self.device == "cuda":
-            onnx_input = Variable(onnx_input.float().cuda(self.output_device), requires_grad=False)
+        if "cuda" in self.device:
+            print("[WARN] Temporarily moving model to CPU for ONNX exporting.")
+            # This is a hack due to https://github.com/pytorch/pytorch/issues/72175
+            # Some parts of the model do not make it to GPU, exporting it through CPU
+            self.model.cpu()
+            self.model.cuda_ = False
+            for x in self.model.layers:
+                if hasattr(self.model.layers[x], 'gcn'):
+                    self.model.layers[x].gcn.cuda_ = False
+                elif hasattr(self.model.layers[x], 'cuda_'):
+                    self.model.layers[x].cuda_ = False
+            onnx_input = Variable(onnx_input.float(), requires_grad=False)
         else:
             onnx_input = Variable(onnx_input.float(), requires_grad=False)
         # torch_out = self.model(onnx_input)
@@ -614,6 +632,14 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                           output_names=['onnx_output'],  # the model's output names
                           dynamic_axes={'onnx_input': {0: 'n'},  # variable lenght axes
                                         'onnx_output': {0: 'n'}})
+        # This is a hack due to https://github.com/pytorch/pytorch/issues/72175 (see above)
+        if "cuda" in self.device:
+            self.model.cuda_ = True
+            if hasattr(self.model.layers[x], 'gcn'):
+                self.model.layers[x].gcn.cuda_ = True
+            elif hasattr(self.model.layers[x], 'cuda_'):
+                self.model.layers[x].cuda_ = True
+            self.model.cuda(self.output_device)
 
     def save(self, path, model_name='', verbose=True):
         """
@@ -705,7 +731,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
                 raise e
             if verbose:
                 print("Loading checkpoint")
-            if self.device == "cuda":
+            if "cuda" in self.device:
                 weights = OrderedDict(
                     [[k.split('module.')[-1], v.cuda(self.output_device)] for k, v in weights.items()])
             else:
@@ -955,7 +981,7 @@ class ProgressiveSpatioTemporalGCNLearner(Learner):
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
     def __init_seed(self, seed):
-        if self.device == "cuda":
+        if "cuda" in self.device:
             torch.cuda.manual_seed_all(seed)
             torch.backends.cudnn.enabled = True
             torch.backends.cudnn.deterministic = True

@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 
 import cv2
 import numpy as np
@@ -30,7 +31,8 @@ def bbox_to_np(bbox):
     """
     BoundingBox to [xmin, ymin, xmax, ymax, conf, cls] numpy array.
     """
-    bbox_np = np.asarray([bbox.left, bbox.top, bbox.left + bbox.width, bbox.top + bbox.height, bbox.confidence, bbox.name])
+    bbox_np = np.asarray([bbox.left, bbox.top, bbox.left + bbox.width, bbox.top + bbox.height, bbox.confidence, bbox.name],
+                         dtype=object)
     return bbox_np
 
 
@@ -141,3 +143,20 @@ def transform_test(imgs, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
     if len(tensors) == 1:
         return tensors[0], origs[0]
     return tensors, origs
+
+
+def pad_test(img, min_size=512):
+    h_pad_size = 0
+    min_dim = 2 + np.argmin([img.shape[2:4]])
+    img_padded = img
+    if img.shape[min_dim] < min_size:
+        h_pad_size = int((min_size - img.shape[min_dim]) / 2.0)
+        if min_dim == 2:
+            img_padded = mx.nd.pad(img, mode="constant", constant_value=0,
+                                   pad_width=(0, 0, 0, 0, h_pad_size,
+                                              h_pad_size, 0, 0))
+        else:
+            img_padded = mx.nd.pad(img, mode="constant", constant_value=0,
+                                   pad_width=(0, 0, 0, 0, 0, 0,
+                                              h_pad_size, h_pad_size))
+    return img_padded

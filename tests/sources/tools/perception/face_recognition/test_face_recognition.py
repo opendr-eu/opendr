@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,13 @@
 # limitations under the License.
 
 import numpy as np
-import os
 import shutil
 import unittest
-from opendr.perception.face_recognition.face_recognition_learner import FaceRecognitionLearner
+from opendr.perception.face_recognition import FaceRecognitionLearner
 from opendr.engine.datasets import ExternalDataset
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
 def rmfile(path):
@@ -39,7 +41,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.temp_dir = './face_recognition_temp'
-        cls.recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='backbone_only', device="cpu",
+        cls.recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='backbone_only', device=device,
                                                 temp_path=cls.temp_dir, batch_size=10, checkpoint_after_iter=0)
         # Download all required files for testing
         cls.recognizer.download(cls.temp_dir, mode='pretrained')
@@ -51,7 +53,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
         rmdir(cls.temp_dir)
 
     def test_fit(self):
-        recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='full', device="cpu",
+        recognizer = FaceRecognitionLearner(backbone='mobilefacenet', mode='full', device=device,
                                             temp_path=self.temp_dir, iters=2,
                                             batch_size=2, checkpoint_after_iter=0)
         dataset_path = os.path.join(self.temp_dir, 'test_data/images')
@@ -82,7 +84,7 @@ class TestFaceRecognitionLearner(unittest.TestCase):
         save_path = os.path.join(self.temp_dir, 'reference')
         self.recognizer.load(self.temp_dir)
         self.recognizer.fit_reference(imgs, save_path)
-        img = np.random.random((112, 112, 3))
+        img = np.float32(np.random.random((112, 112, 3)))
         result = self.recognizer.infer(img)
         self.assertIsNotNone(result)
         # Cleanup

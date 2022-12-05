@@ -1,4 +1,4 @@
-# Copyright 2020-2021 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@ import unittest
 import cv2
 import gc
 import shutil
-import os
 import numpy as np
-from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
-from opendr.perception.object_detection_2d.datasets.wider_person import WiderPersonDataset
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
+from opendr.perception.object_detection_2d import WiderPersonDataset
+import os
+
+device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
 def rmfile(path):
@@ -45,7 +47,7 @@ class TestCenterNetDetectorLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "centernet", "centernet_temp")
-        cls.detector = CenterNetDetectorLearner(device="cpu", temp_path=cls.temp_dir, batch_size=1, epochs=1,
+        cls.detector = CenterNetDetectorLearner(device=device, temp_path=cls.temp_dir, batch_size=1, epochs=1,
                                                 checkpoint_after_iter=0, lr=1e-4, img_size=320, num_workers=0)
         # Download all required files for testing
         cls.detector.download(mode="pretrained")

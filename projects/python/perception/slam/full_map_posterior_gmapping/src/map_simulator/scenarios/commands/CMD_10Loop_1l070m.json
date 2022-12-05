@@ -1,0 +1,14 @@
+{
+  "commands": [
+    {"type": "comment", "txt": "1 Mapping Loop, 70 Moves total"},
+
+    {"type": "comment", "txt": "First Mapping Loop (Square aligned with grid, offset 0.5m from outer walls)"},
+    {"type": "linear", "end_position": [9.5, 0.5], "steps": 16 },
+    {"type": "rotation", "end_orientation": 1.5707963268, "steps": 1, "dir": "ccw"},
+    {"type": "linear", "end_position": [9.5, 9.5], "steps": 17 },
+    {"type": "rotation", "end_orientation": 3.1415926536, "steps": 1, "dir": "ccw"},
+    {"type": "linear", "end_position": [0.5, 9.5], "steps": 16 },
+    {"type": "rotation", "end_orientation": -1.5707963268, "steps": 1, "dir": "ccw"},
+    {"type": "linear", "end_position": [0.5, 0.5], "steps": 17 }
+  ]
+}

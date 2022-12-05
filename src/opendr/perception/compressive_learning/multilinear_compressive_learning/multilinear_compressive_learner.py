@@ -1,4 +1,4 @@
-# Copyright 1996-2020 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -176,7 +176,7 @@ class MultilinearCompressiveLearner(Learner):
                   'Received an instance of type: {}'.format(type(y))
             raise TypeError(msg)
 
-        x = x.numpy()
+        x = x.convert("channels_last", "rgb")
         if not x.shape == tuple(self.input_shape):
             msg = 'Given input_shape does not match dimensions of data produced by dataset\n' +\
                   'input_shape: {}, data shape: {}'.format(tuple(self.input_shape), x.shape)
@@ -215,7 +215,7 @@ class MultilinearCompressiveLearner(Learner):
 
         train_loader = DataLoader(DataWrapper(train_set),
                                   batch_size=self.batch_size,
-                                  pin_memory=self.device == 'cuda',
+                                  pin_memory='cuda' in self.device,
                                   shuffle=True)
 
         if val_set is None:
@@ -223,14 +223,14 @@ class MultilinearCompressiveLearner(Learner):
         else:
             val_loader = DataLoader(DataWrapper(val_set),
                                     batch_size=self.batch_size,
-                                    pin_memory=self.device == 'cuda',
+                                    pin_memory='cuda' in self.device,
                                     shuffle=False)
         if test_set is None:
             test_loader = None
         else:
             test_loader = DataLoader(DataWrapper(test_set),
                                      batch_size=self.batch_size,
-                                     pin_memory=self.device == 'cuda',
+                                     pin_memory='cuda' in self.device,
                                      shuffle=False)
 
         if self.test_mode and not silent:
@@ -298,7 +298,7 @@ class MultilinearCompressiveLearner(Learner):
         self._validate_dataset(dataset)
         loader = DataLoader(DataWrapper(dataset),
                             batch_size=self.batch_size,
-                            pin_memory=self.device == 'cuda',
+                            pin_memory='cuda' in self.device,
                             shuffle=False)
 
         device = torch.device(self.device)
@@ -352,7 +352,7 @@ class MultilinearCompressiveLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
 
-        img = img.numpy()
+        img = img.convert("channels_last", "rgb")
 
         if not tuple(img.shape) == tuple(self.input_shape):
             msg = 'Dimensions of the given input "{}"'.format(img.shape) +\
@@ -405,7 +405,7 @@ class MultilinearCompressiveLearner(Learner):
         self.model.to(torch.device(self.device))
         self.model.eval()
 
-        measurement = measurement.numpy()
+        measurement = measurement.convert("channels_last")
 
         if not tuple(measurement.shape) == tuple(self.compressed_shape):
             msg = 'Dimensions of the given compressed measurement "{}"'.format(measurement.shape) +\
