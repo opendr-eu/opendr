@@ -1,3 +1,3 @@
-from opendr_ros2_bridge.bridge import ROS2Bridge
+from opendr_bridge.bridge import ROS2Bridge
 
 __all__ = ['ROS2Bridge', ]
