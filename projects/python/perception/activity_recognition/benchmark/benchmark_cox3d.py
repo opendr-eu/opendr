@@ -75,12 +75,13 @@ def benchmark_cox3d():
             temp_path=temp_dir,
             backbone=backbone,
         )
+        learner.optimize()
 
         sample = torch.randn(
             batch_size[backbone], *input_shape[backbone]
-        )  # (B, C, T, H, W)
-        image_samples = [Image(v) for v in sample]
-        image_sample = [Image(sample[0])]
+        )  # (B, C, H, W)
+        # image_samples = [Image(v) for v in sample]
+        # image_sample = [Image(sample[0])]
 
         def get_device_fn(*args):
             nonlocal learner
@@ -101,15 +102,18 @@ def benchmark_cox3d():
 
             assert isinstance(sample[0], Category)
             return [
-                Category(prediction=s.data, confidence=s.confidence.to(device=device),)
+                Category(
+                    prediction=s.data,
+                    confidence=s.confidence.to(device=device),
+                )
                 for s in sample
             ]
 
         print("== Benchmarking learner.infer ==")
         results1 = benchmark(
             model=learner.infer,
-            sample=image_samples,
-            sample_with_batch_size1=image_sample,
+            sample=sample,
+            # sample_with_batch_size1=image_sample,
             num_runs=num_runs,
             get_device_fn=get_device_fn,
             transfer_to_device_fn=transfer_to_device_fn,
@@ -117,10 +121,6 @@ def benchmark_cox3d():
             print_fn=print,
         )
         print(yaml.dump({"learner.infer": results1}))
-
-        print("== Benchmarking model directly ==")
-        results2 = benchmark(learner.model, sample, num_runs=num_runs, print_fn=print)
-        print(yaml.dump({"learner.model.forward": results2}))
 
 
 if __name__ == "__main__":

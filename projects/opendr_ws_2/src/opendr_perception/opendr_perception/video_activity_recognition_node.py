@@ -24,7 +24,7 @@ from pathlib import Path
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Video, Image
 from opendr.perception.activity_recognition import CLASSES as KINETICS400_CLASSES
@@ -42,7 +42,7 @@ class HumanActivityRecognitionNode(Node):
         model="cox3d-m",
     ):
         """
-        Creates a ROS Node for video-based human activity recognition.
+        Creates a ROS2 Node for video-based human activity recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_category_topic: Topic to which we are publishing the recognized activity
@@ -57,7 +57,7 @@ class HumanActivityRecognitionNode(Node):
          (Options: 'cox3d-s', 'cox3d-m', 'cox3d-l', 'x3d-xs', 'x3d-s', 'x3d-m', 'x3d-l')
         :type model: str
         """
-        super().__init__("video_human_activity_recognition_node")
+        super().__init__("opendr_video_human_activity_recognition_node")
         assert model in {
             "cox3d-s",
             "cox3d-m",
@@ -201,41 +201,20 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-i",
-        "--input_rgb_image_topic",
-        help="Topic name for input rgb image",
-        type=str,
-        default="/image_raw",
-    )
-    parser.add_argument(
-        "-o",
-        "--output_category_topic",
-        help="Topic to which we are publishing the recognized activity",
-        type=lambda value: value if value.lower() != "none" else None,
-        default="/opendr/human_activity_recognition",
-    )
-    parser.add_argument(
-        "-od",
-        "--output_category_description_topic",
-        help="Topic to which we are publishing the ID of the recognized action",
-        type=lambda value: value if value.lower() != "none" else None,
-        default="/opendr/human_activity_recognition_description",
-    )
-    parser.add_argument(
-        "--device",
-        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
-        type=str,
-        default="cuda",
-        choices=["cuda", "cpu"],
-    )
-    parser.add_argument(
-        "--model",
-        help="Architecture to use for human activity recognition.",
-        type=str,
-        default="cox3d-m",
-        choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"],
-    )
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/image_raw")
+    parser.add_argument("-o", "--output_category_topic", help="Topic to which we are publishing the recognized activity",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/human_activity_recognition")
+    parser.add_argument("-od", "--output_category_description_topic",
+                        help="Topic to which we are publishing the ID of the recognized action",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/human_activity_recognition_description")
+    parser.add_argument("--device",  help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Architecture to use for human activity recognition.",
+                        type=str, default="cox3d-m",
+                        choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"])
     args = parser.parse_args()
 
     try:
