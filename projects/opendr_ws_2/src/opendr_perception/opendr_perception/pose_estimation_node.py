@@ -21,7 +21,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROS2Bridge
-from opendr_ros2_interface.msg import OpenDRPose2D
+from opendr_interface.msg import OpenDRPose2D
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw

@@ -20,7 +20,7 @@ import os
 import torch
 from opendr_bridge import ROS2Bridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
-from opendr_ros2_interface.srv import ImgToMesh
+from opendr_interface.srv import ImgToMesh
 from opendr.engine.target import Pose
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 

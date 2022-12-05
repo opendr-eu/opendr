@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(opendr_ros2_interface)
+project(opendr_interface)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
