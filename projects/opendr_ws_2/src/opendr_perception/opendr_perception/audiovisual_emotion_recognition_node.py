@@ -28,7 +28,7 @@ from sensor_msgs.msg import Image as ROS_Image
 from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
 from opendr.perception.multimodal_human_centric import spatial_transforms as transforms
 from opendr.engine.data import Video, Timeseries

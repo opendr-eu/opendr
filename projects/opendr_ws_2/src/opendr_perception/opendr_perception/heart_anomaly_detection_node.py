@@ -22,7 +22,7 @@ from rclpy.node import Node
 from vision_msgs.msg import Classification2D
 from std_msgs.msg import Float32MultiArray
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
 
 

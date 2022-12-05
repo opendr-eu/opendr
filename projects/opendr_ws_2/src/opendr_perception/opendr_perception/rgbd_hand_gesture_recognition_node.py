@@ -26,7 +26,7 @@ import message_filters
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Classification2D
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.engine.data import Image
 from opendr.perception.multimodal_human_centric import RgbdHandGestureLearner
 

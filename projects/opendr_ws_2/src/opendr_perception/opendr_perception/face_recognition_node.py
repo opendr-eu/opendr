@@ -23,7 +23,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import ObjectHypothesisWithPose
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.face_recognition import FaceRecognitionLearner

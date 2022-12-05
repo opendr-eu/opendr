@@ -21,7 +21,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes

@@ -22,7 +22,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.perception.facial_expression_recognition import ProgressiveSpatioTemporalBLNLearner
 from opendr.perception.facial_expression_recognition import landmark_extractor

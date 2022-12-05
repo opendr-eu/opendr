@@ -24,7 +24,7 @@ from pathlib import Path
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Video, Image
 from opendr.perception.activity_recognition import CLASSES as KINETICS400_CLASSES

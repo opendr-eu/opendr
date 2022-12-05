@@ -21,7 +21,7 @@ import numpy as np
 import rclpy
 import torch
 from rclpy.node import Node
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
 

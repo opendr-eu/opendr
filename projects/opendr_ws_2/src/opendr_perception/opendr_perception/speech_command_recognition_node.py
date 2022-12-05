@@ -23,7 +23,7 @@ from rclpy.node import Node
 from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.engine.data import Timeseries
 from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechNetsLearner, QuadraticSelfOnnLearner
 
