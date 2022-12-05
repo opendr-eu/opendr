@@ -15,7 +15,7 @@
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>opendr_ros2_interface</exec_depend>
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>opendr_ros2_bridge</exec_depend>
+  <exec_depend>opendr_bridge</exec_depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
   
   <test_depend>ament_copyright</test_depend>
