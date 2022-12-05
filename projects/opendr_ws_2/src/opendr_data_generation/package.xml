@@ -11,7 +11,7 @@
   <depend>sensor_msgs</depend>
   
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>opendr_ros2_bridge</exec_depend>
+  <exec_depend>opendr_bridge</exec_depend>
   
   <buildtool_depend>ament_cmake</buildtool_depend>
   
