@@ -1,4 +1,18 @@
 
+# Copyright 2020-2022 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import cv2
 from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
 
@@ -16,18 +30,11 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--hrdata", help="Select the image resolution (1080 or 1440) for inference", type=int, default=1080)
 
     args = parser.parse_args()
 
-    onnx, device, accelerate, base_height1, base_height2, hrdata = args.onnx, args.device, args.accelerate, args.height1, args.height2, args.hrdata
-
-    if hrdata == 1440:
-        image_file = "000000000785_1440.jpg"
-    elif hrdata == 1080:
-        image_file = "000000000785_1080.jpg"
-    else:
-        raise Exception("The inference image resolution is not valid")
+    onnx, device, accelerate, base_height1, base_height2 = args.onnx, args.device, args.accelerate,\
+        args.height1, args.height2
 
     if accelerate:
         stride = True
@@ -39,15 +46,16 @@ if __name__ == '__main__':
         half_precision = False
 
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision,
-                                                first_pass_height=base_height1, second_pass_height= base_height2, img_resol=hrdata)
+                                                         mobilenet_use_stride=stride, half_precision=half_precision,
+                                                         first_pass_height=base_height1,
+                                                         second_pass_height=base_height2)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
 
-    image_path = join("temp", "dataset", "image", image_file)
+    image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
 
     img = Image.open(image_path)
 
@@ -61,4 +69,3 @@ if __name__ == '__main__':
         draw(img_cv, pose)
     cv2.imshow('Results', img_cv)
     cv2.waitKey(0)
-

@@ -1,6 +1,6 @@
-# OpenDR Pose Estimation - Lightweight Open Pose
+# OpenDR High Resolution Pose Estimation
 
-This folder contains the Open Pose[1] algorithm implementation for pose estimation in the OpenDR Toolkit, 
+This folder contains the Open Pose[1] algorithm implementation for high resolution pose estimation in the OpenDR Toolkit, 
 in the form of Lightweight Open Pose [2].
 
 ## Sources

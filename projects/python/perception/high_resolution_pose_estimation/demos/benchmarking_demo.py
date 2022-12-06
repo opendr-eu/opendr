@@ -31,13 +31,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    onnx, device, accelerate,base_height1,base_height2 = args.onnx, args.device, args.accelerate, args.height1, args.height2
+    onnx, device, accelerate, base_height1, base_height2 = args.onnx, args.device, args.accelerate,\
+        args.height1, args.height2
 
     if device == 'cpu':
         import torch
         torch.set_flush_denormal(True)
         torch.set_num_threads(8)
-
 
     if accelerate:
         stride = True
@@ -49,8 +49,9 @@ if __name__ == '__main__':
         half_precision = False
 
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision,
-                                                first_pass_height=base_height1,second_pass_height=base_height2)
+                                                         mobilenet_use_stride=stride, half_precision=half_precision,
+                                                         first_pass_height=base_height1,
+                                                         second_pass_height=base_height2)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 

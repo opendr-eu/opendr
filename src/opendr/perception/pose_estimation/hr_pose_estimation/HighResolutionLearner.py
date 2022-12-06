@@ -1,3 +1,18 @@
+
+"""# Copyright 2020-2022 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License."""
+
 # General imports
 # General imports
 import torchvision.transforms
@@ -47,8 +62,8 @@ class HighResolutionPoseEstimationLearner(Learner):
 
     def __init__(self, device='cuda', backbone='mobilenet',
                  temp_path='temp', mobilenet_use_stride=True, mobilenetv2_width=1.0, shufflenet_groups=3,
-                 num_refinement_stages=2, batches_per_iter=1,base_height=256, first_pass_height = 360, second_pass_height = 540,
-                 img_resol=1080,
+                 num_refinement_stages=2, batches_per_iter=1, base_height=256,
+                 first_pass_height=360, second_pass_height=540,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
                  multiscale=False, scales=None, visualize=False,
                  img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0),
@@ -58,7 +73,7 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         self.first_pass_height = first_pass_height
         self.second_pass_height = second_pass_height
-        self.img_resol=img_resol
+        self.img_resol = 1080  # default value for sample image in OpenDr server
 
         self.parent_dir = temp_path  # Parent dir should be filled by the user according to README
 
@@ -135,7 +150,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         avg_pafs = pafs
         return avg_pafs
 
-    def second_pass_infer(self, net, img, net_input_height_size, max_width, stride, upsample_ratio, device,
+    def second_pass_infer(self, net, img, net_input_height_size, max_width, stride, upsample_ratio,
                           pad_value=(0, 0, 0),
                           img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256)):
         height, width, _ = img.shape
@@ -193,7 +208,6 @@ class HighResolutionPoseEstimationLearner(Learner):
 
     def optimize(self, do_constant_folding=False):
         raise NotImplementedError
-
 
     def reset(self):
         """This method is not used in this implementation."""
@@ -304,7 +318,6 @@ class HighResolutionPoseEstimationLearner(Learner):
         if self.multiscale:
             self.scales = [0.5, 1.0, 1.5, 2.0]
 
-        self.net = self.model
         coco_result = []
         num_keypoints = Pose.num_kpts
 
@@ -330,17 +343,16 @@ class HighResolutionPoseEstimationLearner(Learner):
             kernel = int(h / self.first_pass_height)
             if kernel > 0:
                 pool_img = HighResolutionPoseEstimationLearner.Pooling(self, img, kernel)
-                base_height = pool_img.shape[0]
+
             else:
                 pool_img = img
-                base_height = img.shape[0]
 
             perc = 0.3  # percentage around cropping
 
             thresshold = 0.1  # thresshold for heatmap
 
             # ------- Heatmap Generation -------
-            avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.net, pool_img)
+            avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.model, pool_img)
             avg_pafs = avg_pafs.astype(np.float32)
 
             pafs_map = cv2.blur(avg_pafs, (5, 5))
@@ -353,6 +365,7 @@ class HighResolutionPoseEstimationLearner(Learner):
 
             contours, hierarchy = cv2.findContours(heatmap, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             count = []
+            coco_keypoints = []
 
             if len(contours) > 0:
                 for x in contours:
@@ -374,10 +387,14 @@ class HighResolutionPoseEstimationLearner(Learner):
                 extra_pad_x = int(perc * (xmax - xmin))  # Adding an extra pad around cropped image
                 extra_pad_y = int(perc * (ymax - ymin))
 
-                if xmin - extra_pad_x > 0: xmin = xmin - extra_pad_x
-                if xmax + extra_pad_x < img.shape[1]: xmax = xmax + extra_pad_x
-                if ymin - extra_pad_y > 0: ymin = ymin - extra_pad_y
-                if ymax + extra_pad_y < img.shape[0]: ymax = ymax + extra_pad_y
+                if xmin - extra_pad_x > 0:
+                    xmin = xmin - extra_pad_x
+                if xmax + extra_pad_x < img.shape[1]:
+                    xmax = xmax + extra_pad_x
+                if ymin - extra_pad_y > 0:
+                    ymin = ymin - extra_pad_y
+                if ymax + extra_pad_y < img.shape[0]:
+                    ymax = ymax + extra_pad_y
 
                 if (xmax - xmin) > 40 and (ymax - ymin) > 40:
                     crop_img = img[ymin:ymax, xmin:xmax]
@@ -387,13 +404,11 @@ class HighResolutionPoseEstimationLearner(Learner):
                 h, w, _ = crop_img.shape
 
                 # ------- Second pass of the image, inference for pose estimation -------
-                avg_heatmaps, avg_pafs, scale, pad = HighResolutionPoseEstimationLearner.second_pass_infer(self, self.net,
-                                                                                                           crop_img,
-                                                                                                           self.second_pass_height,
-                                                                                                           max_width,
-                                                                                                           self.stride,
-                                                                                                           self.upsample_ratio,
-                                                                                                           self.device)
+                avg_heatmaps, avg_pafs, scale, pad = \
+                    HighResolutionPoseEstimationLearner.second_pass_infer(self,
+                                                                          self.model, crop_img,
+                                                                          self.second_pass_height, max_width,
+                                                                          self.stride, self.upsample_ratio)
                 total_keypoints_num = 0
                 all_keypoints_by_type = []
                 for kpt_idx in range(18):
@@ -410,10 +425,10 @@ class HighResolutionPoseEstimationLearner(Learner):
 
                 for i in range(all_keypoints.shape[0]):
                     for j in range(all_keypoints.shape[1]):
-                        if j == 0:
-                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)  # Adjust offset if needed for evaluation on our HR datasets
-                        if j == 1:
-                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)  # Adjust offset if needed for evaluation on our HR datasets
+                        if j == 0:  # Adjust offset if needed for evaluation on our HR datasets
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)
+                        if j == 1:  # Adjust offset if needed for evaluation on our HR datasets
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)
 
                 current_poses = []
                 for n in range(len(pose_entries)):
@@ -436,8 +451,7 @@ class HighResolutionPoseEstimationLearner(Learner):
                         'image_id': image_id,
                         'category_id': 1,  # person
                         'keypoints': coco_keypoints[idx],
-                        'score': scores[idx],
-                        'person': idx
+                        'score': scores[idx]
                     })
 
             if self.visualize:
@@ -469,10 +483,10 @@ class HighResolutionPoseEstimationLearner(Learner):
 
     def infer(self, img, upsample_ratio=4, stride=8, track=True, smooth=True,
               multiscale=False, visualize=False):
-        self.net = self.model
         current_poses = []
 
         offset = 0
+
         num_keypoints = Pose.num_kpts
 
         if not isinstance(img, Image):
@@ -483,20 +497,19 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         h, w, _ = img.shape
         max_width = w
+
         kernel = int(h / self.first_pass_height)
         if kernel > 0:
             pool_img = HighResolutionPoseEstimationLearner.Pooling(self, img, kernel)
-            base_height = pool_img.shape[0]
         else:
             pool_img = img
-            base_height = img.shape[0]
 
         perc = 0.3  # percentage around cropping
 
         thresshold = 0.1  # threshold for heatmap
 
         # ------- Heatmap Generation -------
-        avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.net, pool_img)
+        avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.model, pool_img)
         avg_pafs = avg_pafs.astype(np.float32)
         pafs_map = cv2.blur(avg_pafs, (5, 5))
 
@@ -530,10 +543,14 @@ class HighResolutionPoseEstimationLearner(Learner):
             extra_pad_x = int(perc * (xmax - xmin))  # Adding an extra pad around cropped image
             extra_pad_y = int(perc * (ymax - ymin))
 
-            if xmin - extra_pad_x > 0: xmin = xmin - extra_pad_x
-            if xmax + extra_pad_x < img.shape[1]: xmax = xmax + extra_pad_x
-            if ymin - extra_pad_y > 0: ymin = ymin - extra_pad_y
-            if ymax + extra_pad_y < img.shape[0]: ymax = ymax + extra_pad_y
+            if xmin - extra_pad_x > 0:
+                xmin = xmin - extra_pad_x
+            if xmax + extra_pad_x < img.shape[1]:
+                xmax = xmax + extra_pad_x
+            if ymin - extra_pad_y > 0:
+                ymin = ymin - extra_pad_y
+            if ymax + extra_pad_y < img.shape[0]:
+                ymax = ymax + extra_pad_y
 
             if (xmax - xmin) > 40 and (ymax - ymin) > 40:
                 crop_img = img[ymin:ymax, xmin:xmax]
@@ -543,13 +560,11 @@ class HighResolutionPoseEstimationLearner(Learner):
             h, w, _ = crop_img.shape
 
             # ------- Second pass of the image, inference for pose estimation -------
-            avg_heatmaps, avg_pafs, scale, pad = HighResolutionPoseEstimationLearner.second_pass_infer(self, self.net,
-                                                                                                       crop_img,
-                                                                                                       self.second_pass_height,
-                                                                                                       max_width,
-                                                                                                       stride,
-                                                                                                       upsample_ratio,
-                                                                                                       self.device)
+            avg_heatmaps, avg_pafs, scale, pad = \
+                HighResolutionPoseEstimationLearner.second_pass_infer(self, self.model, crop_img,
+                                                                      self.second_pass_height,
+                                                                      max_width, stride, upsample_ratio)
+
             total_keypoints_num = 0
             all_keypoints_by_type = []
             for kpt_idx in range(18):
@@ -564,10 +579,10 @@ class HighResolutionPoseEstimationLearner(Learner):
 
             for i in range(all_keypoints.shape[0]):
                 for j in range(all_keypoints.shape[1]):
-                    if j == 0:
-                        all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)  # Adjust offset if needed for evaluation on our HR datasets
-                    if j == 1:
-                        all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)  # Adjust offset if needed for evaluation on our HR datasets
+                    if j == 0:  # Adjust offset if needed for evaluation on our HR datasets
+                        all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)
+                    if j == 1:  # Adjust offset if needed for evaluation on our HR datasets
+                        all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)
 
             current_poses = []
             for n in range(len(pose_entries)):
@@ -583,7 +598,7 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         return current_poses
 
-    def infer_light_odr(self, img, upsample_ratio=4, track=True, smooth=True):      #LwOP from OpenDR implementation
+    def infer_light_odr(self, img, upsample_ratio=4, track=True, smooth=True):  # LwOP from OpenDR implementation
         """
         This method is used to perform pose estimation on an image.
 
@@ -880,9 +895,6 @@ class HighResolutionPoseEstimationLearner(Learner):
                 urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1440.jpg"))
             else:
                 raise UserWarning("There are no data for this image resolution")
-
-
-
 
             if verbose:
                 print("Test data download complete.")

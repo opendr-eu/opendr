@@ -14,7 +14,6 @@
 
 import unittest
 import shutil
-import torch
 from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
 
 from opendr.engine.datasets import ExternalDataset
@@ -46,8 +45,8 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         print("\n\n**********************************\nTEST High Resolution Pose Estimation Learner\n"
               "**********************************")
 
-        cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "pose_estimation",
-                                                                "high_resolution_pose_estimation", "hr_pose_estim_temp")
+        cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception",
+                                    "pose_estimation", "high_resolution_pose_estimation", "hr_pose_estim_temp")
         cls.pose_estimator = HighResolutionPoseEstimationLearner(device=device, temp_path=cls.temp_dir,  num_workers=1)
 
         # Download all required files for testing
@@ -62,7 +61,6 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
         rmdir(os.path.join(cls.temp_dir))
 
-
     def test_eval(self):
         # Test eval will issue resource warnings due to some files left open in pycoco tools,
         # as well as a deprecation warning due to a cast of a float to integer (hopefully they will be fixed in a future
@@ -73,7 +71,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
         self.pose_estimator.load(os.path.join(self.temp_dir, "openpose_default"))
         results_dict = self.pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
-             images_folder_name="image", annotations_filename="annotation.json")
+                                                images_folder_name="image", annotations_filename="annotation.json")
         self.assertNotEqual(len(results_dict['average_precision']), 0,
                             msg="Eval results dictionary contains empty list.")
         self.assertNotEqual(len(results_dict['average_recall']), 0,

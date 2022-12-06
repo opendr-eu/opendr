@@ -13,7 +13,7 @@ following public methods:
 
 #### `HighResolutionPoseEstimationLearner` constructor
 ```python
-HighResolutionPoseEstimationLearner(self,device, backbone, temp_path, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize,  img_mean, img_scale, pad_value)
+HighResolutionPoseEstimationLearner(self,device, backbone, temp_path, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, base_height, first_pass_height, second_pass_height, img_resol, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize,  img_mean, img_scale, pad_value)
 ```
 
 Constructor parameters:
@@ -36,6 +36,10 @@ Constructor parameters:
   Specifies per how many batches a backward optimizer step is performed.
 - **base_height**: *int, default=256*\
   Specifies the height, based on which the images will be resized before performing the forward pass when using the Lightweight OpenPose.
+- **first_pass_height**: *int, default=360*\
+  Specifies the height that the input image will be resized during the heatmap generation procedure.
+- **second_pass_heght**: *int, default=540*\
+  Specifies the height of the image on the second inference for pose estimation procedure.
 - **experiment_name**: *str, default='default'*\
   String name to attach to checkpoints.
 - **num_workers**: *int, default=8*\
@@ -62,9 +66,9 @@ Constructor parameters:
 
 
 
-#### `LightweightOpenPoseLearner.eval`
+#### `HighResolutionPoseEstimationLearner.eval`
 ```python
-HighResolutionPoseEstimationLearner.eval(self, dataset, first_pass_height, second_pass_height, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)
+HighResolutionPoseEstimationLearner.eval(self, dataset, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -75,10 +79,6 @@ Parameters:
 - **dataset**: *object*\
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **first_pass_height**: *int*\
-    It is the height that the input image is resized during the heatmap generation procedure.
-- **second_pass_height**: *int*\
-    It is the base height that is used for resizing on the pose estimation procedure.
 - **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*\
@@ -97,7 +97,7 @@ Parameters:
 
 #### `HighResolutionPoseEstimation.infer`
 ```python
-HighResolutionPoseEstimation.infer(img, fisrt_pass_height, second_pass_height, upsample_ratio, track, smooth)
+HighResolutionPoseEstimation.infer(img, upsample_ratio, track, smooth)
 ```
 
 This method is used to perform pose estimation on an image.
@@ -107,10 +107,6 @@ Parameters:
 
 - **img**: *object***\
   Object of type engine.data.Image.
-- **first_height**: *int*\
-    It is the height that the input image is resized during the heatmap generation procedure.
-- **second height**: *int*\
-    It is the base height that is used for resizing on the pose estimation procedure.
 - **upsample_ratio**: *int, default=4*\
   Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
 - **track**: *bool, default=True*\
@@ -119,7 +115,7 @@ Parameters:
   If True, smoothing is performed on pose keypoints between frames.
 
 
-#### `LightweightOpenPoseLearner.first_pass`
+#### `HighResolutionPoseEstimationLearner.first_pass`
 ```python
 HighResolutionPoseEstimationLearner.first_pass(self, net,img)
 ```
@@ -131,7 +127,7 @@ Parameters:
 - **net**: *object*\
   The model that is used for creating the heatmap.
 
-#### `LightweightOpenPoseLearner.second_pass`
+#### `HighResolutionPoseEstimationLearner.second_pass`
 ```python
 HighResolutionPoseEstimationLearner.second_pass_infer(self, net, img, net_input_height_size, max_width, stride, upsample_ratio, device,
                           pad_value=(0, 0, 0),
@@ -255,18 +251,19 @@ Parameters:
   from opendr.perception.pose_estimation import draw
   from opendr.engine.data import Image
   
-
-  pose_estimator = HighResolutionPoseEstimationLearner(device="cuda", temp_path='./parent_dir')
+  pose_estimator = HighResolutionPoseEstimationLearner(device='cuda', num_refinement_stages=2,
+                                                           mobilenet_use_stride=False, half_precision=False,
+                                                           first_pass_height=360,
+                                                           second_pass_height=540,
+                                                           img_resol=1080)
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
-  pose_estimator.load("./parent_dir/mobilenet_openpose")
+  
+  pose_estimator.load("./parent_dir/openpose_default")
   pose_estimator.download(mode="test_data")  # Download a test data taken from COCO2017
   
-  first_pass_height = 360
-  second_pass_height = 540
-   
   img = Image.open('./parent_dir/dataset/image/000000000785_1080.jpg')
   orig_img = img.opencv()  # Keep original image
-  current_poses = pose_estimator.infer(img,  first_pass_height, second_pass_height)
+  current_poses = pose_estimator.infer(img)
   img_opencv = img.opencv()
   for pose in current_poses:
       draw(img_opencv, pose)

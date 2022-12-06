@@ -1,4 +1,18 @@
 
+# Copyright 2020-2022 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
 import argparse
 from os.path import join
@@ -12,14 +26,11 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--hrdata", help="Select the image resolution for inference", default=1080)
 
     args = parser.parse_args()
 
-    onnx, device, accelerate,base_height1,base_height2,hrdata = args.onnx, args.device, args.accelerate, args.height1, args.height2,args.hrdata
-
-
-
+    onnx, device, accelerate, base_height1, base_height2 = args.onnx, args.device, args.accelerate,\
+        args.height1, args.height2
 
     if accelerate:
         stride = True
@@ -31,9 +42,10 @@ if __name__ == '__main__':
         half_precision = True
 
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride,
-                                                half_precision=half_precision,
-                                                first_pass_height=base_height1, second_pass_height=base_height2)
+                                                         mobilenet_use_stride=stride,
+                                                         half_precision=half_precision,
+                                                         first_pass_height=base_height1,
+                                                         second_pass_height=base_height2)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
@@ -45,9 +57,9 @@ if __name__ == '__main__':
 
     eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 
-    t0=time.time()
+    t0 = time.time()
     results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
                                        images_folder_name="image", annotations_filename="annotation.json")
     t1 = time.time()
-    print("\n Evaluation time:  ", t1 - t0,"seconds")
+    print("\n Evaluation time:  ", t1 - t0, "seconds")
     print("Evaluation results = ", results_dict)

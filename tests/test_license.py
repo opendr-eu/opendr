@@ -86,6 +86,7 @@ class TestLicense(unittest.TestCase):
         ]
 
         skippedDirectoryPaths = [
+            'src/opendr/perception/pose_estimation/hr_pose_estimation/algorithm',
             'src/opendr/perception/pose_estimation/lightweight_open_pose/algorithm',
             'src/opendr/perception/object_detection_3d/voxel_object_detection_3d/second_detector',
             'src/opendr/perception/face_recognition/algorithm',
