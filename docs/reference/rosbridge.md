@@ -419,7 +419,7 @@ Parameters:
    to `engine.target.TrackingAnnotation` in single object tracking
 5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.
 6. `vision_msgs.msg.Detection3DArray`  is used as an equivelant to `engine.target.BoundingBox3DList`.
-7. `sensor_msgs.msg.PointCloud`  is used as an equivelant to `engine.data.PointCloud`.
+7. `sensor_msgs.msg.PointCloud`  is used as an equivalent to `engine.data.PointCloud`.
 
 ## ROS services
 The following ROS services are implemented (`srv` folder):
