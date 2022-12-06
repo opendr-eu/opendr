@@ -121,7 +121,7 @@ Parameters:
 
 #### `SiamRPNLearner.download`
 ```python
-SiamRPNLearner.download(self, path, mode, verbose, url)
+SiamRPNLearner.download(self, path, mode, verbose, url, overwrite)
 ```
 
 Downloads data needed for the various functions of the learner, e.g., pretrained models as well as test data.
@@ -139,6 +139,8 @@ Parameters:
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
+- **overwrite**: *bool, default=False*\
+  If True, files will be redownloaded if they already exists. This can solve some issues with large downloads.
   
 #### Examples
 

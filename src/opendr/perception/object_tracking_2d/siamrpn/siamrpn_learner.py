@@ -105,102 +105,6 @@ class SiamRPNLearner(Learner):
         """base model creation"""
         self._model = model_zoo.get_model(self.backbone, ctx=self.ctx, pretrained=pretrained)
 
-    def save(self, path, verbose=False):
-        """
-        Method for saving the current model in the path provided.
-        :param path: path to folder where model will be saved
-        :type path: str
-        :param verbose: whether to print a success message or not, defaults to False
-        :type verbose: bool, optional
-        """
-        os.makedirs(path, exist_ok=True)
-
-        model_name = os.path.basename(path)
-        if verbose:
-            print(model_name)
-        metadata = {"model_paths": [], "framework": "mxnet", "format": "params",
-                    "has_data": False, "inference_params": {}, "optimized": False,
-                    "optimizer_info": {}, "backbone": self.backbone}
-        param_filepath = model_name + ".params"
-        metadata["model_paths"].append(param_filepath)
-
-        self._model.save_parameters(os.path.join(path, metadata["model_paths"][0]))
-        if verbose:
-            print("Model parameters saved.")
-
-        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-        if verbose:
-            print("Model metadata saved.")
-        return True
-
-    def load(self, path, verbose=False):
-        """
-        Loads the model from the path provided, based on the metadata .json file included.
-        :param path: path of the directory where the model was saved
-        :type path: str
-        :param verbose: whether to print a success message or not, defaults to False
-        :type verbose: bool, optional
-        """
-        model_name = os.path.basename(os.path.normpath(path))
-        if verbose:
-            print("Model name:", model_name, "-->", os.path.join(path, model_name + ".json"))
-        with open(os.path.join(path, model_name + ".json")) as f:
-            metadata = json.load(f)
-
-        self.backbone = metadata["backbone"]
-        self.__create_model(pretrained=False)
-
-        self._model.load_parameters(os.path.join(path, metadata["model_paths"][0]))
-        self._model.collect_params().reset_ctx(self.ctx)
-        self._model.hybridize(static_alloc=True, static_shape=True)
-        if verbose:
-            print("Loaded parameters and metadata.")
-        return True
-
-    def reset(self):
-        """This method is not used in this implementation."""
-        return NotImplementedError
-
-    def optimize(self, target_device):
-        """This method is not used in this implementation."""
-        return NotImplementedError
-
-    def infer(self, img, init_box=None):
-        """
-        Performs inference on an input image and returns the resulting bounding box.
-        :param img: image to perform inference on
-        :type img: opendr.engine.data.Image
-        :param init_box: If provided, it is used to initialized the tracker on the contained object
-        :type init_box: TrackingAnnotation
-        :return: list of bounding boxes
-        :rtype: BoundingBoxList
-        """
-        if isinstance(img, Image):
-            img = img.opencv()
-
-        if isinstance(init_box, TrackingAnnotation) and init_box is not None:
-            # initialize tracker
-            gt_bbox_ = [init_box.left, init_box.top, init_box.width, init_box.height]
-            self.tracker.init(img, gt_bbox_, ctx=self.ctx)
-            pred_bbox = gt_bbox_
-        else:
-            outputs = self.tracker.track(img, ctx=self.ctx)
-            pred_bbox = outputs['bbox']
-
-        pred_bbox = list(map(int, pred_bbox))
-        return TrackingAnnotation(left=pred_bbox[0], top=pred_bbox[1],
-                                  width=pred_bbox[2], height=pred_bbox[3], name=0, id=0)
-
-    def __train_batch_fn(self, data, ctx):
-        """split and load data in GPU"""
-        template = split_and_load(data[0], ctx_list=ctx, batch_axis=0)
-        search = split_and_load(data[1], ctx_list=ctx, batch_axis=0)
-        label_cls = split_and_load(data[2], ctx_list=ctx, batch_axis=0)
-        label_loc = split_and_load(data[3], ctx_list=ctx, batch_axis=0)
-        label_loc_weight = split_and_load(data[4], ctx_list=ctx, batch_axis=0)
-        return template, search, label_cls, label_loc, label_loc_weight
-
     def fit(self, dataset, log_interval=20, n_gpus=1,
             val_dataset=None, logging_path='', silent=True, verbose=True):
         """
@@ -400,79 +304,84 @@ class SiamRPNLearner(Learner):
         }
         return eval_dict
 
-    def __prepare_training_dataset(self, dataset):
+    def infer(self, img, init_box=None):
         """
-        Converts `ExternalDataset` or list of `ExternalDatasets` to appropriate format.
-        :param dataset: Training dataset(s)
-        :type dataset: `ExternalDataset` or list of `ExternalDatasets`
+        Performs inference on an input image and returns the resulting bounding box.
+        :param img: image to perform inference on
+        :type img: opendr.engine.data.Image
+        :param init_box: If provided, it is used to initialized the tracker on the contained object
+        :type init_box: TrackingAnnotation
+        :return: list of bounding boxes
+        :rtype: BoundingBoxList
         """
-        if isinstance(dataset, list) or isinstance(dataset, tuple):
-            frame_range_map = {
-                'vid': 100,
-                'Youtube_bb': 3,
-                'coco': 1,
-                'det': 1,
-            }
-            num_use_map = {
-                'vid': 100000,
-                'Youtube_bb': -1,
-                'coco': -1,
-                'det': -1,
-            }
+        if isinstance(img, Image):
+            img = img.opencv()
 
-            dataset_paths = []
-            dataset_names = []
-            dataset_roots = []
-            dataset_annos = []
-            frame_ranges = []
-            num_uses = []
+        if isinstance(init_box, TrackingAnnotation) and init_box is not None:
+            # initialize tracker
+            gt_bbox_ = [init_box.left, init_box.top, init_box.width, init_box.height]
+            self.tracker.init(img, gt_bbox_, ctx=self.ctx)
+            pred_bbox = gt_bbox_
+        else:
+            outputs = self.tracker.track(img, ctx=self.ctx)
+            pred_bbox = outputs['bbox']
 
-            for _dataset in dataset:
-                # check if all are ExternalDataset
-                if not isinstance(dataset, ExternalDataset):
-                    raise TypeError("Only `ExternalDataset` types are supported.")
-                # get params
-                dataset_paths.append(_dataset.path)
-                dataset_names.append(_dataset.dataset_type)
-                dataset_roots.append(os.path.join(_dataset.dataset_type, 'crop511'))
-                dataset_annos.append(os.path.join(_dataset.dataset_type,
-                                                  f'train{"2017" if _dataset.dataset_type == "coco" else ""}.json'))
-                frame_ranges.append(frame_range_map[_dataset.dataset_type])
-                num_uses.append(num_use_map[_dataset.dataset_type])
-            dataset = TrkDataset(dataset[0].path,
-                                 dataset_names=dataset_names, detaset_root=dataset_roots,
-                                 detaset_anno=dataset_annos, train_epoch=self.n_epochs,
-                                 dataset_frame_range=frame_ranges, dataset_num_use=num_uses)
-            return dataset
+        pred_bbox = list(map(int, pred_bbox))
+        return TrackingAnnotation(left=pred_bbox[0], top=pred_bbox[1],
+                                  width=pred_bbox[2], height=pred_bbox[3], name=0, id=0)
 
-        if isinstance(dataset, ExternalDataset):
-            dataset_types = ['vid', 'Youtube_bb', 'coco', 'det']
-            assert dataset.dataset_type in dataset_types, f"Unrecognized dataset_type," \
-                                                          f" acceptable values: {dataset_types}"
-            dataset = TrkDataset(data_path=dataset.path,
-                                 dataset_names=[dataset.dataset_type], detaset_root=[f'{dataset.dataset_type}/crop511'],
-                                 detaset_anno=[f'{dataset.dataset_type}/'
-                                               f'train{"2017" if dataset.dataset_type == "coco" else ""}.json'],
-                                 train_epoch=self.n_epochs)
-            return dataset
-
-        if issubclass(type(dataset), DatasetIterator):
-            return dataset
-
-        if not isinstance(dataset, ExternalDataset):
-            raise TypeError("Only `ExternalDataset` and modified `DatasetIterator` types are supported.")
-
-    def __prepare_validation_dataset(self, dataset):
+    def save(self, path, verbose=False):
         """
-        :param dataset: `ExternalDataset` object containing OTB2015 dataset root and type ('OTB2015')
-        :type dataset: ExternalDataset
+        Method for saving the current model in the path provided.
+        :param path: path to folder where model will be saved
+        :type path: str
+        :param verbose: whether to print a success message or not, defaults to False
+        :type verbose: bool, optional
         """
-        if not isinstance(dataset, ExternalDataset):
-            raise TypeError("Only `ExternalDataset` types are supported.")
-        dataset_types = ["OTB2015", "OTBtest"]
-        assert dataset.dataset_type in dataset_types, "Unrecognized dataset type, only OTB2015 is supported currently"
-        dataset = OTBTracking(dataset.dataset_type, dataset_root=dataset.path, load_img=False)
-        return dataset
+        os.makedirs(path, exist_ok=True)
+
+        model_name = os.path.basename(path)
+        if verbose:
+            print(model_name)
+        metadata = {"model_paths": [], "framework": "mxnet", "format": "params",
+                    "has_data": False, "inference_params": {}, "optimized": False,
+                    "optimizer_info": {}, "backbone": self.backbone}
+        param_filepath = model_name + ".params"
+        metadata["model_paths"].append(param_filepath)
+
+        self._model.save_parameters(os.path.join(path, metadata["model_paths"][0]))
+        if verbose:
+            print("Model parameters saved.")
+
+        with open(os.path.join(path, model_name + '.json'), 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+        if verbose:
+            print("Model metadata saved.")
+        return True
+
+    def load(self, path, verbose=False):
+        """
+        Loads the model from the path provided, based on the metadata .json file included.
+        :param path: path of the directory where the model was saved
+        :type path: str
+        :param verbose: whether to print a success message or not, defaults to False
+        :type verbose: bool, optional
+        """
+        model_name = os.path.basename(os.path.normpath(path))
+        if verbose:
+            print("Model name:", model_name, "-->", os.path.join(path, model_name + ".json"))
+        with open(os.path.join(path, model_name + ".json")) as f:
+            metadata = json.load(f)
+
+        self.backbone = metadata["backbone"]
+        self.__create_model(pretrained=False)
+
+        self._model.load_parameters(os.path.join(path, metadata["model_paths"][0]))
+        self._model.collect_params().reset_ctx(self.ctx)
+        self._model.hybridize(static_alloc=True, static_shape=True)
+        if verbose:
+            print("Loaded parameters and metadata.")
+        return True
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "/perception/object_tracking_2d/siamrpn/",
@@ -483,8 +392,8 @@ class SiamRPNLearner(Learner):
         :param path: folder to which files will be downloaded, if None self.temp_path will be used
         :type path: str, optional
         :param mode: one of: ["pretrained", "video", "test_data", "otb2015"], where "pretrained" downloads a pretrained
-        network depending on the self.backbone type, "images" downloads example inference data, "backbone" downloads a
-        pretrained resnet backbone for training, and "annotations" downloads additional annotation files for training
+        network, "video" downloads example inference data, "test_data" downloads a very small train/eval subset, and
+         "otb2015" downloads the OTB dataset
         :type mode: str, optional
         :param verbose: if True, additional information is printed on stdout
         :type verbose: bool, optional
@@ -567,3 +476,96 @@ class SiamRPNLearner(Learner):
             file_path = os.path.join(path, "otb2015", "OTB2015.json")
             if not os.path.exists(file_path) or overwrite:
                 urlretrieve(file_url, file_path)
+
+    @staticmethod
+    def __train_batch_fn(data, ctx):
+        """split and load data in GPU"""
+        template = split_and_load(data[0], ctx_list=ctx, batch_axis=0)
+        search = split_and_load(data[1], ctx_list=ctx, batch_axis=0)
+        label_cls = split_and_load(data[2], ctx_list=ctx, batch_axis=0)
+        label_loc = split_and_load(data[3], ctx_list=ctx, batch_axis=0)
+        label_loc_weight = split_and_load(data[4], ctx_list=ctx, batch_axis=0)
+        return template, search, label_cls, label_loc, label_loc_weight
+
+    def __prepare_training_dataset(self, dataset):
+        """
+        Converts `ExternalDataset` or list of `ExternalDatasets` to appropriate format.
+        :param dataset: Training dataset(s)
+        :type dataset: `ExternalDataset` or list of `ExternalDatasets`
+        """
+        if isinstance(dataset, list) or isinstance(dataset, tuple):
+            frame_range_map = {
+                'vid': 100,
+                'Youtube_bb': 3,
+                'coco': 1,
+                'det': 1,
+            }
+            num_use_map = {
+                'vid': 100000,
+                'Youtube_bb': -1,
+                'coco': -1,
+                'det': -1,
+            }
+
+            dataset_paths = []
+            dataset_names = []
+            dataset_roots = []
+            dataset_annos = []
+            frame_ranges = []
+            num_uses = []
+
+            for _dataset in dataset:
+                # check if all are ExternalDataset
+                if not isinstance(dataset, ExternalDataset):
+                    raise TypeError("Only `ExternalDataset` types are supported.")
+                # get params
+                dataset_paths.append(_dataset.path)
+                dataset_names.append(_dataset.dataset_type)
+                dataset_roots.append(os.path.join(_dataset.dataset_type, 'crop511'))
+                dataset_annos.append(os.path.join(_dataset.dataset_type,
+                                                  f'train{"2017" if _dataset.dataset_type == "coco" else ""}.json'))
+                frame_ranges.append(frame_range_map[_dataset.dataset_type])
+                num_uses.append(num_use_map[_dataset.dataset_type])
+            dataset = TrkDataset(dataset[0].path,
+                                 dataset_names=dataset_names, detaset_root=dataset_roots,
+                                 detaset_anno=dataset_annos, train_epoch=self.n_epochs,
+                                 dataset_frame_range=frame_ranges, dataset_num_use=num_uses)
+            return dataset
+
+        if isinstance(dataset, ExternalDataset):
+            dataset_types = ['vid', 'Youtube_bb', 'coco', 'det']
+            assert dataset.dataset_type in dataset_types, f"Unrecognized dataset_type," \
+                                                          f" acceptable values: {dataset_types}"
+            dataset = TrkDataset(data_path=dataset.path,
+                                 dataset_names=[dataset.dataset_type], detaset_root=[f'{dataset.dataset_type}/crop511'],
+                                 detaset_anno=[f'{dataset.dataset_type}/'
+                                               f'train{"2017" if dataset.dataset_type == "coco" else ""}.json'],
+                                 train_epoch=self.n_epochs)
+            return dataset
+
+        if issubclass(type(dataset), DatasetIterator):
+            return dataset
+
+        if not isinstance(dataset, ExternalDataset):
+            raise TypeError("Only `ExternalDataset` and modified `DatasetIterator` types are supported.")
+
+    @staticmethod
+    def __prepare_validation_dataset(dataset):
+        """
+        :param dataset: `ExternalDataset` object containing OTB2015 dataset root and type ('OTB2015')
+        :type dataset: ExternalDataset
+        """
+        if not isinstance(dataset, ExternalDataset):
+            raise TypeError("Only `ExternalDataset` types are supported.")
+        dataset_types = ["OTB2015", "OTBtest"]
+        assert dataset.dataset_type in dataset_types, "Unrecognized dataset type, only OTB2015 is supported currently"
+        dataset = OTBTracking(dataset.dataset_type, dataset_root=dataset.path, load_img=False)
+        return dataset
+
+    def reset(self):
+        """This method is not used in this implementation."""
+        return NotImplementedError
+
+    def optimize(self, target_device):
+        """This method is not used in this implementation."""
+        return NotImplementedError
