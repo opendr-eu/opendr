@@ -15,7 +15,7 @@ The following datasets are supported for training the SiamRPN tracker:
 4. ILSVRC-DET ([preprocessing scripts](https://github.com/foolwood/SiamMask/tree/master/data/det))
 
 The datasets need to be downloaded and preprocessed as indicated in the
-[SiamMask](https://github.com/foolwood/SiamMask/tree/master/data) github repo.
+[SiamMask](https://github.com/foolwood/SiamMask/tree/master/data) GitHub repository.
 
 The following data structure is expected:
 

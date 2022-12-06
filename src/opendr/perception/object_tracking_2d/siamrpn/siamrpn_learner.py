@@ -57,7 +57,7 @@ class SiamRPNLearner(Learner):
         :type device: str, optional
         :param n_epochs: Total number of epochs to train for
         :type n_epochs: int, optional
-        :param num_workers: Number of threads used to load the train dataset or perform evaluaation
+        :param num_workers: Number of threads used to load the train dataset or perform evaluation
         :type num_workers: int, optional
         :param warmup_epochs: Number of epochs during which the learning rate is annealer to `lr`
         :type warmup_epochs: int, optional
