@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import argparse
-import torch
+import mxnet as mx
 
 import rospy
 from vision_msgs.msg import Detection2DArray
@@ -22,17 +22,17 @@ from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 
 from opendr.engine.data import Image
-from opendr.perception.object_detection_2d import NanodetLearner
+from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class ObjectDetectionNanodetNode:
+class ObjectDetectionYOLONode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_objects_annotated", detections_topic="/opendr/objects",
-                 device="cuda", model="plus_m_1.5x_416"):
+                 device="cuda", model_name="yolov5s"):
         """
-        Creates a ROS Node for object detection with Nanodet.
+        Creates a ROS Node for object detection with YOLOV5.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -43,8 +43,8 @@ class ObjectDetectionNanodetNode:
         :type detections_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
-        :param model: the name of the model of which we want to load the config file
-        :type model: str
+        :param model_name: network architecture name
+        :type model_name: str
         """
         self.input_rgb_image_topic = input_rgb_image_topic
 
@@ -61,17 +61,15 @@ class ObjectDetectionNanodetNode:
         self.bridge = ROSBridge()
 
         # Initialize the object detector
-        self.object_detector = NanodetLearner(model_to_use=model, device=device)
-        self.object_detector.download(path=".", mode="pretrained", verbose=True)
-        self.object_detector.load("./nanodet_{}".format(model))
+        self.object_detector = YOLOv5DetectorLearner(model_name=model_name, device=device)
 
     def listen(self):
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('opendr_object_detection_2d_nanodet_node', anonymous=True)
+        rospy.init_node('opendr_object_detection_yolov5_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object detection 2D Nanodet node started.")
+        rospy.loginfo("Object detection YOLOV5 node started.")
         rospy.spin()
 
     def callback(self, data):
@@ -84,17 +82,16 @@ class ObjectDetectionNanodetNode:
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run object detection
-        boxes = self.object_detector.infer(image, threshold=0.35)
-
-        # Get an OpenCV image back
-        image = image.opencv()
+        boxes = self.object_detector.infer(image)
 
         # Publish detections in ROS message
-        ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
+        ros_boxes = self.bridge.to_ros_bounding_box_list(boxes)  # Convert to ROS bounding_box_list
         if self.object_publisher is not None:
             self.object_publisher.publish(ros_boxes)
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with object detection boxes
             image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
@@ -111,12 +108,15 @@ def main():
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/objects")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default="plus_m_1.5x_416")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model_name", help="Network architecture, defaults to \"yolov5s\"",
+                        type=str, default="yolov5s", choices=['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
+                                                              'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom'])
     args = parser.parse_args()
 
     try:
-        if args.device == "cuda" and torch.cuda.is_available():
+        if args.device == "cuda" and mx.context.num_gpus() > 0:
             device = "cuda"
         elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")
@@ -128,11 +128,11 @@ def main():
         print("Using CPU.")
         device = "cpu"
 
-    object_detection_nanodet_node = ObjectDetectionNanodetNode(device=device, model=args.model,
-                                                               input_rgb_image_topic=args.input_rgb_image_topic,
-                                                               output_rgb_image_topic=args.output_rgb_image_topic,
-                                                               detections_topic=args.detections_topic)
-    object_detection_nanodet_node.listen()
+    object_detection_yolov5_node = ObjectDetectionYOLONode(device=device, model_name=args.model_name,
+                                                           input_rgb_image_topic=args.input_rgb_image_topic,
+                                                           output_rgb_image_topic=args.output_rgb_image_topic,
+                                                           detections_topic=args.detections_topic)
+    object_detection_yolov5_node.listen()
 
 
 if __name__ == '__main__':

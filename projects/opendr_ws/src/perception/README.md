@@ -101,7 +101,7 @@ Reference images should be placed in a defined structure like:
 under `/opendr/face_recognition_id`.
 
 ## 2D Object Detection ROS Nodes
-ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR and Nanodet generic object detectors.
+ROS nodes are implemented for the SSD, YOLOv3, CenterNet, DETR, Nanodet and YOLOv5 generic object detectors.
 Assuming that you have already [activated the OpenDR environment](../../../../docs/reference/installation.md), [built your workspace](../../README.md) and started roscore (i.e., just run `roscore`).
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the corresponding node (assuming you have installed the corresponding package):
@@ -116,7 +116,7 @@ rosrun perception object_detection_2d_ssd.py
 ```
 The annotated image stream can be viewed using `rqt_image_view`, and the default topic name is
 `/opendr/image_boxes_annotated`. The bounding boxes alone are also published as `/opendr/objects`.
-Similarly, the YOLOv3, CenterNet, DETR and Nanodet detector nodes can be run with:
+Similarly, the YOLOv3, CenterNet, DETR, Nanodet and YOLOv5 detector nodes can be run with:
 ```shell
 rosrun perception object_detection_2d_yolov3.py
 ```
@@ -131,6 +131,10 @@ rosrun perception object_detection_2d_detr.py
 or
 ```shell
 rosrun perception object_detection_2d_nanodet.py
+```
+or
+```shell
+rosrun perception object_detection_2d_yolov5.py
 ```
 respectively.
 
@@ -171,7 +175,7 @@ rosrun perception object_detection_2d_gem.py
 5. You can examine the annotated image stream using `rqt_image_view` (select one of the topics `/opendr/color_detection_annotated` or `/opendr/infra_detection_annotated`) or `rostopic echo /opendr/detections`
 
 
-## Visual Based Panoptic Segmentation ROS Node
+## Vision Based Panoptic Segmentation ROS Node
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell

@@ -43,20 +43,16 @@ class PointCloudDatasetNode:
         )
 
     def start(self):
+        rospy.loginfo("Timing point cloud images")
         i = 0
-
         while not rospy.is_shutdown():
-
             point_cloud = self.dataset[i % len(self.dataset)][0]  # Dataset should have a (PointCloud, Target) pair as elements
-
-            rospy.loginfo("Publishing point_cloud [" + str(i) + "]")
             message = self.bridge.to_ros_point_cloud(
                 point_cloud
             )
             self.output_point_cloud_publisher.publish(message)
 
             time.sleep(self.delay)
-
             i += 1
 
 
@@ -92,13 +88,14 @@ def main():
         dataset_path + "/training/calib",
     )
 
-    rospy.init_node('point_cloud_dataset', anonymous=True)
+    rospy.init_node('opendr_point_cloud_dataset_node', anonymous=True)
 
     dataset_node = PointCloudDatasetNode(
         dataset, output_point_cloud_topic=output_point_cloud_topic, data_fps=data_fps
     )
 
     dataset_node.start()
+    rospy.loginfo("Point cloud dataset node started.")
     rospy.spin()
 
 

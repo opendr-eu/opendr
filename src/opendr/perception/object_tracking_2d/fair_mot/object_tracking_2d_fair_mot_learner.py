@@ -77,6 +77,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         image_std=[0.289, 0.274, 0.278],
         frame_rate=30,
         min_box_area=100,
+        use_pretrained_backbone=True,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking2DFairMotLearner, self).__init__(
@@ -122,6 +123,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         self.image_std = image_std
         self.frame_rate = frame_rate
         self.min_box_area = min_box_area
+        self.use_pretrained_backbone = use_pretrained_backbone
 
         main_batch_size = self.batch_size // len(self.gpus)
         rest_batch_size = (self.batch_size - main_batch_size)
@@ -658,7 +660,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         self.heads = heads
 
-        self.model = create_model(self.backbone, heads, self.head_conv)
+        self.model = create_model(self.use_pretrained_backbone, self.backbone, heads, self.head_conv)
         self.model.to(self.device)
         self.model.ort_session = None
         self.model.heads_names = heads.keys()

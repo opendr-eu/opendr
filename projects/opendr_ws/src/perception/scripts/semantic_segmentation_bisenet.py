@@ -66,13 +66,13 @@ class BisenetNode:
 
         self.class_names = ["Bicyclist", "Building", "Car", "Column Pole", "Fence", "Pedestrian", "Road", "Sidewalk",
                             "Sign Symbol", "Sky", "Tree", "Unknown"]
-        self.colors = self.getDistinctColors(len(self.class_names))  # Generate n distinct colors
+        self.colors = self.get_distinct_colors(len(self.class_names))  # Generate n distinct colors
 
     def listen(self):
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('semantic_segmentation_bisenet_node', anonymous=True)
+        rospy.init_node('opendr_semantic_segmentation_bisenet_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
         rospy.loginfo("Semantic segmentation BiSeNet node started.")
         rospy.spin()
@@ -103,7 +103,7 @@ class BisenetNode:
                 beta = (1.0 - alpha)
                 image_blended = cv2.addWeighted(image.opencv(), alpha, heatmap_colors.opencv(), beta, 0.0)
                 # Add a legend
-                image_blended = self.addLegend(image_blended, np.unique(heatmap.data))
+                image_blended = self.add_legend(image_blended, np.unique(heatmap.data))
 
                 self.visualization_publisher.publish(self.bridge.to_ros_image(Image(image_blended),
                                                                               encoding='bgr8'))
@@ -111,7 +111,7 @@ class BisenetNode:
             print(e)
             rospy.logwarn('Failed to generate prediction.')
 
-    def addLegend(self, image, unique_class_ints):
+    def add_legend(self, image, unique_class_ints):
         # Text setup
         origin_x, origin_y = 5, 5  # Text origin x, y
         color_rectangle_size = 25
@@ -143,13 +143,13 @@ class BisenetNode:
         return image
 
     @staticmethod
-    def HSVToRGB(h, s, v):
+    def hsv_to_rgb(h, s, v):
         (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
         return np.array([int(255 * r), int(255 * g), int(255 * b)])
 
-    def getDistinctColors(self, n):
-        huePartition = 1.0 / (n + 1)
-        return np.array([self.HSVToRGB(huePartition * value, 1.0, 1.0) for value in range(0, n)]).astype(np.uint8)
+    def get_distinct_colors(self, n):
+        hue_partition = 1.0 / (n + 1)
+        return np.array([self.hsv_to_rgb(hue_partition * value, 1.0, 1.0) for value in range(0, n)]).astype(np.uint8)
 
 
 def main():
@@ -160,9 +160,9 @@ def main():
                                                              "of a ROS image containing class ids",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/heatmap")
-    parser.add_argument("-v", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
-                                                               "blended with the input image and a class legend for "
-                                                               "visualization purposes",
+    parser.add_argument("-ov", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
+                                                                "blended with the input image and a class legend for "
+                                                                "visualization purposes",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/heatmap_visualization")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
