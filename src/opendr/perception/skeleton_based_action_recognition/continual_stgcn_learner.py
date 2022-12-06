@@ -14,11 +14,10 @@
 
 import json
 import os
+import pickle
 from functools import partial
 from pathlib import Path
-from dataclasses import dataclass
 import torch
-from torch import onnx
 import onnxruntime as ort
 import pytorch_lightning as pl
 import torch.nn.functional as F
@@ -28,7 +27,7 @@ from opendr.engine.helper.io import bump_version
 from opendr.engine.datasets import Dataset
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
-from continual.utils import temporary_parameter
+import continual as co
 
 from logging import getLogger
 from typing import Any, Union, Dict, List
@@ -132,7 +131,8 @@ class CoSTGCNLearner(Learner):
         self.seed = seed
         self.num_classes = num_classes
         self.loss = loss
-        self.ort_session = None
+        self._ort_session = None
+        self._ort_state = None
         self.num_point = num_point
         self.num_person = num_person
         self.in_channels = in_channels
@@ -174,11 +174,6 @@ class CoSTGCNLearner(Learner):
         ).to(device=self.device)
         return self.model
 
-    @property
-    def _example_input(self):
-        (C_in, T, V, S) = self.model.input_shape
-        return torch.randn(1, C_in, V, S).to(device=self.device)
-
     def download(
         self,
         dataset_name="nturgbd_cv",
@@ -190,16 +185,15 @@ class CoSTGCNLearner(Learner):
         url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/",
         file_name="costgcn_ntu60_xview_joint.ckpt",
     ):
+        class _DownloadConfig:
+            def __init__(self, parent_dir: str, dataset_name: str, experiment_name: str):
+                self.parent_dir = parent_dir
+                self.dataset_name = dataset_name
+                self.experiment_name = experiment_name
 
         # Use download method from SpatioTemporalGCNLearner
-        @dataclass
-        class DownloadConfig:
-            parent_dir: str
-            dataset_name: str
-            experiment_name: str
-
         return SpatioTemporalGCNLearner.download(
-            DownloadConfig(self.temp_path, dataset_name, experiment_name),
+            _DownloadConfig(self.temp_path, dataset_name, experiment_name),
             path,
             method_name,
             mode,
@@ -219,8 +213,8 @@ class CoSTGCNLearner(Learner):
     ):
         if isinstance(dataset, ExternalDataset):
             if (
-                dataset.dataset_type.lower() != "nturgbd"
-                and dataset.dataset_type.lower() != "kinetics"
+                dataset.dataset_type.lower() != "nturgbd" and
+                dataset.dataset_type.lower() != "kinetics"
             ):
                 raise UserWarning('dataset_type must be "NTURGBD or Kinetics"')
             # Get data and labels path
@@ -260,21 +254,28 @@ class CoSTGCNLearner(Learner):
         Args:
             batch (torch.Tensor): batch of skeletons for a single time-step.
                 The batch should have shape (C, V, S), (C, T, V, S), or (B, C, T, V, S).
-                Here, B is the batch size, C is the number of input channels, V is the number of vertices, and S is the number of skeletons
+                Here, B is the batch size, C is the number of input channels, V is the
+                number of vertices, and S is the number of skeletons
 
         Returns:
             List[target.Category]: List of output categories
         """
         # Cast to torch tensor
-
         batch = batch.to(device=self.device, dtype=torch.float)
         if len(batch.shape) == 3:
             batch = batch.unsqueeze(0)  # (C, V, S) -> (B, C, V, S)
         if len(batch.shape) == 4:
             batch = batch.unsqueeze(2)  # (B, C, V, S) -> (B, C, T, V, S)
 
-        if self.ort_session is not None:
-            results = torch.tensor(self.ort_session.run(None, {"skeleton": batch.cpu().numpy()})[0])
+        if self._ort_session is not None and self._ort_state is not None:
+            batch = batch.squeeze(2)  # (B, C, T, V, S) -> (B, C, V, S)
+            inputs = {
+                "input": batch.cpu().detach().numpy(),
+                **self._ort_state,
+            }
+            results, *next_state = self._ort_session.run(None, inputs)
+            results = torch.tensor(results)
+            self._ort_state = {k: v for k, v in zip(self._ort_state.keys(), next_state)}
         else:
             self.model.eval()
             results = self.model.forward_steps(batch)
@@ -348,12 +349,12 @@ class CoSTGCNLearner(Learner):
         root_path = Path(path)
         root_path.mkdir(parents=True, exist_ok=True)
         name = f"{self.backbone}"
-        ext = ".onnx" if self.ort_session else ".pth"
+        ext = ".onnx" if self._ort_session else ".pth"
         weights_path = bump_version(root_path / f"model_{name}{ext}")
         meta_path = bump_version(root_path / f"{name}.json")
 
         logger.info(f"Saving model weights to {str(weights_path)}")
-        if self.ort_session:
+        if self._ort_session:
             self._save_onnx(weights_path)
         else:
             torch.save(self.model.state_dict(), weights_path)
@@ -374,7 +375,7 @@ class CoSTGCNLearner(Learner):
                 "graph_type": self.graph_type,
                 "sequence_len": self.sequence_len,
             },
-            "optimized": bool(self.ort_session),
+            "optimized": bool(self._ort_session),
             "optimizer_info": {
                 "lr": self.lr,
                 "iters": self.iters,
@@ -595,16 +596,16 @@ class CoSTGCNLearner(Learner):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
-        path = Path(self.temp_path or os.getcwd()) / "weights" / f"{self.backbone}.onnx"
+        path = Path(self.temp_path or os.getcwd()) / "weights" / f"{self.backbone}_weights.onnx"
         if not path.exists():
             self._save_onnx(path, do_constant_folding)
         self._load_onnx(path)
 
     @property
     def _example_input(self):
-        return torch.randn(self.batch_size, self.in_channels, 1, self.num_point, self.num_person).to(
-            device=self.device
-        )
+        return torch.randn(
+            self.batch_size, self.in_channels, self.sequence_len, self.num_point, self.num_person
+        ).to(device=self.device)
 
     @_example_input.setter
     def _example_input(self):
@@ -621,27 +622,37 @@ class CoSTGCNLearner(Learner):
         """
         path.parent.mkdir(exist_ok=True, parents=True)
 
-        self.model.eval()
-        self.model.to(device=self.device)
-        self.model.forward_steps(self._example_input.repeat(1, 1, self.sequence_len - 1, 1, 1))
+        model = self.model.to(device="cpu")
+        model.eval()
 
-        logger.info(f"Saving model to ONNX format at {str(path)}")
-        with temporary_parameter(self.model, "forward", self.model.forward_steps):
-            onnx.export(
-                self.model,
-                # self._example_input.repeat(1, 1, self.sequence_len, 1, 1),
-                self._example_input,
+        # Prepare state
+        state0 = None
+        with torch.no_grad():
+            for i in range(model.receptive_field):
+                _, state0 = model._forward_step(self._example_input[:, :, i], state0)
+            _, state0 = model._forward_step(self._example_input[:, :, -1], state0)
+            state0 = co.utils.flatten(state0)
+
+            # Export to ONNX
+            logger.info(f"Saving model to ONNX format at {str(path)}")
+            co.onnx.export(
+                model,
+                (self._example_input[:, :, -1], *state0),
                 path,
-                input_names=["skeleton"],
-                output_names=["classes"],
-                dynamic_axes={
-                    "skeleton": {0: "batch_size"},
-                    "classes": {0: "batch_size"},
-                },
+                input_names=["input"],
+                output_names=["output"],
                 do_constant_folding=do_constant_folding,
                 verbose=verbose,
                 opset_version=11,
             )
+
+        # Save default state and name mappings for later use
+        state_path = path.parent / f"{self.backbone}_state.pickle"
+        logger.info(f"Saving ONNX model states at {str(state_path)}")
+        omodel = co.onnx.OnnxWrapper(self.model)
+        state = {k: v.detach().numpy() for k, v in zip(omodel.state_input_names, state0)}
+        with open(state_path, "wb") as f:
+            pickle.dump(state, f)
 
     def _load_onnx(self, path: Union[str, Path]):
         """Loads ONNX model into an onnxruntime inference session.
@@ -649,8 +660,15 @@ class CoSTGCNLearner(Learner):
         Args:
             path (Union[str, Path]): Path to ONNX model
         """
-        logger.info(f"Loading ONNX runtime inference session from {str(path)}")
-        self.ort_session = ort.InferenceSession(str(path))
+        onnx_path = path
+        state_path = path.parent / f"{self.backbone}_state.pickle"
+
+        logger.info(f"Loading ONNX runtime inference session from {str(onnx_path)}")
+        self._ort_session = ort.InferenceSession(str(onnx_path))
+
+        logger.info(f"Loading ONNX state from {str(state_path)}")
+        with open(state_path, "rb") as f:
+            self._ort_state = pickle.load(f)
 
 
 def _experiment_logger():

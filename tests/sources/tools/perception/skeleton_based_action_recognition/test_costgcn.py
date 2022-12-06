@@ -15,9 +15,11 @@
 import os
 import torch
 import unittest
+import shutil
 
 from opendr.perception.skeleton_based_action_recognition import CoSTGCNLearner
 from opendr.engine.datasets import ExternalDataset
+from opendr.engine.target import Category
 from pathlib import Path
 from logging import getLogger
 
@@ -37,8 +39,6 @@ class TestCoSTGCNLearner(unittest.TestCase):
         )
         cls.temp_dir = Path("./tests/sources/tools/perception/skeleton_based_action_recognition/temp")
 
-        # Download model weights
-        # CoSTGCNLearner.download(path=Path(cls.temp_dir) / "weights", model_names={_BACKBONE})
         cls.learner = CoSTGCNLearner(
             device=device,
             temp_path=str(cls.temp_dir),
@@ -49,13 +49,12 @@ class TestCoSTGCNLearner(unittest.TestCase):
         )
 
         # Download all required files for testing
-        cls.pretrained_weights_path = cls.temp_dir / "weights" / "costgcn_ntu60_xview_joint.ckpt"
-        # cls.pretrained_weights_path = cls.learner.download(
-        #     path=os.path.join(cls.temp_dir, "pretrained_models", "costgcn"),
-        #     method_name="costgcn",
-        #     mode="pretrained",
-        #     file_name="stgcn_ntu60_xview_joint.ckpt",
-        # )
+        cls.pretrained_weights_path = cls.learner.download(
+            path=os.path.join(cls.temp_dir, "pretrained_models"),
+            method_name="",
+            mode="pretrained",
+            file_name="costgcn_ntu60_joint.ckpt",
+        )
         cls.Train_DATASET_PATH = cls.learner.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data")
         )
@@ -63,14 +62,14 @@ class TestCoSTGCNLearner(unittest.TestCase):
             mode="val_data", path=os.path.join(cls.temp_dir, "data")
         )
 
-    # @classmethod
-    # def tearDownClass(cls):
-    #     try:
-    #         shutil.rmtree(str(cls.temp_dir))
-    #     except OSError as e:
-    #         logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            shutil.rmtree(str(cls.temp_dir))
+        except OSError as e:
+            logger.error(f"Caught error while cleaning up {e.filename}: {e.strerror}")
 
-    def xtest_fit(self):
+    def test_fit(self):
         print(
             "\n\n**********************************\nTest CoSTGCNLearner fit \n*"
             "*********************************"
@@ -107,7 +106,7 @@ class TestCoSTGCNLearner(unittest.TestCase):
         # Check that parameters changed
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
-    def xtest_eval(self):
+    def test_eval(self):
         test_ds = self.learner._prepare_dataset(
             ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD"),
             data_filename="val_joints.npy",
@@ -130,7 +129,7 @@ class TestCoSTGCNLearner(unittest.TestCase):
         assert results["accuracy"] > 0.5
         assert results["loss"] < 1
 
-    def xtest_infer(self):
+    def test_infer(self):
         ds = self.learner._prepare_dataset(
             ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD"),
             data_filename="val_joints.npy",
@@ -139,7 +138,7 @@ class TestCoSTGCNLearner(unittest.TestCase):
             phase="val",
             verbose=False,
         )
-        dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
+        dl = torch.utils.data.DataLoader(ds, batch_size=self.learner.batch_size, num_workers=0)
         batch = next(iter(dl))[0]
         frame = batch[:, :, -1]  # Select a single frame
 
@@ -152,33 +151,21 @@ class TestCoSTGCNLearner(unittest.TestCase):
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
     def test_optimize(self):
-        ds = self.learner._prepare_dataset(
-            ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="NTURGBD"),
-            data_filename="val_joints.npy",
-            labels_filename="val_labels.pkl",
-            skeleton_data_type="joint",
-            phase="val",
-            verbose=False,
-        )
-        dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
-        it = iter(dl)
-        batch = next(it)[0]
-
-        self.learner.ort_session = None
-        self.learner.load(self.temp_dir / "weights" / f"{_BACKBONE}_ntu60_xview_joint.ckpt")
-
-        target = self.learner.infer(batch)
-
+        self.learner.batch_size = 2
+        self.learner._ort_session = None
         self.learner.optimize()
+        step_input = self.learner._example_input[:, :, 0]
+        step_output = self.learner.infer(step_input)
+        assert isinstance(step_output[0], Category)
 
-        assert self.learner.ort_session is not None
-        result = self.learner.infer(batch)
+        assert self.learner._ort_session is not None
 
         # Clean up
-        self.learner.ort_session = None
+        self.learner._ort_session = None
 
-    def xtest_save_and_load(self):
+    def test_save_and_load(self):
         assert self.learner.model is not None
+        self.learner.batch_size == 2
         self.learner.save(self.temp_dir)
         # Make changes to check subsequent load
         self.learner.model = None
