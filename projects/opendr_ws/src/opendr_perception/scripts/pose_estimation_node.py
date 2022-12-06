@@ -18,7 +18,7 @@ import torch
 
 import rospy
 from sensor_msgs.msg import Image as ROS_Image
-from ros_bridge.msg import OpenDRPose2D
+from opendr_bridge.msg import OpenDRPose2D
 from opendr_bridge import ROSBridge
 
 from opendr.engine.data import Image
