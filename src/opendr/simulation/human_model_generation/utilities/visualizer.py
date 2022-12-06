@@ -76,6 +76,8 @@ class Visualizer(pyglet.window.Window):
         pyglet.gl.glTranslated(0, 0, -3.5)
         pyglet.gl.glRotatef(self.rotations[self.rotation_id], 0.0, 1.0, 0.0)
         self.verts.draw(pyglet.gl.GL_TRIANGLES)
+        self.flip()
+        self.verts.draw(pyglet.gl.GL_TRIANGLES)
         if self.pose is not None:
             kps2D = {}
             pmat = (pyglet.gl.GLdouble * 16)()
@@ -113,7 +115,7 @@ class Visualizer(pyglet.window.Window):
             if self.plot_kps:
                 for kp in self.kps2D[self.rotation_id]:
                     img = cv2.circle(img, (self.kps2D[self.rotation_id][kp][0], self.kps2D[self.rotation_id][kp][1]), 1,
-                                     (0, 1.0, 0), 2)
+                                     (0, 255.0, 0), 2)
             self.imgs.append(Image(img))
             self.rotation_id = self.rotation_id + 1
             if self.rotation_id >= len(self.rotations):
