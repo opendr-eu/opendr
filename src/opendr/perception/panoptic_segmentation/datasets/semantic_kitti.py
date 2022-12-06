@@ -314,19 +314,11 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 
             # Copy the files
             for file in (calib_iter / sequence).iterdir():
-                shutil.copy(file, seq_dir)
+                shutil.move(str(file), str(seq_dir))
             for file in (label_iter / sequence).iterdir():
-                if file.is_dir():
-                    shutil.copytree(file, seq_dir / file.name)
-                else:
-                    shutil.copy(file, seq_dir)
+                shutil.move(str(file), str(seq_dir))
             for file in (velodyne_iter / sequence).iterdir():
-                if file.is_dir():
-                    shutil.copytree(file, seq_dir / file.name)
-                else:
-                    shutil.copy(file, seq_dir)
-
-        pass
+                shutil.move(str(file), str(seq_dir))
 
     def __getitem__(self,
                     idx: int
