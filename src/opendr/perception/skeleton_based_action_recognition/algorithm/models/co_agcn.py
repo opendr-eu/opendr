@@ -88,20 +88,125 @@ class CoAGcnMod(CoModelBase):
         A = self.graph.A
 
         # Pass in precise window-sizes to compensate propperly in BatchNorm modules
-        # fmt: off
-        self.layers = co.Sequential(OrderedDict([
-            ("layer1", CoSpatioTemporalBlock(C_in, 64, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=T, residual=False)),
-            ("layer2", CoSpatioTemporalBlock(64, 64, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=T - 1 * 8)),
-            ("layer3", CoSpatioTemporalBlock(64, 64, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=T - 2 * 8)),
-            ("layer4", CoSpatioTemporalBlock(64, 64, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=T - 3 * 8)),
-            ("layer5", CoSpatioTemporalBlock(64, 128, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=T - 4 * 8, stride=1)),
-            ("layer6", CoSpatioTemporalBlock(128, 128, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=(T - 4 * 8) - 1 * 8)),
-            ("layer7", CoSpatioTemporalBlock(128, 128, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=(T - 4 * 8) - 2 * 8)),
-            ("layer8", CoSpatioTemporalBlock(128, 256, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=(T - 4 * 8) - 3 * 8, stride=1)),
-            ("layer9", CoSpatioTemporalBlock(256, 256, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=((T - 4 * 8) - 3 * 8) - 1 * 8)),
-            ("layer10", CoSpatioTemporalBlock(256, 256, A, CoGraphConv=CoAdaptiveGraphConvolution, padding=0, window_size=((T - 4 * 8) - 3 * 8) - 2 * 8)),
-        ]))
-        # fmt: on
+        self.layers = co.Sequential(
+            OrderedDict(
+                [
+                    (
+                        "layer1",
+                        CoSpatioTemporalBlock(
+                            C_in,
+                            64,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=T,
+                            residual=False,
+                        ),
+                    ),
+                    (
+                        "layer2",
+                        CoSpatioTemporalBlock(
+                            64,
+                            64,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=T - 1 * 8,
+                        ),
+                    ),
+                    (
+                        "layer3",
+                        CoSpatioTemporalBlock(
+                            64,
+                            64,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=T - 2 * 8,
+                        ),
+                    ),
+                    (
+                        "layer4",
+                        CoSpatioTemporalBlock(
+                            64,
+                            64,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=T - 3 * 8,
+                        ),
+                    ),
+                    (
+                        "layer5",
+                        CoSpatioTemporalBlock(
+                            64,
+                            128,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=T - 4 * 8,
+                            stride=1,
+                        ),
+                    ),
+                    (
+                        "layer6",
+                        CoSpatioTemporalBlock(
+                            128,
+                            128,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=(T - 4 * 8) - 1 * 8,
+                        ),
+                    ),
+                    (
+                        "layer7",
+                        CoSpatioTemporalBlock(
+                            128,
+                            128,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=(T - 4 * 8) - 2 * 8,
+                        ),
+                    ),
+                    (
+                        "layer8",
+                        CoSpatioTemporalBlock(
+                            128,
+                            256,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=(T - 4 * 8) - 3 * 8,
+                            stride=1,
+                        ),
+                    ),
+                    (
+                        "layer9",
+                        CoSpatioTemporalBlock(
+                            256,
+                            256,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=((T - 4 * 8) - 3 * 8) - 1 * 8,
+                        ),
+                    ),
+                    (
+                        "layer10",
+                        CoSpatioTemporalBlock(
+                            256,
+                            256,
+                            A,
+                            CoGraphConv=CoAdaptiveGraphConvolution,
+                            padding=0,
+                            window_size=((T - 4 * 8) - 3 * 8) - 2 * 8,
+                        ),
+                    ),
+                ]
+            )
+        )
 
         # Other layers defined in CoModelBase.on_init_end
         CoModelBase.on_init_end(self)
