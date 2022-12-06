@@ -85,20 +85,18 @@ class ObjectTracking3DAb3dmotNode:
             # Convert detected boxes to ROS type and publish
             ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
             self.detection_publisher.publish(ros_boxes)
-            rospy.loginfo("Published detection boxes")
 
         if self.tracking_id_publisher is not None:
             ids = [tracking_box.id for tracking_box in tracking_boxes]
             ros_ids = Int32MultiArray()
             ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
-            rospy.loginfo("Published tracking ids")
 
     def listen(self):
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('ab3dmot_tracking_3d', anonymous=True)
+        rospy.init_node('opendr_object_ab3dmot_tracking_3d_node', anonymous=True)
         rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
 
         rospy.loginfo("Object Tracking 3D Ab3dmot Node started.")
@@ -107,6 +105,17 @@ class ObjectTracking3DAb3dmotNode:
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_point_cloud_topic",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-d", "--detections_topic",
+                        help="Output detections topic",
+                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects3d")
+    parser.add_argument("-t", "--tracking3d_id_topic",
+                        help="Output tracking ids topic with the same element count as in output_detection_topic",
+                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects_tracking_id")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
                         type=str, default="tanet_car_xyres_16", choices=["tanet_car_xyres_16"])
     parser.add_argument(
@@ -119,25 +128,14 @@ def main():
     )
     parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
-                        type=str, default="/opendr/dataset_point_cloud")
-    parser.add_argument("-od", "--output_detection3d_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/detection3d")
-    parser.add_argument("-ot", "--output_tracking3d_id_topic",
-                        help="Output tracking id topic",
-                        type=str, default="/opendr/tracking3d_id")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     input_point_cloud_topic = args.input_point_cloud_topic
     detector_model_name = args.detector_model_name
     temp_dir = args.temp_dir
     detector_model_config_path = args.detector_model_config_path
-    output_detection3d_topic = args.output_detection3d_topic
-    output_tracking3d_id_topic = args.output_tracking3d_id_topic
+    output_detection3d_topic = args.detections_topic
+    output_tracking3d_id_topic = args.tracking3d_id_topic
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
@@ -162,13 +160,12 @@ def main():
 
     detector.load(os.path.join(temp_dir, detector_model_name), verbose=True)
 
-    # created node object
     ab3dmot_node = ObjectTracking3DAb3dmotNode(
         detector=detector,
         device=device,
         input_point_cloud_topic=input_point_cloud_topic,
-        output_detection3d_topic=output_detection3d_topic if output_detection3d_topic != "None" else None,
-        output_tracking3d_id_topic=output_tracking3d_id_topic if output_tracking3d_id_topic != "None" else None,
+        output_detection3d_topic=output_detection3d_topic,
+        output_tracking3d_id_topic=output_tracking3d_id_topic,
     )
 
     ab3dmot_node.listen()

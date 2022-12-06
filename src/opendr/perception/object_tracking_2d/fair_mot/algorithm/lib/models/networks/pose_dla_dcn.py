@@ -372,13 +372,16 @@ class DLA(nn.Module):
             y.append(x)
         return y
 
-    def load_pretrained_model(self, data="imagenet", name="dla34", hash="ba72cf86"):
-        if name.endswith(".pth"):
-            model_weights = torch.load(data + name)
-        else:
-            model_url = get_model_url(data, name, hash)
-            model_weights = model_zoo.load_url(model_url)
-        num_classes = len(model_weights[list(model_weights.keys())[-1]])
+    def load_model(self, pretrained=True, data="imagenet", name="dla34", hash="ba72cf86", num_classes=1000):
+        
+        if pretrained:
+            if name.endswith(".pth"):
+                model_weights = torch.load(data + name)
+            else:
+                model_url = get_model_url(data, name, hash)
+                model_weights = model_zoo.load_url(model_url)
+            num_classes = len(model_weights[list(model_weights.keys())[-1]])
+
         self.fc = nn.Conv2d(
             self.channels[-1],
             num_classes,
@@ -387,15 +390,16 @@ class DLA(nn.Module):
             padding=0,
             bias=True,
         )
-        self.load_state_dict(model_weights)
+
+        if pretrained:
+            self.load_state_dict(model_weights)
 
 
 def dla34(pretrained=True, **kwargs):  # DLA-34
     model = DLA(
         [1, 1, 1, 2, 2, 1], [16, 32, 64, 128, 256, 512], block=BasicBlock, **kwargs
     )
-    if pretrained:
-        model.load_pretrained_model(data="imagenet", name="dla34", hash="ba72cf86")
+    model.load_model(data="imagenet", name="dla34", hash="ba72cf86", pretrained=pretrained)
     return model
 
 
@@ -533,12 +537,13 @@ class DLASeg(nn.Module):
         last_level,
         head_conv,
         out_channel=0,
+        num_classes=None
     ):
         super(DLASeg, self).__init__()
         assert down_ratio in [2, 4, 8, 16]
         self.first_level = int(np.log2(down_ratio))
         self.last_level = last_level
-        self.base = globals()[base_name](pretrained=pretrained)
+        self.base = globals()[base_name](pretrained=pretrained, num_classes=num_classes)
         channels = self.base.channels
         scales = [2 ** i for i in range(len(channels[self.first_level :]))]
         self.dla_up = DLAUp(self.first_level, channels[self.first_level :], scales)
@@ -608,14 +613,15 @@ class DLASeg(nn.Module):
         return [z]
 
 
-def get_pose_net(num_layers, heads, head_conv=256, down_ratio=4):
+def get_pose_net(pretrained, num_layers, heads, head_conv=256, down_ratio=4, num_classes=None):
     model = DLASeg(
         "dla{}".format(num_layers),
         heads,
-        pretrained=True,
+        pretrained=pretrained,
         down_ratio=down_ratio,
         final_kernel=1,
         last_level=5,
         head_conv=head_conv,
+        num_classes=num_classes,
     )
     return model
