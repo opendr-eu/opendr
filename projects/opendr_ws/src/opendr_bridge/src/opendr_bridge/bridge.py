@@ -28,7 +28,7 @@ from std_msgs.msg import ColorRGBA, String, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 import rospy
 from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
-from ros_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
+from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
 
 class ROSBridge:
@@ -79,7 +79,7 @@ class ROSBridge:
         :param pose: OpenDR Pose to be converted to OpenDRPose2D
         :type pose: engine.target.Pose
         :return: ROS message with the pose
-        :rtype: ros_bridge.msg.OpenDRPose2D
+        :rtype: opendr_bridge.msg.OpenDRPose2D
         """
         data = pose.data
         # Setup ros pose
@@ -102,7 +102,7 @@ class ROSBridge:
         """
         Converts an OpenDRPose2D message into an OpenDR Pose.
         :param ros_pose: the ROS pose to be converted
-        :type ros_pose: ros_bridge.msg.OpenDRPose2D
+        :type ros_pose: opendr_bridge.msg.OpenDRPose2D
         :return: an OpenDR Pose
         :rtype: engine.target.Pose
         """

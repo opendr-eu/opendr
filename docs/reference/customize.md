@@ -68,7 +68,7 @@ If you need to modify a docker image without rebuilding it (e.g., for changing s
 ## Changing the behavior of ROS nodes
 ROS nodes are provided as examples that demonstrate how various tools can be used. 
 As a result, customization might be needed in order to make them appropriate for your specific needs.
-Currently, all nodes support changing the input/output topics (please refer to the [README](../../projects/opendr_ws/src/perception/README.md) for more information for each node).
+Currently, all nodes support changing the input/output topics (please refer to the [README](../../projects/opendr_ws/src/opendr_perception/README.md) for more information for each node).
 However, if you need to change anything else (e.g., load a custom model), then you should appropriately modify the source code of the nodes.
 This is very easy, since the Python API of OpenDR is used in all of the provided nodes.
 You can refer to [Python API documentation](https://github.com/opendr-eu/opendr/blob/master/docs/reference/index.md) for more details for the tool that you are interested in.

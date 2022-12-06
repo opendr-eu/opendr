@@ -1,11 +1,27 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(data_generation)
+project(opendr_simulation)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
-  sensor_msgs
   std_msgs
+  sensor_msgs
+  shape_msgs
+  vision_msgs
+  message_generation
+)
+
+add_service_files(
+  FILES
+  Mesh_vc.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  sensor_msgs
+  shape_msgs
+  vision_msgs
 )
 
 ###################################
@@ -27,6 +43,7 @@ include_directories(
 #############
 
 catkin_install_python(PROGRAMS
-   scripts/synthetic_facial_generation.py
+   scripts/human_model_generation_service.py
+   scripts/human_model_generation_client.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
