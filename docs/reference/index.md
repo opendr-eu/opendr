@@ -46,6 +46,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [centernet Module](object-detection-2d-centernet.md)
             - [ssd Module](object-detection-2d-ssd.md)
             - [yolov3 Module](object-detection-2d-yolov3.md)
+            - [yolov5 Module](object-detection-2d-yolov5.md)
             - [seq2seq-nms Module](object-detection-2d-nms-seq2seq_nms.md)
         - object detection 3d:
             - [voxel Module](voxel-object-detection-3d.md)
@@ -82,7 +83,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
     - `Stand-alone Utility Frameworks`
         - [Engine Agnostic Gym Environment with Reactive extension (EAGERx)](eagerx.md)
-- [ROSBridge Package](rosbridge.md)
+- [ROS Bridge Package](opendr-ros-bridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
     - [target.h](c-target-h.md)
