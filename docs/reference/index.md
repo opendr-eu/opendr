@@ -84,7 +84,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
     - `Stand-alone Utility Frameworks`
         - [Engine Agnostic Gym Environment with Reactive extension (EAGERx)](eagerx.md)
-- [ROSBridge Package](rosbridge.md)
+- [ROS Bridge Package](opendr-ros-bridge.md)
 - [C Inference API](c-api.md)
     - [data.h](c-data-h.md)
     - [target.h](c-target-h.md)

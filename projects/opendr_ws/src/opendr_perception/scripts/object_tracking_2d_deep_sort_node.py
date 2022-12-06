@@ -23,25 +23,30 @@ from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
+from opendr.engine.learners import Learner
 from opendr.perception.object_tracking_2d import (
-    ObjectTracking2DFairMotLearner,
+    ObjectTracking2DDeepSortLearner,
+    ObjectTracking2DFairMotLearner
 )
-from opendr.engine.data import Image
+from opendr.engine.data import Image, ImageWithDetections
 
 
-class ObjectTracking2DFairMotNode:
+class ObjectTracking2DDeepSortNode:
     def __init__(
         self,
+        detector: Learner,
         input_rgb_image_topic="/usb_cam/image_raw",
-        output_detection_topic="/opendr/fairmot_detection",
-        output_tracking_id_topic="/opendr/fairmot_tracking_id",
-        output_rgb_image_topic="/opendr/fairmot_image_annotated",
+        output_detection_topic="/opendr/objects",
+        output_tracking_id_topic="/opendr/objects_tracking_id",
+        output_rgb_image_topic="/opendr/image_objects_annotated",
         device="cuda:0",
-        model_name="fairmot_dla34",
+        model_name="deep_sort",
         temp_dir="temp",
     ):
         """
         Creates a ROS Node for 2D object tracking
+        :param detector: Learner to generate object detections
+        :type detector: Learner
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
@@ -59,21 +64,17 @@ class ObjectTracking2DFairMotNode:
         :type temp_dir: str
         """
 
-        self.learner = ObjectTracking2DFairMotLearner(
+        self.detector = detector
+        self.learner = ObjectTracking2DDeepSortLearner(
             device=device, temp_path=temp_dir,
         )
         if not os.path.exists(os.path.join(temp_dir, model_name)):
-            ObjectTracking2DFairMotLearner.download(model_name, temp_dir)
+            ObjectTracking2DDeepSortLearner.download(model_name, temp_dir)
 
         self.learner.load(os.path.join(temp_dir, model_name), verbose=True)
 
         self.bridge = ROSBridge()
         self.input_rgb_image_topic = input_rgb_image_topic
-
-        if output_detection_topic is not None:
-            self.detection_publisher = rospy.Publisher(
-                output_detection_topic, Detection2DArray, queue_size=10
-            )
 
         if output_tracking_id_topic is not None:
             self.tracking_id_publisher = rospy.Publisher(
@@ -85,6 +86,11 @@ class ObjectTracking2DFairMotNode:
                 output_rgb_image_topic, ROS_Image, queue_size=10
             )
 
+        if output_detection_topic is not None:
+            self.detection_publisher = rospy.Publisher(
+                output_detection_topic, Detection2DArray, queue_size=10
+            )
+
     def callback(self, data):
         """
         Callback that process the input data and publishes to the corresponding topics
@@ -94,7 +100,9 @@ class ObjectTracking2DFairMotNode:
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
-        tracking_boxes = self.learner.infer(image)
+        detection_boxes = self.detector.infer(image)
+        image_with_detections = ImageWithDetections(image.numpy(), detection_boxes)
+        tracking_boxes = self.learner.infer(image_with_detections, swap_left_top=True)
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
@@ -105,7 +113,6 @@ class ObjectTracking2DFairMotNode:
             self.output_image_publisher.publish(message)
 
         if self.detection_publisher is not None:
-            detection_boxes = tracking_boxes.bounding_box_list()
             ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
             self.detection_publisher.publish(ros_boxes)
 
@@ -119,10 +126,10 @@ class ObjectTracking2DFairMotNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('opendr_object_tracking_2d_fair_mot_node', anonymous=True)
+        rospy.init_node('opendr_object_tracking_2d_deep_sort_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
 
-        rospy.loginfo("Object Tracking 2D Fair Mot Node started.")
+        rospy.loginfo("Object Tracking 2D Deep Sort Node started.")
         rospy.spin()
 
 
@@ -191,8 +198,8 @@ def main():
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
-                        type=str, default="fairmot_dla34", choices=["fairmot_dla34"])
-    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
+                        type=str, default="deep_sort", choices=["deep_sort"])
+    parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     args = parser.parse_args()
 
@@ -209,7 +216,16 @@ def main():
         print("Using CPU.")
         device = "cpu"
 
-    fair_mot_node = ObjectTracking2DFairMotNode(
+    detection_learner = ObjectTracking2DFairMotLearner(
+        device=device, temp_path=args.temp_dir,
+    )
+    if not os.path.exists(os.path.join(args.temp_dir, "fairmot_dla34")):
+        ObjectTracking2DFairMotLearner.download("fairmot_dla34", args.temp_dir)
+
+    detection_learner.load(os.path.join(args.temp_dir, "fairmot_dla34"), verbose=True)
+
+    deep_sort_node = ObjectTracking2DDeepSortNode(
+        detector=detection_learner,
         device=device,
         model_name=args.model_name,
         input_rgb_image_topic=args.input_rgb_image_topic,
@@ -219,7 +235,7 @@ def main():
         output_rgb_image_topic=args.output_rgb_image_topic,
     )
 
-    fair_mot_node.listen()
+    deep_sort_node.listen()
 
 
 if __name__ == '__main__':
