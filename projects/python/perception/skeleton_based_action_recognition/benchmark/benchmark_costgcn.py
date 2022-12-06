@@ -31,7 +31,7 @@ logging.basicConfig()
 logger.setLevel("DEBUG")
 
 
-def benchmark_cox3d():
+def benchmark_costgcn():
     temp_dir = "./projects/python/perception/skeleton_based_action_recognition/tmp"
 
     num_runs = 100
@@ -52,14 +52,7 @@ def benchmark_cox3d():
         sample = torch.randn(batch_size, *input_shape)  # (B, C, H, W)
 
         learner.model.eval()
-        # learner.optimize()
-
-        # Warm up model state
-        full_sample = sample.unsqueeze(2).repeat(1, 1, 300, 1, 1)
-        if torch.cuda.is_available():
-            full_sample = full_sample.to(device="cuda")
-
-        learner.model.forward_steps(full_sample)
+        learner.optimize()
 
         def get_device_fn(*args):
             nonlocal learner
@@ -95,4 +88,4 @@ def benchmark_cox3d():
 
 
 if __name__ == "__main__":
-    benchmark_cox3d()
+    benchmark_costgcn()
