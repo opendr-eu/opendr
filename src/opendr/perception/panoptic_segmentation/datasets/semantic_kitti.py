@@ -16,7 +16,11 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Tuple
 import sys
+import shutil
+import multiprocessing as mp
+import warnings
 
+from tqdm import tqdm
 import numpy as np
 from tqdm import tqdm
 
@@ -247,6 +251,82 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
         }
 
         return results
+
+    @staticmethod
+    def prepare_data(download_path: Union[Path, str],
+                     dataset_path: Union[Path, str],
+                     num_workers: int = mp.cpu_count(),
+                        ) -> None:
+        """
+        This method is used to structure extracted zip of the dataset.
+
+        :param download_path: Path to the downloaded and unzipped file.
+        :type download_path: str | pathlib.Path
+        :param dataset_path: Path to the directory where the dataset will be stored.
+        :type dataset_path: str | pathlib.Path
+        :param num_workers: Number of workers to use for parallel processing.
+        :type num_workers: int
+        """
+
+        if not isinstance(download_path, Path):
+            download_path = Path(download_path)
+
+        if not isinstance(dataset_path, Path):
+            dataset_path = Path(dataset_path)
+
+        if not download_path.exists():
+            raise ValueError('The provided download_path does not exist.')
+
+        if not dataset_path.exists():
+            dataset_path.mkdir(parents=True)
+
+        # Create the structured dataset directory
+        output_dir = dataset_path / 'semantic-kitti' / 'sequences'
+        sequences = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', 
+                     '12', '13', '14', '15', '16', '17', '18', '19', '20', '21']
+        subdir_names = ['data_odometry_calib', 'data_odometry_labels', 'data_odometry_velodyne']
+        # Go sub-directories to extract the names
+        sub_dirs = [f for f in download_path.iterdir() if f.is_dir()]
+        sub_dirs.sort()
+        # Check if the sub-directories are the ones we expect
+        if not all([s.name in subdir_names for s in sub_dirs]):
+            raise ValueError('The provided download_path does not contain the expected sub-directories.')
+        # create 3 iterators for parallel processing. One for "Calib", one for "Labels" and one for "Velodyne"
+        
+        calib_iter = sub_dirs[0] / 'dataset' / 'sequences'
+        label_iter = sub_dirs[1] / 'dataset' / 'sequences'
+        velodyne_iter = sub_dirs[2] / 'dataset' / 'sequences'
+        
+        for sequence in tqdm(sequences):
+            # Check if that sequence exists in the downloaded dataset
+            if not (calib_iter / sequence).exists():
+                warnings.warn('The sequence {} does not exist in the {}.'.format(sequence, subdir_names[0]))
+                continue
+            if not (label_iter / sequence).exists():
+                warnings.warn('The sequence {} does not exist in the {}.'.format(sequence, subdir_names[1]))
+                continue
+            if not (velodyne_iter / sequence).exists():
+                warnings.warn('The sequence {} does not exist in the {}.'.format(sequence, subdir_names[2]))
+                continue
+            # Create the sequence directory
+            seq_dir = output_dir / sequence
+            seq_dir.mkdir(parents=True)
+
+            # Copy the files
+            for file in (calib_iter / sequence).iterdir():
+                shutil.copy(file, seq_dir)
+            for file in (label_iter / sequence).iterdir():
+                if file.is_dir():
+                    shutil.copytree(file, seq_dir / file.name)
+                else:   
+                    shutil.copy(file, seq_dir)
+            for file in (velodyne_iter / sequence).iterdir():
+                if file.is_dir():
+                    shutil.copytree(file, seq_dir / file.name)
+                else:
+                    shutil.copy(file, seq_dir)
+
+        pass
 
     def __getitem__(self,
                     idx: int
