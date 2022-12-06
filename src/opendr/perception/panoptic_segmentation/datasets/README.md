@@ -33,4 +33,16 @@ For using the EfficientLPS module with LiDAR data, the dataset must be downloade
    - [KITTI Odometry Benchmark Calibration Data](http://www.cvlibs.net/download.php?file=data_odometry_calib.zip)
    - [KITTI SemanticKITTI Label Data](http://www.semantic-kitti.org/assets/data_odometry_labels.zip)
    
-2. Extract the contents of the `zip` files into the same folder. No further preparation is needed. 
+2. Extract the contents of the `zip` files into the same folder. 
+The folder structure should look like the following:  
+"unzipped-semantickitti/"   
+      &emsp;└── data_odometry_calib/  
+      &emsp;└── data_odometry_labels/  
+      &emsp;└── data_odometry_velodyne/  
+
+ ```python
+from opendr.perception.panoptic_segmentation import SemanticKittiDataset
+DOWNLOAD_ROOT = "~/data/unzipped-semantickitti"
+DATA_ROOT = "~/data/semantickitti"
+SemanticKittiDataset.prepare_data(DOWNLOAD_ROOT, DATA_ROOT)
+```
