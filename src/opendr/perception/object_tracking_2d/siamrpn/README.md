@@ -10,7 +10,7 @@ This class implements the SiamRPN generic object tracker based on its
 The following datasets are supported for training the SiamRPN tracker:
 
 1. COCO Detection dataset ([preprocessing scripts](https://github.com/foolwood/SiamMask/tree/master/data/coco))
-2. Youtube BB dataset ([preprocessing scripts](https://github.com/foolwood/SiamMask/tree/master/data/ytb_vos))
+2. YouTube BB dataset ([preprocessing scripts](https://github.com/foolwood/SiamMask/tree/master/data/ytb_vos))
 3. ILSVRC-VID ([preprocessing scripts](https://github.com/foolwood/SiamMask/tree/master/data/vid))
 4. ILSVRC-DET ([preprocessing scripts](https://github.com/foolwood/SiamMask/tree/master/data/det))
 
