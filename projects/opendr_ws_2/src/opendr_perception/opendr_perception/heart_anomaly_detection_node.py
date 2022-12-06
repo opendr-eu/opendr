@@ -22,7 +22,7 @@ from rclpy.node import Node
 from vision_msgs.msg import Classification2D
 from std_msgs.msg import Float32MultiArray
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
 
 
@@ -41,7 +41,7 @@ class HeartAnomalyNode(Node):
         :param model: model to use: anbof or gru
         :type model: str
         """
-        super().__init__("heart_anomaly_detection_node")
+        super().__init__("opendr_heart_anomaly_detection_node")
 
         self.publisher = self.create_publisher(Classification2D, output_heart_anomaly_topic, 1)
 
@@ -86,12 +86,12 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_ecg_topic", type=str, default="/ecg/ecg",
+    parser.add_argument("-i", "--input_ecg_topic", type=str, default="/ecg/ecg",
                         help="listen to input ECG data on this topic")
+    parser.add_argument("-o", "--output_heart_anomaly_topic", type=str, default="/opendr/heart_anomaly",
+                        help="Topic name for heart anomaly detection topic")
     parser.add_argument("--model", type=str, default="anbof", help="model to be used for prediction: anbof or gru",
                         choices=["anbof", "gru"])
-    parser.add_argument("--output_heart_anomaly_topic", type=str, default="/opendr/heart_anomaly",
-                        help="Topic name for heart anomaly detection topic")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
                         choices=["cuda", "cpu"])
     args = parser.parse_args()

@@ -21,7 +21,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
@@ -34,7 +34,7 @@ class ObjectDetectionSSDNode(Node):
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
                  detections_topic="/opendr/objects", device="cuda", backbone="vgg16_atrous", nms_type='default'):
         """
-        Creates a ROS Node for object detection with SSD.
+        Creates a ROS2 Node for object detection with SSD.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
@@ -51,7 +51,7 @@ class ObjectDetectionSSDNode(Node):
         of 'default', 'seq2seq-nms', 'soft-nms', 'fast-nms', 'cluster-nms'
         :type nms_type: str
         """
-        super().__init__('object_detection_ssd_node')
+        super().__init__('opendr_object_detection_2d_ssd_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 

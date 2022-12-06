@@ -23,7 +23,7 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
@@ -35,7 +35,7 @@ class BisenetNode(Node):
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", output_heatmap_topic="/opendr/heatmap",
                  output_rgb_image_topic="/opendr/heatmap_visualization", device="cuda"):
         """
-        Creates a ROS Node for semantic segmentation with Bisenet.
+        Creates a ROS2 Node for semantic segmentation with Bisenet.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_heatmap_topic: Topic to which we are publishing the heatmap in the form of a ROS image containing
@@ -47,7 +47,7 @@ class BisenetNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__('semantic_segmentation_bisenet_node')
+        super().__init__('opendr_semantic_segmentation_bisenet_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
@@ -155,10 +155,11 @@ def main(args=None):
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_heatmap_topic", help="Topic to which we are publishing the heatmap in the form "
                                                              "of a ROS image containing class ids",
-                        type=lambda value: value if value.lower() != "none" else None, default="/opendr/heatmap")
-    parser.add_argument("-v", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
-                                                               "blended with the input image and a class legend for "
-                                                               "visualization purposes",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/heatmap")
+    parser.add_argument("-ov", "--output_rgb_image_topic", help="Topic to which we are publishing the heatmap image "
+                                                                "blended with the input image and a class legend for "
+                                                                "visualization purposes",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/heatmap_visualization")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",

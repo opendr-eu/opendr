@@ -75,7 +75,7 @@ class AudiovisualEmotionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('opendr_audiovisualemotion_recognition', anonymous=True)
+        rospy.init_node('opendr_audiovisual_emotion_recognition_node', anonymous=True)
 
         video_sub = message_filters.Subscriber(self.input_video_topic, ROS_Image)
         audio_sub = message_filters.Subscriber(self.input_audio_topic, AudioData)
@@ -83,7 +83,7 @@ class AudiovisualEmotionNode:
         ts = message_filters.ApproximateTimeSynchronizer([video_sub, audio_sub], 10, 0.1, allow_headerless=True)
         ts.registerCallback(self.callback)
 
-        rospy.loginfo("Audiovisual emotion recognition node started!")
+        rospy.loginfo("Audiovisual emotion recognition node started.")
         rospy.spin()
 
     def callback(self, image_data, audio_data):
@@ -127,19 +127,18 @@ def select_distributed(m, n): return [i*n//m + n//(2*m) for i in range(m)]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video_topic", type=str, default="/usb_cam/image_raw",
+    parser.add_argument("-iv", "--input_video_topic", type=str, default="/usb_cam/image_raw",
                         help="Listen to video input data on this topic")
-    parser.add_argument("--input_audio_topic", type=str, default="/audio/audio",
+    parser.add_argument("-ia", "--input_audio_topic", type=str, default="/audio/audio",
                         help="Listen to audio input data on this topic")
-    parser.add_argument("--output_emotions_topic", type=str, default="/opendr/audiovisual_emotion",
+    parser.add_argument("-o", "--output_emotions_topic", type=str, default="/opendr/audiovisual_emotion",
                         help="Topic name for output emotions recognition")
-    parser.add_argument("--buffer_size", type=float, default=3.6,
-                        help="Size of the audio buffer in seconds")
     parser.add_argument("--device", type=str, default="cuda",
                         help="Device to use (cpu, cuda)", choices=["cuda", "cpu"])
+    parser.add_argument("--buffer_size", type=float, default=3.6,
+                        help="Size of the audio buffer in seconds")
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>data_generation</name>
+  <name>opendr_data_generation</name>
   <version>1.0.0</version>
-  <description>OpenDR ROS2 node for synthetic multiview facial image generation</description>
+  <description>OpenDR's ROS2 nodes for data generation package</description>
   <maintainer email="tefas@csd.auth.gr">tefas</maintainer>
   <license>Apache License v2.0</license>
   
@@ -11,7 +11,7 @@
   <depend>sensor_msgs</depend>
   
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>opendr_ros2_bridge</exec_depend>
+  <exec_depend>opendr_bridge</exec_depend>
   
   <buildtool_depend>ament_cmake</buildtool_depend>
   

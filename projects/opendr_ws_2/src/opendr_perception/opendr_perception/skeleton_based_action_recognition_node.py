@@ -22,8 +22,8 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
-from opendr_ros2_messages.msg import OpenDRPose2D
+from opendr_bridge import ROS2Bridge
+from opendr_interface.msg import OpenDRPose2D
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
@@ -62,7 +62,7 @@ class SkeletonActionRecognitionNode(Node):
          (Options: 'stgcn', 'pstgcn')
         :type model: str
         """
-        super().__init__('skeleton_based_action_recognition_node')
+        super().__init__('opendr_skeleton_based_action_recognition_node')
         # Set up ROS topics and bridge
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)

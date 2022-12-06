@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>opendr_ros2_messages</name>
+  <name>opendr_interface</name>
   <version>1.0.0</version>
-  <description>OpenDR ROS2 custom messages package. This package includes all custom OpenDR ROS2 messages.</description>
+  <description>OpenDR ROS2 custom interface package. This package includes all custom OpenDR ROS2 messages and services.</description>
   <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
   <license>Apache License v2.0</license>
 

@@ -20,8 +20,8 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
-from opendr_ros2_messages.msg import OpenDRPose2D
+from opendr_bridge import ROS2Bridge
+from opendr_interface.msg import OpenDRPose2D
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
@@ -56,7 +56,7 @@ class PoseEstimationNode(Node):
         Valid only for GPU-based inference
         :type half_precision: bool
         """
-        super().__init__('pose_estimation_node')
+        super().__init__('opendr_pose_estimation_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 

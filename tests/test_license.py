@@ -99,6 +99,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'projects/python/simulation/synthetic_multi_view_facial_image_generation/algorithm',
+            'projects/opendr_ws/devel',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/object_detection_2d/gem/algorithm',
@@ -108,8 +109,9 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'projects/opendr_ws_2/src/opendr_perception/test',
             'projects/opendr_ws_2/src/opendr_planning/test',
-            'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
-            'projects/opendr_ws_2/src/data_generation/test',
+            'projects/opendr_ws_2/src/opendr_bridge/test',
+            'projects/opendr_ws_2/src/opendr_interface/test',
+            'projects/opendr_ws_2/src/opendr_data_generation/test',
             'projects/opendr_ws_2/src/opendr_simulation/test',
         ]
 
@@ -125,7 +127,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
             'projects/opendr_ws_2/src/opendr_perception/setup.py',
             'projects/opendr_ws_2/src/opendr_planning/setup.py',
-            'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
+            'projects/opendr_ws_2/src/opendr_bridge/setup.py',
             'projects/opendr_ws_2/src/data_generation/setup.py',
             'projects/opendr_ws_2/src/opendr_simulation/setup.py',
         ]

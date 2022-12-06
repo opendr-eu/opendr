@@ -31,7 +31,7 @@ from opendr.projects.python.simulation.synthetic_multi_view_facial_image_generat
     import MultiviewDataGeneration
 
 
-class SyntheticDataGenerator(Node):
+class SyntheticDataGeneratorNode(Node):
 
     def __init__(self, args, input_rgb_image_topic="/image_raw",
                  output_rgb_image_topic="/opendr/synthetic_facial_images"):
@@ -156,9 +156,9 @@ def main(args=None):
     parser.add_argument('--resume_idx', default=0, type=int)
     args = parser.parse_args()
 
-    synthetic_data_generation_node = SyntheticDataGenerator(args=args,
-                                                            input_rgb_image_topic=args.input_rgb_image_topic,
-                                                            output_rgb_image_topic=args.output_rgb_image_topic)
+    synthetic_data_generation_node = SyntheticDataGeneratorNode(args=args,
+                                                                input_rgb_image_topic=args.input_rgb_image_topic,
+                                                                output_rgb_image_topic=args.output_rgb_image_topic)
 
     rclpy.spin(synthetic_data_generation_node)
 

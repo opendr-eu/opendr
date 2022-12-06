@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'opendr_ros2_bridge'
+package_name = 'opendr_bridge'
 
 setup(
     name=package_name,

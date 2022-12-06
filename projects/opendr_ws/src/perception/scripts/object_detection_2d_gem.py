@@ -33,8 +33,8 @@ class ObjectDetectionGemNode:
         self,
         input_rgb_image_topic="/camera/color/image_raw",
         input_infra_image_topic="/camera/infra/image_raw",
-        output_rgb_image_topic="/opendr/rgb_detection_annotated",
-        output_infra_image_topic="/opendr/infra_detection_annotated",
+        output_rgb_image_topic="/opendr/rgb_image_objects_annotated",
+        output_infra_image_topic="/opendr/infra_image_objects_annotated",
         detections_topic="/opendr/objects",
         device="cuda",
         pts_rgb=None,
@@ -66,7 +66,7 @@ class ObjectDetectionGemNode:
         opendr/perception/object_detection2d/utils module.
         :type pts_infra: {list, numpy.ndarray}
         """
-        rospy.init_node("gem", anonymous=True)
+        rospy.init_node("opendr_object_detection_2d_gem_node", anonymous=True)
         if output_rgb_image_topic is not None:
             self.rgb_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=10)
         else:
@@ -189,14 +189,13 @@ class ObjectDetectionGemNode:
 
         sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
         sync.registerCallback(self.callback)
-        rospy.loginfo("GEM node Initialized!")
+        rospy.loginfo("GEM node initialized.")
 
     def listen(self):
         """
         Start the node and begin processing input data
         """
-        self.fps_list = []
-        rospy.loginfo("GEM node started!")
+        rospy.loginfo("Object detection 2D GEM node started.")
         rospy.spin()
 
     def callback(self, msg_rgb, msg_ir):
@@ -219,8 +218,6 @@ class ObjectDetectionGemNode:
         if self.detection_publisher is not None:
             ros_detection = self.bridge.to_ros_bounding_box_list(boxes)
             self.detection_publisher.publish(ros_detection)
-            # We get can the data back using self.bridge.from_ros_bounding_box_list(ros_detection)
-            # e.g., opendr_detection = self.bridge.from_ros_bounding_box_list(ros_detection)
 
         if self.rgb_publisher is not None:
             plot_rgb = draw_bounding_boxes(image_rgb, boxes, class_names=self.classes)
@@ -234,35 +231,23 @@ class ObjectDetectionGemNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--input_rgb_image_topic", help="Topic name for input rgb image", type=str, default="/camera/color/image_raw"
-    )
-    parser.add_argument(
-        "--output_rgb_image_topic",
-        help="Topic name for output annotated rgb image",
-        type=str,
-        default="/opendr/rgb_image_objects_annotated",
-    )
-    parser.add_argument(
-        "--input_infra_image_topic", help="Topic name for input infra image", type=str, default="/camera/infra/image_raw"
-    )
-    parser.add_argument(
-        "--output_infra_image_topic",
-        help="Topic name for output annotated infra image",
-        type=str,
-        default="/opendr/infra_image_objects_annotated",
-    )
-    parser.add_argument("--detections_topic", help="Topic name for detection messages", type=str, default="/opendr/objects")
-    parser.add_argument(
-        "--device",
-        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
-        type=str,
-        default="cuda",
-        choices=["cuda", "cpu"],
-    )
+    parser.add_argument("-ic", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/camera/color/image_raw")
+    parser.add_argument("-ii", "--input_infra_image_topic", help="Topic name for input infrared image",
+                        type=str, default="/camera/infra/image_raw")
+    parser.add_argument("-oc", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/rgb_image_objects_annotated")
+    parser.add_argument("-oi", "--output_infra_image_topic", help="Topic name for output annotated infrared image",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/infra_image_objects_annotated")
+    parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects")
+    parser.add_argument("--device", help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
-    # Select the device for running the
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
