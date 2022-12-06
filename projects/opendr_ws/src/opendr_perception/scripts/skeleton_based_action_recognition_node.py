@@ -19,7 +19,7 @@ import torch
 import numpy as np
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
-from ros_bridge.msg import OpenDRPose2D
+from opendr_bridge.msg import OpenDRPose2D
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 from opendr.perception.pose_estimation import draw
