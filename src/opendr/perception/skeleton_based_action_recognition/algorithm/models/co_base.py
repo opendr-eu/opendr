@@ -83,18 +83,20 @@ class CoModelBase(pl.LightningModule, co.Sequential):
 
         pool_size = self.pool_size
         if pool_size == -1:
-            pool_size = math.ceil((T - self.receptive_field + 2 * self.padding + 1) / self.stride)
+            pool_size = math.ceil(
+                (T - self.receptive_field + 2 * self.padding[0] + 1) / self.stride[0]
+            )
 
         pool_padding = self.pool_padding
         if pool_padding == -1:
             pool_padding = pool_size - math.ceil(
-                (T - self.receptive_field + self.padding + 1) / self.stride
+                (T - self.receptive_field + self.padding[0] + 1) / self.stride[0]
             )
         pool = co.AvgPool1d(pool_size, stride=1, padding=max(0, pool_padding))
 
         fc = co.Linear(256, self.num_classes, channel_dim=1)
 
-        squeeze = co.Lambda(lambda x: x.squeeze(-1), takes_time=True)
+        squeeze = co.Lambda(lambda x: x.squeeze(-1), takes_time=True, forward_step_only_fn=lambda x: x)
 
         # Initialize weights
         init_weights(data_bn, bs=1)
@@ -122,10 +124,10 @@ class CoModelBase(pl.LightningModule, co.Sequential):
 
         logger.info(f"Input shape (C, T, V, S) = {self.input_shape}")
         logger.info(f"Receptive field {self.receptive_field}")
-        logger.info(f"Init frames {self.receptive_field - 2 * self.padding - 1}")
+        logger.info(f"Init frames {self.receptive_field - 2 * self.padding[0] - 1}")
         logger.info(f"Pool size {pool_size}")
-        logger.info(f"Stride {self.stride}")
-        logger.info(f"Padding {self.padding}")
+        logger.info(f"Stride {self.stride[0]}")
+        logger.info(f"Padding {self.padding[0]}")
         logger.info(f"Using Continual {self.call_mode}")
 
         if self.forward_mode == "frame":
@@ -391,7 +393,7 @@ class SpatioTemporalBlock(nn.Module):
             # Centered residuals:
             # If temporal zero-padding is removed, the feature-map shrinks at every temporal conv
             # The residual should shrink correspondingly, i.e. (kernel_size - 1) / 2) on each side
-            r = self.residual(x[:, :, self.residual_shrink : -self.residual_shrink])
+            r = self.residual(x[:, :, self.residual_shrink:-self.residual_shrink])
         else:
             r = self.residual(x)
 
@@ -434,7 +436,7 @@ def CoSpatioTemporalBlock(
 
     residual = CoTempConv(in_channels, out_channels, kernel_size=1, stride=stride)
 
-    residual_shrink = tcn.receptive_field - 2 * tcn.padding != 1
+    residual_shrink = tcn.receptive_field - 2 * tcn.padding[0] != 1
 
     delay = tcn.delay // stride
     if residual_shrink:
