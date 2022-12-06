@@ -102,7 +102,7 @@ class HumanActivityRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node("opendr_human_activity_recognition", anonymous=True)
+        rospy.init_node("opendr_human_activity_recognition_node", anonymous=True)
         rospy.Subscriber(
             self.input_rgb_image_topic,
             ROS_Image,
@@ -110,7 +110,7 @@ class HumanActivityRecognitionNode:
             queue_size=1,
             buff_size=10000000,
         )
-        rospy.loginfo("Human activity recognition node started!")
+        rospy.loginfo("Human activity recognition node started.")
         rospy.spin()
 
     def callback(self, data):
@@ -208,41 +208,20 @@ def _video_preprocess(image_size: int, window_size: int):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-i",
-        "--input_rgb_image_topic",
-        help="Topic name for input rgb image",
-        type=str,
-        default="/usb_cam/image_raw",
-    )
-    parser.add_argument(
-        "-o",
-        "--output_category_topic",
-        help="Topic to which we are publishing the recognized activity",
-        type=lambda value: value if value.lower() != "none" else None,
-        default="/opendr/human_activity_recognition",
-    )
-    parser.add_argument(
-        "-od",
-        "--output_category_description_topic",
-        help="Topic to which we are publishing the ID of the recognized action",
-        type=lambda value: value if value.lower() != "none" else None,
-        default="/opendr/human_activity_recognition_description",
-    )
-    parser.add_argument(
-        "--device",
-        help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
-        type=str,
-        default="cuda",
-        choices=["cuda", "cpu"],
-    )
-    parser.add_argument(
-        "--model",
-        help="Architecture to use for human activity recognition.",
-        type=str,
-        default="cox3d-m",
-        choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"],
-    )
+    parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
+                        type=str, default="/usb_cam/image_raw")
+    parser.add_argument("-o", "--output_category_topic", help="Topic to which we are publishing the recognized activity",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/human_activity_recognition")
+    parser.add_argument("-od", "--output_category_description_topic",
+                        help="Topic to which we are publishing the ID of the recognized action",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/human_activity_recognition_description")
+    parser.add_argument("--device",  help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+                        type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model", help="Architecture to use for human activity recognition.",
+                        type=str, default="cox3d-m",
+                        choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"])
     args = parser.parse_args()
 
     try:

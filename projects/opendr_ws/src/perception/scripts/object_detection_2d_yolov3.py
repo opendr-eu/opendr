@@ -69,9 +69,9 @@ class ObjectDetectionYOLONode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('object_detection_yolov3_node', anonymous=True)
+        rospy.init_node('opendr_object_detection_2d_yolov3_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object detection YOLOV3 node started.")
+        rospy.loginfo("Object detection 2D YOLOV3 node started.")
         rospy.spin()
 
     def callback(self, data):
