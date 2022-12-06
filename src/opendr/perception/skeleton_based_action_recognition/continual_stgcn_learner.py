@@ -643,7 +643,7 @@ class CoSTGCNLearner(Learner):
                 output_names=["output"],
                 do_constant_folding=do_constant_folding,
                 verbose=verbose,
-                opset_version=11,
+                opset_version=12,
             )
 
         # Save default state and name mappings for later use
