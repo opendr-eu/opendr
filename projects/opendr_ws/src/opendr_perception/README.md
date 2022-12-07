@@ -48,10 +48,10 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 
 - ### An example diagram of OpenDR nodes running
     ![Pose Estimation ROS node running diagram](../../images/opendr_node_diagram.png)
-    On the left, the `usb_cam` node can be seen, which is using a system camera to publish images on the `/usb_cam/image_raw` topic.
-    In the middle, OpenDR's pose estimation node is running taking as input the published image. By default, the node has its input topic set to `/usb_cam/image_raw`.
-    To the right the two output topics of the pose estimation node can be seen. 
-    The bottom topic`opendr/image_pose_annotated` is the annotated image which can be easily viewed with `rqt_image_view` as explained earlier.
+    - On the left, the `usb_cam` node can be seen, which is using a system camera to publish images on the `/usb_cam/image_raw` topic.
+    - In the middle, OpenDR's pose estimation node is running taking as input the published image. By default, the node has its input topic set to `/usb_cam/image_raw`.
+    - To the right the two output topics of the pose estimation node can be seen. 
+    The bottom topic `opendr/image_pose_annotated` is the annotated image which can be easily viewed with `rqt_image_view` as explained earlier.
     The other topic `/opendr/poses` is the detection message which contains the detected poses' detailed information. 
     This message can be easily viewed by running `rostopic echo /opendr/poses` in a terminal with the OpenDR ROS workspace sourced. 
    
