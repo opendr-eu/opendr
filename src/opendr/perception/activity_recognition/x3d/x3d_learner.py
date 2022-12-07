@@ -22,7 +22,6 @@ from opendr.engine.learners import Learner
 from opendr.engine.helper.io import bump_version
 from torch import onnx
 import onnxruntime as ort
-
 from opendr.engine.data import Video
 from opendr.engine.datasets import Dataset
 from opendr.engine.target import Category
@@ -158,20 +157,11 @@ class X3DLearner(Learner):
         logger.debug(f"Loading model weights from {str(weights_path)}")
 
         # Check for configuration mismatches, loading only matching weights
-        new_model_state = self.model.state_dict()
         loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
         if "model_state" in loaded_state_dict:  # As found in the official pretrained X3D models
             loaded_state_dict = loaded_state_dict["model_state"]
 
-        def size_ok(k):
-            return new_model_state[k].size() == loaded_state_dict[k].size()
-
-        to_load = {k: v for k, v in loaded_state_dict.items() if size_ok(k)}
-        self.model.load_state_dict(to_load, strict=False)
-
-        names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
-        if len(names_not_loaded) > 0:
-            logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
+        self.model.load_state_dict(loaded_state_dict, strict=False, flatten=True)
         self.model.to(self.device)
 
         return self
@@ -412,7 +402,8 @@ class X3DLearner(Learner):
                 "monitor": optimisation_metric,
             }
 
-        self.model.configure_optimizers = configure_optimizers
+        model = getattr(self, "_plmodel", "model")
+        model.configure_optimizers = configure_optimizers
 
         self.trainer = pl.Trainer(
             max_epochs=epochs or self.iters,
@@ -431,7 +422,7 @@ class X3DLearner(Learner):
         self.trainer.limit_train_batches = steps or self.trainer.limit_train_batches
         self.trainer.limit_val_batches = steps or self.trainer.limit_val_batches
 
-        self.trainer.fit(self.model, train_dataloader, val_dataloader)
+        self.trainer.fit(model, train_dataloader, val_dataloader)
         self.model.to(self.device)
 
     def eval(self, dataset: Dataset, steps: int = None) -> Dict[str, Any]:
@@ -460,7 +451,8 @@ class X3DLearner(Learner):
                 logger=_experiment_logger(),
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
-        results = self.trainer.test(self.model, test_dataloader)
+        model = getattr(self, "_plmodel", "model")
+        results = self.trainer.test(model, test_dataloader)
         results = {
             "accuracy": results[-1]["test/acc"],
             "loss": results[-1]["test/loss"],

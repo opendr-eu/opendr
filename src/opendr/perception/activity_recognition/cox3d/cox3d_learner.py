@@ -13,10 +13,11 @@
 # limitations under the License.
 
 import torch
-
+import torch.nn.functional as F
 from opendr.engine import data
 from opendr.engine.target import Category
-from opendr.perception.activity_recognition.cox3d.algorithm.cox3d import CoX3D
+from opendr.perception.activity_recognition.cox3d.algorithm.x3d import CoX3D
+from opendr.perception.activity_recognition.utils.lightning import _LightningModuleWithCrossEntropy
 from opendr.perception.activity_recognition.x3d.x3d_learner import X3DLearner
 
 from logging import getLogger
@@ -110,22 +111,23 @@ class CoX3DLearner(X3DLearner):
         self.model = CoX3D(
             dim_in=3,
             image_size=self.model_hparams["image_size"],
-            frames_per_clip=getattr(self, "temporal_window_size", None) or self.model_hparams["frames_per_clip"],
+            temporal_window_size=getattr(self, "temporal_window_size", None) or self.model_hparams["frames_per_clip"],
             num_classes=self.num_classes,
-            conv1_dim=self.model_hparams["conv1_dim"],
-            conv5_dim=self.model_hparams["conv5_dim"],
-            num_groups=self.model_hparams["num_groups"],
-            width_per_group=self.model_hparams["width_per_group"],
-            width_factor=self.model_hparams["width_factor"],
-            depth_factor=self.model_hparams["depth_factor"],
-            bottleneck_factor=self.model_hparams["bottleneck_factor"],
-            use_channelwise_3x3x3=self.model_hparams["use_channelwise_3x3x3"],
-            dropout_rate=self.model_hparams["dropout_rate"],
-            head_activation=self.model_hparams["head_activation"],
-            head_batchnorm=self.model_hparams["head_batchnorm"],
-            fc_std_init=self.model_hparams["fc_std_init"],
-            final_batchnorm_zero_init=self.model_hparams["final_batchnorm_zero_init"],
+            x3d_conv1_dim=self.model_hparams["conv1_dim"],
+            x3d_conv5_dim=self.model_hparams["conv5_dim"],
+            x3d_num_groups=self.model_hparams["num_groups"],
+            x3d_width_per_group=self.model_hparams["width_per_group"],
+            x3d_width_factor=self.model_hparams["width_factor"],
+            x3d_depth_factor=self.model_hparams["depth_factor"],
+            x3d_bottleneck_factor=self.model_hparams["bottleneck_factor"],
+            x3d_use_channelwise_3x3x3=self.model_hparams["use_channelwise_3x3x3"],
+            x3d_dropout_rate=self.model_hparams["dropout_rate"],
+            x3d_head_activation=self.model_hparams["head_activation"],
+            x3d_head_batchnorm=self.model_hparams["head_batchnorm"],
+            x3d_fc_std_init=self.model_hparams["fc_std_init"],
+            x3d_final_batchnorm_zero_init=self.model_hparams["final_batchnorm_zero_init"],
         ).to(device=self.device)
+        self._plmodel = _LightningModuleWithCrossEntropy(self.model)
         return self.model
 
     @property
@@ -156,6 +158,7 @@ class CoX3DLearner(X3DLearner):
             results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
         else:
             self.model.eval()
-            results = self.model.forward(batch)
-        results = [Category(prediction=int(r.argmax(dim=0)), confidence=r) for r in results]
+            results = self.model.forward_step(batch)
+        if results is not None:
+            results = [Category(prediction=int(r.argmax(dim=0)), confidence=F.softmax(r, dim=-1)) for r in results]
         return results
