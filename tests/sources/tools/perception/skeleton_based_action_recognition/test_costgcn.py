@@ -51,9 +51,9 @@ class TestCoSTGCNLearner(unittest.TestCase):
         # Download all required files for testing
         cls.pretrained_weights_path = cls.learner.download(
             path=os.path.join(cls.temp_dir, "pretrained_models"),
-            method_name="",
+            method_name="costgcn",
             mode="pretrained",
-            file_name="costgcn_ntu60_joint.ckpt",
+            file_name="costgcn_ntu60_xview_joint.ckpt",
         )
         cls.Train_DATASET_PATH = cls.learner.download(
             mode="train_data", path=os.path.join(cls.temp_dir, "data")

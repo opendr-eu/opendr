@@ -12,22 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import continual as co
 import json
 import os
 import pickle
-from functools import partial
-from pathlib import Path
 import torch
 import onnxruntime as ort
 import pytorch_lightning as pl
 import torch.nn.functional as F
+
+from functools import partial
+from pathlib import Path
 from opendr.engine.target import Category
 from opendr.engine.learners import Learner
 from opendr.engine.helper.io import bump_version
 from opendr.engine.datasets import Dataset
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
-import continual as co
+from urllib.request import urlretrieve
 
 from logging import getLogger
 from typing import Any, Union, Dict, List
@@ -179,12 +181,26 @@ class CoSTGCNLearner(Learner):
         dataset_name="nturgbd_cv",
         experiment_name="stgcn_nturgbd",
         path=None,
-        method_name="stgcn",
+        method_name="costgcn",
         mode="pretrained",
         verbose=True,
         url=OPENDR_SERVER_URL + "perception/skeleton_based_action_recognition/",
         file_name="costgcn_ntu60_xview_joint.ckpt",
     ):
+        if path is None:
+            path = self.parent_dir
+
+        if mode == "pretrained":
+            file_url = os.path.join(url, 'pretrained_models', method_name, file_name)
+            target_path = Path(path) / method_name / dataset_name / file_name
+            if target_path.exists():
+                return str(target_path)
+            target_path.parent.mkdir(exist_ok=True, parents=True)
+            print(f"Downloading {file_name} to {str(target_path)}")
+            urlretrieve(file_url, str(target_path))
+            return target_path
+
+        # For dataset downloads, reuse the code from SpatioTemporalGCNLearner
         class _DownloadConfig:
             def __init__(self, parent_dir: str, dataset_name: str, experiment_name: str):
                 self.parent_dir = parent_dir
@@ -279,6 +295,13 @@ class CoSTGCNLearner(Learner):
         else:
             self.model.eval()
             results = self.model.forward_steps(batch)
+            if results is None:
+                print("Warming model up prior to inference")
+                _ = self.model.forward_steps(
+                    batch.repeat(1, 1, self.model.receptive_field, 1, 1)
+                )
+                results = self.model.forward_steps(batch)
+
         results = [
             Category(prediction=int(r.argmax(dim=0)), confidence=F.softmax(r, dim=-1))
             for r in results
@@ -311,7 +334,7 @@ class CoSTGCNLearner(Learner):
         # Check for configuration mismatches, loading only matching weights
         new_model_state = self.model.state_dict()
         loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
-        # As found in the official pretrained X3D models
+        # As found in some pretrained models
         if "model_state" in loaded_state_dict:
             loaded_state_dict = loaded_state_dict["model_state"]
         # As found in PyTorch Lightning checkpoints
