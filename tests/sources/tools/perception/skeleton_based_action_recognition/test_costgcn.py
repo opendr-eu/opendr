@@ -116,14 +116,7 @@ class TestCoSTGCNLearner(unittest.TestCase):
             verbose=False,
         )
 
-        self.learner.model.load_state_dict(
-            self.learner.model.map_state_dict(
-                torch.load(self.pretrained_weights_path, map_location=torch.device("cpu"))[
-                    "state_dict"
-                ]
-            ),
-            strict=True,
-        )
+        self.learner.load(self.pretrained_weights_path)
         results = self.learner.eval(test_ds, steps=2)
 
         assert results["accuracy"] > 0.5
