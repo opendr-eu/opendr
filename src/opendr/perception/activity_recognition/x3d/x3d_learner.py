@@ -115,7 +115,7 @@ class X3DLearner(Learner):
         self.seed = seed
         self.num_classes = num_classes
         self.loss = loss
-        self.ort_session = None
+        self._ort_session = None
         torch.manual_seed(self.seed)
 
         self._load_model_hparams(self.backbone)
@@ -160,8 +160,7 @@ class X3DLearner(Learner):
         loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
         if "model_state" in loaded_state_dict:  # As found in the official pretrained X3D models
             loaded_state_dict = loaded_state_dict["model_state"]
-
-        self.model.load_state_dict(loaded_state_dict, strict=False, flatten=True)
+        self.model.load_state_dict(loaded_state_dict, strict=False)
         self.model.to(self.device)
 
         return self
@@ -208,12 +207,12 @@ class X3DLearner(Learner):
         root_path = Path(path)
         root_path.mkdir(parents=True, exist_ok=True)
         name = f"x3d_{self.backbone}"
-        ext = ".onnx" if self.ort_session else ".pth"
+        ext = ".onnx" if self._ort_session else ".pth"
         weights_path = bump_version(root_path / f"model_{name}{ext}")
         meta_path = bump_version(root_path / f"{name}.json")
 
         logger.info(f"Saving model weights to {str(weights_path)}")
-        if self.ort_session:
+        if self._ort_session:
             self._save_onnx(weights_path)
         else:
             torch.save(self.model.state_dict(), weights_path)
@@ -229,7 +228,7 @@ class X3DLearner(Learner):
                 "network_head": self.network_head,
                 "threshold": self.threshold,
             },
-            "optimized": bool(self.ort_session),
+            "optimized": bool(self._ort_session),
             "optimizer_info": {
                 "lr": self.lr,
                 "iters": self.iters,
@@ -476,8 +475,8 @@ class X3DLearner(Learner):
             batch = torch.stack([torch.tensor(v.data) for v in batch])
 
         batch = batch.to(device=self.device, dtype=torch.float)
-        if self.ort_session is not None:
-            results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
+        if self._ort_session is not None:
+            results = torch.tensor(self._ort_session.run(None, {"video": batch.cpu().numpy()})[0])
         else:
             self.model.eval()
             results = self.model.forward(batch)
@@ -492,7 +491,7 @@ class X3DLearner(Learner):
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
 
-        if getattr(self.model, "ort_session", None):
+        if getattr(self.model, "_ort_session", None):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
@@ -544,7 +543,7 @@ class X3DLearner(Learner):
             path (Union[str, Path]): Path to ONNX model
         """
         logger.info(f"Loading ONNX runtime inference session from {str(path)}")
-        self.ort_session = ort.InferenceSession(str(path))
+        self._ort_session = ort.InferenceSession(str(path))
 
 
 def _experiment_logger():

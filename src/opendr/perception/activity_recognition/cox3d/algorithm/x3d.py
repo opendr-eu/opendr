@@ -8,7 +8,7 @@ from torch import nn
 
 from .res import CoResStage, init_weights
 
-from .activation import Swish
+from opendr.perception.activity_recognition.x3d.algorithm.operators import Swish
 from .se import CoSe
 
 
@@ -186,28 +186,28 @@ def CoX3DHead(
     if no_pool:
         return co.Sequential(OrderedDict(modules))
 
-    avg_pool = co.AdaptiveAvgPool3d(
-        (1, 1, 1), kernel_size=temporal_window_size, temporal_fill=temporal_fill
+    avg_pool = co.Sequential(
+        co.Lambda(lambda x: x.mean(dim=(-1, -2))),
+        co.AvgPool1d(temporal_window_size, stride=1, temporal_fill=temporal_fill),
     )
 
     modules.append(("avg_pool", avg_pool))
-
     modules.append(
         (
             "lin_5",
-            co.Conv3d(
+            co.Conv1d(
                 dim_inner,
                 dim_out,
-                kernel_size=(1, 1, 1),
-                stride=(1, 1, 1),
-                padding=(0, 0, 0),
+                kernel_size=(1,),
+                stride=(1,),
+                padding=(0,),
                 bias=False,
             ),
         )
     )
     if bn_lin5_on:
         modules.append(
-            ("lin_5_bn", norm_module(num_features=dim_out, eps=eps, momentum=bn_mmt))
+            ("lin_5_bn", torch.nn.BatchNorm1d(num_features=dim_out, eps=eps, momentum=bn_mmt))
         )
 
     modules.append(("lin_5_relu", torch.nn.ReLU(inplace_relu)))
@@ -219,22 +219,6 @@ def CoX3DHead(
     # initialized with a different std comparing to convolutional layers.
     modules.append(
         ("projection", co.Linear(dim_out, num_classes, bias=True, channel_dim=1))
-    )
-
-    def not_training(module, *args):
-        return not module.training
-
-    modules.append(
-        (
-            "act",
-            co.Conditional(
-                not_training,
-                {
-                    "softmax": torch.nn.Softmax(dim=1),
-                    "sigmoid": torch.nn.Sigmoid(),
-                }[act_func],
-            ),
-        )
     )
 
     def view(x):
@@ -442,12 +426,13 @@ def CoX3D(
         dim_in = dim_out
         modules.append((prefix, s))
 
+    spat_sz = int(math.ceil(image_size / 32.0))
     head = CoX3DHead(
         dim_in=dim_out,
         dim_inner=dim_inner,
         dim_out=x3d_conv5_dim,
         num_classes=num_classes,
-        pool_size=temporal_window_size,
+        pool_size=(temporal_window_size, spat_sz, spat_sz),
         dropout_rate=x3d_dropout_rate,
         act_func=x3d_head_activation,
         bn_lin5_on=bool(x3d_head_batchnorm),

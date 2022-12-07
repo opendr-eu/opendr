@@ -4,8 +4,7 @@ import continual as co
 import torch
 from torch import Tensor, nn
 from torch.nn.modules.pooling import AdaptiveAvgPool2d
-
-from .activation import Swish
+from opendr.perception.activity_recognition.x3d.algorithm.operators import Swish
 
 
 def _round_width(width, multiplier, min_width=8, divisor=8):
