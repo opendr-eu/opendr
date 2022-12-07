@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(opendr_ros_bridge)
+project(opendr_bridge)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp

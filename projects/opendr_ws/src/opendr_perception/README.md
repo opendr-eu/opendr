@@ -7,7 +7,7 @@ This package contains ROS nodes related to the perception package of OpenDR.
 ## Prerequisites
 
 Before you can run any of the package's ROS nodes, some prerequisites need to be fulfilled:
-1. First of all, you need to [set up the required packages and build your workspace.](../../README.md#first-time-setup) 
+1. First of all, you need to [set up the required packages, build and source your workspace.](../../README.md#first-time-setup) 
 2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`, if you haven't already done so.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
 
@@ -34,7 +34,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 - ### Echo node output
     All OpenDR nodes publish some kind of detection message, which can be echoed by running the following command in a new terminal:
     ```shell
-    rostopic echo /topic_name
+    rostopic echo /opendr/topic_name
     ```
     You can find out the default topic name for each node, in its documentation below.
 
@@ -54,7 +54,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 
 You can find the pose estimation ROS node python script [here](./scripts/pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md). 
-The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_ros_bridge/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_ros_bridge/msg/OpenDRPose2DKeypoint.msg).
+The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_bridge/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_bridge/msg/OpenDRPose2DKeypoint.msg).
 
 #### Instructions for basic usage:
 
@@ -62,7 +62,7 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
 2. You are then ready to start the pose detection node:
     ```shell
-    rosrun perception pose_estimation_node.py
+    rosrun opendr_perception pose_estimation_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -93,7 +93,7 @@ Fall detection uses the toolkit's pose estimation tool internally.
 2. You are then ready to start the fall detection node:
 
     ```shell
-    rosrun perception fall_detection_node.py
+    rosrun opendr_perception fall_detection_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -123,7 +123,7 @@ The node makes use of the toolkit's [face detection tool](../../../../src/opendr
 2. You are then ready to start the face detection node
 
     ```shell
-    rosrun perception face_detection_retinaface_node.py
+    rosrun opendr_perception face_detection_retinaface_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -151,7 +151,7 @@ The node makes use of the toolkit's [face recognition tool](../../../../src/open
 2. You are then ready to start the face recognition node:
 
     ```shell
-    rosrun perception face_recognition_node.py
+    rosrun opendr_perception face_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -207,7 +207,7 @@ whose documentation can be found here:
 2. You are then ready to start a 2D object detector node:
    1. SSD node
       ```shell
-      rosrun perception object_detection_2d_ssd_node.py
+      rosrun opendr_perception object_detection_2d_ssd_node.py
       ```
       The following optional arguments are available for the SSD node:
       - `--backbone BACKBONE`: Backbone network (default=`vgg16_atrous`)
@@ -215,28 +215,28 @@ whose documentation can be found here:
       
    2. YOLOv3 node
       ```shell
-      rosrun perception object_detection_2d_yolov3_node.py
+      rosrun opendr_perception object_detection_2d_yolov3_node.py
       ```
       The following optional argument is available for the YOLOv3 node:
       - `--backbone BACKBONE`: Backbone network (default=`darknet53`)
       
    3. YOLOv5 node
       ```shell
-      rosrun perception object_detection_2d_yolov5_node.py
+      rosrun opendr_perception object_detection_2d_yolov5_node.py
       ```
       The following optional argument is available for the YOLOv5 node:
       - `--model_name MODEL_NAME`: Network architecture, options are `yolov5s`, `yolov5n`, `yolov5m`, `yolov5l`, `yolov5x`, `yolov5n6`, `yolov5s6`, `yolov5m6`, `yolov5l6`, `custom` (default=`yolov5s`)
       
    4. CenterNet node
       ```shell
-      rosrun perception object_detection_2d_centernet_node.py
+      rosrun opendr_perception object_detection_2d_centernet_node.py
       ```
       The following optional argument is available for the YOLOv3 node:
       - `--backbone BACKBONE`: Backbone network (default=`resnet50_v1b`)
       
    5. DETR node
       ```shell
-      rosrun perception object_detection_2d_detr_node.py
+      rosrun opendr_perception object_detection_2d_detr_node.py
       ```
 
    The following optional arguments are available for all nodes above:
@@ -270,13 +270,13 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
 2. You are then ready to start a 2D object tracking node:
    1. Deep Sort node
       ```shell
-      rosrun perception object_tracking_2d_deep_sort_node.py
+      rosrun opendr_perception object_tracking_2d_deep_sort_node.py
       ```
       The following optional argument is available for the Deep Sort node:
       - `-n --model_name MODEL_NAME`: name of the trained model (default=`deep_sort`)
    2. FairMOT node
       ```shell
-      rosrun perception object_tracking_2d_fair_mot_node.py
+      rosrun opendr_perception object_tracking_2d_fair_mot_node.py
       ```
       The following optional argument is available for the FairMOT node:
       - `-n --model_name MODEL_NAME`: name of the trained model (default=`fairmot_dla34`)
@@ -315,7 +315,7 @@ and additional information about Efficient PS [here](../../../../src/opendr/perc
 2. You are then ready to start the panoptic segmentation node:
 
     ```shell
-    rosrun perception panoptic_segmentation_efficient_ps_node.py
+    rosrun opendr_perception panoptic_segmentation_efficient_ps_node.py
     ```
     
     The following optional arguments are available:
@@ -344,7 +344,7 @@ The node makes use of the toolkit's [semantic segmentation tool](../../../../src
 2. You are then ready to start the semantic segmentation node:
 
     ```shell
-    rosrun perception semantic_segmentation_bisenet_node.py
+    rosrun opendr_perception semantic_segmentation_bisenet_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -382,7 +382,7 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 2. You are then ready to start the landmark-based facial expression recognition node:
 
     ```shell
-    rosrun perception landmark_based_facial_expression_recognition_node.py
+    rosrun opendr_perception landmark_based_facial_expression_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -415,7 +415,7 @@ whose documentation can be found [here](../../../../docs/reference/skeleton-base
 2. You are then ready to start the skeleton-based human action recognition node:
 
     ```shell
-    rosrun perception skeleton_based_action_recognition_node.py
+    rosrun opendr_perception skeleton_based_action_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -448,7 +448,7 @@ The node makes use of the toolkit's video human activity recognition tools which
 2. You are then ready to start the video human activity recognition node:
 
     ```shell
-    rosrun perception video_activity_recognition_node.py
+    rosrun opendr_perception video_activity_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -491,7 +491,7 @@ whose documentation can be found [here](../../../../docs/reference/gem.md).
 4. You are then ready to start the object detection 2d GEM node:
 
     ```shell
-    rosrun perception object_detection_2d_gem_node.py
+    rosrun opendr_perception object_detection_2d_gem_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -526,7 +526,7 @@ whose documentation can be found [here](../../../../docs/reference/rgbd-hand-ges
 
 2. You are then ready to start the hand gesture recognition node:
     ```shell
-    rosrun perception rgbd_hand_gesture_recognition_node.py
+    rosrun opendr_perception rgbd_hand_gesture_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -556,7 +556,7 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 3. You are then ready to start the face detection node
 
     ```shell
-    rosrun perception speech_command_recognition_node.py
+    rosrun opendr_perception speech_command_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -591,7 +591,7 @@ whose documentation can be found here:
 2. You are then ready to start the face detection node
 
     ```shell
-    rosrun perception speech_command_recognition_node.py
+    rosrun opendr_perception speech_command_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -628,7 +628,7 @@ whose documentation can be found [here](../../../../docs/reference/voxel-object-
 2. You are then ready to start the 3D object detection node:
 
     ```shell
-    rosrun perception object_detection_3d_voxel_node.py
+    rosrun opendr_perception object_detection_3d_voxel_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -660,7 +660,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 2. You are then ready to start the 3D object tracking node:
 
     ```shell
-    rosrun perception object_tracking_3d_ab3dmot_node.py
+    rosrun opendr_perception object_tracking_3d_ab3dmot_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -696,7 +696,7 @@ The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](
 2. You are then ready to start the heart anomaly detection node:
 
     ```shell
-    rosrun perception heart_anomaly_detection_node.py
+    rosrun opendr_perception heart_anomaly_detection_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -729,7 +729,7 @@ You can inspect [the node](./scripts/image_dataset_node.py) and modify it to you
 
 To get an image from a dataset on the disk, you can start a `image_dataset.py` node as:
 ```shell
-rosrun perception image_dataset_node.py
+rosrun opendr_perception image_dataset_node.py
 ```
 The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -750,7 +750,7 @@ You can inspect [the node](./scripts/point_cloud_dataset_node.py) and modify it 
 
 To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
 ```shell
-rosrun perception point_cloud_dataset_node.py
+rosrun opendr_perception point_cloud_dataset_node.py
 ```
 The following optional arguments are available:
    - `-h or --help`: show a help message and exit

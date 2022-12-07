@@ -2,7 +2,7 @@
 
 ## Description
 This ROS workspace contains ROS nodes and tools developed by OpenDR project. Currently, ROS nodes are compatible with ROS Noetic.
-This workspace contains the `opendr_ros_bridge` package, which provides message definitions for ROS-compatible OpenDR data types,
+This workspace contains the `opendr_bridge` package, which provides message definitions for ROS-compatible OpenDR data types,
 as well the `ROSBridge` class which provides an interface to convert OpenDR data types and targets into ROS-compatible
 ones similar to CvBridge. You can find more information in the corresponding [documentation](../../docs/reference/opendr-ros-bridge.md).
 
@@ -41,18 +41,21 @@ For the initial setup you can follow the instructions below:
     ```shell
     catkin_make
     ```
-7. Before running a node, the ROS master node needs to be running, so in a new terminal repeat step 1. and then run:
-    ```shell
-    roscore
-    ```
-8. Return to the original terminal and source the workspace:
+7. Source the workspace:
     ```shell
     source devel/setup.bash
     ```
-   You are now ready to run an OpenDR ROS node. Keep reading below.
+   You are now ready to run an OpenDR ROS node, in this terminal but first the ROS master node needs to be running 
+
+8. In a new terminal repeat step 1. and then run:
+    ```shell
+    roscore
+    ```
+   You can now return to the original terminal from step 7. and run an OpenDR ROS node. More information below.   
 
 #### After first time setup
-For running OpenDR nodes after you have completed the initial setup, you can skip steps 2. and 5. from the list above. You can also skip building the workspace (step 6.) granted it's been already built and no changes were made to the code inside the workspace, e.g. you modified the source code of a node.
+For running OpenDR nodes after you have completed the initial setup, you can skip steps 2. and 5. from the list above. 
+You can also skip building the workspace (step 6.) granted it's been already built and no changes were made to the code inside the workspace, e.g. you modified the source code of a node.
 
 #### More information
 After completing the setup you can read more information on the [opendr perception package README](src/opendr_perception/README.md), where you can find a concise list of prerequisites and helpful notes to view the output of the nodes or optimize their performance.
