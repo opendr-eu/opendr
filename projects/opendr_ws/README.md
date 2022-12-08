@@ -1,7 +1,9 @@
 # opendr_ws
 
 ## Description
-This ROS workspace contains ROS nodes and tools developed by OpenDR project. Currently, ROS nodes are compatible with ROS Noetic.
+This ROS workspace contains ROS nodes and tools developed by OpenDR project. 
+Currently, ROS nodes are compatible with **ROS Melodic for Ubuntu 18.04** and **ROS Noetic for Ubuntu 20.04**.
+The instructions that follow target ROS Noetic, but can easily be modified for ROS Melodic by swapping out the version name.
 This workspace contains the `opendr_bridge` package, which provides message definitions for ROS-compatible OpenDR data types,
 as well the `ROSBridge` class which provides an interface to convert OpenDR data types and targets into ROS-compatible
 ones similar to CvBridge. You can find more information in the corresponding [documentation](../../docs/reference/opendr-ros-bridge.md).
@@ -17,37 +19,33 @@ For the initial setup you can follow the instructions below:
     source /opt/ros/noetic/setup.bash
     ```
    _For convenience, you can add this line to your `.bashrc` so you don't have to source the tools each time you open a  terminal window._
-2. Install the following dependencies, required in order to use the OpenDR ROS tools:
-    ```shell
-    sudo apt-get install ros-noetic-vision-msgs ros-noetic-geometry-msgs ros-noetic-sensor-msgs ros-noetic-audio-common-msgs
-    ```
-3. Navigate to your OpenDR home directory (`~/opendr`) and activate the OpenDR environment using:
+2. Navigate to your OpenDR home directory (`~/opendr`) and activate the OpenDR environment using:
     ```shell
     source bin/activate.sh
     ```
     You need to do this step every time before running an OpenDR node.
-4. Navigate into the OpenDR ROS workspace::
+3. Navigate into the OpenDR ROS workspace::
     ```shell
     cd projects/opendr_ws
     ```
-5. (Optional) Most nodes with visual input are set up to run with a default USB camera. If you want to use it install the corresponding package and its dependencies:
+4. (Optional) Most nodes with visual input are set up to run with a default USB camera. If you want to use it install the corresponding package and its dependencies:
     ```shell
     cd src
     git clone https://github.com/ros-drivers/usb_cam
     cd ..
     rosdep install --from-paths src/ --ignore-src
     ```
-6. Build the packages inside the workspace:
+5. Build the packages inside the workspace:
     ```shell
     catkin_make
     ```
-7. Source the workspace:
+6. Source the workspace:
     ```shell
     source devel/setup.bash
     ```
    You are now ready to run an OpenDR ROS node, in this terminal but first the ROS master node needs to be running 
 
-8. Before continuing, you need to start the ROS master node by running:
+7. Before continuing, you need to start the ROS master node by running:
     ```shell
     roscore &
     ```
