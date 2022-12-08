@@ -147,7 +147,6 @@ Parameters:
   Path to metadata file in json format or to weights path.
 
 
-
 #### `X3DLearner.optimize`
 ```python
 X3DLearner.optimize(self, do_constant_folding)
@@ -214,8 +213,6 @@ Parameters:
   assert (weights_path / "x3d_xs.pyth").exists()
   learner = X3DLearner(backbone="xs", device="cpu").load(weights_path)
   ```
-
-
 
 
 #### References
@@ -399,7 +396,6 @@ Inherited from [X3DLearner](/src/opendr/perception/activity_recognition/x3d/x3d_
   ```
 
 
-
 #### Performance Evaluation
 
 TABLE-1: Input shapes, prediction accuracy on Kinetics 400, floating point operations (FLOPs), parameter count and maximum allocated memory of activity recognition learners at inference.
@@ -427,7 +423,7 @@ TABLE-2: Speed (evaluations/second) of activity recognition learner inference on
 
 
 TABLE-3: Throughput (evaluations/second) of activity recognition learner inference on various computational devices.
-The largest fitting power of two was used as batch size for each device. 
+The largest fitting power of two was used as batch size for each device.
 | Model   | CPU   | TX2  | Xavier | RTX 2080 Ti |
 | ------- | ----- | ---- | ------ | ----------- |
 | X3D-L   | 0.22  | 0.21 | 1.73   | 3.55        |
@@ -439,7 +435,7 @@ The largest fitting power of two was used as batch size for each device.
 | CoX3D-S | 11.60 | 8.22 | 64.91  | 196.54      |
 
 
-TABLE-4: Energy (Joules) of activity recognition learner inference on embedded devices. 
+TABLE-4: Energy (Joules) of activity recognition learner inference on embedded devices.
 | Model   | TX2    | Xavier |
 | ------- | ------ | ------ |
 | X3D-L   | 187.89 | 23.54  |
@@ -469,5 +465,6 @@ Model inference works as expected.
 
 
 #### References
-<a name="x3d" href="https://arxiv.org/abs/2004.04730">[1]</a> X3D: Expanding Architectures for Efficient Video Recognition,
+<a name="x3d" href="https://arxiv.org/abs/2004.04730">[2]</a> X3D: Expanding Architectures for Efficient Video Recognition,
 [arXiv](https://arxiv.org/abs/2004.04730).
+
