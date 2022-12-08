@@ -39,9 +39,23 @@ CoX3D constitute the family of X3D networks transformed to _Continual 3D CNNs_ f
 
 __BibTeX__:
 ```bibtex
-@article{hedegaard2021continual,
+@article{hedegaard2022continual,
   title={Continual 3D Convolutional Neural Networks for Real-time Processing of Videos},
-  author={Lukas Hedegaard},
+  author={Lukas Hedegaard, Alexandros Iosifidis},
+  journal={European Conference on Computer Vision},
+  year={2022}
+}
+```
+
+
+### CoTransEnc
+Continual Transformer Encoder supplies an efficient formulation of the Transformer Encoder for step-wise (temporal) inference. The tool provided here can be used on top of user-supplied features to perform time-series inference-tasks.
+
+__BibTeX__:
+```bibtex
+@article{hedegaard2021continual,
+  title={Continual Transformers: Redundancy-Free Attention for Online Inference},
+  author={Lukas Hedegaard, Arian Bakhtiarnia, Alexandros Iosifidis},
   year={2021}
 }
 ```
@@ -49,14 +63,8 @@ __BibTeX__:
 
 ## Datasets
 
-### UCF-101
-[UCF-101](https://www.crcv.ucf.edu/data/UCF101.php) is prepared by directly downloading and unpacking [data](http://storage.googleapis.com/thumos14_files/UCF101_videos.zip) and [annotations](https://www.crcv.ucf.edu/data/UCF101/UCF101TrainTestSplits-RecognitionTask.zip).
-
-### HMDB-51
-[HMDB-51](https://serre-lab.clps.brown.edu/resource/hmdb-a-large-human-motion-database/) is prepared by directly downloading and unpacking [data](http://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/hmdb51_org.rar) and [annotations](http://serre-lab.clps.brown.edu/wp-content/uploads/2013/10/test_train_splits.rar).
-
 ### Kinetics-400
 [Kinetics](https://deepmind.com/research/open-source/kinetics) is a large-scale dataset for Trimmed Human Activity Recognition, consisting of 10 second videos collected from YouTube, ranging over 400 classes.
-Due to it's origin, a direct download of the complete dataset is not possible.
+Due to its origin, a direct download of the complete dataset is not possible.
 Instead, a list of videos and corresponding labels can be downloaded [here](https://storage.googleapis.com/deepmind-media/Datasets/kinetics400.tar.gz), and a [YouTube Crawler](https://github.com/LukasHedegaard/youtube-dataset-downloader) can subsequently be employed to collect the videos one by one. Note: this process may take multiple days.
 
