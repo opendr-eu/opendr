@@ -37,15 +37,6 @@ from continual import onnx
 logger = getLogger(__name__)
 
 
-class TransformerEncoderWithPositionalEncoding(torch.nn.Module):
-    def __init__():
-        super().__init__()
-        pass
-
-    def forward():
-        pass
-
-
 class CoTransEncLearner(Learner):
     def __init__(
         self,
