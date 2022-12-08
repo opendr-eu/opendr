@@ -401,7 +401,7 @@ class X3DLearner(Learner):
                 "monitor": optimisation_metric,
             }
 
-        model = getattr(self, "_plmodel", "model")
+        model = getattr(self, "_plmodel", self.model)
         model.configure_optimizers = configure_optimizers
 
         self.trainer = pl.Trainer(
@@ -450,7 +450,7 @@ class X3DLearner(Learner):
                 logger=_experiment_logger(),
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
-        model = getattr(self, "_plmodel", "model")
+        model = getattr(self, "_plmodel", self.model)
         results = self.trainer.test(model, test_dataloader)
         results = {
             "accuracy": results[-1]["test/acc"],
