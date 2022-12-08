@@ -20,7 +20,7 @@ class DummyTimeseriesDataset(DatasetIterator, torch.utils.data.Dataset):
     """
     Dumme dataset for time-series forecasting
 
-    Input data: Sinus data of different wavelength
+    Input data: Sinusoidal data of different wavelength
     Targets: Last sum of cosines quantized into four buckets
         (positive and falling, positive and rising, negative and falling, negative and rising)
     """
