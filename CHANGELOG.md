@@ -5,6 +5,7 @@ Released on December, XX, 2022.
 
   - New Features:
     - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
+    - Added Continual Transformer Encoders ([#317](https://github.com/opendr-eu/opendr/pull/317)).
 
   - Bug Fixes:
     - Fixed Continual X3D ONNX support.
