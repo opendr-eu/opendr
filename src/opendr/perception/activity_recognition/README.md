@@ -49,7 +49,7 @@ __BibTeX__:
 
 
 ### CoTransEnc
-Continual Transformer Encoder supply an efficient formulation of the Transformer Encoder for step-wise (temporal) inference. The tool provided here can be used on top of user-supplied features to perform time-series inference-tasks.
+Continual Transformer Encoder supplies an efficient formulation of the Transformer Encoder for step-wise (temporal) inference. The tool provided here can be used on top of user-supplied features to perform time-series inference-tasks.
 
 __BibTeX__:
 ```bibtex
