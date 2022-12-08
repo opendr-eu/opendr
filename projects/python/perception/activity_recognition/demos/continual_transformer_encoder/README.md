@@ -1,4 +1,4 @@
-# Continual Transformer Encoder demo.
+# Continual Transformer Encoder demo
 
 The file [demo.py](demo.py) is demo of how to use the `CoTransEncLearner`, including fitting, evaluation, runtime optimization and inference.
 
