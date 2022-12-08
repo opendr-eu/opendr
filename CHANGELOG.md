@@ -5,6 +5,7 @@ Released on December, XX, 2022.
 
   - New Features:
     - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
+    - Added AmbiguityMeasure utility tool ([#361](https://github.com/opendr-eu/opendr/pull/361)).
 
 ## Version 1.1.1
 Released on June, 30th, 2022.
