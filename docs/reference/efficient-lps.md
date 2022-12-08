@@ -218,3 +218,37 @@ Return:
 
 - **visualization**: *Union[PointCloud, Image]*\
   OpenDR Image of the generated visualization or OpenDR PointCloud with the predicted labels.
+
+#### Performance Evaluation
+
+The speed of pointcloud per second is evaluated for the SemanticKITTI dataset:
+
+| Dataset    | ~ | GeForce GTX TITAN X | ~ | Xavier AGX |
+|------------|-----------------|---------------------|-----------|------------|
+| SemanticKITTI | ~             | 0.53                | ~       | ~        |
+
+The memory and energy usage is evaluated for different datasets.
+An NVIDIA Jetson Xavier AGX was used as the reference platform for energy measurements.
+The reported memory is the max number seen during evaluation on the respective validation set.
+The energy is measured during the evaluation.
+
+| Dataset                | Memory (MB) | Energy (Joules) - Total per inference AGX |
+|------------------------|-------------|-------------------------------------------|
+| SemanticKITTI | ~       | ~                                      |
+
+The performance is evaluated using three different metrics, namely Panoptic Quality (PQ), Segmentation Quality (SQ), and Recognition Quality (RQ).
+
+| Dataset    | PQ   | SQ   | RQ   |
+|------------|------|------|------|
+| SemanticKITTI | 52.5 | 72.6 | 63.1 |
+
+EfficientPS is compatible with the following platforms:
+
+| Platform                                     | Compatibility |
+|----------------------------------------------|---------------|
+| x86 - Ubuntu 20.04 (bare installation - CPU) | ❌            |
+| x86 - Ubuntu 20.04 (bare installation - GPU) | ✔️            |
+| x86 - Ubuntu 20.04 (pip installation)        | ❌            |
+| x86 - Ubuntu 20.04 (CPU docker)              | ❌            |
+| x86 - Ubuntu 20.04 (GPU docker)              | ✔️            |
+| NVIDIA Jetson Xavier AGX                     | ✔️            |

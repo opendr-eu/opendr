@@ -255,8 +255,7 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
     @staticmethod
     def prepare_data(download_path: Union[Path, str],
                      dataset_path: Union[Path, str],
-                     num_workers: int = mp.cpu_count(),
-                    ) -> None:
+                     ) -> None:
         """
         This method is used to structure extracted zip of the dataset.
 
