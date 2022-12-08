@@ -31,9 +31,10 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
         - activity recognition:
-            - [activity_recognition Module](activity-recognition.md)
-        - action recognition:
             - [skeleton_based_action_recognition](skeleton-based-action-recognition.md)
+            - [x3d Module](activity-recognition.md#class-x3dlearner)
+            - [continual x3d Module](activity-recognition.md#class-cox3dlearner)
+            - [continual transformer encoder Module](continual-transformer-encoder.md)
         - speech recognition:
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
@@ -81,6 +82,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [human_model_generation Module](human-model-generation.md)
     - `utils` Module
         - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
+        - [Ambiguity Measure Module](ambiguity_measure.md)
     - `Stand-alone Utility Frameworks`
         - [Engine Agnostic Gym Environment with Reactive extension (EAGERx)](eagerx.md)
 - [ROS Bridge Package](opendr-ros-bridge.md)

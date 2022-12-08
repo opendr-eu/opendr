@@ -17,5 +17,6 @@ perception/object_detection_3d
 perception/object_tracking_3d
 perception/panoptic_segmentation
 utils/hyperparameter_tuner
+utils/ambiguity_measure
 control/single_demo_grasp
 opendr
