@@ -148,7 +148,7 @@ Parameters:
 CoTransEncLearner.optimize(self, do_constant_folding)
 ```
 
-Optimize model execution. This is acoomplished by saving to the ONNX format and loading the optimized model.
+Optimize model execution. This is accomplished by saving to the ONNX format and loading the optimized model.
 
 Parameters:
 - **do_constant_folding**: *bool, default=False*
