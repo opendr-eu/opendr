@@ -106,7 +106,7 @@ Parameters:
 CoTransEncLearner.infer(x)
 ```
 
-This method is used to perform classification of a video
+This method is used to perform classification of a video.
 Returns a `engine.target.Category` objects, where each holds a category.
 
 Parameters:
