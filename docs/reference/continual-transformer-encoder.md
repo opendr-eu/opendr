@@ -103,15 +103,15 @@ Parameters:
 
 #### `CoTransEncLearner.infer`
 ```python
-CoTransEncLearner.infer(batch)
+CoTransEncLearner.infer(x)
 ```
 
 This method is used to perform classification of a video
 Returns a `engine.target.Category` objects, where each holds a category.
 
 Parameters:
-- **batch**: *Union[Timeseries, Vector, torch.Tensor]*
-  Either a single time instance (Vector) or a Timeseries. Data can also be passed as a torch.Tensor.
+- **x**: *Union[Timeseries, Vector, torch.Tensor]*
+  Either a single time instance (Vector) or a Timeseries. x can also be passed as a torch.Tensor.
 
 
 #### `CoTransEncLearner.save`

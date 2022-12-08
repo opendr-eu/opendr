@@ -496,11 +496,11 @@ class CoTransEncLearner(Learner):
         return results
 
     def infer(self, x: Union[Timeseries, Vector, torch.Tensor]) -> Category:
-        """Run inference on a data point
+        """Run inference on a data point, x
 
         Args:
-            data (Union[Timeseries, Vector, torch.Tensor])): Either a single time instance (Vector) or a Timeseries.
-                Data can also be passed as a torch.Tensor.
+            x (Union[Timeseries, Vector, torch.Tensor])): Either a single time instance (Vector) or a Timeseries.
+                x can also be passed as a torch.Tensor.
 
         Returns:
             Category: Network output
