@@ -47,11 +47,11 @@ For the initial setup you can follow the instructions below:
     ```
    You are now ready to run an OpenDR ROS node, in this terminal but first the ROS master node needs to be running 
 
-8. In a new terminal repeat step 1 and then run:
+8. Before continuing, you need to start the ROS master node by running:
     ```shell
-    roscore
+    roscore &
     ```
-   You can now return to the original terminal from step 7 and run an OpenDR ROS node. More information below.   
+   You can now run an OpenDR ROS node. More information below.   
 
 #### After first time setup
 For running OpenDR nodes after you have completed the initial setup, you can skip steps 2 and 5 from the list above. 

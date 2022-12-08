@@ -8,13 +8,13 @@ This package contains ROS nodes related to the perception package of OpenDR.
 
 Before you can run any of the package's ROS nodes, some prerequisites need to be fulfilled:
 1. First of all, you need to [set up the required packages, build and source your workspace.](../../README.md#first-time-setup) 
-2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`, if you haven't already done so.
+2. Start roscore by running `roscore &`, if you haven't already done so.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
 
     For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install, step 5](../../README.md#first-time-setup)). 
-    You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
+    You can run the webcam node in the terminal with the workspace sourced using:
     ```shell
-    rosrun usb_cam usb_cam_node
+    rosrun usb_cam usb_cam_node &
     ```
     By default, the USB cam node publishes images on `/usb_cam/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. 
     As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
@@ -24,15 +24,15 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 ## Notes
 
 - ### Display output images with rqt_image_view
-    For any node that outputs images, `rqt_image_view` can be used to display them by running the following command in a new terminal:
+    For any node that outputs images, `rqt_image_view` can be used to display them by running the following command:
     ```shell
-    rosrun rqt_image_view rqt_image_view
+    rosrun rqt_image_view rqt_image_view &
     ```
     A window will appear, where the topic that you want to view can be selected from the drop-down menu on the top-left area of the window. 
     Refer to each node's documentation below to find out the default output image topic, where applicable, and select it on the drop-down menu of rqt_image_view.
 
 - ### Echo node output
-    All OpenDR nodes publish some kind of detection message, which can be echoed by running the following command in a new terminal:
+    All OpenDR nodes publish some kind of detection message, which can be echoed by running the following command:
     ```shell
     rostopic echo /opendr/topic_name
     ```
