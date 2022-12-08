@@ -19,7 +19,7 @@ Constructor parameters:
 
 - **threshold**: *float, default=0.5*\
   Ambiguity threshold, should be in [0, 1).
-- **temperature**: *float*\
+- **temperature**: *float, default=1.0*\
   Temperature of the sigmoid function.
   Should be > 0.
   Higher temperatures will result in higher ambiguity measures.
