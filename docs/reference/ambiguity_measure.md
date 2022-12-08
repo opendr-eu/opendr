@@ -17,10 +17,11 @@ AmbiguityMeasure(self, threshold, temperature)
 
 Constructor parameters:
 
-- **threshold**: *float*\
+- **threshold**: *float, default=0.5*\
   Ambiguity threshold, should be in [0, 1).
 - **temperature**: *float*\
-  Temperature of the sigmoid function. Should be > 0.
+  Temperature of the sigmoid function.
+  Should be > 0.
   Higher temperatures will result in higher ambiguity measures.
 
 #### `AmbiguityMeasure.get_ambiguity_measure`
@@ -43,7 +44,7 @@ A demo showcasing the usage and functionality of the *AmbiguityMeasure* is avail
 
 #### Examples
 
-* **Ambiguity measure example.**
+* **Ambiguity measure example**
 
   This example shows how to obtain the ambiguity measure from pixel-wise value estimates.
 
@@ -72,5 +73,4 @@ Zeng, A., Florence, P., Tompson, J., Welker, S., Chien, J., Attarian, M., ... & 
 Transporter networks: Rearranging the visual world for robotic manipulation.
 In Conference on Robot Learning (pp. 726-747).
 PMLR.
-
 
