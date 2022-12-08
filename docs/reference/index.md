@@ -1,11 +1,11 @@
 # OpenDR Toolkit Reference Manual
 
-*Release 1.0*
+*Release 1.1*
 <div align="center">
   <img src="images/opendr_logo.png" />
 </div>
 
-Copyright &copy; 2020-2021 OpenDR Project.
+Copyright &copy; 2020-2022 OpenDR Project.
 OpenDR is funded from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.
 
 Permission to use, copy and distribute this documentation for any purpose and without fee is hereby granted in perpetuity, provided that no modifications are made to this documentation.
@@ -31,9 +31,10 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
         - activity recognition:
-            - [activity_recognition Module](activity-recognition.md)
-        - action recognition:
             - [skeleton_based_action_recognition](skeleton-based-action-recognition.md)
+            - [x3d Module](activity-recognition.md#class-x3dlearner)
+            - [continual x3d Module](activity-recognition.md#class-cox3dlearner)
+            - [continual transformer encoder Module](continual-transformer-encoder.md)
         - speech recognition:
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
