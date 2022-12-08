@@ -8,6 +8,11 @@ Released on December, XX, 2022.
     - Added Continual Transformer Encoders ([#317](https://github.com/opendr-eu/opendr/pull/317)).
     - Added Continual Spatio-Temporal Graph Convolutional Networks tool ([#370](https://github.com/opendr-eu/opendr/pull/370)).
 
+  - Bug Fixes:
+    - Fixed `BoundingBoxList`, `TrackingAnnotationList`, `BoundingBoxList3D` and `TrackingAnnotationList3D` confidence warnings ([#365](https://github.com/opendr-eu/opendr/pull/365)).
+    - Fixed undefined `image_id` and `segmentation` for COCO `BoundingBoxList` ([#365](https://github.com/opendr-eu/opendr/pull/365)).
+
+
 ## Version 1.1.1
 Released on June, 30th, 2022.
 
