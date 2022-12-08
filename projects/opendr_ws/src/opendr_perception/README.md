@@ -11,7 +11,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 2. Start roscore by opening a new terminal where ROS is sourced properly (`source /opt/ros/noetic/setup.bash`) and run `roscore`, if you haven't already done so.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
 
-    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install, step 5.](../../README.md#first-time-setup)). 
+    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install, step 5](../../README.md#first-time-setup)). 
     You can run the webcam node in a new terminal inside `opendr_ws` and with the workspace sourced using:
     ```shell
     rosrun usb_cam usb_cam_node
@@ -532,7 +532,7 @@ whose documentation can be found [here](../../../../docs/reference/rgbd-hand-ges
 
 #### Instructions for basic usage:
 
-1. Start the node responsible for publishing images from an RGBD camera. Remember to modify the input topics using the arguments in step 2. if needed.
+1. Start the node responsible for publishing images from an RGBD camera. Remember to modify the input topics using the arguments in step 2 if needed.
 
 2. You are then ready to start the hand gesture recognition node:
     ```shell
@@ -562,7 +562,7 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
-2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2. if needed.
+2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
 3. You are then ready to start the face detection node
 
     ```shell
