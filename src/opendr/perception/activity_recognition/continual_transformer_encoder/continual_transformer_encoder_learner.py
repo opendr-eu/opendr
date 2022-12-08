@@ -565,7 +565,7 @@ class CoTransEncLearner(Learner):
 
     def optimize(self, do_constant_folding=False):
         """Optimize model execution.
-        This is acoomplished by saving to the ONNX format and loading the optimized model.
+        This is accomplished by saving to the ONNX format and loading the optimized model.
 
         Args:
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
