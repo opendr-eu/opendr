@@ -63,7 +63,7 @@ Converts an OpenDRPose2D message into an OpenDR Pose.
 
 Parameters:
 
-- **ros_pose**: *ros_bridge.msg.OpenDRPose2D*\
+- **ros_pose**: *opendr_bridge.msg.OpenDRPose2D*\
   ROS pose to be converted into an OpenDR Pose.
 
 #### `ROSBridge.to_ros_pose`
@@ -121,7 +121,7 @@ Converts a ROS ObjectHypothesis message into an OpenDR Category.
 
 Parameters:
 
-- **message**: *ros_bridge.msg.ObjectHypothesis*\
+- **message**: *vision_msgs.msg.ObjectHypothesis*\
   ROS ObjectHypothesis to be converted into an OpenDR Category.
 
 
@@ -136,7 +136,7 @@ Converts a ROS ObjectHypothesis message into an OpenDR Category.
 
 Parameters:
 
-- **message**: *ros_bridge.msg.ObjectHypothesis*\
+- **message**: *vision_msgs.msg.ObjectHypothesis*\
   ROS ObjectHypothesis to be converted into an OpenDR Category.
 
 #### `ROSBridge.to_ros_face`
@@ -412,16 +412,16 @@ Parameters:
   The box to be converted.
 
 ## ROS message equivalence with OpenDR
-1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
-2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
+1. `sensor_msgs.msg.Img` is used as an equivalent to `engine.data.Image`
+2. `opendr_bridge.msg.Pose` is used as an equivalent to `engine.target.Pose`
 3. `vision_msgs.msg.Detection2DArray` is used as an equivalent to `engine.target.BoundingBoxList`
 4. `vision_msgs.msg.Detection2D` is used as an equivalent to `engine.target.BoundingBox` and
    to `engine.target.TrackingAnnotation` in single object tracking
-5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.
-6. `vision_msgs.msg.Detection3DArray`  is used as an equivelant to `engine.target.BoundingBox3DList`.
+5. `geometry_msgs.msg.Pose`  is used as an equivalent to `engine.target.Pose` for 3D poses conversion only.
+6. `vision_msgs.msg.Detection3DArray`  is used as an equivalent to `engine.target.BoundingBox3DList`.
 7. `sensor_msgs.msg.PointCloud`  is used as an equivalent to `engine.data.PointCloud`.
 
 ## ROS services
 The following ROS services are implemented (`srv` folder):
-1. `ros_bridge.OpenDRSingleObjectTracking`: can be used to initialize the tracking process of single
+1. `opendr_bridge.OpenDRSingleObjectTracking`: can be used to initialize the tracking process of single
    object trackers, by providing a `Detection2D` bounding box
