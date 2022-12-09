@@ -7,6 +7,7 @@ Released on December, XX, 2022.
     - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
     - Added Continual Transformer Encoders ([#317](https://github.com/opendr-eu/opendr/pull/317)).
     - Added Continual Spatio-Temporal Graph Convolutional Networks tool ([#370](https://github.com/opendr-eu/opendr/pull/370)).
+    - Added AmbiguityMeasure utility tool ([#361](https://github.com/opendr-eu/opendr/pull/361)).
 
   - Bug Fixes:
     - Fixed `BoundingBoxList`, `TrackingAnnotationList`, `BoundingBoxList3D` and `TrackingAnnotationList3D` confidence warnings ([#365](https://github.com/opendr-eu/opendr/pull/365)).

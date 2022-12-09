@@ -82,6 +82,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - [human_model_generation Module](human-model-generation.md)
     - `utils` Module
         - [Hyperparameter Tuning Module](hyperparameter_tuner.md)
+        - [Ambiguity Measure Module](ambiguity_measure.md)
     - `Stand-alone Utility Frameworks`
         - [Engine Agnostic Gym Environment with Reactive extension (EAGERx)](eagerx.md)
 - [ROS Bridge Package](opendr-ros-bridge.md)
