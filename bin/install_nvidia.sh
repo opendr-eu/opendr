@@ -63,31 +63,50 @@ cd $OPENDR_HOME
 chmod a+rwx ./mxnet
 
 sudo apt-get update
-sudo apt-get install --yes libfreetype6-dev lsb-release git curl wget
+sudo apt-get install --yes libfreetype6-dev lsb-release  curl wget
 
 git submodule init
 git submodule update
 
 pip3 install setuptools configparser
 pip3 install --upgrade setuptools
-
 # Install Torch
 sudo apt-get install --yes libopenblas-dev cmake ninja-build
-TORCH=torch-1.7.0-cp36-cp36m-linux_aarch64.whl
-wget https://nvidia.box.com/shared/static/wa34qwrwtk9njtyarwt5nvo6imenfy26.whl -O $TORCH
+TORCH=torch-1.9.0-cp36-cp36m-linux_aarch64.whl
+wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O $TORCH
 sudo apt-get install libopenblas-base libopenmpi-dev
 pip3 install Cython
 pip3 install $TORCH
-rm ./torch-1.7.0-cp36-cp36m-linux_aarch64.whl
+rm ./torch-1.9.0-cp36-cp36m-linux_aarch64.whl
 
 # Install Torchvision
-TORCH_VISION=0.8.1
+TORCH_VISION=0.10.0
 sudo apt-get install --yes libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
 git clone --branch v0.8.1 https://github.com/pytorch/vision torchvision
 cd torchvision
-export BUILD_VERSION=0.8.1
+export BUILD_VERSION=0.10.0
 sudo python3 setup.py install
 cd ../
+
+# We need this?
+## Install Torchaudio
+#TORCHAUDIO_VERSION=0.9.0
+#apt-get update && \
+#    apt-get install -y --no-install-recommends \
+#		  cmake \
+#		  sox \
+#		  libsox-dev \
+#		  libsox-fmt-all \
+#    && rm -rf /var/lib/apt/lists/*
+#
+#pip3 install scikit-build && \
+#pip3 install ninja
+#
+#git clone --recursive -b ${TORCHAUDIO_VERSION} https://github.com/pytorch/audio torchaudio && \
+#    cd torchaudio && \
+#    python3 setup.py install && \
+#    cd ../ && \
+#    rm -rf torchaudio
 
 # Install dlib
 wget http://dlib.net/files/dlib-19.21.tar.bz2
@@ -99,6 +118,23 @@ cmake ..
 cmake --build .
 cd ../
 sudo python3 setup.py install
+
+# For AV
+apt-get update && apt-get install -y software-properties-common &&\
+    add-apt-repository -y ppa:jonathonf/ffmpeg-4
+
+apt-get update && apt-get install -y \
+    ffmpeg \
+    libavformat-dev \
+    libavcodec-dev \
+    libavdevice-dev \
+    libavutil-dev \
+    libswscale-dev \
+    libswresample-dev \
+    libavfilter-dev \
+    libeigen3-dev
+
+pip3 install av==8.0.1
 
 # Install rest of the dependencies of OpenDR
 pip3 install absl-py==1.0.0
@@ -118,6 +154,7 @@ pip3 install cachetools==4.2.4
 pip3 install catkin-pkg==0.4.24
 pip3 install catkin-tools==0.8.2
 pip3 install certifi==2021.10.8
+pip3 install cityscapesscripts==2.2.0
 pip3 install charset-normalizer==2.0.9
 pip3 install cliff==3.10.0
 pip3 install cloudpickle==1.5.0
@@ -130,6 +167,7 @@ pip3 install cycler==0.11.0
 pip3 install Cython==0.29.22
 pip3 install cython-bbox==0.1.3
 pip3 install git+https://github.com/MatthewHowe/DCNv2@194f5733c667cf13e5bd478a8c5bf27573ffa98c
+pip3 install git+https://github.com/waspinator/pycococreator.git@0.2.0
 pip3 install decorator==5.1.0
 pip3 install defusedxml==0.7.1
 pip3 install distro==1.6.0
@@ -144,6 +182,7 @@ pip3 cache purge
 pip3 install frozenlist==1.2.0
 pip3 install fsspec==2021.11.1
 pip3 install future==0.18.2
+pip3 install gdown
 pip3 install gluoncv==0.11.0b20210908
 pip3 install google-auth==1.35.0
 pip3 install google-auth-oauthlib==0.4.6
@@ -162,6 +201,7 @@ pip3 install importlib-resources==5.4.0
 pip3 install imutils==0.5.4
 pip3 install incremental==21.3.0
 pip3 install iniconfig==1.1.1
+pip3 install ipython
 pip3 install joblib==1.0.1
 pip3 install kiwisolver==1.3.1
 pip3 install lap==0.4.0
@@ -178,6 +218,7 @@ pip3 install Markdown==3.3.6
 pip3 install MarkupSafe==2.0.1
 pip3 install matplotlib==2.2.2
 pip3 install mccabe==0.6.1
+pip3 mmcv==0.5.9
 pip3 install motmetrics==1.2.0
 pip3 install multidict==5.2.0
 pip3 install munkres==1.1.4
@@ -185,6 +226,7 @@ pip3 install netifaces==0.11.0
 pip3 install networkx==2.5.1
 pip3 install numpy==1.19.4
 pip3 install oauthlib==3.1.1
+pip3 install omegaconf==2.3.0
 pip3 install onnx==1.10.2
 pip3 install onnxruntime==1.3.0
 pip3 install opencv-python==4.5.4.60
@@ -193,16 +235,19 @@ pip3 install optuna==2.10.0
 pip3 install osrf-pycommon==1.0.0
 pip3 install packaging==21.3
 pip3 install pandas==1.1.5
+pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
 pip3 install git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
+pip3 install git+https://github.com/mapillary/inplace_abn.git
+pip3 install git+https://github.com/cocodataset/panopticapi.git#egg=panopticapi
 pip3 install pbr==5.8.0
-pip3 install Pillow==7.0.0
+pip3 install Pillow==8.3.2
 pip3 install plotly==5.4.0
 pip3 install pluggy==1.0.0
 pip3 install pooch==1.5.2
 pip3 install portalocker==2.3.2
 pip3 install prettytable==2.4.0
 pip3 install progress==1.5
-pip3 install protobuf==3.19.1
+pip3 install protobuf==3.11.3
 pip3 install py==1.11.0
 pip3 install py-cpuinfo==8.0.0
 pip3 install pyasn1==0.4.8
@@ -232,12 +277,12 @@ pip3 install roslibpy==1.2.1
 pip3 install rospkg==1.3.0
 pip3 install rsa==4.8
 pip3 install scikit-image==0.16.2
-pip3 install scikit-learn==0.21.3
+pip3 install scikit-learn==0.22
+pip3 install seaborn==0.11.2
 pip3 install setuptools-rust==1.1.2
 pip3 install scipy==1.5.4
 pip3 install Shapely==1.5.9
 pip3 install six==1.16.0
-pip3 install sklearn==0.0
 pip3 install SoundFile==0.10.3.post1
 pip3 install SQLAlchemy==1.4.28
 pip3 install stable-baselines3==1.1.0
@@ -264,6 +309,7 @@ pip3 install yacs==0.1.8
 pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
+pip3 install wheel
 pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
