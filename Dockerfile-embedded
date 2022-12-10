@@ -34,6 +34,7 @@ RUN apt-get update && \
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 
+
 #
 # install bootstrap dependencies
 #
@@ -76,7 +77,7 @@ RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> /root/.bashrc
 CMD ["bash"]
 WORKDIR /
 
-RUN git clone --depth 1 --recurse-submodules -j8 --branch tx2_install https://github.com/opendr-eu/opendr
+RUN git clone --depth 1 --recurse-submodules -j8 --branch tx2_install_dev https://github.com/opendr-eu/opendr
 RUN apt-get update
 RUN cd ./opendr && ./bin/install_nvidia.sh $device
 RUN cd ./opendr/projects/opendr_ws/src && \
