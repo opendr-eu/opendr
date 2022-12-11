@@ -40,7 +40,7 @@ make install_compilation_dependencies
 make install_runtime_dependencies
 
 # Install additional ROS packages
-sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs 
+sudo apt-get install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgss
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
