@@ -310,7 +310,8 @@ pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
 pip3 install wheel
-pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
+# Detectron2 is compatible with Python3.8+ Looking for a workaround
+# pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
 pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
