@@ -2,6 +2,7 @@
 
 The *activity_recognition* module contains the *X3DLearner* and *CoX3DLearner* classes, which inherit from the abstract class *Learner*.
 
+You can find the classes and the corresponding IDs regarding activity recognition [here](https://github.com/opendr-eu/opendr/blob/master/src/opendr/perception/activity_recognition/datasets/kinetics400_classes.csv).
 
 ### Class X3DLearner
 Bases: `engine.learners.Learner`
