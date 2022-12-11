@@ -5,11 +5,13 @@ The *high_resolution_pose_estimation* module contains the *HighResolutionPoseEst
 ### Class HighResolutionPoseEstimationLearner
 Bases: `engine.learners.Learner`
 
-The *HighResolutionLightweightOpenPose* class is an implementation for pose estimation in high resolution images. This method is creating a heatmap of a resized version of the input image. Using this heatmap, the input image is being cropped keeping the area of interest and then it isused for pose estimation. The pose estimation is based on the Lightweight OpenPose algorithm. 
-In this method there are two important variables which are responsible for the increase in speed and in accuracy in high resolution images. These variables are the *first_pass_height* and the *second height* that the image is resized in this procedure.
+The *HighResolutionLightweightOpenPose* class is an implementation for pose estimation in high resolution images.
+This method is creating a heatmap of a resized version of the input image.
+Using this heatmap, the input image is being cropped keeping the area of interest and then it isused for pose estimation. The pose estimation is based on the Lightweight OpenPose algorithm.
+In this method there are two important variables which are responsible for the increase in speed and in accuracy in high resolution images.
+These variables are the *first_pass_height* and the *second height* that the image is resized in this procedure.
 
-The [HighResolutionPoseEstiamtionLearner](/src/opendr/perception/pose_estimation/hr_pose_estimation/HighResolutionLearner.py) class has the
-following public methods:
+The [HighResolutionPoseEstiamtionLearner](/src/opendr/perception/pose_estimation/hr_pose_estimation/HighResolutionLearner.py) class has the following public methods:
 
 #### `HighResolutionPoseEstimationLearner` constructor
 ```python
@@ -21,7 +23,7 @@ Constructor parameters:
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
 - **backbone**: *{'mobilenet, 'mobilenetv2', 'shufflenet'}, default='mobilenet'*\
-    Specifies the backbone architecture.
+  Specifies the backbone architecture.
 - **temp_path**: *str, default='temp'*\
   Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
 - **mobilenet_use_stride**: *bool, default=True*\
@@ -54,7 +56,6 @@ Constructor parameters:
   A list of integer scales that define the multiscale evaluation setup. Used to manually set the scales instead of going for the predefined multiscale setup.
 - **visualize**: *bool, default=False*\
   Specifies whether the images along with the poses will be shown, one by one during evaluation.
-
 - **img_mean**: *list, default=(128, 128, 128)]*\
   Specifies the mean based on which the images are normalized.
 - **img_scale**: *float, default=1/256*\
@@ -119,6 +120,7 @@ Parameters:
 ```python
 HighResolutionPoseEstimationLearner.first_pass(self, net,img)
 ```
+
 This method is used for extracting from the input image a heatmap about human locations in the picture.
 
 Parameters:
@@ -133,22 +135,24 @@ HighResolutionPoseEstimationLearner.second_pass_infer(self, net, img, net_input_
                           pad_value=(0, 0, 0),
                           img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256))
 ```
-On this method it is carried out the second inference step which estimates the human poses on the image that is inserted. Following the steps of the proposed method this image should be the cropped part of the initial high resolution image that came out from taking into account the area of interest of heatmap generation.
+
+On this method it is carried out the second inference step which estimates the human poses on the image that is inserted.
+Following the steps of the proposed method this image should be the cropped part of the initial high resolution image that came out from taking into account the area of interest of heatmap generation.
 
 Parameters:
+
 - **net**: *object*\
   The model that is used for creating the heatmap.
 - **img**: *object***\
   Object of type engine.data.Image.
 - **net_input_height_size**: *int*\
-    It is the height that is used for resizing the image on the pose estimation procedure.
+  It is the height that is used for resizing the image on the pose estimation procedure.
 - **max_width**: *int*\
-   It is the max width that the cropped image should have in order to keep the height-width ratio below a certain value.
+  It is the max width that the cropped image should have in order to keep the height-width ratio below a certain value.
 - **stride**: *int*\
-   Is the stride value of mobilenet which reduces accuracy but increases inference speed.
+  Is the stride value of mobilenet which reduces accuracy but increases inference speed.
 - **upsample_ratio**: *int, default=4*\
   Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
-
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
 - **pad_value**: *list, default=(0, 0, 0)*\
@@ -162,7 +166,9 @@ Parameters:
 ```python
 HighResolutionPoseEstimation.Pooling(self, img, kernel)
 ```
+
 Parameters:
+
 - **img**: *object***\
   Object of type engine.data.Image.
 - **kernel**: *int*\
@@ -172,6 +178,7 @@ Parameters:
 ```python
 HighResolutionPoseEstimation.infer_light_odr(self, img, upsample_ratio=4, track=True, smooth=True)
 ```
+
 This method is an inference function of OpenDR LightWeight OpenPose pose estiamtion.
 
 Parameters:
@@ -191,11 +198,8 @@ HighResolutionPoseEstimation.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already
-exist. Inside this folder, the model is saved as "name.pth" and the metadata file as "name.json". If the directory
-already exists, the "name.pth" and "name.json" files are overwritten.
-
-
+Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already exist.
+Inside this folder, the model is saved as "name.pth" and the metadata file as "name.json". If the directory already exists, the "name.pth" and "name.json" files are overwritten.
 
 Parameters:
 
@@ -224,8 +228,9 @@ Parameters:
 HighResolutionPoseEstimation.download(self, path, mode, verbose, url)
 ```
 
-Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
-saves them in the path provided. It supports downloading:
+Download utility for various Lightweight Open Pose components.
+Downloads files depending on mode and saves them in the path provided.
+It supports downloading:
 1. the default mobilenet pretrained model
 2. mobilenet, mobilenetv2 and shufflenet weights needed for training
 3. a test dataset with a single COCO image and its annotation
@@ -250,17 +255,17 @@ Parameters:
   from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
   from opendr.perception.pose_estimation import draw
   from opendr.engine.data import Image
-  
+
   pose_estimator = HighResolutionPoseEstimationLearner(device='cuda', num_refinement_stages=2,
                                                            mobilenet_use_stride=False, half_precision=False,
                                                            first_pass_height=360,
                                                            second_pass_height=540,
                                                            img_resol=1080)
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
-  
+
   pose_estimator.load("./parent_dir/openpose_default")
   pose_estimator.download(mode="test_data")  # Download a test data taken from COCO2017
-  
+
   img = Image.open('./parent_dir/dataset/image/000000000785_1080.jpg')
   orig_img = img.opencv()  # Keep original image
   current_poses = pose_estimator.infer(img)
@@ -291,6 +296,7 @@ The experiments are conducted on a 1080p image.
 | OpenDR - Baseline | 0.05               | 2.6             | 0.3              | 0.5             |
 | OpenDR - Full     | 0.2                | 10.8            | 1.4              | 3.1             |
 
+
 #### High-Resolution Pose Estimation
 | Method                 | CPU i7-9700K (FPS) | RTX 2070 (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) |
 |------------------------|--------------------|----------------|------------------|-----------------|
@@ -301,8 +307,8 @@ The experiments are conducted on a 1080p image.
 | HRPoseEstim - H+S      | 8.2                | 25.9           | 3.6              | 5.5             |
 | HRPoseEstim - Full     | 10.9               | 31.7           | 4.8              | 6.9             |
 
-
-As it is shown in the previous Table, OpenDr Lightweight OpenPose achieves higher FPS when it is resing the input image into 256 pixels. It is easier to process that image but as it is shown in the next tables the method falls apart when it comes to accuracy and there are no detections.
+As it is shown in the previous Table, OpenDr Lightweight OpenPose achieves higher FPS when it is resing the input image into 256 pixels.
+It is easier to process that image but as it is shown in the next tables the method falls apart when it comes to accuracy and there are no detections.
 
 We have evaluated the effect of using different inference settings, namely:
 - *HRPoseEstim - Baseline*, which refers to directly using the High Resolution Pose Estimation method,which is based in Lightweight OpenPose,
@@ -311,9 +317,11 @@ We have evaluated the effect of using different inference settings, namely:
 - *HRPoseEstim - Stages*, which refers to removing the refinement stages,
 - *HRPoseEstim - H+S*, which uses both half precision and increased stride, and
 - *HRPoseEstim - Full*, which refers to combining all three available optimization.
-was used as input to the models. 
+was used as input to the models.
 
 The average precision and average recall on the COCO evaluation split is also reported in the Table below:
+
+
 #### Lightweight OpenPose
 | Method            | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) | Evaluation time (sec) |
 |-------------------|------------------------------|---------------------------|-----------------------|
@@ -330,8 +338,6 @@ The average precision and average recall on the COCO evaluation split is also re
 | HRPoseEstim - H+S      | 0.254                        | 0.267                     | 165                   |
 | HRPoseEstim - Full     | 0.259                        | 0.272                     | 145                   |
 
-
-
 The average precision and the average recall have been calculated on a 1080p version of COCO2017 validation dataset and the results are reported in the table below:
 
 | Method | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
@@ -343,16 +349,14 @@ The average precision and the average recall have been calculated on a 1080p ver
 | HRPoseEstim - H+S      | 0.134                        | 0.139                     |
 | HRPoseEstim - Full     | 0.141                        | 0.150                     |
 
-For measuring the precision and recall we used the standard approach proposed for COCO, using an Intersection of Union (IoU) metric at 0.5. 
+For measuring the precision and recall we used the standard approach proposed for COCO, using an Intersection of Union (IoU) metric at 0.5.
 
 
 #### Notes
 
-For the metrics of the algorithm the COCO dataset evaluation scores are used as explained [here](
-https://cocodataset.org/#keypoints-eval).
+For the metrics of the algorithm the COCO dataset evaluation scores are used as explained [here](https://cocodataset.org/#keypoints-eval).
 
-Keypoints and how poses are constructed is according to the original method described [here](
-https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch/blob/master/TRAIN-ON-CUSTOM-DATASET.md).
+Keypoints and how poses are constructed is according to the original method described [here](https://github.com/Daniil-Osokin/lightweight-human-pose-estimation.pytorch/blob/master/TRAIN-ON-CUSTOM-DATASET.md).
 
 Pose keypoints ids are matched as:
 
@@ -379,7 +383,5 @@ Pose keypoints ids are matched as:
 
 
 #### References
-<a name="open-pose-1" href="https://arxiv.org/abs/1812.08008">[1]</a> OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields,
-[arXiv](https://arxiv.org/abs/1812.08008).
-<a name="open-pose-2" href="https://arxiv.org/abs/1811.12004">[2]</a> Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose,
-[arXiv](https://arxiv.org/abs/1811.12004).
+<a name="open-pose-1" href="https://arxiv.org/abs/1812.08008">[1]</a> OpenPose: Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields, [arXiv](https://arxiv.org/abs/1812.08008).
+<a name="open-pose-2" href="https://arxiv.org/abs/1811.12004">[2]</a> Real-time 2D Multi-Person Pose Estimation on CPU: Lightweight OpenPose, [arXiv](https://arxiv.org/abs/1811.12004).
