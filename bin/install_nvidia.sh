@@ -71,16 +71,18 @@ pip3 install configparser
 
 # Install Torch
 sudo apt-get install --yes libopenblas-dev cmake ninja-build
-TORCH=torch-1.9.0-cp36-cp36m-linux_aarch64.whl
-wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O $TORCH
+TORCH=torch-1.9.0-cp38-cp38-linux_aarch64.whl
+https://github.com/KumaTea/pytorch-aarch64/releases/download/v1.9.0/torch-1.9.0-cp38-cp38-linux_aarch64.whl
+#wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O $TORCH
+wget https://github.com/KumaTea/pytorch-aarch64/releases/download/v1.9.0/torch-1.9.0-cp38-cp38-linux_aarch64.whl
 pip3 install Cython
 pip3 install $TORCH
-rm ./torch-1.9.0-cp36-cp36m-linux_aarch64.whl
+rm ./torch-1.9.0-cp36-cp36-linux_aarch64.whl
 
 # Install Torchvision
 TORCH_VISION=0.10.0
 sudo apt-get install --yes libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-git clone --branch v0.8.1 https://github.com/pytorch/vision torchvision
+git clone --branch v0.10.0 https://github.com/pytorch/vision torchvision
 cd torchvision
 export BUILD_VERSION=0.10.0
 sudo python3 setup.py install
@@ -106,7 +108,7 @@ cd ../
 #    cd ../ && \
 #    rm -rf torchaudio
 
- Install dlib
+# Install dlib
 wget http://dlib.net/files/dlib-19.21.tar.bz2
 tar jxvf dlib-19.21.tar.bz2
 cd dlib-19.21/
