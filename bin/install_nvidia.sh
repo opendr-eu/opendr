@@ -22,8 +22,8 @@ cd $OPENDR_HOME
 
 sudo apt-get install -y gfortran build-essential git python3-pip python-numpy libopencv-dev graphviz libopenblas-dev libopenblas-base libatlas-base-dev python-numpy
 
-sudo pip3 install --upgrade pip setuptools
-sudo pip3 install numpy==1.19.4
+pip3 install --upgrade pip setuptools
+pip3 install numpy==1.19.4
 
 git clone --recursive -b v1.8.x https://github.com/apache/incubator-mxnet.git mxnet
 
@@ -53,7 +53,6 @@ else
   echo "Wrong argument, supported inputs are 'tx2', 'agx' and 'nx'"
 fi
 
-
 make -j $(nproc) NVCC=/usr/local/cuda/bin/nvcc
 
 cd $MXNET_HOME/python
@@ -68,13 +67,12 @@ sudo apt-get install --yes libfreetype6-dev lsb-release  curl wget
 git submodule init
 git submodule update
 
-pip3 install setuptools configparser
-pip3 install --upgrade setuptools
+pip3 install configparser
+
 # Install Torch
 sudo apt-get install --yes libopenblas-dev cmake ninja-build
 TORCH=torch-1.9.0-cp36-cp36m-linux_aarch64.whl
 wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O $TORCH
-sudo apt-get install libopenblas-base libopenmpi-dev
 pip3 install Cython
 pip3 install $TORCH
 rm ./torch-1.9.0-cp36-cp36m-linux_aarch64.whl
@@ -108,7 +106,7 @@ cd ../
 #    cd ../ && \
 #    rm -rf torchaudio
 
-# Install dlib
+ Install dlib
 wget http://dlib.net/files/dlib-19.21.tar.bz2
 tar jxvf dlib-19.21.tar.bz2
 cd dlib-19.21/
@@ -118,6 +116,8 @@ cmake ..
 cmake --build .
 cd ../
 sudo python3 setup.py install
+cd $OPENDR_HOME
+rm dlib-19.21.tar.bz2
 
 # For AV
 apt-get update && apt-get install -y software-properties-common &&\
@@ -137,6 +137,7 @@ apt-get update && apt-get install -y \
 pip3 install av==8.0.1
 
 # Install rest of the dependencies of OpenDR
+
 pip3 install absl-py==1.0.0
 pip3 install aiohttp==3.8.1
 pip3 install aiosignal==1.2.0
@@ -310,8 +311,8 @@ pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
 pip3 install wheel
-# Detectron2 is compatible with Python3.8+ Looking for a workaround
-# pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
+# Upgrade protobuf for mxnet
+pip3 install --upgrade protobuf
 pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
