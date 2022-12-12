@@ -167,7 +167,7 @@ def CoResStage(
         stride (int): stride of the bottleneck.
         num_blocks (int): numbers of blocks.
         dim_inner (int): inner channel dimensions of the input.
-        num_groups (int): number of roups for the convolution.
+        num_groups (int): number of groups for the convolution.
             num_groups=1 is for standard ResNet like networks, and
             num_groups>1 is for ResNeXt like networks.
         num_block_temp_kernel (int): extent the temp_kernel_sizes to
