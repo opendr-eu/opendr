@@ -152,7 +152,7 @@ jobs:
       uses: tj-actions/branch-names@v5.1
     - name: Build image
       run: |
-        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
+        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --build-arg ros_distro=noetic --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
@@ -310,9 +310,10 @@ jobs:
         echo "Installing $package package"
         # Utils contains hyperparameter tuning
         if [ "$package" == "utils" ]; then
-              pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
-              pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
         python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
