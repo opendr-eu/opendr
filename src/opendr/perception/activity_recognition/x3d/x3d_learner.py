@@ -126,7 +126,7 @@ class X3DLearner(Learner):
 
         Args:
             model_name (str, optional): Name of the model (one of {"xs", "s", "m", "l"}).
-                If none, `self.backbon`e is used. Defaults to None.
+                If none, `self.backbone` is used. Defaults to None.
 
         Returns:
             Dict[str, Any]: Dictionary with model hyperparameters
@@ -485,7 +485,7 @@ class X3DLearner(Learner):
 
     def optimize(self, do_constant_folding=False):
         """Optimize model execution.
-        This is acoomplished by saving to the ONNX format and loading the optimized model.
+        This is accomplished by saving to the ONNX format and loading the optimized model.
 
         Args:
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.

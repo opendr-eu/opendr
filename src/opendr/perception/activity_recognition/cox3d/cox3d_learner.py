@@ -79,7 +79,7 @@ class CoX3DLearner(X3DLearner):
             seed (int, optional): Random seed. Defaults to 123.
             num_classes (int, optional): Number of classes to predict among. Defaults to 400.
             temporal_window_size (int, optional): Size of the final global average pooling.
-                If None, size will be automically chosen according to the backbone. Defaults to None.
+                If None, size will be automatically chosen according to the backbone. Defaults to None.
         """
         super().__init__(
             lr,
