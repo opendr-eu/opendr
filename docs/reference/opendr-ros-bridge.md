@@ -72,9 +72,9 @@ Parameters:
 ROSBridge.to_ros_pose(self,
                       pose)
 ```
-Converts an OpenDR Pose into a OpenDRPose2D msg that can carry the same information, i.e. a list of keypoints, 
+Converts an OpenDR Pose into a OpenDRPose2D msg that can carry the same information, i.e. a list of keypoints,
 the pose detection confidence and the pose id.
-Each keypoint is represented as an OpenDRPose2DKeypoint with x, y pixel position on input image with (0, 0) 
+Each keypoint is represented as an OpenDRPose2DKeypoint with x, y pixel position on input image with (0, 0)
 being the top-left corner.
 
 Parameters:
@@ -386,28 +386,32 @@ Parameters:
   The tracking ids corresponding to the boxes.
 - **frame**: *int, default=-1*\
   The frame index to assign to the tracking boxes.
-  
+
 #### `ROSBridge.to_ros_single_tracking_annotation`
 
 ```python
 ROSBridge.to_ros_single_tracking_annotation(self, tracking_annotation)
 ```
 
-Converts a `TrackingAnnotation` object to a `Detection2D` ROS message. This method is intended for 
-single object tracking methods.
+Converts a `TrackingAnnotation` object to a `Detection2D` ROS message.
+This method is intended for single object tracking methods.
+
 Parameters:
+
 - **tracking_annotation**: *opendr.engine.target.TrackingAnnotation*\
   The box to be converted.
-  
+
 #### `ROSBridge.from_ros_single_tracking_annotation`
 
 ```python
 ROSBridge.from_ros_single_tracking_annotation(self, ros_detection_box)
 ```
 
-Converts a `Detection2D` ROS message object to a `TrackingAnnotation` object. This method is intended for 
-single object tracking methods.
+Converts a `Detection2D` ROS message object to a `TrackingAnnotation` object.
+This method is intended for single object tracking methods.
+
 Parameters:
+
 - **ros_detection_box**: *vision_msgs.Detection2D*\
   The box to be converted.
 
