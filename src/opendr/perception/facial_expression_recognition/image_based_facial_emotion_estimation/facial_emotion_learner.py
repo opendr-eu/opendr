@@ -740,7 +740,7 @@ class FacialEmotionLearner(Learner):
                 print("data files already exists.")
             print("Data download complete.")
             downloaded_files_path = os.path.join(data_path, 'AffectNet_micro')
-            print('downloaded_files_path:', downloaded_files_path)
+            print('downloaded_files_path:', os.listdir(downloaded_files_path))
 
         elif mode == "pretrained":
             print("Downloading pretrained model weights...")
@@ -760,6 +760,6 @@ class FacialEmotionLearner(Learner):
                 print("pretrained files already exists.")
             print("Pretrained model weights download complete.")
             downloaded_files_path = os.path.join(model_path, 'esr_9')
-            print('downloaded_files_path:', downloaded_files_path)
+            print('downloaded_files_path:', os.listdir(downloaded_files_path))
 
         return downloaded_files_path
