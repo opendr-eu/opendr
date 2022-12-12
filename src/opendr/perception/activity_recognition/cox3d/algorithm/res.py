@@ -157,7 +157,7 @@ def CoResStage(
     Create a Continual Residual X3D Stage.
 
     Note: Compared to the original implementation of X3D, we discard the
-    obsolete handling of the multiple pathways and the non-local mehcanism.
+    obsolete handling of the multiple pathways and the non-local mechanism.
 
     Args:
         dim_in (int): channel dimensions of the input.
