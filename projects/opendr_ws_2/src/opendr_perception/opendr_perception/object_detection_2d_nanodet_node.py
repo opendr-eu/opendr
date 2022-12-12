@@ -16,23 +16,24 @@
 import argparse
 import torch
 
-import rospy
-from vision_msgs.msg import Detection2DArray
+import rclpy
+from rclpy.node import Node
+
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_bridge import ROSBridge
+from vision_msgs.msg import Detection2DArray
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class ObjectDetectionNanodetNode:
+class ObjectDetectionNanodetNode(Node):
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
-                 output_rgb_image_topic="/opendr/image_objects_annotated", detections_topic="/opendr/objects",
-                 device="cuda", model="plus_m_1.5x_416"):
+    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
+                 detections_topic="/opendr/objects", device="cuda", model="plus_m_1.5x_416"):
         """
-        Creates a ROS Node for object detection with Nanodet.
+        Creates a ROS2 Node for object detection with Nanodet.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -46,33 +47,28 @@ class ObjectDetectionNanodetNode:
         :param model: the name of the model of which we want to load the config file
         :type model: str
         """
-        self.input_rgb_image_topic = input_rgb_image_topic
+        super().__init__('object_detection_2d_nanodet_node')
+
+        self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
         if output_rgb_image_topic is not None:
-            self.image_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=1)
+            self.image_publisher = self.create_publisher(ROS_Image, output_rgb_image_topic, 1)
         else:
             self.image_publisher = None
 
         if detections_topic is not None:
-            self.object_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=1)
+            self.object_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.object_publisher = None
 
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
 
         # Initialize the object detector
         self.object_detector = NanodetLearner(model_to_use=model, device=device)
         self.object_detector.download(path=".", mode="pretrained", verbose=True)
         self.object_detector.load("./nanodet_{}".format(model))
 
-    def listen(self):
-        """
-        Start the node and begin processing input data.
-        """
-        rospy.init_node('opendr_object_detection_2d_nanodet_node', anonymous=True)
-        rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object detection 2D Nanodet node started.")
-        rospy.spin()
+        self.get_logger().info("Object Detection 2D YOLOV5 node initialized.")
 
     def callback(self, data):
         """
@@ -101,10 +97,12 @@ class ObjectDetectionNanodetNode:
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
-def main():
+def main(args=None):
+    rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
-                        type=str, default="/usb_cam/image_raw")
+                        type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/image_objects_annotated")
@@ -132,7 +130,14 @@ def main():
                                                                input_rgb_image_topic=args.input_rgb_image_topic,
                                                                output_rgb_image_topic=args.output_rgb_image_topic,
                                                                detections_topic=args.detections_topic)
-    object_detection_nanodet_node.listen()
+
+    rclpy.spin(object_detection_nanodet_node)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    object_detection_nanodet_node.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
