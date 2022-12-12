@@ -42,7 +42,7 @@ make install_runtime_dependencies
 # Install additional ROS packages
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic"]]; then
   echo "Installing ROS dependencies"
-  sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs
+  sudo apt-get install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs
 fi
 
 # Install additional ROS2 packages
