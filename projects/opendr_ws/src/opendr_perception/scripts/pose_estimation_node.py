@@ -99,7 +99,7 @@ class PoseEstimationNode:
         #  Publish detections in ROS message
         if self.pose_publisher is not None:
             for pose in poses:
-                # Convert OpenDR pose to ROS2 pose message using bridge and publish it
+                # Convert OpenDR pose to ROS pose message using bridge and publish it
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
@@ -108,7 +108,7 @@ class PoseEstimationNode:
             # Annotate image with poses
             for pose in poses:
                 draw(image, pose)
-            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+            # Convert the annotated OpenDR image to ROS image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
