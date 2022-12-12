@@ -68,7 +68,7 @@ class ObjectDetectionNanodetNode(Node):
         self.object_detector.download(path=".", mode="pretrained", verbose=True)
         self.object_detector.load("./nanodet_{}".format(model))
 
-        self.get_logger().info("Object Detection 2D YOLOV5 node initialized.")
+        self.get_logger().info("Object Detection 2D Nanodet node initialized.")
 
     def callback(self, data):
         """
