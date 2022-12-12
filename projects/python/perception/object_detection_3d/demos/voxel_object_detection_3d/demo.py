@@ -23,6 +23,7 @@ from flask import Flask, Response, render_template, request
 
 # OpenDR imports
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
+from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner
 from data_generators import (
     lidar_point_cloud_generator,
     disk_point_cloud_generator,
@@ -162,6 +163,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
         # Init model
         detection_learner = VoxelObjectDetection3DLearner(config_path)
+        tracking_learner = ObjectTracking3DAb3dmotLearner()
 
         if model_name is not None and not os.path.exists(
             "./models/" + model_name
@@ -172,6 +174,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
     else:
         detection_learner = None
+        tracking_learner = None
 
     def process_key(key):
 
@@ -284,8 +287,10 @@ def voxel_object_detection_3d(config_path, model_name=None):
 
             if predict:
                 predictions = detection_learner.infer(point_cloud)
+                tracking_predictions = tracking_learner.infer(predictions)
             else:
                 predictions = []
+                tracking_predictions = []
 
             if len(predictions) > 0:
                 print(
@@ -296,7 +301,7 @@ def voxel_object_detection_3d(config_path, model_name=None):
             t = time.time()
 
             frame_bev_2 = draw_point_cloud_bev(
-                point_cloud.data, predictions, scale, xs, ys
+                point_cloud.data, tracking_predictions, scale, xs, ys
             )
             frame_proj_2 = draw_point_cloud_projected_numpy(
                 point_cloud.data,

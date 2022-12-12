@@ -22,7 +22,6 @@ from opendr.engine.learners import Learner
 from opendr.engine.helper.io import bump_version
 from torch import onnx
 import onnxruntime as ort
-
 from opendr.engine.data import Video
 from opendr.engine.datasets import Dataset
 from opendr.engine.target import Category
@@ -116,7 +115,7 @@ class X3DLearner(Learner):
         self.seed = seed
         self.num_classes = num_classes
         self.loss = loss
-        self.ort_session = None
+        self._ort_session = None
         torch.manual_seed(self.seed)
 
         self._load_model_hparams(self.backbone)
@@ -127,7 +126,7 @@ class X3DLearner(Learner):
 
         Args:
             model_name (str, optional): Name of the model (one of {"xs", "s", "m", "l"}).
-                If none, `self.backbon`e is used. Defaults to None.
+                If none, `self.backbone` is used. Defaults to None.
 
         Returns:
             Dict[str, Any]: Dictionary with model hyperparameters
@@ -158,20 +157,10 @@ class X3DLearner(Learner):
         logger.debug(f"Loading model weights from {str(weights_path)}")
 
         # Check for configuration mismatches, loading only matching weights
-        new_model_state = self.model.state_dict()
         loaded_state_dict = torch.load(weights_path, map_location=torch.device(self.device))
         if "model_state" in loaded_state_dict:  # As found in the official pretrained X3D models
             loaded_state_dict = loaded_state_dict["model_state"]
-
-        def size_ok(k):
-            return new_model_state[k].size() == loaded_state_dict[k].size()
-
-        to_load = {k: v for k, v in loaded_state_dict.items() if size_ok(k)}
-        self.model.load_state_dict(to_load, strict=False)
-
-        names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
-        if len(names_not_loaded) > 0:
-            logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
+        self.model.load_state_dict(loaded_state_dict, strict=False)
         self.model.to(self.device)
 
         return self
@@ -218,12 +207,12 @@ class X3DLearner(Learner):
         root_path = Path(path)
         root_path.mkdir(parents=True, exist_ok=True)
         name = f"x3d_{self.backbone}"
-        ext = ".onnx" if self.ort_session else ".pth"
+        ext = ".onnx" if self._ort_session else ".pth"
         weights_path = bump_version(root_path / f"model_{name}{ext}")
         meta_path = bump_version(root_path / f"{name}.json")
 
         logger.info(f"Saving model weights to {str(weights_path)}")
-        if self.ort_session:
+        if self._ort_session:
             self._save_onnx(weights_path)
         else:
             torch.save(self.model.state_dict(), weights_path)
@@ -239,7 +228,7 @@ class X3DLearner(Learner):
                 "network_head": self.network_head,
                 "threshold": self.threshold,
             },
-            "optimized": bool(self.ort_session),
+            "optimized": bool(self._ort_session),
             "optimizer_info": {
                 "lr": self.lr,
                 "iters": self.iters,
@@ -412,7 +401,8 @@ class X3DLearner(Learner):
                 "monitor": optimisation_metric,
             }
 
-        self.model.configure_optimizers = configure_optimizers
+        model = getattr(self, "_plmodel", self.model)
+        model.configure_optimizers = configure_optimizers
 
         self.trainer = pl.Trainer(
             max_epochs=epochs or self.iters,
@@ -431,7 +421,7 @@ class X3DLearner(Learner):
         self.trainer.limit_train_batches = steps or self.trainer.limit_train_batches
         self.trainer.limit_val_batches = steps or self.trainer.limit_val_batches
 
-        self.trainer.fit(self.model, train_dataloader, val_dataloader)
+        self.trainer.fit(model, train_dataloader, val_dataloader)
         self.model.to(self.device)
 
     def eval(self, dataset: Dataset, steps: int = None) -> Dict[str, Any]:
@@ -460,7 +450,8 @@ class X3DLearner(Learner):
                 logger=_experiment_logger(),
             )
         self.trainer.limit_test_batches = steps or self.trainer.limit_test_batches
-        results = self.trainer.test(self.model, test_dataloader)
+        model = getattr(self, "_plmodel", self.model)
+        results = self.trainer.test(model, test_dataloader)
         results = {
             "accuracy": results[-1]["test/acc"],
             "loss": results[-1]["test/loss"],
@@ -484,8 +475,8 @@ class X3DLearner(Learner):
             batch = torch.stack([torch.tensor(v.data) for v in batch])
 
         batch = batch.to(device=self.device, dtype=torch.float)
-        if self.ort_session is not None:
-            results = torch.tensor(self.ort_session.run(None, {"video": batch.cpu().numpy()})[0])
+        if self._ort_session is not None:
+            results = torch.tensor(self._ort_session.run(None, {"video": batch.cpu().numpy()})[0])
         else:
             self.model.eval()
             results = self.model.forward(batch)
@@ -494,13 +485,13 @@ class X3DLearner(Learner):
 
     def optimize(self, do_constant_folding=False):
         """Optimize model execution.
-        This is acoomplished by saving to the ONNX format and loading the optimized model.
+        This is accomplished by saving to the ONNX format and loading the optimized model.
 
         Args:
             do_constant_folding (bool, optional): Whether to optimize constants. Defaults to False.
         """
 
-        if getattr(self.model, "ort_session", None):
+        if getattr(self.model, "_ort_session", None):
             logger.info("Model is already optimized. Skipping redundant optimization")
             return
 
@@ -552,7 +543,7 @@ class X3DLearner(Learner):
             path (Union[str, Path]): Path to ONNX model
         """
         logger.info(f"Loading ONNX runtime inference session from {str(path)}")
-        self.ort_session = ort.InferenceSession(str(path))
+        self._ort_session = ort.InferenceSession(str(path))
 
 
 def _experiment_logger():

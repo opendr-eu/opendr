@@ -93,6 +93,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/cox3d/algorithm',
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/object_tracking_2d/deep_sort/algorithm',
+            'src/opendr/perception/object_tracking_2d/siamrpn/data_utils',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/algorithm',
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
