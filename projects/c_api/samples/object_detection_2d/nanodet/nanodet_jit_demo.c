@@ -16,15 +16,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "nanodet_c.h"
+#include "object_detection_2d_nanodet_jit.h"
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
   if (argc != 6) {
     fprintf(stderr,
             "usage: %s [model_path] [device] [images_path] [input_sizes].\n"
-            "model_path = path/to/your/libtorch/model.pth \n device = cuda or cpu \n"
-            "images_path = \"xxx/xxx/*.jpg\" \n input_size = width height.\n",
+            "model_path = path/to/your/libtorch/model.pth \ndevice = cuda or cpu \n"
+            "images_path = \"xxx/xxx/*.jpg\" \ninput_size = width height.\n",
             argv[0]);
     return -1;
   }
@@ -48,16 +48,16 @@ int main(int argc, char **argv) {
   }
 
   // Initialize opendr detection target list;
-  opendr_detection_target_list_t results;
+  opendr_detection_vector_target_t results;
 
   // Infer nanodet model
-  results = infer_nanodet(&image, &model);
+  results = infer_nanodet(&model, &image);
 
   // Draw the results
   drawBboxes(&image, &model, &results);
 
   // Free the memory
-  free_detections(&results);
+  free_detections_vector(&results);
   free_image(&image);
   free_nanodet_model(&model);
 

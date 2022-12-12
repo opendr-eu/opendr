@@ -11,5 +11,5 @@ After installation, the demo can be run from projects/c_api directory with:
 Or with the downloaded model and image with:
 
 ```sh
-./built/nanodet_libtorch_demo ./data/nanodet/optimized_model/nanodet_m.pth cuda ./data/nanodet/database/000000000036.jpg 320 320
+./built/nanodet_libtorch_demo ./data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth cuda ./data/object_detection_2d/nanodet/database/000000000036.jpg 320 320
 ```
