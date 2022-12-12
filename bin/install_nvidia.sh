@@ -71,13 +71,12 @@ pip3 install configparser
 
 # Install Torch
 sudo apt-get install --yes libopenblas-dev cmake ninja-build
-TORCH=torch-1.9.0-cp38-cp38-linux_aarch64.whl
-https://github.com/KumaTea/pytorch-aarch64/releases/download/v1.9.0/torch-1.9.0-cp38-cp38-linux_aarch64.whl
-#wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O $TORCH
-wget https://github.com/KumaTea/pytorch-aarch64/releases/download/v1.9.0/torch-1.9.0-cp38-cp38-linux_aarch64.whl
+TORCH=torch-1.9.0-cp36-cp36m-linux_aarch64.whl
+wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O torch-1.9.0-cp36-cp36m-linux_aarch64.whl
+
 pip3 install Cython
 pip3 install $TORCH
-rm ./torch-1.9.0-cp36-cp36-linux_aarch64.whl
+rm ./torch-1.9.0-cp36-cp36m-linux_aarch64.whl
 
 # Install Torchvision
 TORCH_VISION=0.10.0
@@ -87,6 +86,7 @@ cd torchvision
 export BUILD_VERSION=0.10.0
 sudo python3 setup.py install
 cd ../
+rm -r torchvision/
 
 # We need this?
 ## Install Torchaudio
@@ -238,10 +238,10 @@ pip3 install optuna==2.10.0
 pip3 install osrf-pycommon==1.0.0
 pip3 install packaging==21.3
 pip3 install pandas==1.1.5
-pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
+#pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
 pip3 install git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
 pip3 install git+https://github.com/mapillary/inplace_abn.git
-pip3 install git+https://github.com/cocodataset/panopticapi.git#egg=panopticapi
+#pip3 install git+https://github.com/cocodataset/panopticapi.git#egg=panopticapi
 pip3 install pbr==5.8.0
 pip3 install Pillow==8.3.2
 pip3 install plotly==5.4.0
@@ -250,7 +250,7 @@ pip3 install pooch==1.5.2
 pip3 install portalocker==2.3.2
 pip3 install prettytable==2.4.0
 pip3 install progress==1.5
-pip3 install protobuf==3.11.3
+pip3 install protobuf==3.20.1
 pip3 install py==1.11.0
 pip3 install py-cpuinfo==8.0.0
 pip3 install pyasn1==0.4.8
@@ -313,8 +313,6 @@ pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
 pip3 install wheel
-# Upgrade protobuf for mxnet
-pip3 install --upgrade protobuf
 pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
