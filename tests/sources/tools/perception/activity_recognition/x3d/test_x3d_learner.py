@@ -131,21 +131,21 @@ class TestX3DLearner(unittest.TestCase):
     #     self.learner._save_onnx(path)
     #     assert path.exists()
     #     # Load
-    #     assert getattr(self.learner, "ort_session", None) == None
+    #     assert getattr(self.learner, "_ort_session", None) == None
     #     self.learner._load_onnx(path)
-    #     assert getattr(self.learner, "ort_session", None) != None
+    #     assert getattr(self.learner, "_ort_session", None) != None
     #     # Clean up
-    #     self.learner.ort_session = None
+    #     self.learner._ort_session = None
 
     def test_optimize(self):
-        self.learner.ort_session = None
+        self.learner._ort_session = None
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         self.learner.optimize()
 
-        assert self.learner.ort_session is not None
+        assert self.learner._ort_session is not None
 
         # Clean up
-        self.learner.ort_session = None
+        self.learner._ort_session = None
 
 
 if __name__ == "__main__":
