@@ -40,7 +40,7 @@ make install_compilation_dependencies
 make install_runtime_dependencies
 
 # Install additional ROS packages
-if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic"]]; then
+if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
   echo "Installing ROS dependencies"
   sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam
 fi
