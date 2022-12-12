@@ -79,7 +79,8 @@ Parameters:
 SiamRPNLearner.infer(self, img, init_box)
 ```
 
-Performs inference on a single image. If the `init_box` is provided, the tracker is initialized.
+Performs inference on a single image.
+If the `init_box` is provided, the tracker is initialized.
 If not, the current position of the target is updated by running inference on the image.
 
 Parameters:
@@ -103,7 +104,7 @@ Parameters:
 - **path**: *str*\
   Specifies the folder where the model will be saved.
   The model name is extracted from the base folder of this path.
-- **verbose**: *bool default=True*\
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
 
 #### `SiamRPNLearner.load`
@@ -117,7 +118,7 @@ Parameters:
 
 - **path**: *str*\
   Specifies the folder where the model will be loaded from.
-- **verbose**: *bool default=True*\
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
 
 #### `SiamRPNLearner.download`
@@ -125,7 +126,7 @@ Parameters:
 SiamRPNLearner.download(self, path, mode, verbose, url, overwrite)
 ```
 
-Downloads data needed for the various functions of the learner, e.g., pretrained models as well as test data.
+Downloads data needed for the various functions of the learner, e.g., pre-trained models as well as test data.
 
 Parameters:
 
@@ -133,17 +134,17 @@ Parameters:
   Specifies the folder where data will be downloaded.
   If *None*, the *self.temp_path* directory is used instead.
 - **mode**: *{'pretrained', 'video', 'test_data', 'otb2015'}, default='pretrained'*\
-  If *'pretrained'*, downloads a pretrained detector model.
+  If *'pretrained'*, downloads a pre-trained detector model.
   If *'video'*, downloads a single video to perform inference on.
   If *'test_data'* downloads a dummy version of the OTB dataset for testing purposes.
   If *'otb2015'*, attempts to download the OTB dataset (100 videos).
   This process lasts a long time.
-- **verbose**: *bool default=True*\
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
 - **overwrite**: *bool, default=False*\
-  If True, files will be redownloaded if they already exists.
+  If True, files will be re-downloaded if they already exists.
   This can solve some issues with large downloads.
 
 #### Examples
@@ -203,7 +204,7 @@ Parameters:
   ```
 
 
-#### Performance Evaluation
+#### Performance evaluation
 
 We have measured the performance on the OTB2015 dataset in terms of success and FPS on an RTX 2070.
 ```
