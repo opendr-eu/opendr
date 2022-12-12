@@ -1,5 +1,4 @@
-
-"""# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License."""
 
-# General imports
 # General imports
 import torchvision.transforms
 import onnxruntime as ort
@@ -47,7 +45,7 @@ from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.models.with_
     PoseEstimationWithShuffleNet
 
 from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.modules.load_state import \
-    load_state  # , load_from_mobilenet
+    load_state
 from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.modules.keypoints import \
     extract_keypoints, group_keypoints
 from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.datasets.coco import CocoValDataset
@@ -125,7 +123,6 @@ class HighResolutionPoseEstimationLearner(Learner):
         self.model_train_state = True
 
     def first_pass(self, net, img):
-        height, width, _ = img.shape
 
         if 'cuda' in self.device:
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().cuda()
