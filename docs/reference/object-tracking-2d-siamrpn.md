@@ -9,17 +9,14 @@ The *SiamRPNLearner* class is a wrapper of the SiamRPN detector[[1]](#siamrpn-1)
 [GluonCV implementation](https://github.com/dmlc/gluon-cv/tree/master/gluoncv/model_zoo/siamrpn).
 It can be used to perform object tracking on videos (inference) as well as train new object tracking models.
 
-The [SiamRPNLearner](/src/opendr/perception/object_tracking_2d/siamrpn/siamrpn_learner.py) class has the following
-public methods:
+The [SiamRPNLearner](/src/opendr/perception/object_tracking_2d/siamrpn/siamrpn_learner.py) class has the following public methods:
 
 #### `SiamRPNLearner` constructor
 ```python
-SiamRPNLearner(self, device, n_epochs, num_workers, warmup_epochs,
-               lr, weight_decay, momentum, cls_weight, loc_weight,
-               batch_size, temp_path)
+SiamRPNLearner(self, device, n_epochs, num_workers, warmup_epochs, lr, weight_decay, momentum, cls_weight, loc_weight, batch_size, temp_path)
 ```
 
-Constructor parameters:
+Parameters:
 
 - **device**: *{'cuda', 'cpu'}, default='cuda'*\
   Specifies the device to be used.
@@ -50,8 +47,8 @@ Constructor parameters:
 SiamRPNLearner.fit(self, dataset, log_interval, n_gpus, verbose)
 ```
 
-This method is used to train the algorithm on a `DetectionDataset` or `ExternalDataset` dataset and also performs evaluation
-on a validation set using the trained model. Returns a dictionary containing stats regarding the training process.
+This method is used to train the algorithm on a `DetectionDataset` or `ExternalDataset` dataset and also performs evaluation on a validation set using the trained model.
+Returns a dictionary containing stats regarding the training process.
 
 Parameters:
 
@@ -74,7 +71,8 @@ Performs evaluation on a dataset. The OTB dataset is currently supported.
 Parameters:
 
 - **dataset**: *object*\
-  Object that holds dataset to perform evaluation on. Expected type is `ExternalDataset` with `otb2015` dataset type.
+  Object that holds dataset to perform evaluation on.
+  Expected type is `ExternalDataset` with `otb2015` dataset type.
 
 #### `SiamRPNLearner.infer`
 ```python
@@ -89,19 +87,22 @@ Parameters:
 - **img**: *object*\
   Object of type engine.data.Image.
 - **init_box**: *object, default=None*\
-  Object of type engine.target.TrackingAnnotation. If provided, it is used to initialize the tracker.
+  Object of type engine.target.TrackingAnnotation.
+  If provided, it is used to initialize the tracker.
 
 #### `SiamRPNLearner.save`
 ```python
 SiamRPNLearner.save(self, path, verbose)
 ```
 
-Saves a model in OpenDR format at the specified path. The model name is extracted from the base folder in the specified path.
+Saves a model in OpenDR format at the specified path.
+The model name is extracted from the base folder in the specified path.
 
 Parameters:
 
 - **path**: *str*\
-  Specifies the folder where the model will be saved. The model name is extracted from the base folder of this path.
+  Specifies the folder where the model will be saved.
+  The model name is extracted from the base folder of this path.
 - **verbose**: *bool default=True*\
   If True, enables maximum verbosity.
 
@@ -129,30 +130,32 @@ Downloads data needed for the various functions of the learner, e.g., pretrained
 Parameters:
 
 - **path**: *str, default=None*\
-  Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
+  Specifies the folder where data will be downloaded.
+  If *None*, the *self.temp_path* directory is used instead.
 - **mode**: *{'pretrained', 'video', 'test_data', 'otb2015'}, default='pretrained'*\
   If *'pretrained'*, downloads a pretrained detector model.
   If *'video'*, downloads a single video to perform inference on.
   If *'test_data'* downloads a dummy version of the OTB dataset for testing purposes.
-  If *'otb2015'*, attempts to download the OTB dataset (100 videos). This process lasts a long time.
+  If *'otb2015'*, attempts to download the OTB dataset (100 videos).
+  This process lasts a long time.
 - **verbose**: *bool default=True*\
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
 - **overwrite**: *bool, default=False*\
-  If True, files will be redownloaded if they already exists. This can solve some issues with large downloads.
-  
+  If True, files will be redownloaded if they already exists.
+  This can solve some issues with large downloads.
+
 #### Examples
 
 * **Training example using `ExternalDataset` objects**.
   Training is supported solely via the `ExternalDataset` class.
-  See [class README](/src/opendr/perception/object_tracking_2d/siamrpn/README.md) for a list of
-  supported datasets and presumed data directory structure.
+  See [class README](/src/opendr/perception/object_tracking_2d/siamrpn/README.md) for a list of supported datasets and presumed data directory structure.
   Example training on COCO Detection dataset:
   ```python
   from opendr.engine.datasets import ExternalDataset
   from opendr.perception.object_tracking_2d import SiamRPNLearner
-  
+
   dataset = ExternalDataset("/path/to/data/root", "coco")
   learner = SiamRPNLearner(device="cuda", n_epochs=50, batch_size=32,
                            lr=1e-3)
@@ -165,7 +168,7 @@ Parameters:
   import cv2
   from opendr.engine.target import TrackingAnnotation
   from opendr.perception.object_tracking_2d import SiamRPNLearner
-  
+
   learner = SiamRPNLearner(device="cuda")
   learner.download(".", mode="pretrained")
   learner.load("siamrpn_opendr")
@@ -198,7 +201,7 @@ Parameters:
 
   cv2.destroyAllWindows()
   ```
-  
+
 
 #### Performance Evaluation
 
