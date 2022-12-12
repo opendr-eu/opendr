@@ -463,12 +463,12 @@ class ObjectTracking2DFairMotLearner(Learner):
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(self.temp_path, exist_ok=True)
-            self.__convert_rpn_to_onnx(
+            self.__convert_to_onnx(
                 input_shape,
                 os.path.join(self.temp_path, "onnx_model_temp.onnx"), do_constant_folding
             )
 
-        self.__load_rpn_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
+        self.__load_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
 
     @staticmethod
     def download(model_name, path, server_url=None):
