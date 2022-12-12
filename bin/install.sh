@@ -12,9 +12,9 @@ fi
 if [[ -z "${ROS_DISTRO}" ]]; then
   echo "[INFO] No ROS_DISTRO is specified. The modules relying on ROS/ROS2 will not work."
 else
-  if [[ ${ROS_DISTRO} != "noetic" || ${ROS_DISTRO} != "melodic" || ${ROS_DISTRO} != "foxy" || ${ROS_DISTRO} != "humble" ]]; then
+  if ! ([[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" || ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]); then
     echo "[ERROR] ${ROS_DISTRO} is not a supported ROS_DISTRO. Please use noetic or melodic for ROS and foxy or humble for ROS2."
-    return;
+    exit 1
   fi
 fi
 
@@ -40,13 +40,13 @@ make install_compilation_dependencies
 make install_runtime_dependencies
 
 # Install additional ROS packages
-if [[ ${ROS_DISTRO} != "noetic" || ${ROS_DISTRO} != "melodic"]]; then
+if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic"]]; then
   echo "Installing ROS dependencies"
   sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs
 fi
 
 # Install additional ROS2 packages
-if [[ ${ROS_DISTRO} != "foxy" || ${ROS_DISTRO} != "humble" ]]; then
+if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   echo "Installing ROS2 dependencies"
 fi
 
