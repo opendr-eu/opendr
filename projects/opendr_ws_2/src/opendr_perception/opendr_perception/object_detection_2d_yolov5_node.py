@@ -28,7 +28,7 @@ from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class ObjectDetectionYOLONode(Node):
+class ObjectDetectionYOLOV5Node(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
                  detections_topic="/opendr/objects", device="cuda", model="yolov5s"):
@@ -124,10 +124,10 @@ def main(args=None):
         print("Using CPU.")
         device = "cpu"
 
-    object_detection_yolov5_node = ObjectDetectionYOLONode(device=device, model=args.model,
-                                                           input_rgb_image_topic=args.input_rgb_image_topic,
-                                                           output_rgb_image_topic=args.output_rgb_image_topic,
-                                                           detections_topic=args.detections_topic)
+    object_detection_yolov5_node = ObjectDetectionYOLOV5Node(device=device, model=args.model,
+                                                             input_rgb_image_topic=args.input_rgb_image_topic,
+                                                             output_rgb_image_topic=args.output_rgb_image_topic,
+                                                             detections_topic=args.detections_topic)
 
     rclpy.spin(object_detection_yolov5_node)
 
