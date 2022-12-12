@@ -19,12 +19,12 @@ pip install -e .
 ## Running the example
 Car 3D Object Detection using [TANet](https://arxiv.org/abs/1912.05163) from [KITTI](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d)-like dataset
 ```bash
-python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=tanet_car_xyres_16 --source=disk --data_path=/data/sets/kitti_second/training/velodyne --model_config=configs/tanet_car_xyres_16.proto
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=tanet_car_xyres_16 --source=disk --data_path=/data/sets/kitti_tracking/training/velodyne/0000 --model_config=configs/tanet_car_xyres_16.proto
 ```
 
 Car 3D Object Detection using [PointPillars](https://arxiv.org/abs/1812.05784) from [KITTI](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d)-like dataset
 ```bash
-python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=pointpillars_car_xyres_16 --source=disk --data_path=/data/sets/kitti_second/training/velodyne --model_config=configs/tanet_car_xyres_16.proto
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=pointpillars_car_xyres_16 --source=disk --data_path=/data/sets/kitti_tracking/training/velodyne/0000 --model_config=configs/pointpillars_car_xyres_16.proto
 ```
 
 3D Object Detection using a specially trained model X for O3M Lidar
