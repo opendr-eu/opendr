@@ -69,7 +69,7 @@ class ObjectDetectionYOLOV5Node(Node):
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics.
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
