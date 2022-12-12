@@ -10,10 +10,10 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
 fi
 
 if [[ -z "${ROS_DISTRO}" ]]; then
-  echo "[INFO] No ROS_DISTRO is specified. The modules relying on ROS/ROS2 will not work."
+  echo "[INFO] No ROS_DISTRO is specified. The modules relying on ROS/ROS2 might not work."
 else
   if ! ([[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" || ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]); then
-    echo "[ERROR] ${ROS_DISTRO} is not a supported ROS_DISTRO. Please use noetic or melodic for ROS and foxy or humble for ROS2."
+    echo "[ERROR] ${ROS_DISTRO} is not a supported ROS_DISTRO. Please use 'noetic' or 'melodic' for ROS and 'foxy' or 'humble' for ROS2."
     exit 1
   fi
 fi
