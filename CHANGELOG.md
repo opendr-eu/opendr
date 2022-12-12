@@ -12,7 +12,7 @@ Released on December, XX, 2022.
     - Fixed undefined `image_id` and `segmentation` for COCO `BoundingBoxList` ([#365](https://github.com/opendr-eu/opendr/pull/365)).
 
   - Bug Fixes:
-    - Fixed Continual X3D ONNX support.
+    - Fixed Continual X3D ONNX support ([#372](https://github.com/opendr-eu/opendr/pull/372)).
 
 ## Version 1.1.1
 Released on June, 30th, 2022.
