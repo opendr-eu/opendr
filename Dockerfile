@@ -18,8 +18,7 @@ ENTRYPOINT ["/tini", "--"]
 RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b $branch
 WORKDIR "/opendr"
 ENV ROS_DISTRO=$ros_distro
-RUN pip3 install --upgrade pip && \
-    ./bin/install.sh && \
+RUN ./bin/install.sh && \
     rm -rf /root/.cache/* && \
     apt-get clean
 
