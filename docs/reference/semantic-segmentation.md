@@ -2,6 +2,11 @@
 
 The *semantic segmentation* module contains the *BisenetLearner* class, which inherit from the abstract class *Learner*.
 
+On the table below you can find the detectable classes and their corresponding IDs:
+
+| Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
+|--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
+| **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
 
 ### Class BisenetLearner
 Bases: `engine.learners.Learner`
