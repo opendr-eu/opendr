@@ -28,6 +28,7 @@ if os.getenv('DISPLAY') is not None:
     from opendr.simulation.human_model_generation.utilities.config_utils import config_studio
 
 
+
 class PIFuGeneratorLearner(Learner):
     def __init__(self, device='cpu', checkpoint_dir=None):
         super().__init__()
