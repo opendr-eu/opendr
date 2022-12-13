@@ -90,17 +90,6 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         self.assertGreater(len(self.pose_estimator.infer(img)[0].data), 0,
                            msg="Returned pose must have non-zero number of keypoints.")
 
-    def test_save_load(self):
-        self.pose_estimator.model = None
-        self.pose_estimator.ort_session = None
-        self.pose_estimator.init_model()
-        self.pose_estimator.save(os.path.join(self.temp_dir, "test_model"))
-        self.pose_estimator.model = None
-        self.pose_estimator.load(os.path.join(self.temp_dir, "test_model"))
-        self.assertIsNotNone(self.pose_estimator.model, "model is None after loading pth model.")
-        # Cleanup
-        rmdir(os.path.join(self.temp_dir, "test_model"))
-
 
 if __name__ == "__main__":
     unittest.main()

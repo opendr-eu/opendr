@@ -189,7 +189,6 @@ class HighResolutionPoseEstimationLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-
     def eval(self, dataset,  silent=False, verbose=True, use_subset=True,
              subset_size=250,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
