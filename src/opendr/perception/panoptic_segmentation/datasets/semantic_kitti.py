@@ -17,12 +17,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Tuple
 import sys
 import shutil
-import multiprocessing as mp
 import warnings
 
 from tqdm import tqdm
 import numpy as np
-from tqdm import tqdm
 
 from mmdet2.datasets import CityscapesDataset as MmdetCityscapesDataset
 from mmdet2.datasets import build_dataset
