@@ -28,13 +28,14 @@ include_directories(
 #############
 
 catkin_install_python(PROGRAMS
-   scripts/pose_estimation.py
-   scripts/fall_detection.py
-   scripts/object_detection_2d_nanodet.py
-   scripts/object_detection_2d_yolov5.py
-   scripts/object_detection_2d_detr.py
-   scripts/object_detection_2d_gem.py
-   scripts/semantic_segmentation_bisenet.py
+   scripts/pose_estimation_node.py
+   scripts/fall_detection_node.py
+   scripts/object_detection_2d_nanodet_node.py
+   scripts/object_detection_2d_yolov5_node.py
+   scripts/object_detection_2d_detr_node.py
+   scripts/object_detection_2d_gem_node.py
+   scripts/semantic_segmentation_bisenet_node.py
    scripts/point_cloud_2_publisher.py
+   scripts/object_tracking_2d_siamrpn.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )

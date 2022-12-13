@@ -15,20 +15,8 @@
 import numpy as np
 from opendr.engine.target import BoundingBox3DList, TrackingAnnotation3DList
 from scipy.optimize import linear_sum_assignment
+from opendr.perception.object_tracking_3d.ab3dmot.algorithm.core import convert_3dbox_to_8corner, iou3D
 from opendr.perception.object_tracking_3d.ab3dmot.algorithm.kalman_tracker_3d import KalmanTracker3D
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.box_np_ops import (
-    center_to_corner_box3d,
-)
-from numba.cuda.cudadrv.error import CudaSupportError
-
-try:
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
-        second_detector.core.non_max_suppression.nms_gpu import (
-            rotate_iou_gpu_eval as iou3D,
-        )
-except (CudaSupportError, ValueError):
-    def iou3D(boxes, qboxes, criterion=-1):
-        return np.ones((boxes.shape[0], qboxes.shape[0]))
 
 
 class AB3DMOT():
@@ -46,9 +34,10 @@ class AB3DMOT():
 
         self.max_staleness = max_staleness
         self.min_updates = min_updates
-        self.frame = frame
+        self.frame = frame - 1
+        self.starting_frame = frame - 1
         self.tracklets = []
-        self.last_tracklet_id = 1
+        self.last_tracklet_id = 0
         self.iou_threshold = iou_threshold
 
         self.state_dimensions = state_dimensions
@@ -60,6 +49,8 @@ class AB3DMOT():
 
     def update(self, detections: BoundingBox3DList):
 
+        self.frame += 1
+
         if len(detections) > 0:
 
             predictions = np.zeros([len(self.tracklets), self.measurement_dimensions])
@@ -68,18 +59,16 @@ class AB3DMOT():
                 box = tracklet.predict().reshape(-1)[:self.measurement_dimensions]
                 predictions[i] = [*box]
 
-            detection_corners = center_to_corner_box3d(
-                np.array([box.location for box in detections.boxes]),
-                np.array([box.dimensions for box in detections.boxes]),
-                np.array([box.rotation_y for box in detections.boxes]),
-            )
+            detection_corners = [
+                convert_3dbox_to_8corner(np.array([*box.location, box.rotation_y, *box.dimensions]))
+                for box in detections.boxes
+            ]
 
             if len(predictions) > 0:
-                prediction_corners = center_to_corner_box3d(
-                    predictions[:, :3],
-                    predictions[:, 4:],
-                    predictions[:, 3],
-                )
+                prediction_corners = [
+                    convert_3dbox_to_8corner(p)
+                    for p in predictions
+                ]
             else:
                 prediction_corners = np.zeros((0, 8, 3))
 
@@ -115,22 +104,22 @@ class AB3DMOT():
                     tracked_boxes.append(tracklet.tracking_bounding_box_3d(self.frame))
 
         result = TrackingAnnotation3DList(tracked_boxes)
-
-        self.frame += 1
-
         return result
 
     def reset(self):
-        self.frame = 0
+        self.frame = self.starting_frame
         self.tracklets = []
-        self.last_tracklet_id = 1
+        self.last_tracklet_id = 0
 
 
 def associate(detection_corners, prediction_corners, iou_threshold):
 
-    ious = iou3D(detection_corners, prediction_corners)
+    iou_matrix = np.zeros((len(detection_corners), len(prediction_corners)), dtype=np.float32)
+    for d, det in enumerate(detection_corners):
+        for t, trk in enumerate(prediction_corners):
+            iou_matrix[d, t] = iou3D(det, trk)[0]
 
-    detection_match_ids, prediction_match_ids = linear_sum_assignment(-ious)
+    detection_match_ids, prediction_match_ids = linear_sum_assignment(-iou_matrix)
     unmatched_detections = []
     unmatched_predictions = []
 
@@ -148,7 +137,7 @@ def associate(detection_corners, prediction_corners, iou_threshold):
         detection_id = detection_match_ids[i]
         prediction_id = prediction_match_ids[i]
 
-        if ious[detection_id, prediction_id] < iou_threshold:
+        if iou_matrix[detection_id, prediction_id] < iou_threshold:
             unmatched_detections.append(detection_id)
             unmatched_predictions.append(prediction_id)
         else:
