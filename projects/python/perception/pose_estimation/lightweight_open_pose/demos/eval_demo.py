@@ -39,14 +39,14 @@ if __name__ == '__main__':
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                                 mobilenet_use_stride=stride,
                                                 half_precision=half_precision)
-    pose_estimator.download(path="", verbose=True)
+    pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
     if onnx:
         pose_estimator.optimize()
 
     # Download a sample dataset
-    pose_estimator.download(path="", mode="test_data")
+    pose_estimator.download(path=".", mode="test_data")
 
     eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 

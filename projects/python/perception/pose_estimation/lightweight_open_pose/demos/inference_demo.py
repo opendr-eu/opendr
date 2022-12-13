@@ -39,11 +39,11 @@ if __name__ == '__main__':
 
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                                 mobilenet_use_stride=stride, half_precision=half_precision)
-    pose_estimator.download(path="", verbose=True)
+    pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
     # Download one sample image
-    pose_estimator.download(path="", mode="test_data")
+    pose_estimator.download(path=".", mode="test_data")
     image_path = join("temp", "dataset", "image", "000000000785.jpg")
     img = Image.open(image_path)
 

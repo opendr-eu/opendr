@@ -47,14 +47,14 @@ if __name__ == '__main__':
                                                          half_precision=half_precision,
                                                          first_pass_height=base_height1,
                                                          second_pass_height=base_height2)
-    pose_estimator.download(path="", verbose=True)
+    pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
     if onnx:
         pose_estimator.optimize()
 
     # Download a sample dataset
-    pose_estimator.download(path="", mode="test_data")
+    pose_estimator.download(path=".", mode="test_data")
 
     eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 
