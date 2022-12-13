@@ -38,78 +38,24 @@ void load_image(const char *path, opendr_image_t *image);
 void free_image(opendr_image_t *image);
 
 /**
- * Initialize an empty Opendr detection vector target to be used in C API
- * @param detection_vector OpenDR detection_target_list structure to be initialized
+ * Initialize an empty detection list to be used in C API
+ * @param detections OpenDR detection_target_list structure to be initialized
  */
-void initialize_detections_vector(opendr_detection_vector_target_t *detection_vector);
+void initialize_detections(opendr_detection_target_list_t *detections);
 
 /**
  * Loads an OpenDR detection target list to be used in C API
- * @param detection_vector OpenDR detection_target_list structure to be loaded
- * @param detection the pointer of the first OpenDR detection target in a vector
- * @param vector_size the size of the vector
+ * @param detections OpenDR detection_target_list structure to be loaded
+ * @param vectorDataPtr the pointer of the first OpenDR detection target in a vector
+ * @param vectorSize the size of the vector
  */
-void load_detections_vector(opendr_detection_vector_target_t *detection_vector, opendr_detection_target_t *detection,
-                            int vector_size);
+void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize);
 
 /**
  * Releases the memory allocated for a detection list structure
- * @param detection_vector OpenDR detection vector target structure to release
+ * @param detections OpenDR detection_target_list structure to release
  */
-void free_detections_vector(opendr_detection_vector_target_t *detection_vector);
-
-/**
- * Initialize an empty OpenDR tensor to be used in C API
- * @param tensor OpenDR tensor to initialize
- */
-void initialize_tensor(opendr_tensor_t *opendr_tensor);
-
-/**
- * Load a tensor values to be used in C.
- * @param tensor Opendr tensor structure to be loaded
- * @param tensor_data vector of cv Mat that holds tensors data to be used
- * @param batch_size batch size for each OpenDR mat in an array of integers
- * @param frames frames size for each OpenDR mat in an array of integers
- * @param channels channels size for each OpenDR mat in an array of integers
- * @param width width size for each OpenDR mat in an array of integers
- * @param height height size for each OpenDR mat in an array of integers
- */
-void load_tensor(opendr_tensor_t *opendr_tensor, void *tensor_data, int batch_size, int frames, int channels, int width,
-                 int height);
-
-/**
- * Releases the memory allocated for an OpenDR tensor structure
- * @param opendr_tensor OpenDR tensor structure to release
- */
-void free_tensor(opendr_tensor_t *opendr_tensor);
-
-/**
- * Initialize an empty OpenDR tensor vector to be used in C API
- * @param tensor_vector
- */
-void initialize_tensor_vector(opendr_tensor_vector_t *tensor_vector);
-
-/**
- * Load a vector of tensors values to be used in C.
- * @param tensor_vector OpenDR vector of tensors structure to be loaded
- * @param tensor data in vector of OpenDR tensors structure
- * @param number_of_tensors the number of tensors that we want to load into the structure
- */
-void load_tensor_vector(opendr_tensor_vector_t *tensor_vector, opendr_tensor_t *tensor, int number_of_tensors);
-
-/**
- * Releases the memory allocated for an OpenDR tensor vector structure
- * @param tensor_vector OpenDR tensor vector structure to release
- */
-void free_tensor_vector(opendr_tensor_vector_t *tensor_vector);
-
-/**
- * Helper function to store a tensor from OpenDR tensor vector structure into an OpenCV Mat.
- * @param tensor OpenDR tensor to store the tensor
- * @param tensor_vector OpenDR tensor vector from which tensor is wanted
- * @param index the tensor is wanted from Opendr tensor vector
- */
-void iter_tensor_vector(opendr_tensor_t *output, opendr_tensor_vector_t *tensor_vector, int index);
+void free_detections(opendr_detection_target_list_t *detections);
 
 #ifdef __cplusplus
 }

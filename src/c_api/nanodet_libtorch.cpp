@@ -12,45 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "object_detection_2d_nanodet_jit.h"
-
 #include <torch/script.h>
 #include <torchvision/vision.h>
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include "nanodet_c.h"
 
 /**
  * Helper class holder of c++ values and jit model.
  */
 class NanoDet {
 private:
-  torch::DeviceType mDevice;
-  torch::jit::script::Module mNetwork;
-  torch::Tensor mMeanTensor;
-  torch::Tensor mStdTensor;
-  std::vector<std::string> mLabels;
+  torch::DeviceType device;
+  torch::jit::script::Module network;
+  torch::Tensor meanTensor;
+  torch::Tensor stdTensor;
+  std::vector<std::string> labels;
 
 public:
-  NanoDet(torch::jit::script::Module network, torch::Tensor meanValues, torch::Tensor stdValues, torch::DeviceType device,
+  NanoDet(torch::jit::script::Module net, torch::Tensor meanValues, torch::Tensor stdValues, torch::DeviceType device,
           std::vector<std::string> labels);
   ~NanoDet();
 
-  torch::Tensor preProcess(cv::Mat *image);
-  torch::jit::script::Module network() const;
-  torch::Tensor meanTensor() const;
-  torch::Tensor stdTensor() const;
-  std::vector<std::string> labels() const;
+  torch::Tensor mPreProcess(cv::Mat *image);
+  torch::jit::script::Module net() const;
+  torch::Tensor meanValues() const;
+  torch::Tensor stdValues() const;
+  std::vector<std::string> classes() const;
   std::vector<opendr_detection_target> outputs;
 };
 
-NanoDet::NanoDet(torch::jit::script::Module network, torch::Tensor meanValues, torch::Tensor stdValues,
-                 torch::DeviceType device, const std::vector<std::string> labels) {
-  this->mDevice = device;
-  this->mNetwork = network;
-  this->mMeanTensor = meanValues.clone().to(device);
-  this->mStdTensor = stdValues.clone().to(device);
-  this->mLabels = labels;
+NanoDet::NanoDet(torch::jit::script::Module net, torch::Tensor meanValues, torch::Tensor stdValues, torch::DeviceType device,
+                 const std::vector<std::string> labels) {
+  this->device = device;
+  this->network = net;
+  this->meanTensor = meanValues.clone().to(device);
+  this->stdTensor = stdValues.clone().to(device);
+  this->labels = labels;
 }
 
 NanoDet::~NanoDet() {
@@ -62,13 +61,13 @@ NanoDet::~NanoDet() {
  * Mean and Standard deviation are already part of NanoDet class when is initialized.
  * @param image, image to be preprocesses
  */
-torch::Tensor NanoDet::preProcess(cv::Mat *image) {
+torch::Tensor NanoDet::mPreProcess(cv::Mat *image) {
   torch::Tensor tensorImage = torch::from_blob(image->data, {image->rows, image->cols, 3}, torch::kByte);
   tensorImage = tensorImage.toType(torch::kFloat);
-  tensorImage = tensorImage.to(this->mDevice);
+  tensorImage = tensorImage.to(this->device);
   tensorImage = tensorImage.permute({2, 0, 1});
-  tensorImage = tensorImage.add(this->mMeanTensor);
-  tensorImage = tensorImage.mul(this->mStdTensor);
+  tensorImage = tensorImage.add(this->meanTensor);
+  tensorImage = tensorImage.mul(this->stdTensor);
 
   return tensorImage;
 }
@@ -76,39 +75,39 @@ torch::Tensor NanoDet::preProcess(cv::Mat *image) {
 /**
  * Getter for jit model
  */
-torch::jit::script::Module NanoDet::network() const {
-  return this->mNetwork;
+torch::jit::script::Module NanoDet::net() const {
+  return this->network;
 }
 
 /**
  * Getter for tensor with the mean values
  */
-torch::Tensor NanoDet::meanTensor() const {
-  return this->mMeanTensor;
+torch::Tensor NanoDet::meanValues() const {
+  return this->meanTensor;
 }
 
 /**
  * Getter for tensor with the standard deviation values
  */
-torch::Tensor NanoDet::stdTensor() const {
-  return this->mStdTensor;
+torch::Tensor NanoDet::stdValues() const {
+  return this->stdTensor;
 }
 
 /**
- * Getter of labels
+ * Getter of labels for printing
  */
-std::vector<std::string> NanoDet::labels() const {
-  return this->mLabels;
+std::vector<std::string> NanoDet::classes() const {
+  return labels;
 }
 
 /**
  * Helper function to calculate the final shape of the model input relative to size ratio of input image.
  */
-void get_minimum_dstShape(cv::Size *srcSize, cv::Size *dstSize, float divisible) {
+void get_minimum_dst_shape(cv::Size *srcSize, cv::Size *dstSize, float divisible) {
   float ratio;
-  float srcRatio = ((float)srcSize->width / (float)srcSize->height);
-  float dstRatio = ((float)dstSize->width / (float)dstSize->height);
-  if (srcRatio < dstRatio)
+  float src_ratio = ((float)srcSize->width / (float)srcSize->height);
+  float dst_ratio = ((float)dstSize->width / (float)dstSize->height);
+  if (src_ratio < dst_ratio)
     ratio = ((float)dstSize->height / (float)srcSize->height);
   else
     ratio = ((float)dstSize->width / (float)srcSize->width);
@@ -125,32 +124,32 @@ void get_minimum_dstShape(cv::Size *srcSize, cv::Size *dstSize, float divisible)
 /**
  * Helper function to calculate the warp matrix for resizing.
  */
-void get_resize_matrix(cv::Size *srcShape, cv::Size *dstShape, cv::Mat *Rs, int keepRatio) {
-  if (keepRatio == 1) {
+void get_resize_matrix(cv::Size *src_shape, cv::Size *dst_shape, cv::Mat *Rs, int keep_ratio) {
+  if (keep_ratio == 1) {
     float ratio;
     cv::Mat C = cv::Mat::eye(3, 3, CV_32FC1);
 
-    C.at<float>(0, 2) = -srcShape->width / 2.0;
-    C.at<float>(1, 2) = -srcShape->height / 2.0;
-    float srcRatio = ((float)srcShape->width / (float)srcShape->height);
-    float dstRatio = ((float)dstShape->width / (float)dstShape->height);
-    if (srcRatio < dstRatio) {
-      ratio = ((float)dstShape->height / (float)srcShape->height);
+    C.at<float>(0, 2) = -src_shape->width / 2.0;
+    C.at<float>(1, 2) = -src_shape->height / 2.0;
+    float src_ratio = ((float)src_shape->width / (float)src_shape->height);
+    float dst_ratio = ((float)dst_shape->width / (float)dst_shape->height);
+    if (src_ratio < dst_ratio) {
+      ratio = ((float)dst_shape->height / (float)src_shape->height);
     } else {
-      ratio = ((float)dstShape->width / (float)srcShape->width);
+      ratio = ((float)dst_shape->width / (float)src_shape->width);
     }
 
     Rs->at<float>(0, 0) *= ratio;
     Rs->at<float>(1, 1) *= ratio;
 
     cv::Mat T = cv::Mat::eye(3, 3, CV_32FC1);
-    T.at<float>(0, 2) = 0.5 * dstShape->width;
-    T.at<float>(1, 2) = 0.5 * dstShape->height;
+    T.at<float>(0, 2) = 0.5 * dst_shape->width;
+    T.at<float>(1, 2) = 0.5 * dst_shape->height;
 
     *Rs = T * (*Rs) * C;
   } else {
-    Rs->at<float>(0, 0) *= (float)dstShape->width / (float)srcShape->width;
-    Rs->at<float>(1, 1) *= (float)dstShape->height / (float)srcShape->height;
+    Rs->at<float>(0, 0) *= (float)dst_shape->width / (float)src_shape->width;
+    Rs->at<float>(1, 1) *= (float)dst_shape->height / (float)src_shape->height;
   }
 }
 
@@ -162,28 +161,28 @@ void get_resize_matrix(cv::Size *srcShape, cv::Size *dstShape, cv::Mat *Rs, int 
  * @param src, image to be preprocesses
  * @param dst, output image to be used as model input
  * @param dstSize, final size of the dst
- * @param warpMatrix, matrix to be used for warp perspective
- * @param keepRatio, flag for targeting the resized image size relative to input image ratio
+ * @param Rs, matrix to be used for warp perspective
+ * @param keep_ratio, flag for targeting the resized image size relative to input image ratio
  */
-void preprocess(cv::Mat *src, cv::Mat *dst, cv::Size *dstSize, cv::Mat *warpMatrix, int keepRatio) {
+void preprocess(cv::Mat *src, cv::Mat *dst, cv::Size *dstSize, cv::Mat *warp_matrix, int keep_ratio) {
   cv::Size srcSize = cv::Size(src->cols, src->rows);
   const float divisible = 0.0;
 
   // Get new destination size if keep ratio is wanted
-  if (keepRatio == 1) {
-    get_minimum_dstShape(&srcSize, dstSize, divisible);
+  if (keep_ratio == 1) {
+    get_minimum_dst_shape(&srcSize, dstSize, divisible);
   }
 
-  get_resize_matrix(&srcSize, dstSize, warpMatrix, keepRatio);
-  cv::warpPerspective(*src, *dst, *warpMatrix, *dstSize);
+  get_resize_matrix(&srcSize, dstSize, warp_matrix, keep_ratio);
+  cv::warpPerspective(*src, *dst, *warp_matrix, *dstSize);
 }
 
 /**
  * Helper function to determine the device of jit model and tensors.
  */
-torch::DeviceType torchDevice(char *deviceName, int verbose = 0) {
+torch::DeviceType torchDevice(char *device_name, int verbose = 0) {
   torch::DeviceType device;
-  if (std::string(deviceName) == "cuda") {
+  if (std::string(device_name) == "cuda") {
     if (verbose == 1)
       printf("to cuda\n");
     device = torch::kCUDA;
@@ -195,12 +194,12 @@ torch::DeviceType torchDevice(char *deviceName, int verbose = 0) {
   return device;
 }
 
-void load_nanodet_model(char *modelPath, char *device, int height, int width, float scoreThreshold, nanodet_model_t *model) {
+void load_nanodet_model(char *model_path, char *device, int height, int width, float scoreThreshold, nanodet_model_t *model) {
   // Initialize model
-  model->input_size[0] = width;
-  model->input_size[1] = height;
+  model->inputSize[0] = width;
+  model->inputSize[1] = height;
 
-  model->score_threshold = scoreThreshold;
+  model->scoreThreshold = scoreThreshold;
   model->keep_ratio = 1;
 
   const std::vector<std::string> labels{
@@ -222,78 +221,71 @@ void load_nanodet_model(char *modelPath, char *device, int height, int width, fl
   torch::Tensor stdValues = torch::tensor({{{0.017429f}}, {{0.017507f}}, {{0.017125f}}});
 
   // initialization of jit model and class as holder of c++ values.
-  torch::DeviceType initDevice = torchDevice(device, 1);
-  torch::jit::script::Module network = torch::jit::load(modelPath, initDevice);
-  network.eval();
+  torch::DeviceType torch_device = torchDevice(device, 1);
+  torch::jit::script::Module net = torch::jit::load(model_path, torch_device);
+  net.eval();
 
-  NanoDet *detector = new NanoDet(network, meanTensor, stdValues, initDevice, labels);
+  NanoDet *detector = new NanoDet(net, meanTensor, stdValues, torch_device, labels);
 
-  model->network = static_cast<void *>(detector);
+  model->net = static_cast<void *>(detector);
 }
 
-void ff_nanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, cv::Size *originalSize,
-                torch::Tensor *outputs) {
-  // Make all the inputs as tensors to use in jit model
-  torch::Tensor srcHeight = torch::tensor(originalSize->width);
-  torch::Tensor srcWidth = torch::tensor(originalSize->height);
-  torch::Tensor warpMat = torch::from_blob(warpMatrix->data, {3, 3});
+opendr_detection_target_list_t infer_nanodet(opendr_image_t *image, nanodet_model_t *model) {
+  NanoDet *networkPTR = static_cast<NanoDet *>(model->net);
+  opendr_detection_target_list_t detections;
 
-  // Model inference
-  *outputs = (model->network()).forward({*inputTensor, srcHeight, srcWidth, warpMat}).toTensor();
-  *outputs = outputs->to(torch::Device(torch::kCPU, 0));
-}
-
-opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_image_t *image) {
-  NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
-  opendr_detection_vector_target_t detectionsVector;
-
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  if (!opencvImage) {
+  std::vector<opendr_detection_target> dets;
+  cv::Mat *opencv_image = static_cast<cv::Mat *>(image->data);
+  if (!opencv_image) {
     std::cerr << "Cannot load image for inference." << std::endl;
 
     // Initialize an empty detection to return.
-    initialize_detections_vector(&detectionsVector);
-    return detectionsVector;
+    initialize_detections(&detections);
+    return detections;
   }
 
   // Preprocess image and keep values as input in jit model
   cv::Mat resizedImg;
-  cv::Size dstSize = cv::Size(model->input_size[0], model->input_size[1]);
-  cv::Mat warpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
-  preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keep_ratio);
-  torch::Tensor input = networkPTR->preProcess(&resizedImg);
-  cv::Size originalSize(opencvImage->cols, opencvImage->rows);
+  cv::Size dstSize = cv::Size(model->inputSize[0], model->inputSize[1]);
+  cv::Mat warp_matrix = cv::Mat::eye(3, 3, CV_32FC1);
+  preprocess(opencv_image, &resizedImg, &dstSize, &warp_matrix, model->keep_ratio);
+  torch::Tensor input = networkPTR->mPreProcess(&resizedImg);
 
-  torch::Tensor outputs;
-  ff_nanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
+  // Make all the inputs as tensors to use in jit model
+  torch::Tensor srcHeight = torch::tensor(opencv_image->rows);
+  torch::Tensor srcWidth = torch::tensor(opencv_image->cols);
+  torch::Tensor warpMatrix = torch::from_blob(warp_matrix.data, {3, 3});
 
-  std::vector<opendr_detection_target> detections;
+  // Model inference
+  torch::Tensor outputs = (networkPTR->net()).forward({input, srcHeight, srcWidth, warpMatrix}).toTensor();
+  outputs = outputs.to(torch::Device(torch::kCPU, 0));
+
   // Postprocessing, find which outputs have better score than threshold and keep them.
   for (int label = 0; label < outputs.size(0); label++) {
     for (int box = 0; box < outputs.size(1); box++) {
-      if (outputs[label][box][4].item<float>() > model->score_threshold) {
-        opendr_detection_target_t detection;
-        detection.name = label;
-        detection.left = outputs[label][box][0].item<float>();
-        detection.top = outputs[label][box][1].item<float>();
-        detection.width = outputs[label][box][2].item<float>() - outputs[label][box][0].item<float>();
-        detection.height = outputs[label][box][3].item<float>() - outputs[label][box][1].item<float>();
-        detection.score = outputs[label][box][4].item<float>();
-        detections.push_back(detection);
+      if (outputs[label][box][4].item<float>() > model->scoreThreshold) {
+        opendr_detection_target_t det;
+        det.name = label;
+        det.left = outputs[label][box][0].item<float>();
+        det.top = outputs[label][box][1].item<float>();
+        det.width = outputs[label][box][2].item<float>() - outputs[label][box][0].item<float>();
+        det.height = outputs[label][box][3].item<float>() - outputs[label][box][1].item<float>();
+        det.score = outputs[label][box][4].item<float>();
+        dets.push_back(det);
       }
     }
   }
 
   // Put vector detection as C pointer and size
-  if (static_cast<int>(detections.size()) > 0)
-    load_detections_vector(&detectionsVector, detections.data(), static_cast<int>(detections.size()));
+  if ((int)dets.size() > 0)
+    load_detections(&detections, dets.data(), (int)dets.size());
   else
-    initialize_detections_vector(&detectionsVector);
+    initialize_detections(&detections);
 
-  return detectionsVector;
+  return detections;
 }
 
-void drawBboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_vector_target_t *detectionsVector) {
+void drawBboxes(opendr_image_t *opendr_image, nanodet_model_t *model, opendr_detection_target_list_t *detections) {
   const int colorList[80][3] = {
     //{255 ,255 ,255}, //bg
     {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},
@@ -310,23 +302,22 @@ void drawBboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_
     {0, 113, 188},   {80, 182, 188},  {127, 127, 0},
   };
 
-  std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
+  std::vector<std::string> classNames = (static_cast<NanoDet *>(model->net))->classes();
 
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  if (!opencvImage) {
+  cv::Mat *opencv_image = static_cast<cv::Mat *>(opendr_image->data);
+  if (!opencv_image) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return;
   }
 
-  cv::Mat imageWithDetections = (*opencvImage).clone();
-  for (size_t i = 0; i < detectionsVector->size; i++) {
-    const opendr_detection_target bbox = (detectionsVector->starting_pointer)[i];
+  cv::Mat image = (*opencv_image).clone();
+  for (size_t i = 0; i < detections->size; i++) {
+    const opendr_detection_target bbox = (detections->starting_pointer)[i];
     float score = bbox.score > 1 ? 1 : bbox.score;
-    if (score > model->score_threshold) {
+    if (score > model->scoreThreshold) {
       cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
-      cv::rectangle(imageWithDetections,
-                    cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))),
-                    color);
+      cv::rectangle(
+        image, cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))), color);
 
       char text[256];
 
@@ -339,23 +330,21 @@ void drawBboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_
       int y = (int)bbox.top;
       if (y < 0)
         y = 0;
-      if (x + labelSize.width > imageWithDetections.cols)
-        x = imageWithDetections.cols - labelSize.width;
+      if (x + labelSize.width > image.cols)
+        x = image.cols - labelSize.width;
 
-      cv::rectangle(imageWithDetections, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)),
-                    color, -1);
-      cv::putText(imageWithDetections, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
-                  cv::Scalar(255, 255, 255));
+      cv::rectangle(image, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)), color, -1);
+      cv::putText(image, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255));
     }
   }
 
-  cv::imshow("image", imageWithDetections);
+  cv::imshow("image", image);
   cv::waitKey(0);
 }
 
 void free_nanodet_model(nanodet_model_t *model) {
-  if (model->network) {
-    NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
+  if (model->net) {
+    NanoDet *networkPTR = static_cast<NanoDet *>(model->net);
     delete networkPTR;
   }
 }

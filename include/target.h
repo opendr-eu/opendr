@@ -45,11 +45,11 @@ typedef struct opendr_detection_target opendr_detection_target_t;
 /***
  * OpenDR data type for representing a structure of detection targets
  */
-struct opendr_detection_vector_target {
+struct opendr_detection_target_list {
   opendr_detection_target_t *starting_pointer;
   int size;
 };
-typedef struct opendr_detection_vector_target opendr_detection_vector_target_t;
+typedef struct opendr_detection_target_list opendr_detection_target_list_t;
 
 #ifdef __cplusplus
 }
