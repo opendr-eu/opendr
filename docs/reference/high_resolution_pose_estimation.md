@@ -8,7 +8,8 @@ Bases: `engine.learners.Learner`
 The *HighResolutionLightweightOpenPose* class is an implementation for pose estimation in high resolution images.
 This method creates a heatmap of a resized version of the input image.
 Using this heatmap, the input image is cropped keeping the area of interest and then it is used for pose estimation.
-The pose estimation is based on the Lightweight OpenPose algorithm.
+Since the high resolution pose estimation method is based on Lightweight OpenPose algorithm,the models that could be used have to be trained with Lightweight OpenPose tool.
+
 In this method there are two important variables which are responsible for the increase in speed and accuracy in high resolution images.
 These variables are the *first_pass_height* and the *second_pass_height* that the image is resized in this procedure.
 
@@ -113,15 +114,20 @@ Parameters:
   Object of type engine.data.Image.
 - **upsample_ratio**: *int, default=4*\
   Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
+- **stride**: *int, default=8*\
+  Defines the stride value for creating a padded image.
 - **track**: *bool, default=True*\
   If True, infer propagates poses ids from previous frame results to track poses.
 - **smooth**: *bool, default=True*\
   If True, smoothing is performed on pose keypoints between frames.
+- **multiscale**: *bool, default=False*\
+  Specifies whether evaluation will run in the predefined multiple scales setup or not.
 
 
-#### `HighResolutionPoseEstimationLearner.first_pass`
+
+#### `HighResolutionPoseEstimationLearner.__first_pass`
 ```python
-HighResolutionPoseEstimationLearner.first_pass(self, net, img)
+HighResolutionPoseEstimationLearner.__first_pass(self, net, img)
 ```
 
 This method is used for extracting from the input image a heatmap about human locations in the picture.
@@ -133,9 +139,9 @@ Parameters:
 - **net**: *object*\
   The model that is used for creating the heatmap.
 
-#### `HighResolutionPoseEstimationLearner.second_pass`
+#### `HighResolutionPoseEstimationLearner.__second_pass`
 ```python
-HighResolutionPoseEstimationLearner.second_pass_infer(self, net, img, net_input_height_size, max_width, stride, upsample_ratio, pad_value, img_mean, img_scale)
+HighResolutionPoseEstimationLearner.__second_pass(self, net, img, net_input_height_size, max_width, stride, upsample_ratio, pad_value, img_mean, img_scale)
 ```
 
 On this method it is carried out the second inference step which estimates the human poses on the image that is inserted.
@@ -162,66 +168,6 @@ Parameters:
 - **img_scale**: *float, default=1/256*\
   Specifies the scale based on which the images are normalized.
 
-#### `HighResolutionPoseEstimation.pooling`
-```python
-HighResolutionPoseEstimation.Pooling(self, img, kernel)
-```
-
-Parameters:
-
-- **img**: *object***\
-  Object of type engine.data.Image.
-- **kernel**: *int*\
-  The size of kernel in Average Pooling procedure before heatmap generation in order to resize the input image.
-
-#### `HighResolutionPoseEstimation.infer_light_odr()`
-```python
-HighResolutionPoseEstimation.infer_light_odr(self, img, upsample_ratio, track, smooth)
-```
-
-This method is an inference function of OpenDR LightWeight OpenPose pose estiamtion.
-
-Parameters:
-
-- **img**: *object***\
-  Object of type engine.data.Image.
-- **upsample_ratio**: *int, default=4*\
-  Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
-- **track**: *bool, default=True*\
-  If True, infer propagates poses ids from previous frame results to track poses.
-- **smooth**: *bool, default=True*\
-  If True, smoothing is performed on pose keypoints between frames.
-
-#### `HighResolutionPoseEstimation.save`
-```python
-HighResolutionPoseEstimation.save(self, path, verbose)
-```
-
-This method is used to save a trained model.
-Provided with the path "/my/path/name" (absolute or relative), it creates the "name" directory, if it does not already exist.
-Inside this folder, the model is saved as "name.pth" and the metadata file as "name.json". If the directory already exists, the "name.pth" and "name.json" files are overwritten.
-
-Parameters:
-
-- **path**: *str*\
-  Path to save the model, including the filename.
-- **verbose**: *bool, default=False*\
-  If set to True, prints a message on success.
-
-#### `HighResolutionPoseEstimation.load`
-```python
-HighResolutionPoseEstimation.load(self, path, verbose)
-```
-
-This method is used to load a previously saved model from its saved folder.
-Loads the model from inside the directory of the path provided, using the metadata .json file included.
-
-Parameters:
-
-- **path**: *str*\
-  Path of the model to be loaded.
-- **verbose**: *bool, default=False*\
-  If set to True, prints a message on success.
 
 #### `HighResolutionPoseEstimation.download`
 ```python
@@ -260,7 +206,7 @@ Parameters:
                                                        mobilenet_use_stride=False, half_precision=False,
                                                        first_pass_height=360,
                                                        second_pass_height=540,
-                                                       img_resol=1080)
+                                                       img_resolution=1080)
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
 
   pose_estimator.load("./parent_dir/openpose_default")
@@ -324,21 +270,32 @@ was used as input to the models.
 The average precision and average recall on the COCO evaluation split is also reported in the Table below:
 
 
-#### Lightweight OpenPose
-| Method            | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) | Evaluation time (sec) |
-|-------------------|------------------------------|---------------------------|-----------------------|
-| OpenDR - Baseline | 0.0                          | 0.0                       | 6558                  |
+#### Lightweight OpenPose with resizing
+| Method            | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
+|-------------------|------------------------------|---------------------------|
+| OpenDR - Baseline | 0.101                        | 0.267                     |
+ | OpenDR - Full     | 0.031                        | 0.044                     |
+
+
+
+
+#### Lightweight OpenPose without resizing
+| Method            | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
+|-------------------|------------------------------|---------------------------|
+| OpenDR - Baseline | 0.695                        | 0.749                     |
+| OpenDR - Full     | 0.389                        | 0.441                     |
+
 
 
 #### High Resolution Pose Estimation
-| Method                 | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) | Evaluation Time (sec) |
-|------------------------|------------------------------|---------------------------|-----------------------|
-| HRPoseEstim - Baseline | 0.615                        | 0.637                     | 288                   |
-| HRPoseEstim - Half     | 0.604                        | 0.621                     | 269                   |
-| HRPoseEstim - Stride   | 0.262                        | 0.274                     | 160                   |
-| HRPoseEstim - Stages   | 0.539                        | 0.562                     | 238                   |
-| HRPoseEstim - H+S      | 0.254                        | 0.267                     | 165                   |
-| HRPoseEstim - Full     | 0.259                        | 0.272                     | 145                   |
+| Method                 | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
+|------------------------|------------------------------|---------------------------|
+| HRPoseEstim - Baseline | 0.615                        | 0.637                     |
+| HRPoseEstim - Half     | 0.604                        | 0.621                     |
+| HRPoseEstim - Stride   | 0.262                        | 0.274                     | 
+| HRPoseEstim - Stages   | 0.539                        | 0.562                     |
+| HRPoseEstim - H+S      | 0.254                        | 0.267                     |
+| HRPoseEstim - Full     | 0.259                        | 0.272                     |
 
 The average precision and the average recall have been calculated on a 1080p version of COCO2017 validation dataset and the results are reported in the table below:
 

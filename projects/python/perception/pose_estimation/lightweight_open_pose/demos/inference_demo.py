@@ -13,32 +13,11 @@
 # limitations under the License.
 
 import cv2
-import time
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw
+from opendr.engine.data import Image
 import argparse
-
-
-class VideoReader(object):
-    def __init__(self, file_name):
-        self.file_name = file_name
-        try:  # OpenCV needs int to read from webcam
-            self.file_name = int(file_name)
-        except ValueError:
-            pass
-
-    def __iter__(self):
-        self.cap = cv2.VideoCapture(self.file_name)
-        if not self.cap.isOpened():
-            raise IOError('Video {} cannot be opened'.format(self.file_name))
-        return self
-
-    def __next__(self):
-        was_read, img = self.cap.read()
-        if not was_read:
-            raise StopIteration
-        return img
-
+from os.path import join
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -47,9 +26,6 @@ if __name__ == '__main__':
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     args = parser.parse_args()
-
-    onnx, device = args.onnx, args.device
-    accelerate = args.accelerate
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
     if accelerate:
@@ -63,39 +39,20 @@ if __name__ == '__main__':
 
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                                 mobilenet_use_stride=stride, half_precision=half_precision)
-    pose_estimator.download(path=".", verbose=True)
+    pose_estimator.download(path="", verbose=True)
     pose_estimator.load("openpose_default")
+
+    # Download one sample image
+    pose_estimator.download(path="", mode="test_data")
+    image_path = join("temp", "dataset", "image", "000000000785.jpg")
+    img = Image.open(image_path)
 
     if onnx:
         pose_estimator.optimize()
 
-    # Use the first camera available on the system
-    image_provider = VideoReader(0)
-
-    try:
-        counter, avg_fps = 0, 0
-        for img in image_provider:
-
-            start_time = time.perf_counter()
-
-            # Perform inference
-            poses = pose_estimator.infer(img)
-            end_time = time.perf_counter()
-            fps = 1.0 / (end_time - start_time)
-
-            for pose in poses:
-                draw(img, pose)
-
-            # Calculate a running average on FPS
-            avg_fps = 0.8 * fps + 0.2 * fps
-
-            # Wait a few frames for FPS to stabilize
-            if counter > 5:
-                image = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                                    1, (255, 0, 0), 2, cv2.LINE_AA)
-
-            cv2.imshow('Result', img)
-            cv2.waitKey(1)
-            counter += 1
-    except:
-        print("Average inference fps: ", avg_fps)
+    poses = pose_estimator.infer(img)
+    img_cv = img.opencv()
+    for pose in poses:
+        draw(img_cv, pose)
+    cv2.imshow('Results', img_cv)
+    cv2.waitKey(0)

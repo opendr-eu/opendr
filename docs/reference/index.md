@@ -109,7 +109,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - heart anomaly detection:
             - [heart anomaly detection Demo](/projects/python/perception/heart_anomaly_detection)
         - pose estimation:
-            - [lightweight_open_pose Demo](/projects/python/perception/lightweight_open_pose)
+            - [lightweight_open_pose Demo](/projects/python/perception/pose_estimation/lightweight_open_pose)
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Demo](/projects/python/perception/multimodal_human_centric/rgbd_hand_gesture_recognition)
             - [audiovisual_emotion_recognition Demo](/projects/python/perception/multimodal_human_centric/audiovisual_emotion_recognition)

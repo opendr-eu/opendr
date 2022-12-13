@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import cv2
-import time
-from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
+from opendr.perception.pose_estimation import draw
+from opendr.engine.data import Image
 import argparse
 from os.path import join
-from tqdm import tqdm
-import numpy as np
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -26,9 +26,14 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
+    parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
+    parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
+
     args = parser.parse_args()
 
-    onnx, device, accelerate = args.onnx, args.device, args.accelerate
+    onnx, device, accelerate, base_height1, base_height2 = args.onnx, args.device, args.accelerate,\
+        args.height1, args.height2
+
     if accelerate:
         stride = True
         stages = 0
@@ -38,36 +43,27 @@ if __name__ == '__main__':
         stages = 2
         half_precision = False
 
-    pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                                mobilenet_use_stride=stride, half_precision=half_precision)
-    pose_estimator.download(path=".", verbose=True)
+    pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
+                                                         mobilenet_use_stride=stride, half_precision=half_precision,
+                                                         first_pass_height=base_height1,
+                                                         second_pass_height=base_height2)
+    pose_estimator.download(path="", verbose=True)
     pose_estimator.load("openpose_default")
 
     # Download one sample image
-    pose_estimator.download(path=".", mode="test_data")
-    image_path = join("temp", "dataset", "image", "000000000785.jpg")
-    img = cv2.imread(image_path)
+    pose_estimator.download(path="", mode="test_data")
+
+    image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
+
+    img = Image.open(image_path)
 
     if onnx:
         pose_estimator.optimize()
 
-    fps_list = []
-    print("Benchmarking...")
-    for i in tqdm(range(50)):
-        start_time = time.perf_counter()
-        # Perform inference
-        poses = pose_estimator.infer(img)
-        end_time = time.perf_counter()
-        fps_list.append(1.0 / (end_time - start_time))
-    print("Average FPS: %.2f" % (np.mean(fps_list)))
+    poses = pose_estimator.infer(img)
 
-    # If pynvml is available, try to get memory stats for cuda
-    try:
-        if 'cuda' in device:
-            from pynvml import nvmlInit, nvmlDeviceGetMemoryInfo, nvmlDeviceGetHandleByIndex
-
-            nvmlInit()
-            info = nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(0))
-            print("Memory allocated: %.2f MB " % (info.used / 1024 ** 2))
-    except ImportError:
-        pass
+    img_cv = img.opencv()
+    for pose in poses:
+        draw(img_cv, pose)
+    cv2.imshow('Results', img_cv)
+    cv2.waitKey(0)

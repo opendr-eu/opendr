@@ -87,10 +87,6 @@ class HighResolutionPoseEstimationLearner(Learner):
             self.mobilenetv2_width = mobilenetv2_width
         if self.backbone == "shufflenet":
             self.shufflenet_groups = shufflenet_groups
-        # if self.backbone == "mobilenet":
-        #     self.from_mobilenet = True # TODO from_mobilenet = True, bugs out the loading
-        # else:
-        #     self.from_mobilenet = False
 
         self.weights_only = weights_only  # If True, it won't load optimizer, scheduler, num_iter, current_epoch
 
@@ -176,9 +172,13 @@ class HighResolutionPoseEstimationLearner(Learner):
         return pool_img
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
+        """This method is not used in this implementation."""
+
         raise NotImplementedError
 
     def optimize(self, target_device):
+        """This method is not used in this implementation."""
+
         raise NotImplementedError
 
     def reset(self):
@@ -188,61 +188,7 @@ class HighResolutionPoseEstimationLearner(Learner):
     def save(self, path):
         """This method is not used in this implementation."""
         return NotImplementedError
-    #     """
-    #     This method is used to save a trained model.
-    #     Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
-    #     of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
-    #
-    #     If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
-    #     from the self.temp_path it was saved previously during conversion.
-    #
-    #     :param path: for the model to be saved, including the folder name
-    #     :type path: str
-    #     :param verbose: whether to print success message or not, defaults to 'False'
-    #     :type verbose: bool, optional
-    #     """
-    #     if self.model is None and self.ort_session is None:
-    #         raise UserWarning("No model is loaded, cannot save.")
-    #
-    #     folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
-    #     # Also extract folder name without any extension if extension is erroneously provided
-    #     folder_name_no_ext = folder_name.split(sep='.')[0]
-    #
-    #     # Extract path without folder name, by removing folder name from original path
-    #     path_no_folder_name = path.replace(folder_name, '')
-    #     # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
-    #     if tail == '':
-    #         path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
-    #
-    #     # Create model directory
-    #     full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
-    #     os.makedirs(full_path_to_model_folder, exist_ok=True)
-    #
-    #     model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-    #                       "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
-    #
-    #     if self.ort_session is None:
-    #         model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
-    #         model_metadata["optimized"] = False
-    #         model_metadata["format"] = "pth"
-    #
-    #         custom_dict = {'state_dict': self.model.state_dict()}
-    #         torch.save(custom_dict, os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
-    #         if verbose:
-    #             print("Saved Pytorch model.")
-    #     else:
-    #         model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".onnx")]
-    #         model_metadata["optimized"] = True
-    #         model_metadata["format"] = "onnx"
-    #         # Copy already optimized model from temp path
-    #         shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
-    #                      os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
-    #         model_metadata["optimized"] = True
-    #         if verbose:
-    #             print("Saved ONNX model.")
-    #
-    #     with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
-    #         json.dump(model_metadata, outfile)
+
 
     def eval(self, dataset,  silent=False, verbose=True, use_subset=True,
              subset_size=250,
@@ -274,10 +220,6 @@ class HighResolutionPoseEstimationLearner(Learner):
             if not silent and verbose:
                 print("Loading checkpoint:", full_path)
 
-            # Loads weights in self.model from checkpoint
-            # if self.from_mobilenet:  # TODO see todo on ctor
-            #     load_from_mobilenet(self.model, checkpoint)
-            # else:
             load_state(self.model, checkpoint)
         elif self.model is None:
             raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
@@ -456,7 +398,7 @@ class HighResolutionPoseEstimationLearner(Learner):
             return {"average_precision": [0.0 for _ in range(5)], "average_recall": [0.0 for _ in range(5)]}
 
     def infer(self, img, upsample_ratio=4, stride=8, track=True, smooth=True,
-              multiscale=False, visualize=False):
+              multiscale=False):
         current_poses = []
 
         offset = 0
@@ -619,9 +561,6 @@ class HighResolutionPoseEstimationLearner(Learner):
         """
         self.init_model()
         checkpoint = torch.load(path, map_location=torch.device(self.device))
-        # if self.from_mobilenet:  # TODO see todo on ctor
-        #     load_from_mobilenet(self.model, checkpoint)
-        # else:
         load_state(self.model, checkpoint)
         if "cuda" in self.device:
             self.model.to(self.device)
