@@ -46,7 +46,8 @@ class TestYOLOv5DetectorLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "yolov5", "yolov5_temp")
-        cls.detector = YOLOv5DetectorLearner(model_name='yolov5s', device=device, temp_path=cls.temp_dir)
+        cls.detector = YOLOv5DetectorLearner(model_name='yolov5s', device=device, temp_path=cls.temp_dir,
+                                             force_reload=True)
 
     @classmethod
     def tearDownClass(cls):

@@ -275,6 +275,50 @@ class ROSBridge:
 
         return TrackingAnnotationList(boxes)
 
+    def from_ros_single_tracking_annotation(self, ros_detection_box):
+        """
+        Converts a pair of ROS messages with bounding boxes and tracking ids into an OpenDR TrackingAnnotationList
+        :param ros_detection_box: The boxes to be converted.
+        :type ros_detection_box: vision_msgs.msg.Detection2D
+        :return: An OpenDR TrackingAnnotationList
+        :rtype: engine.target.TrackingAnnotationList
+        """
+        width = ros_detection_box.bbox.size_x
+        height = ros_detection_box.bbox.size_y
+        left = ros_detection_box.bbox.center.x - width / 2.
+        top = ros_detection_box.bbox.center.y - height / 2.
+        id = 0
+        bbox = TrackingAnnotation(
+            name=id,
+            left=left,
+            top=top,
+            width=width,
+            height=height,
+            id=0,
+            frame=-1
+        )
+        return bbox
+
+    def to_ros_single_tracking_annotation(self, tracking_annotation):
+        """
+        Converts a pair of ROS messages with bounding boxes and tracking ids into an OpenDR TrackingAnnotationList
+        :param tracking_annotation: The box to be converted.
+        :type tracking_annotation: engine.target.TrackingAnnotation
+        :return: A ROS vision_msgs.msg.Detection2D
+        :rtype: vision_msgs.msg.Detection2D
+        """
+        ros_box = Detection2D()
+        ros_box.bbox = BoundingBox2D()
+        ros_box.results.append(ObjectHypothesisWithPose())
+        ros_box.bbox.center = Pose2D()
+        ros_box.bbox.center.x = tracking_annotation.left + tracking_annotation.width / 2.0
+        ros_box.bbox.center.y = tracking_annotation.top + tracking_annotation.height / 2.0
+        ros_box.bbox.size_x = tracking_annotation.width
+        ros_box.bbox.size_y = tracking_annotation.height
+        ros_box.results[0].id = int(tracking_annotation.name)
+        ros_box.results[0].score = -1
+        return ros_box
+
     def to_ros_bounding_box_list(self, bounding_box_list):
         """
         Converts an OpenDR bounding_box_list into a Detection2DArray msg that can carry the same information
