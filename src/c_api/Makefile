@@ -43,9 +43,10 @@ $(OPENDR_HOME)/lib/libopendr.so:
 	@+$(MKDIR_P) $(BUILD_DIR)
 	$(CPP) $(CFLAGS) -c opendr_utils.cpp -o $(BUILD_DIR)/opendr_utils.o $(INC) $(OPENDR_INC)
 	$(CPP) $(CFLAGS) -c face_recognition.cpp -o $(BUILD_DIR)/opendr_face_recognition.o $(INC) $(OPENDR_INC)
-	$(CPP) $(CFLAGS) -c nanodet_libtorch.cpp -o $(BUILD_DIR)/opendr_nanodet_libtorch.o $(INC) $(OPENDR_INC) $(TORCHSCRIPT_INC)
+	$(CPP) $(CFLAGS) -c object_detection_2d_nanodet_jit.cpp -o $(BUILD_DIR)/opendr_nanodet_jit.o $(INC) $(OPENDR_INC) $(TORCHSCRIPT_INC)
+
 	@$(MKDIR_P) $(LIB_DIR)
-	$(CPP) $(CFLAGS)  -o $(OPENDR_HOME)/lib/libopendr.so $(BUILD_DIR)/opendr_utils.o $(BUILD_DIR)/opendr_face_recognition.o $(BUILD_DIR)/opendr_nanodet_libtorch.o $(LD) $(TORCHSCRIPT_LD) --shared
+	$(CPP) $(CFLAGS)  -o $(OPENDR_HOME)/lib/libopendr.so $(BUILD_DIR)/opendr_utils.o $(BUILD_DIR)/opendr_face_recognition.o $(BUILD_DIR)/opendr_nanodet_jit.o $(LD) $(TORCHSCRIPT_LD) --shared
 clean:
 	@+echo "Cleaning C API binaries and temporary files..."
 	@+$(RM) $(BUILD_DIR)/*

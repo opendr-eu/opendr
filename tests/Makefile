@@ -46,11 +46,11 @@ download:
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/test_data/images  $(DATA_DIR)/database; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/optimized_model/*; \
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/optimized_model  $(DATA_DIR)/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/nanodet; \
+		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/nanodet; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/nanodet/database; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/object_detection_2d/nanodet/database; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/nanodet/optimized_model; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/object_detection_2d/nanodet/optimized_model; \
 		$(RM) -r opendrdata.csd.auth.gr; \
 	fi;
 
@@ -71,12 +71,18 @@ $(BUILD_DIR)/test_fmp_gmapping:
 	@+echo "Building Full-Map-Posterior GMapping test..."
 	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/test_fmp_gmapping sources/c_api/test_fmp_gmapping.cpp -lboost_unit_test_framework $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD) $(FMP_INC)
 
-tests: $(BUILD_DIR)/test_opendr_utils $(BUILD_DIR)/test_face_recognition $(BUILD_DIR)/test_fmp_gmapping
+
+tests: utils face_recognition nanodet fmp_gmapping
+
+utils: $(BUILD_DIR)/test_opendr_utils
+face_recognition: $(BUILD_DIR)/test_face_recognition
+nanodet: $(BUILD_DIR)/test_nanodet
+fmp_gmapping: $(BUILD_DIR)/test_fmp_gmapping
 
 runtests: download tests
 	@+$(LD_RUN) $(BUILD_DIR)/test_opendr_utils 2>/dev/null
-	@+$(LD_RUN) $(BUILD_DIR)/test_nanodet 2>/dev/null
 	@+$(LD_RUN) $(BUILD_DIR)/test_face_recognition 2>/dev/null
+	@+$(LD_RUN) $(BUILD_DIR)/test_nanodet 2>/dev/null
 	@+$(LD_RUN) $(BUILD_DIR)/test_fmp_gmapping
 
 clean:

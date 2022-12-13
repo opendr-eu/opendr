@@ -33,9 +33,10 @@ OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
 all: download demos
 
-demos: $(BUILD_DIR)/face_recognition_demo $(BUILD_DIR)/nanodet_demo
-face: $(BUILD_DIR)/face_recognition_demo
-nano: $(BUILD_DIR)/nanodet_demo
+demos: face_recognition nanodet
+
+face_recognition: $(BUILD_DIR)/face_recognition_demo
+nanodet: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
 
 download:
 	@+if [ -a $(DATA_DIR) ] ; \
@@ -49,11 +50,11 @@ download:
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/test_data/images  $(DATA_DIR)/database; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/optimized_model/*; \
 		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/optimized_model  $(DATA_DIR)/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/nanodet; \
+		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/nanodet; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/nanodet/database; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/object_detection_2d/nanodet/database; \
 		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/nanodet/optimized_model; \
+		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/object_detection_2d/nanodet/optimized_model; \
 		$(RM) -r opendrdata.csd.auth.gr; \
 	fi;
 
@@ -62,14 +63,13 @@ $(BUILD_DIR)/face_recognition_demo:
 	@+echo "Building face recognition demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/face_recognition_demo samples/face_recognition/face_recognition_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
-$(BUILD_DIR)/nanodet_demo:
-	$(MKDIR_P) $(BUILD_DIR)
+$(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
 	@+echo "Building nanodet object detection demo..."
-	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/nanodet_libtorch_demo samples/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
-
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."
-	@+$(RM) $(BUILD_DIR)/*
+	@+$(RM) -rf $(BUILD_DIR)/*
 	@+$(RM) -rf $(DATA_DIR)
 	@+echo "Done!"

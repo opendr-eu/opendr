@@ -79,12 +79,12 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
  * In the future this can be done at library level using a JSON-parser
  */
 std::string json_get_key_string(std::string json, const std::string &key) {
-  std::size_t start_idx = json.find(key);
-  std::string value = json.substr(start_idx);
+  std::size_t startIdx = json.find(key);
+  std::string value = json.substr(startIdx);
   value = value.substr(value.find(":") + 1);
-  value.resize(value.find(","));
+  value = value.substr(0, value.find(","));
   value = value.substr(value.find("\"") + 1);
-  value.resize(value.find("\""));
+  value = value.substr(0, value.find("\""));
   return value;
 }
 
@@ -124,7 +124,7 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
 
   // Parse inference params
   std::string threshold = json_get_key_string(str, "threshold");
-  ;
+
   if (!threshold.empty()) {
     model->threshold = std::stof(threshold);
   }
@@ -213,7 +213,7 @@ void ff_face_recognition(face_recognition_model_t *model, opendr_image_t *image,
   std::vector<const char *> input_node_names = {"data"};
   std::vector<const char *> output_node_names = {"features"};
 
-  // Setup the input tensor
+  // Set up the input tensor
   auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
   Ort::Value input_tensor =
     Ort::Value::CreateTensor<float>(memory_info, input_tensor_values.data(), input_tensor_size, input_node_dims.data(), 4);

@@ -36,28 +36,35 @@ void free_image(opendr_image_t *image) {
   }
 }
 
-void initialize_detections(opendr_detection_target_list_t *detections) {
-  std::vector<opendr_detection_target> dets;
-  opendr_detection_target_t det;
-  det.name = -1;
-  det.left = 0.0;
-  det.top = 0.0;
-  det.width = 0.0;
-  det.height = 0.0;
-  det.score = 0.0;
-  dets.push_back(det);
+void init_detections_vector(opendr_detection_vector_target_t *detection_vector) {
+  detection_vector->starting_pointer = NULL;
 
-  load_detections(detections, dets.data(), (int)dets.size());
+  std::vector<opendr_detection_target> detections;
+  opendr_detection_target_t detection;
+
+  detection.name = -1;
+  detection.left = 0.0;
+  detection.top = 0.0;
+  detection.width = 0.0;
+  detection.height = 0.0;
+  detection.score = 0.0;
+
+  detections.push_back(detection);
+
+  load_detections_vector(detection_vector, detections.data(), static_cast<int>(detections.size()));
 }
 
-void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize) {
-  detections->size = vectorSize;
-  int sizeOfOutput = (vectorSize) * sizeof(opendr_detection_target_t);
-  detections->starting_pointer = static_cast<opendr_detection_target_t *>(malloc(sizeOfOutput));
-  std::memcpy(detections->starting_pointer, vectorDataPtr, sizeOfOutput);
+void load_detections_vector(opendr_detection_vector_target_t *detection_vector, opendr_detection_target_t *detection,
+                            int vector_size) {
+  free_detections_vector(detection_vector);
+
+  detection_vector->size = vector_size;
+  int size_of_output = (vector_size) * sizeof(opendr_detection_target_t);
+  detection_vector->starting_pointer = static_cast<opendr_detection_target_t *>(malloc(size_of_output));
+  std::memcpy(detection_vector->starting_pointer, detection, size_of_output);
 }
 
-void free_detections(opendr_detection_target_list_t *detections) {
-  if (detections->starting_pointer != NULL)
-    free(detections->starting_pointer);
+void free_detections_vector(opendr_detection_vector_target_t *detection_vector) {
+  if (detection_vector->starting_pointer != NULL)
+    free(detection_vector->starting_pointer);
 }

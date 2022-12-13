@@ -39,23 +39,24 @@ void free_image(opendr_image_t *image);
 
 /**
  * Initialize an empty detection list to be used in C API
- * @param detections OpenDR detection_target_list structure to be initialized
+ * @param detection_vector OpenDR detection_target_list structure to be initialized
  */
-void initialize_detections(opendr_detection_target_list_t *detections);
+void init_detections_vector(opendr_detection_vector_target_t *detection_vector);
 
 /**
  * Loads an OpenDR detection target list to be used in C API
- * @param detections OpenDR detection_target_list structure to be loaded
- * @param vectorDataPtr the pointer of the first OpenDR detection target in a vector
- * @param vectorSize the size of the vector
+ * @param detection_vector OpenDR detection_target_list structure to be loaded
+ * @param detection the pointer of the first OpenDR detection target in a vector
+ * @param vector_size the size of the vector
  */
-void load_detections(opendr_detection_target_list_t *detections, opendr_detection_target_t *vectorDataPtr, int vectorSize);
+void load_detections_vector(opendr_detection_vector_target_t *detection_vector, opendr_detection_target_t *detection,
+                            int vector_size);
 
 /**
  * Releases the memory allocated for a detection list structure
- * @param detections OpenDR detection_target_list structure to release
+ * @param detection_vector OpenDR detection vector target structure to release
  */
-void free_detections(opendr_detection_target_list_t *detections);
+void free_detections_vector(opendr_detection_vector_target_t *detection_vector);
 
 #ifdef __cplusplus
 }
