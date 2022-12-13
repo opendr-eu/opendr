@@ -41,13 +41,15 @@ START_TEST(forward_pass_creation_test) {
 
   // Load a random tensor and perform forward pass
   opendr_tensor_t input_tensor;
+  init_tensor(&input_tensor);
+
   init_random_opendr_tensor_op(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
   opendr_tensor_vector_t output_tensor_vector;
+  init_tensor_vector(&output_tensor_vector);
+
   forward_open_pose(&model, &input_tensor, &output_tensor_vector);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
 
   // Load another tensor
   init_random_opendr_tensor_op(&input_tensor, &model);
@@ -55,11 +57,10 @@ START_TEST(forward_pass_creation_test) {
 
   ck_assert(output_tensor_vector.n_tensors == model.output_size);
 
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
-
   // Free the model resources
   free_open_pose_model(&model);
+  free_tensor(&input_tensor);
+  free_tensor_vector(&output_tensor_vector);
 }
 END_TEST
 

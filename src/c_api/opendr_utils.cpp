@@ -36,10 +36,12 @@ void free_image(opendr_image_t *image) {
   }
 }
 
-void initialize_detections_vector(opendr_detection_vector_target_t *detection_vector) {
-  std::vector<opendr_detection_target> detections;
+void init_detections_vector(opendr_detection_vector_target_t *detection_vector) {
+  detection_vector->starting_pointer = NULL;
 
+  std::vector<opendr_detection_target> detections;
   opendr_detection_target_t detection;
+
   detection.name = -1;
   detection.left = 0.0;
   detection.top = 0.0;
@@ -54,6 +56,8 @@ void initialize_detections_vector(opendr_detection_vector_target_t *detection_ve
 
 void load_detections_vector(opendr_detection_vector_target_t *detection_vector, opendr_detection_target_t *detection,
                             int vector_size) {
+  free_detections_vector(detection_vector);
+
   detection_vector->size = vector_size;
   int size_of_output = (vector_size) * sizeof(opendr_detection_target_t);
   detection_vector->starting_pointer = static_cast<opendr_detection_target_t *>(malloc(size_of_output));
@@ -62,10 +66,10 @@ void load_detections_vector(opendr_detection_vector_target_t *detection_vector, 
 
 void free_detections_vector(opendr_detection_vector_target_t *detection_vector) {
   if (detection_vector->starting_pointer != NULL)
-    delete detection_vector->starting_pointer;
+    free(detection_vector->starting_pointer);
 }
 
-void initialize_tensor(opendr_tensor_t *opendr_tensor) {
+void init_tensor(opendr_tensor_t *opendr_tensor) {
   opendr_tensor->batch_size = 0;
   opendr_tensor->frames = 0;
   opendr_tensor->channels = 0;
@@ -76,6 +80,8 @@ void initialize_tensor(opendr_tensor_t *opendr_tensor) {
 
 void load_tensor(opendr_tensor_t *opendr_tensor, void *tensor_data, int batch_size, int frames, int channels, int width,
                  int height) {
+  free_tensor(opendr_tensor);
+
   opendr_tensor->batch_size = batch_size;
   opendr_tensor->frames = frames;
   opendr_tensor->channels = channels;
@@ -88,11 +94,13 @@ void load_tensor(opendr_tensor_t *opendr_tensor, void *tensor_data, int batch_si
 }
 
 void free_tensor(opendr_tensor_t *opendr_tensor) {
-  if (opendr_tensor->data != NULL)
-    delete opendr_tensor->data;
+  if (opendr_tensor->data != NULL) {
+    free(opendr_tensor->data);
+    opendr_tensor->data == NULL
+  }
 }
 
-void initialize_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
+void init_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
   tensor_vector->n_tensors = 0;
   tensor_vector->batch_sizes = NULL;
   tensor_vector->frames = NULL;
@@ -103,6 +111,8 @@ void initialize_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
 }
 
 void load_tensor_vector(opendr_tensor_vector_t *tensor_vector, opendr_tensor_t *tensor, int number_of_tensors) {
+  free_tensor_vector(tensor_vector);
+
   tensor_vector->n_tensors = number_of_tensors;
   int size_of_shape_data = number_of_tensors * sizeof(int);
   /* initialize arrays to hold size values for each tensor */
@@ -137,25 +147,37 @@ void load_tensor_vector(opendr_tensor_vector_t *tensor_vector, opendr_tensor_t *
 
 void free_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
   // free vector pointers
-  if (tensor_vector->batch_sizes != NULL)
-    delete tensor_vector->batch_sizes;
-  if (tensor_vector->frames != NULL)
-    delete tensor_vector->frames;
-  if (tensor_vector->channels != NULL)
-    delete tensor_vector->channels;
-  if (tensor_vector->widths != NULL)
-    delete tensor_vector->widths;
-  if (tensor_vector->heights != NULL)
-    delete tensor_vector->heights;
+  if (tensor_vector->batch_sizes != NULL) {
+    free(tensor_vector->batch_sizes);
+    tensor_vector->batch_sizes = NULL;
+  }
+  if (tensor_vector->frames != NULL) {
+    free(tensor_vector->frames);
+    tensor_vector->frames = NULL;
+  }
+  if (tensor_vector->channels != NULL) {
+    free(tensor_vector->channels);
+    tensor_vector->channels = NULL;
+  }
+  if (tensor_vector->widths != NULL) {
+    free(tensor_vector->widths);
+    tensor_vector->widths = NULL;
+  }
+  if (tensor_vector->heights != NULL) {
+    free(tensor_vector->heights);
+    tensor_vector->heights = NULL;
+  }
+
 
   // free tensors data and vector memory
   if (tensor_vector->memories != NULL) {
-    for (int i = 0; i < (tensor_vector->n_tensors); i++) {
-      if ((tensor_vector->memories)[i] != NULL)
-        delete (tensor_vector->memories)[i];
-    }
-    delete tensor_vector->memories;
+    free(tensor_vector->memories);
+    tensor_vector->memories = NULL;
   }
+
+  // reset tensor vector values
+  tensor_vector->n_tensors = 0;
+
 }
 
 void iter_tensor_vector(opendr_tensor_t *output, opendr_tensor_vector_t *tensor_vector, int index) {

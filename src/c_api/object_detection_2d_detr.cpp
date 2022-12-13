@@ -245,6 +245,8 @@ void forward_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, opend
     opendr_tensor_t tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
+      init_tensor(&(tempTensors[i]));
+
       batchSizes[i] = 1;
       frames[i] = 1;
       channels[i] = 1;
@@ -264,6 +266,6 @@ void forward_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, opend
     }
 
   } else {
-    initialize_tensor_vector(tensorVector);
+    init_tensor_vector(tensorVector);
   }
 }

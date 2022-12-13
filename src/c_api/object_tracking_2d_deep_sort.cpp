@@ -183,6 +183,8 @@ void forward_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorVal
     opendr_tensor_t temp_tensor[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
+      init_tensor(&(temp_tensor[i]));
+
       batch_sizes[i] = 1;
       frames[i] = 1;
       channels[i] = 1;
@@ -198,6 +200,6 @@ void forward_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorVal
       free_tensor(&(temp_tensor[i]));
     }
   } else {
-    initialize_tensor_vector(tensorVector);
+    init_tensor_vector(tensorVector);
   }
 }

@@ -28,6 +28,8 @@ int main(int argc, char **argv) {
 
   // Initialize opendr tensor for input
   opendr_tensor_t input_tensor;
+  init_tensor(&input_tensor);
+
   init_random_opendr_tensor_op(&input_tensor, &model);
 
   /* If user wants to import an Opendr Image, first must load the image and then use this function */
@@ -35,6 +37,8 @@ int main(int argc, char **argv) {
 
   // Initialize opendr tensor vector for output
   opendr_tensor_vector_t output_tensor_vector;
+  init_tensor_vector(&output_tensor_vector);
+
   forward_open_pose(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory

@@ -40,16 +40,17 @@ START_TEST(forward_pass_creation_test) {
   // Load a pretrained model (see instructions for downloading the data)
   load_pst_model("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx",
                  &model);
-
   // Load a random tensor and perform forward pass
   opendr_tensor_t input_tensor;
+  init_tensor(&input_tensor);
+
   init_random_opendr_tensor_pst(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
   opendr_tensor_vector_t output_tensor_vector;
+  init_tensor_vector(&output_tensor_vector);
+
   forward_pst(&model, &input_tensor, &output_tensor_vector);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
 
   // Load another tensor
   init_random_opendr_tensor_pst(&input_tensor, &model);
@@ -59,9 +60,6 @@ START_TEST(forward_pass_creation_test) {
 
   free_tensor(&input_tensor);
   free_tensor_vector(&output_tensor_vector);
-
-  // Free the model resources
-  free_pst_model(&model);
 }
 END_TEST
 

@@ -240,6 +240,8 @@ void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorVal
     opendr_tensor_t tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
+      init_tensor(&(tempTensors[i]));
+
       batchSizes[i] = 1;
       frames[i] = 1;
       if ((i % 2) == 0) {
@@ -259,6 +261,6 @@ void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorVal
       free_tensor(&(tempTensors[i]));
     }
   } else {
-    initialize_tensor_vector(tensorVector);
+    init_tensor_vector(tensorVector);
   }
 }

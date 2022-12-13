@@ -41,7 +41,7 @@ void free_image(opendr_image_t *image);
  * Initialize an empty Opendr detection vector target to be used in C API
  * @param detection_vector OpenDR detection_target_list structure to be initialized
  */
-void initialize_detections_vector(opendr_detection_vector_target_t *detection_vector);
+void init_detections_vector(opendr_detection_vector_target_t *detection_vector);
 
 /**
  * Loads an OpenDR detection target list to be used in C API
@@ -62,7 +62,7 @@ void free_detections_vector(opendr_detection_vector_target_t *detection_vector);
  * Initialize an empty OpenDR tensor to be used in C API
  * @param tensor OpenDR tensor to initialize
  */
-void initialize_tensor(opendr_tensor_t *opendr_tensor);
+void init_tensor(opendr_tensor_t *opendr_tensor);
 
 /**
  * Load a tensor values to be used in C.
@@ -87,7 +87,7 @@ void free_tensor(opendr_tensor_t *opendr_tensor);
  * Initialize an empty OpenDR tensor vector to be used in C API
  * @param tensor_vector
  */
-void initialize_tensor_vector(opendr_tensor_vector_t *tensor_vector);
+void init_tensor_vector(opendr_tensor_vector_t *tensor_vector);
 
 /**
  * Load a vector of tensors values to be used in C.

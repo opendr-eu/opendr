@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
 
   // Initialize opendr detection target list;
   opendr_detection_vector_target_t results;
+  init_detections_vector(&results);
 
   // Infer nanodet model
   results = infer_nanodet(&model, &image);

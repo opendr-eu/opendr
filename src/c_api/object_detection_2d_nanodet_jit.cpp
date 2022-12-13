@@ -246,13 +246,11 @@ void ff_nanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix,
 opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_image_t *image) {
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   opendr_detection_vector_target_t detectionsVector;
+  init_detections_vector(&detectionsVector);
 
   cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
-
-    // Initialize an empty detection to return.
-    initialize_detections_vector(&detectionsVector);
     return detectionsVector;
   }
 
@@ -287,8 +285,6 @@ opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_im
   // Put vector detection as C pointer and size
   if (static_cast<int>(detections.size()) > 0)
     load_detections_vector(&detectionsVector, detections.data(), static_cast<int>(detections.size()));
-  else
-    initialize_detections_vector(&detectionsVector);
 
   return detectionsVector;
 }
