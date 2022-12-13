@@ -17,6 +17,8 @@ import argparse
 from os.path import join
 from opendr.engine.datasets import ExternalDataset
 import time
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")

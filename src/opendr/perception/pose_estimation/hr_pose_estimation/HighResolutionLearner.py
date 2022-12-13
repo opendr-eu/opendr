@@ -320,8 +320,8 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         pbar_eval = None
         if not silent:
-            pbarDesc = "Evaluation progress"
-            pbar_eval = tqdm(desc=pbarDesc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
+            pbar_desc = "Evaluation progress"
+            pbar_eval = tqdm(desc=pbar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
 
         img_height = data[0]['img'].shape[0]
 
@@ -346,14 +346,14 @@ class HighResolutionPoseEstimationLearner(Learner):
 
             perc = 0.3  # percentage around cropping
 
-            thresshold = 0.1  # thresshold for heatmap
+            threshold = 0.1  # threshold for heatmap
 
             # ------- Heatmap Generation -------
             avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.model, pool_img)
             avg_pafs = avg_pafs.astype(np.float32)
 
             pafs_map = cv2.blur(avg_pafs, (5, 5))
-            pafs_map[pafs_map < thresshold] = 0
+            pafs_map[pafs_map < threshold] = 0
 
             heatmap = pafs_map.sum(axis=2)
             heatmap = heatmap * 100
@@ -489,7 +489,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         if not isinstance(img, Image):
             img = Image(img)
 
-            # Bring image into the appropriate format for the implementation
+        # Bring image into the appropriate format for the implementation
         img = img.convert(format='channels_last', channel_order='bgr')
 
         h, w, _ = img.shape
@@ -503,14 +503,14 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         perc = 0.3  # percentage around cropping
 
-        thresshold = 0.1  # threshold for heatmap
+        threshold = 0.1  # threshold for heatmap
 
         # ------- Heatmap Generation -------
         avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.model, pool_img)
         avg_pafs = avg_pafs.astype(np.float32)
         pafs_map = cv2.blur(avg_pafs, (5, 5))
 
-        pafs_map[pafs_map < thresshold] = 0
+        pafs_map[pafs_map < threshold] = 0
 
         heatmap = pafs_map.sum(axis=2)
         heatmap = heatmap * 100
@@ -761,7 +761,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         # # Check that the IR is well formed
         # onnx.checker.check_model(self.model)
         #
-        # # Print a human readable representation of the graph
+        # # Print a human-readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
 
     @staticmethod

@@ -20,6 +20,7 @@ from os.path import join
 from tqdm import tqdm
 import numpy as np
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
