@@ -34,8 +34,8 @@ from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGC
 class VideoReader(object):
     def __init__(self, file_name):
         self.file_name = file_name
-        try:  # OpenCV needs int to read from webcam
-            self.file_name = int(file_name)
+        try:  # OpenCV needs to read from webcam or another vidoes like rtsp(cctv) streams
+            self.file_name = file_name
         except ValueError:
             pass
 
@@ -100,7 +100,7 @@ def select_2_poses(poses):
         energy.append(s)
     energy = np.array(energy)
     index = energy.argsort()[::-1][0:2]
-    selected_poses.append(poses[index])
+    selected_poses.append(np.array(poses)[index])
     return selected_poses
 
 
