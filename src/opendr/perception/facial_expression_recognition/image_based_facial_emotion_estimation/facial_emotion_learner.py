@@ -614,12 +614,12 @@ class FacialEmotionLearner(Learner):
         :param input_batch: a batch of images
         :return: dimensional and categorical emotion results.
         """
-        '''if not isinstance(input_batch, (Image, list)):
+        if not isinstance(input_batch, (Image, list)):
             input_batch = Image(input_batch)
         if type(input_batch) is Image:
             input_batch = [input_batch]
         if type(input_batch) is list:
-            input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])'''
+            input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
         # print('input_batch shape', input_batch.shape)
         cpu_device = torch.device('cpu')
 
@@ -689,7 +689,7 @@ class FacialEmotionLearner(Learner):
                           opset_version=11,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],
-                          output_names=['onnx_out_emotions', 'onnx_out_va', 'onnx_out_attn'])
+                          output_names=['onnx_out_emotions'])
 
     def __load_from_onnx(self, path):
         """
@@ -740,7 +740,6 @@ class FacialEmotionLearner(Learner):
                 print("data files already exists.")
             print("Data download complete.")
             downloaded_files_path = os.path.join(data_path, 'AffectNet_micro')
-            print('downloaded_files_path:', os.listdir(downloaded_files_path))
 
         elif mode == "pretrained":
             print("Downloading pretrained model weights...")
@@ -760,6 +759,5 @@ class FacialEmotionLearner(Learner):
                 print("pretrained files already exists.")
             print("Pretrained model weights download complete.")
             downloaded_files_path = os.path.join(model_path, 'esr_9')
-            print('downloaded_files_path:', os.listdir(downloaded_files_path))
 
         return downloaded_files_path
