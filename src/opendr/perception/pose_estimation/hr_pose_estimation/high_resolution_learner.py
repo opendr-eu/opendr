@@ -17,7 +17,6 @@ import torchvision.transforms
 import onnxruntime as ort
 import os
 import ntpath
-import shutil
 import cv2
 import torch
 import json
@@ -34,26 +33,20 @@ from opendr.engine.target import Pose
 from opendr.engine.constants import OPENDR_SERVER_URL
 
 # OpenDR lightweight_open_pose imports
-
-from opendr.perception.pose_estimation.hr_pose_estimation.filtered_pose import FilteredPose
-from opendr.perception.pose_estimation.hr_pose_estimation.utilities import track_poses
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.models.with_mobilenet import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
     PoseEstimationWithMobileNet
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.models.with_mobilenet_v2 import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet_v2 import \
     PoseEstimationWithMobileNetV2
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.models.with_shufflenet import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_shufflenet import \
     PoseEstimationWithShuffleNet
-
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.modules.load_state import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.load_state import \
     load_state
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.modules.keypoints import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.keypoints import \
     extract_keypoints, group_keypoints
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.datasets.coco import CocoValDataset
-
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.val import \
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.coco import CocoValDataset
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.val import \
     convert_to_coco_format, run_coco_eval, normalize, pad_width
-from opendr.perception.pose_estimation.hr_pose_estimation.algorithm.scripts import \
-    make_val_subset
+from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.scripts import make_val_subset
 
 
 class HighResolutionPoseEstimationLearner(Learner):
@@ -61,7 +54,7 @@ class HighResolutionPoseEstimationLearner(Learner):
     def __init__(self, device='cuda', backbone='mobilenet',
                  temp_path='temp', mobilenet_use_stride=True, mobilenetv2_width=1.0, shufflenet_groups=3,
                  num_refinement_stages=2, batches_per_iter=1, base_height=256,
-                 first_pass_height=360, second_pass_height=540,
+                 first_pass_height=360, second_pass_height=540, img_resolution=1080,
                  experiment_name='default', num_workers=8, weights_only=True, output_name='detections.json',
                  multiscale=False, scales=None, visualize=False,
                  img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0),
@@ -71,7 +64,7 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         self.first_pass_height = first_pass_height
         self.second_pass_height = second_pass_height
-        self.img_resol = 1080  # default value for sample image in OpenDr server
+        self.img_resol = img_resolution  # default value for sample image in OpenDr server
 
         self.parent_dir = temp_path  # Parent dir should be filled by the user according to README
 
@@ -122,7 +115,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         self.ort_session = None  # ONNX runtime inference session
         self.model_train_state = True
 
-    def first_pass(self, net, img):
+    def __first_pass(self, net, img):
 
         if 'cuda' in self.device:
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().cuda()
@@ -132,24 +125,15 @@ class HighResolutionPoseEstimationLearner(Learner):
         else:
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().cpu()
 
-        start = torch.cuda.Event(enable_timing=True)
-        end = torch.cuda.Event(enable_timing=True)
-        start.record()
-
         stages_output = net(tensor_img)
-
-        end.record()
-        torch.cuda.synchronize()
 
         stage2_pafs = stages_output[-1]
         pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
+        return pafs
 
-        avg_pafs = pafs
-        return avg_pafs
-
-    def second_pass_infer(self, net, img, net_input_height_size, max_width, stride, upsample_ratio,
-                          pad_value=(0, 0, 0),
-                          img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256)):
+    def __second_pass(self, net, img, net_input_height_size, max_width, stride, upsample_ratio,
+                      pad_value=(0, 0, 0),
+                      img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256)):
         height, width, _ = img.shape
         scale = net_input_height_size / height
         img_ratio = width / height
@@ -169,14 +153,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         else:
             tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float().cpu()
 
-        start = torch.cuda.Event(enable_timing=True)
-        end = torch.cuda.Event(enable_timing=True)
-        start.record()
-
         stages_output = net(tensor_img)
-
-        end.record()
-        torch.cuda.synchronize()
 
         stage2_heatmaps = stages_output[-2]
         heatmaps = np.transpose(stage2_heatmaps.squeeze().cpu().data.numpy(), (1, 2, 0))
@@ -190,82 +167,82 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         return heatmaps, pafs, scale, pad
 
-    def Pooling(self, img, kernel):  # Pooling on input image for dim reduction
-        pooling = torch.nn.AvgPool2d(kernel)
+    def __pooling(self, img, kernel):  # Pooling on input image for dim reduction
+        pool = torch.nn.AvgPool2d(kernel)
         pool_img = torchvision.transforms.ToTensor()(img)
         pool_img = pool_img.unsqueeze(0)
-        pool_img = pooling(pool_img)
+        pool_img = pool(pool_img)
         pool_img = pool_img.squeeze(0).permute(1, 2, 0).cpu().float().numpy()
         return pool_img
 
-    def fit(self, val_dataset=None, logging_path='', logging_flush_secs=30,
-            silent=False, verbose=True, use_val_subset=True, val_subset_size=250,
-            val_images_folder_name="val2017", val_annotations_filename="person_keypoints_val2017.json"):
+    def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
         raise NotImplementedError
 
-    def optimize(self, do_constant_folding=False):
+    def optimize(self, target_device):
         raise NotImplementedError
 
     def reset(self):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def save(self, path, verbose=False):
-        """
-        This method is used to save a trained model.
-        Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
-        of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
-
-        If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
-        from the self.temp_path it was saved previously during conversion.
-
-        :param path: for the model to be saved, including the folder name
-        :type path: str
-        :param verbose: whether to print success message or not, defaults to 'False'
-        :type verbose: bool, optional
-        """
-        if self.model is None and self.ort_session is None:
-            raise UserWarning("No model is loaded, cannot save.")
-
-        folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
-        # Also extract folder name without any extension if extension is erroneously provided
-        folder_name_no_ext = folder_name.split(sep='.')[0]
-
-        # Extract path without folder name, by removing folder name from original path
-        path_no_folder_name = path.replace(folder_name, '')
-        # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
-        if tail == '':
-            path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
-
-        # Create model directory
-        full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
-        os.makedirs(full_path_to_model_folder, exist_ok=True)
-
-        model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
-                          "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
-
-        if self.ort_session is None:
-            model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
-            model_metadata["optimized"] = False
-            model_metadata["format"] = "pth"
-
-            custom_dict = {'state_dict': self.model.state_dict()}
-            torch.save(custom_dict, os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
-            if verbose:
-                print("Saved Pytorch model.")
-        else:
-            model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".onnx")]
-            model_metadata["optimized"] = True
-            model_metadata["format"] = "onnx"
-            # Copy already optimized model from temp path
-            shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
-                         os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
-            model_metadata["optimized"] = True
-            if verbose:
-                print("Saved ONNX model.")
-
-        with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
-            json.dump(model_metadata, outfile)
+    def save(self, path):
+        """This method is not used in this implementation."""
+        return NotImplementedError
+    #     """
+    #     This method is used to save a trained model.
+    #     Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
+    #     of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
+    #
+    #     If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
+    #     from the self.temp_path it was saved previously during conversion.
+    #
+    #     :param path: for the model to be saved, including the folder name
+    #     :type path: str
+    #     :param verbose: whether to print success message or not, defaults to 'False'
+    #     :type verbose: bool, optional
+    #     """
+    #     if self.model is None and self.ort_session is None:
+    #         raise UserWarning("No model is loaded, cannot save.")
+    #
+    #     folder_name, _, tail = self.__extract_trailing(path)  # Extract trailing folder name from path
+    #     # Also extract folder name without any extension if extension is erroneously provided
+    #     folder_name_no_ext = folder_name.split(sep='.')[0]
+    #
+    #     # Extract path without folder name, by removing folder name from original path
+    #     path_no_folder_name = path.replace(folder_name, '')
+    #     # If tail is '', then path was a/b/c/, which leaves a trailing double '/'
+    #     if tail == '':
+    #         path_no_folder_name = path_no_folder_name[0:-1]  # Remove one '/'
+    #
+    #     # Create model directory
+    #     full_path_to_model_folder = path_no_folder_name + folder_name_no_ext
+    #     os.makedirs(full_path_to_model_folder, exist_ok=True)
+    #
+    #     model_metadata = {"model_paths": [], "framework": "pytorch", "format": "", "has_data": False,
+    #                       "inference_params": {}, "optimized": None, "optimizer_info": {}, "backbone": self.backbone}
+    #
+    #     if self.ort_session is None:
+    #         model_metadata["model_paths"] = [folder_name_no_ext + ".pth"]
+    #         model_metadata["optimized"] = False
+    #         model_metadata["format"] = "pth"
+    #
+    #         custom_dict = {'state_dict': self.model.state_dict()}
+    #         torch.save(custom_dict, os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
+    #         if verbose:
+    #             print("Saved Pytorch model.")
+    #     else:
+    #         model_metadata["model_paths"] = [os.path.join(folder_name_no_ext + ".onnx")]
+    #         model_metadata["optimized"] = True
+    #         model_metadata["format"] = "onnx"
+    #         # Copy already optimized model from temp path
+    #         shutil.copy2(os.path.join(self.temp_path, "onnx_model_temp.onnx"),
+    #                      os.path.join(full_path_to_model_folder, model_metadata["model_paths"][0]))
+    #         model_metadata["optimized"] = True
+    #         if verbose:
+    #             print("Saved ONNX model.")
+    #
+    #     with open(os.path.join(full_path_to_model_folder, folder_name_no_ext + ".json"), 'w') as outfile:
+    #         json.dump(model_metadata, outfile)
 
     def eval(self, dataset,  silent=False, verbose=True, use_subset=True,
              subset_size=250,
@@ -339,7 +316,7 @@ class HighResolutionPoseEstimationLearner(Learner):
             max_width = w
             kernel = int(h / self.first_pass_height)
             if kernel > 0:
-                pool_img = HighResolutionPoseEstimationLearner.Pooling(self, img, kernel)
+                pool_img = HighResolutionPoseEstimationLearner.__pooling(self, img, kernel)
 
             else:
                 pool_img = img
@@ -349,7 +326,7 @@ class HighResolutionPoseEstimationLearner(Learner):
             thresshold = 0.1  # thresshold for heatmap
 
             # ------- Heatmap Generation -------
-            avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.model, pool_img)
+            avg_pafs = HighResolutionPoseEstimationLearner.__first_pass(self, self.model, pool_img)
             avg_pafs = avg_pafs.astype(np.float32)
 
             pafs_map = cv2.blur(avg_pafs, (5, 5))
@@ -402,10 +379,10 @@ class HighResolutionPoseEstimationLearner(Learner):
 
                 # ------- Second pass of the image, inference for pose estimation -------
                 avg_heatmaps, avg_pafs, scale, pad = \
-                    HighResolutionPoseEstimationLearner.second_pass_infer(self,
-                                                                          self.model, crop_img,
-                                                                          self.second_pass_height, max_width,
-                                                                          self.stride, self.upsample_ratio)
+                    HighResolutionPoseEstimationLearner.__second_pass(self,
+                                                                      self.model, crop_img,
+                                                                      self.second_pass_height, max_width,
+                                                                      self.stride, self.upsample_ratio)
                 total_keypoints_num = 0
                 all_keypoints_by_type = []
                 for kpt_idx in range(18):
@@ -497,7 +474,7 @@ class HighResolutionPoseEstimationLearner(Learner):
 
         kernel = int(h / self.first_pass_height)
         if kernel > 0:
-            pool_img = HighResolutionPoseEstimationLearner.Pooling(self, img, kernel)
+            pool_img = HighResolutionPoseEstimationLearner.__pooling(self, img, kernel)
         else:
             pool_img = img
 
@@ -506,7 +483,7 @@ class HighResolutionPoseEstimationLearner(Learner):
         thresshold = 0.1  # threshold for heatmap
 
         # ------- Heatmap Generation -------
-        avg_pafs = HighResolutionPoseEstimationLearner.first_pass(self, self.model, pool_img)
+        avg_pafs = HighResolutionPoseEstimationLearner.__first_pass(self, self.model, pool_img)
         avg_pafs = avg_pafs.astype(np.float32)
         pafs_map = cv2.blur(avg_pafs, (5, 5))
 
@@ -558,9 +535,9 @@ class HighResolutionPoseEstimationLearner(Learner):
 
             # ------- Second pass of the image, inference for pose estimation -------
             avg_heatmaps, avg_pafs, scale, pad = \
-                HighResolutionPoseEstimationLearner.second_pass_infer(self, self.model, crop_img,
-                                                                      self.second_pass_height,
-                                                                      max_width, stride, upsample_ratio)
+                HighResolutionPoseEstimationLearner.__second_pass(self, self.model, crop_img,
+                                                                  self.second_pass_height,
+                                                                  max_width, stride, upsample_ratio)
 
             total_keypoints_num = 0
             all_keypoints_by_type = []
@@ -593,98 +570,6 @@ class HighResolutionPoseEstimationLearner(Learner):
                 pose = Pose(pose_keypoints, pose_entries[n][18])
                 current_poses.append(pose)
 
-        return current_poses
-
-    def infer_light_odr(self, img, upsample_ratio=4, track=True, smooth=True):  # LwOP from OpenDR implementation
-        """
-        This method is used to perform pose estimation on an image.
-
-        :param img: image to run inference on
-        :rtype img: engine.data.Image class object
-        :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing,
-            defaults to 4
-        :type upsample_ratio: int, optional
-        :param track: If True, infer propagates poses ids from previous frame results to track poses, defaults to 'True'
-        :type track: bool, optional
-        :param smooth: If True, smoothing is performed on pose keypoints between frames, defaults to 'True'
-        :type smooth: bool, optional
-        :return: Returns a list of engine.target.Pose objects, where each holds a pose, or returns an empty list if no
-            detections were made.
-        :rtype: list of engine.target.Pose objects
-        """
-        if not isinstance(img, Image):
-            img = Image(img)
-
-        # Bring image into the appropriate format for the implementation
-        img = img.convert(format='channels_last', channel_order='bgr')
-
-        height, width, _ = img.shape
-        scale = self.base_height / height
-
-        scaled_img = cv2.resize(img, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
-        scaled_img = normalize(scaled_img, self.img_mean, self.img_scale)
-        min_dims = [self.base_height, max(scaled_img.shape[1], self.base_height)]
-        padded_img, pad = pad_width(scaled_img, self.stride, self.pad_value, min_dims)
-
-        tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float()
-        if "cuda" in self.device:
-            tensor_img = tensor_img.to(self.device)
-            if self.half:
-                tensor_img = tensor_img.half()
-
-        if self.ort_session is not None:
-            stages_output = self.ort_session.run(None, {'data': np.array(tensor_img.cpu())})
-            stage2_heatmaps = torch.tensor(stages_output[-2])
-            stage2_pafs = torch.tensor(stages_output[-1])
-        else:
-            if self.model is None:
-                raise UserWarning("No model is loaded, cannot run inference. Load a model first using load().")
-            if self.model_train_state:
-                self.model.eval()
-                self.model_train_state = False
-            stages_output = self.model(tensor_img)
-            stage2_heatmaps = stages_output[-2]
-            stage2_pafs = stages_output[-1]
-
-        heatmaps = np.transpose(stage2_heatmaps.squeeze().cpu().data.numpy(), (1, 2, 0))
-        if self.half:
-            heatmaps = np.float32(heatmaps)
-        heatmaps = cv2.resize(heatmaps, (0, 0), fx=upsample_ratio, fy=upsample_ratio, interpolation=cv2.INTER_CUBIC)
-
-        pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
-        if self.half:
-            pafs = np.float32(pafs)
-        pafs = cv2.resize(pafs, (0, 0), fx=upsample_ratio, fy=upsample_ratio, interpolation=cv2.INTER_CUBIC)
-
-        total_keypoints_num = 0
-        all_keypoints_by_type = []
-        num_keypoints = 18
-        for kpt_idx in range(num_keypoints):  # 19th for bg
-            total_keypoints_num += extract_keypoints(heatmaps[:, :, kpt_idx], all_keypoints_by_type,
-                                                     total_keypoints_num)
-
-        pose_entries, all_keypoints = group_keypoints(all_keypoints_by_type, pafs)
-        for kpt_id in range(all_keypoints.shape[0]):
-            all_keypoints[kpt_id, 0] = (all_keypoints[kpt_id, 0] * self.stride / upsample_ratio - pad[1]) / scale
-            all_keypoints[kpt_id, 1] = (all_keypoints[kpt_id, 1] * self.stride / upsample_ratio - pad[0]) / scale
-        current_poses = []
-        for n in range(len(pose_entries)):
-            if len(pose_entries[n]) == 0:
-                continue
-            pose_keypoints = np.ones((num_keypoints, 2), dtype=np.int32) * -1
-            for kpt_id in range(num_keypoints):
-                if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
-                    pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
-                    pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
-            if smooth:
-                pose = FilteredPose(pose_keypoints, pose_entries[n][18])
-            else:
-                pose = Pose(pose_keypoints, pose_entries[n][18])
-            current_poses.append(pose)
-
-        if track:
-            track_poses(self.previous_poses, current_poses, smooth=smooth)
-            self.previous_poses = current_poses
         return current_poses
 
     def init_model(self):

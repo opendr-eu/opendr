@@ -14,7 +14,6 @@
 
 import cv2
 from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
-
 from opendr.perception.pose_estimation import draw
 from opendr.engine.data import Image
 import argparse
