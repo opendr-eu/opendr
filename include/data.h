@@ -29,35 +29,6 @@ struct opendr_image {
 };
 typedef struct opendr_image opendr_image_t;
 
-/***
- * Opendr data type for representing tensors
- */
-struct opendr_tensor {
-  int batch_size;
-  int frames;
-  int channels;
-  int width;
-  int height;
-
-  float *data;
-};
-typedef struct opendr_tensor opendr_tensor_t;
-
-/***
- * Opendr data type for representing tensor vectors
- */
-struct opendr_tensor_vector {
-  int n_tensors;
-  int *batch_sizes;
-  int *frames;
-  int *channels;
-  int *widths;
-  int *heights;
-
-  float **memories;
-};
-typedef struct opendr_tensor_vector opendr_tensor_vector_t;
-
 #ifdef __cplusplus
 }
 #endif

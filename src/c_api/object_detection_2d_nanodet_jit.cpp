@@ -289,7 +289,7 @@ opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_im
   return detectionsVector;
 }
 
-void drawBboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_vector_target_t *detectionsVector) {
+void draw_bboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_vector_target_t *detectionsVector) {
   const int colorList[80][3] = {
     //{255 ,255 ,255}, //bg
     {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},

@@ -25,7 +25,6 @@ START_TEST(model_creation_test) {
   nanodet_model_t model;
   // Load a pretrained model
   load_nanodet_model("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
-
   ck_assert_msg(model.network != 0, "net is NULL");
 
   // Release the resources
@@ -41,6 +40,7 @@ START_TEST(inference_creation_test) {
   nanodet_model_t model;
 
   // Load a pretrained model
+  printf("6\n");
   load_nanodet_model("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
 
   // Load an image and performance inference
