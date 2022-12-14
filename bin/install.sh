@@ -9,21 +9,21 @@ if [[ -z "${OPENDR_DEVICE}" ]]; then
   export OPENDR_DEVICE=cpu
 fi
 
+if [[ -z "${ROS_DISTRO}" ]]; then
+  echo "[INFO] No ROS_DISTRO is specified. The modules relying on ROS/ROS2 might not work."
+else
+  if ! ([[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" || ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]); then
+    echo "[ERROR] ${ROS_DISTRO} is not a supported ROS_DISTRO. Please use 'noetic' or 'melodic' for ROS and 'foxy' or 'humble' for ROS2."
+    exit 1
+  fi
+fi
+
 # Install base ubuntu deps
 sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
 
 # Get all submodules
 git submodule init
 git submodule update
-
-case $(lsb_release -r |cut -f2) in
-  "18.04")
-    export ROS_DISTRO=melodic;;
-  "20.04")
-    export ROS_DISTRO=noetic;;
-  *)
-    echo "Not tested for this ubuntu version" && exit 1;;
-esac
 
 # Create a virtual environment and update
 python3 -m venv venv
@@ -40,7 +40,16 @@ make install_compilation_dependencies
 make install_runtime_dependencies
 
 # Install additional ROS packages
-sudo apt-get install ros-noetic-vision-msgs ros-noetic-audio-common-msgs 
+if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
+  echo "Installing ROS dependencies"
+  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam
+fi
+
+# Install additional ROS2 packages
+if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
+  echo "Installing ROS2 dependencies"
+  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam
+fi
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
