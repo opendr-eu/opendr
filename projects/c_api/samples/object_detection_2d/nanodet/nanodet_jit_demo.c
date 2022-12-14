@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   results = infer_nanodet(&model, &image);
 
   // Draw the results
-  drawBboxes(&image, &model, &results);
+  draw_bboxes(&image, &model, &results);
 
   // Free the memory
   free_detections_vector(&results);
