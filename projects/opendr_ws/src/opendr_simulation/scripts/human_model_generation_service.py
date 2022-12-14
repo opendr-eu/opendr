@@ -19,7 +19,7 @@ import torch
 import numpy as np
 from opendr_bridge import ROSBridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
-from simulation.srv import Mesh_vc
+from opendr_simulation.srv import Mesh_vc
 
 
 class PifuNode:
