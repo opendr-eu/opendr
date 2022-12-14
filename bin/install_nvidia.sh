@@ -22,7 +22,7 @@ cd $OPENDR_HOME
 
 sudo apt-get install -y gfortran build-essential git python3-pip python-numpy libopencv-dev graphviz libopenblas-dev libopenblas-base libatlas-base-dev python-numpy
 
-pip3 install --upgrade pip setuptools
+pip3 install setuptools==59.5.0
 pip3 install numpy==1.19.4
 
 git clone --recursive -b v1.8.x https://github.com/apache/incubator-mxnet.git mxnet
@@ -88,26 +88,6 @@ sudo python3 setup.py install
 cd ../
 rm -r torchvision/
 
-# We need this?
-## Install Torchaudio
-#TORCHAUDIO_VERSION=0.9.0
-#apt-get update && \
-#    apt-get install -y --no-install-recommends \
-#		  cmake \
-#		  sox \
-#		  libsox-dev \
-#		  libsox-fmt-all \
-#    && rm -rf /var/lib/apt/lists/*
-#
-#pip3 install scikit-build && \
-#pip3 install ninja
-#
-#git clone --recursive -b ${TORCHAUDIO_VERSION} https://github.com/pytorch/audio torchaudio && \
-#    cd torchaudio && \
-#    python3 setup.py install && \
-#    cd ../ && \
-#    rm -rf torchaudio
-
 # Install dlib
 wget http://dlib.net/files/dlib-19.21.tar.bz2
 tar jxvf dlib-19.21.tar.bz2
@@ -169,8 +149,6 @@ pip3 install constantly==15.1.0
 pip3 install cycler==0.11.0
 pip3 install Cython==0.29.22
 pip3 install cython-bbox==0.1.3
-pip3 install git+https://github.com/MatthewHowe/DCNv2@194f5733c667cf13e5bd478a8c5bf27573ffa98c
-pip3 install git+https://github.com/waspinator/pycococreator.git@0.2.0
 pip3 install decorator==5.1.0
 pip3 install defusedxml==0.7.1
 pip3 install distro==1.6.0
@@ -221,7 +199,7 @@ pip3 install Markdown==3.3.6
 pip3 install MarkupSafe==2.0.1
 pip3 install matplotlib==2.2.2
 pip3 install mccabe==0.6.1
-pip3 mmcv==0.5.9
+pip3 install mmcv==0.5.9
 pip3 install motmetrics==1.2.0
 pip3 install multidict==5.2.0
 pip3 install munkres==1.1.4
@@ -229,19 +207,15 @@ pip3 install netifaces==0.11.0
 pip3 install networkx==2.5.1
 pip3 install numpy==1.19.4
 pip3 install oauthlib==3.1.1
-pip3 install omegaconf==2.3.0
 pip3 install onnx==1.10.2
 pip3 install onnxruntime==1.3.0
 pip3 install opencv-python==4.5.4.60
+pip3 install opencv-contrib-python==4.5.4.60
 pip3 cache purge
 pip3 install optuna==2.10.0
 pip3 install osrf-pycommon==1.0.0
 pip3 install packaging==21.3
 pip3 install pandas==1.1.5
-#pip3 install git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13
-pip3 install git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
-pip3 install git+https://github.com/mapillary/inplace_abn.git
-#pip3 install git+https://github.com/cocodataset/panopticapi.git#egg=panopticapi
 pip3 install pbr==5.8.0
 pip3 install Pillow==8.3.2
 pip3 install plotly==5.4.0
@@ -256,7 +230,6 @@ pip3 install py-cpuinfo==8.0.0
 pip3 install pyasn1==0.4.8
 pip3 install pyasn1-modules==0.2.8
 pip3 install pybind11==2.6.2
-pip3 install git+https://github.com/cidl-auth/cocoapi@03ee5a19844e253b8365dbbf35c1e5d8ca2e7281#subdirectory=PythonAPI
 pip3 install pycodestyle==2.8.0
 pip3 install pycparser==2.21
 pip3 install pyflakes==2.4.0
@@ -266,7 +239,6 @@ pip3 install pyperclip==1.8.2
 pip3 install pytest==6.2.5
 pip3 install pytest-benchmark==3.4.1
 pip3 install python-dateutil==2.8.2
-pip3 install pytorch-lightning==1.2.3
 pip3 cache purge
 pip3 install pytz==2021.3
 pip3 install PyWavelets==1.1.1
@@ -313,6 +285,20 @@ pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
 pip3 install wheel
+pip3 install pytorch-lightning==1.2.3
+pip3 install omegaconf==2.3.0
+pip3 install ninja
+pip3 install terminaltables
+pip3 install psutil
+pip3 install continual-inference>=1.0.2
+pip3 install git+https://github.com/waspinator/pycococreator.git@0.2.0
+pip3 install git+https://github.com/cidl-auth/cocoapi@03ee5a19844e253b8365dbbf35c1e5d8ca2e7281#subdirectory=PythonAPI
+pip3 install git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
+pip3 install git+https://github.com/mapillary/inplace_abn.git
+pip3 install git+https://github.com/facebookresearch/detectron2.git@4841e70ee48da72c32304f9ebf98138c2a70048d
+pip3 install git+https://github.com/cidl-auth/DCNv2
+pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS
+pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS/efficientNet
 pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
