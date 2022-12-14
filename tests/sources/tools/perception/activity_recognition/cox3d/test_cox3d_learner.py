@@ -16,15 +16,16 @@ import shutil
 import torch
 import unittest
 import numpy as np
+import os
 
 from opendr.perception.activity_recognition import CoX3DLearner
 from opendr.perception.activity_recognition import KineticsDataset
 from opendr.engine.data import Image
+from opendr.engine.target import Category
 from pathlib import Path
 from logging import getLogger
-import os
 
-device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
+device = os.getenv("TEST_DEVICE") if os.getenv("TEST_DEVICE") else "cpu"
 
 logger = getLogger(__name__)
 
@@ -47,6 +48,9 @@ class TestCoX3DLearner(unittest.TestCase):
         # Download mini dataset
         cls.dataset_path = cls.temp_dir / "datasets" / "kinetics3"
         KineticsDataset.download_micro(cls.temp_dir / "datasets")
+        cls.train_ds = KineticsDataset(path=cls.dataset_path, frames_per_clip=4, split="train", spatial_pixels=160)
+        cls.val_ds = KineticsDataset(path=cls.dataset_path, frames_per_clip=4, split="val", spatial_pixels=160)
+        cls.test_ds = KineticsDataset(path=cls.dataset_path, frames_per_clip=4, split="test", spatial_pixels=160)
 
     @classmethod
     def tearDownClass(cls):
@@ -71,9 +75,6 @@ class TestCoX3DLearner(unittest.TestCase):
         assert self.learner.batch_size == 2
 
     def test_fit(self):
-        train_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="train")
-        val_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="val")
-
         # Initialize with random parameters
         self.learner.model = None
         self.learner.init_model()
@@ -82,48 +83,58 @@ class TestCoX3DLearner(unittest.TestCase):
         m = list(self.learner.model.parameters())[0].clone()
 
         # Fit model
-        self.learner.fit(dataset=train_ds, val_dataset=val_ds, steps=1)
+        self.learner.fit(dataset=self.train_ds, val_dataset=self.val_ds, steps=1)
 
         # Check that parameters changed
         assert not torch.equal(m, list(self.learner.model.parameters())[0])
 
     def test_eval(self):
-        test_ds = KineticsDataset(path=self.dataset_path, frames_per_clip=40, split="test")
-
+        self.learner.model.clean_state()
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
-        results = self.learner.eval(test_ds, steps=2)
+        results = self.learner.eval(self.test_ds, steps=2)
 
-        assert results["accuracy"] > 0.2
+        assert results["accuracy"] > 0.5
         assert results["loss"] < 20
 
     def test_infer(self):
-        ds = KineticsDataset(path=self.dataset_path, frames_per_clip=4, split="test")
-        dl = torch.utils.data.DataLoader(ds, batch_size=2, num_workers=0)
+        dl = torch.utils.data.DataLoader(self.test_ds, batch_size=2, num_workers=0)
         batch = next(iter(dl))[0]
         batch = batch[:, :, 0]  # Select a single frame
 
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
-        self.learner.model.clean_model_state()
+
+        # Warm up
+        self.learner.model.forward_steps(
+            batch.unsqueeze(2).repeat(1, 1, self.learner.model.receptive_field - 1, 1, 1)
+        )
 
         # Input is Tensor
-        results1 = self.learner.infer(batch.to(device))
+        results1 = self.learner.infer(batch)
         # Results is a batch with each item summing to 1.0
         assert all([torch.isclose(torch.sum(r.confidence), torch.tensor(1.0)) for r in results1])
 
         # Input is Image
-        results2 = self.learner.infer([Image(batch[0], dtype=np.float32), Image(batch[1], dtype=np.float32)])
-        assert torch.allclose(results1[0].confidence, results2[0].confidence, atol=1e-4)
+        results2 = self.learner.infer([Image(batch[0], dtype=np.float64), Image(batch[1], dtype=np.float32)])
+        assert results1[0].data == results2[0].data
+        assert results1[1].data == results2[1].data
 
         # Input is List[Image]
-        results3 = self.learner.infer([Image(v, dtype=np.float) for v in batch])
-        assert all([torch.allclose(r1.confidence, r3.confidence, atol=1e-4) for (r1, r3) in zip(results1, results3)])
+        results3 = self.learner.infer([Image(v, dtype=np.float64) for v in batch])
+        assert results1[0].data == results3[0].data
+        assert results1[1].data == results3[1].data
 
     def test_optimize(self):
         self.learner.ort_session = None
         self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
         self.learner.optimize()
 
-        assert self.learner.ort_session is not None
+        assert self.learner._ort_session is not None
+
+        step_input = self.learner._example_input.repeat(
+            self.learner.batch_size, 1, 1, 1
+        )
+        step_output = self.learner.infer(step_input)
+        assert isinstance(step_output[0], Category)
 
         # Clean up
         self.learner.ort_session = None

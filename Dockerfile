@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 
 ARG branch=master
+ARG ros_distro=noetic
 
 # Install dependencies
 RUN apt-get update && \
@@ -16,7 +17,8 @@ ENTRYPOINT ["/tini", "--"]
 # Clone the repo and install the toolkit
 RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b $branch
 WORKDIR "/opendr"
-RUN ./bin/install.sh && \ 
+ENV ROS_DISTRO=$ros_distro
+RUN ./bin/install.sh && \
     rm -rf /root/.cache/* && \
     apt-get clean
 
