@@ -7,16 +7,16 @@ This package contains ROS nodes related to the perception package of OpenDR.
 ## Prerequisites
 
 Before you can run any of the package's ROS nodes, some prerequisites need to be fulfilled:
-1. First of all, you need to [set up the required packages, build and source your workspace.](../../README.md#first-time-setup) 
+1. First of all, you need to [set up the required packages, build and source your workspace.](../../README.md#first-time-setup)
 2. Start roscore by running `roscore &`, if you haven't already done so.
-3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_ 
+3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_
 
-    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam` ([instructions to install, step 5](../../README.md#first-time-setup)). 
+    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam`.
     You can run the webcam node in the terminal with the workspace sourced using:
     ```shell
     rosrun usb_cam usb_cam_node &
     ```
-    By default, the USB cam node publishes images on `/usb_cam/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. 
+    By default, the USB cam node publishes images on `/usb_cam/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument.
     As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
 
 ---
@@ -28,7 +28,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
     ```shell
     rosrun rqt_image_view rqt_image_view &
     ```
-    A window will appear, where the topic that you want to view can be selected from the drop-down menu on the top-left area of the window. 
+    A window will appear, where the topic that you want to view can be selected from the drop-down menu on the top-left area of the window.
     Refer to each node's documentation below to find out the default output image topic, where applicable, and select it on the drop-down menu of rqt_image_view.
 
 - ### Echo node output
@@ -42,7 +42,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
     Optionally, nodes can be modified via command line arguments, which are presented for each node separately below.
     Generally, arguments give the option to change the input and output topics, the device the node runs on (CPU or GPU), etc.
     When a node publishes on several topics, where applicable, a user can opt to disable one or more of the outputs by providing `None` in the corresponding output topic.
-    This disables publishing on that topic, forgoing some operations in the node, which might increase its performance. 
+    This disables publishing on that topic, forgoing some operations in the node, which might increase its performance.
 
     _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._
 
@@ -50,11 +50,11 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
     ![Pose Estimation ROS node running diagram](../../images/opendr_node_diagram.png)
     - On the left, the `usb_cam` node can be seen, which is using a system camera to publish images on the `/usb_cam/image_raw` topic.
     - In the middle, OpenDR's pose estimation node is running taking as input the published image. By default, the node has its input topic set to `/usb_cam/image_raw`.
-    - To the right the two output topics of the pose estimation node can be seen. 
+    - To the right the two output topics of the pose estimation node can be seen.
     The bottom topic `opendr/image_pose_annotated` is the annotated image which can be easily viewed with `rqt_image_view` as explained earlier.
-    The other topic `/opendr/poses` is the detection message which contains the detected poses' detailed information. 
-    This message can be easily viewed by running `rostopic echo /opendr/poses` in a terminal with the OpenDR ROS workspace sourced. 
-   
+    The other topic `/opendr/poses` is the detection message which contains the detected poses' detailed information.
+    This message can be easily viewed by running `rostopic echo /opendr/poses` in a terminal with the OpenDR ROS workspace sourced.
+
 <!-- - ### Other notes -->
 
 ----
@@ -63,7 +63,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 ### Pose Estimation ROS Node
 
 You can find the pose estimation ROS node python script [here](./scripts/pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md). 
+The node makes use of the toolkit's [pose estimation tool](../../../../src/opendr/perception/pose_estimation/lightweight_open_pose/lightweight_open_pose_learner.py) whose documentation can be found [here](../../../../docs/reference/lightweight-open-pose.md).
 The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_bridge/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_bridge/msg/OpenDRPose2DKeypoint.msg).
 
 #### Instructions for basic usage:
@@ -83,9 +83,9 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
    - `--accelerate`: acceleration flag that causes pose estimation to run faster but with less accuracy
 
 3. Default output topics:
-   - Output images: `/opendr/image_pose_annotated` 
+   - Output images: `/opendr/image_pose_annotated`
    - Detection messages: `/opendr/poses`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Fall Detection ROS Node
@@ -114,16 +114,16 @@ Fall detection uses the toolkit's pose estimation tool internally.
    - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
 3. Default output topics:
-   - Output images: `/opendr/image_fallen_annotated` 
+   - Output images: `/opendr/image_fallen_annotated`
    - Detection messages: `/opendr/fallen`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Face Detection ROS Node
 
 The face detection ROS node supports both the ResNet and MobileNet versions, the latter of which performs masked face detection as well.
 
-You can find the face detection ROS node python script [here](./scripts/face_detection_retinaface_node.py) to inspect the code and modify it as you wish to fit your needs. 
+You can find the face detection ROS node python script [here](./scripts/face_detection_retinaface_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [face detection tool](../../../../src/opendr/perception/object_detection_2d/retinaface/retinaface_learner.py) whose documentation can be found [here](../../../../docs/reference/face-detection-2d-retinaface.md).
 
 #### Instructions for basic usage:
@@ -144,9 +144,9 @@ The node makes use of the toolkit's [face detection tool](../../../../src/opendr
    - `--backbone BACKBONE`: retinaface backbone, options are either `mnet` or `resnet`, where `mnet` detects masked faces as well (default=`resnet`)
 
 3. Default output topics:
-   - Output images: `/opendr/image_faces_annotated` 
+   - Output images: `/opendr/image_faces_annotated`
    - Detection messages: `/opendr/faces`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Face Recognition ROS Node
@@ -174,9 +174,9 @@ The node makes use of the toolkit's [face recognition tool](../../../../src/open
    - `--dataset_path DATASET_PATH`: path of the directory where the images of the faces to be recognized are stored (default=`./database`)
 
 3. Default output topics:
-   - Output images: `/opendr/image_face_reco_annotated` 
+   - Output images: `/opendr/image_face_reco_annotated`
    - Detection messages: `/opendr/face_recognition` and `/opendr/face_recognition_id`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
@@ -190,7 +190,7 @@ Reference images should be placed in a defined structure like:
     - ID3
     - ...
 
-The default dataset path is `./database`. Please use the `--database_path ./your/path/` argument to define a custom one. 
+The default dataset path is `./database`. Please use the `--database_path ./your/path/` argument to define a custom one.
 Τhe name of the sub-folder, e.g. ID1, will be published under `/opendr/face_recognition_id`.
 
 The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
@@ -200,14 +200,14 @@ under `/opendr/face_recognition_id`.
 
 For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet and DETR.
 
-You can find the 2D object detection ROS node python scripts here: 
-[SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py), 
+You can find the 2D object detection ROS node python scripts here:
+[SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py),
 where you can inspect the code and modify it as you wish to fit your needs.
-The nodes makes use of the toolkit's various 2D object detection tools: 
-[SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [YOLOv5 tool](../../../../src/opendr/perception/object_detection_2d/yolov5/yolov5_learner.py), 
-[CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py), 
-whose documentation can be found here: 
-[SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [YOLOv5 docs](../../../../docs/reference/object-detection-2d-yolov5.md), 
+The nodes makes use of the toolkit's various 2D object detection tools:
+[SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [YOLOv5 tool](../../../../src/opendr/perception/object_detection_2d/yolov5/yolov5_learner.py),
+[CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py),
+whose documentation can be found here:
+[SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [YOLOv5 docs](../../../../docs/reference/object-detection-2d-yolov5.md),
 [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
 
 #### Instructions for basic usage:
@@ -222,28 +222,28 @@ whose documentation can be found here:
       The following optional arguments are available for the SSD node:
       - `--backbone BACKBONE`: Backbone network (default=`vgg16_atrous`)
       - `--nms_type NMS_TYPE`: Non-Maximum Suppression type options are `default`, `seq2seq-nms`, `soft-nms`, `fast-nms`, `cluster-nms` (default=`default`)
-      
+
    2. YOLOv3 node
       ```shell
       rosrun opendr_perception object_detection_2d_yolov3_node.py
       ```
       The following optional argument is available for the YOLOv3 node:
       - `--backbone BACKBONE`: Backbone network (default=`darknet53`)
-      
+
    3. YOLOv5 node
       ```shell
       rosrun opendr_perception object_detection_2d_yolov5_node.py
       ```
       The following optional argument is available for the YOLOv5 node:
       - `--model_name MODEL_NAME`: Network architecture, options are `yolov5s`, `yolov5n`, `yolov5m`, `yolov5l`, `yolov5x`, `yolov5n6`, `yolov5s6`, `yolov5m6`, `yolov5l6`, `custom` (default=`yolov5s`)
-      
+
    4. CenterNet node
       ```shell
       rosrun opendr_perception object_detection_2d_centernet_node.py
       ```
       The following optional argument is available for the YOLOv3 node:
       - `--backbone BACKBONE`: Backbone network (default=`resnet50_v1b`)
-      
+
    5. DETR node
       ```shell
       rosrun opendr_perception object_detection_2d_detr_node.py
@@ -257,9 +257,9 @@ whose documentation can be found here:
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
-   - Output images: `/opendr/image_objects_annotated` 
+   - Output images: `/opendr/image_objects_annotated`
    - Detection messages: `/opendr/objects`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### 2D Object Tracking ROS Nodes
@@ -267,8 +267,8 @@ whose documentation can be found here:
 For 2D object tracking, there two ROS nodes provided, one using Deep Sort and one using FairMOT which use either pretrained models, or custom trained models.
 The predicted tracking annotations are split into two topics with detections and tracking IDs. Additionally, an annotated image is generated.
 
-You can find the 2D object detection ROS node python scripts here: [Deep Sort node](./scripts/object_tracking_2d_deep_sort_node.py) and [FairMOT node](./scripts/object_tracking_2d_fair_mot_node.py) 
-where you can inspect the code and modify it as you wish to fit your needs. 
+You can find the 2D object detection ROS node python scripts here: [Deep Sort node](./scripts/object_tracking_2d_deep_sort_node.py) and [FairMOT node](./scripts/object_tracking_2d_fair_mot_node.py)
+where you can inspect the code and modify it as you wish to fit your needs.
 The nodes makes use of the toolkit's [object tracking 2D - Deep Sort tool](../../../../src/opendr/perception/object_tracking_2d/deep_sort/object_tracking_2d_deep_sort_learner.py)
 and [object tracking 2D - FairMOT tool](../../../../src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py)
 whose documentation can be found here: [Deep Sort docs](../../../../docs/reference/object-tracking-2d-deep-sort.md), [FairMOT docs](../../../../docs/reference/object-tracking-2d-fair-mot.md).
@@ -290,7 +290,7 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
       ```
       The following optional argument is available for the FairMOT node:
       - `-n --model_name MODEL_NAME`: name of the trained model (default=`fairmot_dla34`)
-   
+
     The following optional arguments are available for both nodes:
    - `-h or --help`: show a help message and exit
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
@@ -301,10 +301,10 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
    - `-td --temp_dir TEMP_DIR`: path to a temporary directory with models (default=`temp`)
 
 3. Default output topics:
-   - Output images: `/opendr/image_objects_annotated` 
+   - Output images: `/opendr/image_objects_annotated`
    - Detection messages: `/opendr/objects`
    - Tracking ID messages: `/opendr/objects_tracking_id`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
@@ -315,7 +315,7 @@ Make sure to change the default input topic of the tracking node if you are not 
 ### Panoptic Segmentation ROS Node
 
 You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md) 
+The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md)
 and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
 
 #### Instructions for basic usage:
@@ -327,7 +327,7 @@ and additional information about Efficient PS [here](../../../../src/opendr/perc
     ```shell
     rosrun opendr_perception panoptic_segmentation_efficient_ps_node.py
     ```
-    
+
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
@@ -337,14 +337,14 @@ and additional information about Efficient PS [here](../../../../src/opendr/perc
    - `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
 
 3. Default output topics:
-   - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`   
+   - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`
    - Detection messages: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Semantic Segmentation ROS Node
 
-You can find the semantic segmentation ROS node python script [here](./scripts/semantic_segmentation_bisenet_node.py) to inspect the code and modify it as you wish to fit your needs. 
+You can find the semantic segmentation ROS node python script [here](./scripts/semantic_segmentation_bisenet_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [semantic segmentation tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
 
 #### Instructions for basic usage:
@@ -362,11 +362,11 @@ The node makes use of the toolkit's [semantic segmentation tool](../../../../src
    - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap`)
    - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
-   
+
 3. Default output topics:
    - Output images: `/opendr/heatmap`, `/opendr/heatmap_visualization`
    - Detection messages: `/opendr/heatmap`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
@@ -381,8 +381,8 @@ On the table below you can find the detectable classes and their corresponding I
 
 A ROS node for performing landmark-based facial expression recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
 
-You can find the landmark-based facial expression recognition ROS node python script [here](./scripts/landmark_based_facial_expression_recognition_node.py) to inspect the code and modify it as you wish to fit your needs. 
-The node makes use of the toolkit's landmark-based facial expression recognition tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py) 
+You can find the landmark-based facial expression recognition ROS node python script [here](./scripts/landmark_based_facial_expression_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's landmark-based facial expression recognition tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py)
 whose documentation can be found [here](../../../../docs/reference/landmark-based-facial-expression-recognition.md).
 
 #### Instructions for basic usage:
@@ -405,7 +405,7 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 
 3. Default output topics:
    - Detection messages: `/opendr/landmark_expression_recognition`, `/opendr/landmark_expression_recognition_description`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Skeleton-based Human Action Recognition ROS Node
@@ -413,7 +413,7 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 A ROS node for performing skeleton-based human action recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
 The human body poses of the image are first extracted by the lightweight OpenPose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
 
-You can find the skeleton-based human action recognition ROS node python script [here](./scripts/skeleton_based_action_recognition_node.py) to inspect the code and modify it as you wish to fit your needs. 
+You can find the skeleton-based human action recognition ROS node python script [here](./scripts/skeleton_based_action_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's skeleton-based human action recognition tool which can be found [here for ST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py)
 and [here for PST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py)
 whose documentation can be found [here](../../../../docs/reference/skeleton-based-action-recognition.md).
@@ -439,16 +439,16 @@ whose documentation can be found [here](../../../../docs/reference/skeleton-base
 
 3. Default output topics:
    - Detection messages: `/opendr/skeleton_based_action_recognition`, `/opendr/skeleton_based_action_recognition_description`, `/opendr/poses`
-   - Output images: `/opendr/image_pose_annotated` 
-   
+   - Output images: `/opendr/image_pose_annotated`
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### Video Human Activity Recognition ROS Node
 
 A ROS node for performing human activity recognition using either CoX3D or X3D models pretrained on Kinetics400.
 
-You can find the video human activity recognition ROS node python script [here](./scripts/video_activity_recognition_node.py) to inspect the code and modify it as you wish to fit your needs. 
-The node makes use of the toolkit's video human activity recognition tools which can be found [here for CoX3D](../../../../src/opendr/perception/activity_recognition/cox3d/cox3d_learner.py) and 
+You can find the video human activity recognition ROS node python script [here](./scripts/video_activity_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's video human activity recognition tools which can be found [here for CoX3D](../../../../src/opendr/perception/activity_recognition/cox3d/cox3d_learner.py) and
 [here for X3D](../../../../src/opendr/perception/activity_recognition/x3d/x3d_learner.py) whose documentation can be found [here](../../../../docs/reference/activity-recognition.md).
 
 #### Instructions for basic usage:
@@ -470,7 +470,7 @@ The node makes use of the toolkit's video human activity recognition tools which
 
 3. Default output topics:
    - Detection messages: `/opendr/human_activity_recognition`, `/opendr/human_activity_recognition_description`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
@@ -481,8 +481,8 @@ You can find the corresponding IDs regarding activity recognition [here](https:/
 
 ### 2D Object Detection GEM ROS Node
 
-You can find the object detection 2D GEM ROS node python script [here](./scripts/object_detection_2d_gem_node.py) to inspect the code and modify it as you wish to fit your needs. 
-The node makes use of the toolkit's [object detection 2D GEM tool](../../../../src/opendr/perception/object_detection_2d/gem/gem_learner.py) 
+You can find the object detection 2D GEM ROS node python script [here](./scripts/object_detection_2d_gem_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [object detection 2D GEM tool](../../../../src/opendr/perception/object_detection_2d/gem/gem_learner.py)
 whose documentation can be found [here](../../../../docs/reference/gem.md).
 
 #### Instructions for basic usage:
@@ -493,11 +493,11 @@ whose documentation can be found [here](../../../../docs/reference/gem.md).
 2. Pass the points you have found as *pts_color* and *pts_infra* arguments to the [ROS GEM node](./scripts/object_detection_2d_gem.py).
 
 3. Start the node responsible for publishing images. If you have a RealSense camera, then you can use the corresponding node (assuming you have installed [realsense2_camera](http://wiki.ros.org/realsense2_camera)):
-   
+
    ```shell
    roslaunch realsense2_camera rs_camera.launch enable_color:=true enable_infra:=true enable_depth:=false enable_sync:=true infra_width:=640 infra_height:=480
    ```
-   
+
 4. You are then ready to start the object detection 2d GEM node:
 
     ```shell
@@ -513,10 +513,10 @@ whose documentation can be found [here](../../../../docs/reference/gem.md).
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 5. Default output topics:
-   - Output RGB images: `/opendr/rgb_image_objects_annotated` 
-   - Output infrared images: `/opendr/infra_image_objects_annotated` 
+   - Output RGB images: `/opendr/rgb_image_objects_annotated`
+   - Output infrared images: `/opendr/infra_image_objects_annotated`
    - Detection messages: `/opendr/objects`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
@@ -527,7 +527,7 @@ A ROS node for performing hand gesture recognition using a MobileNetv2 model tra
 The node has been tested with Kinectv2 for depth data acquisition with the following drivers: https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
 
 You can find the RGBD hand gesture recognition ROS node python script [here](./scripts/rgbd_hand_gesture_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [hand gesture recognition tool](../../../../src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/rgbd_hand_gesture_learner.py) 
+The node makes use of the toolkit's [hand gesture recognition tool](../../../../src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/rgbd_hand_gesture_learner.py)
 whose documentation can be found [here](../../../../docs/reference/rgbd-hand-gesture-learner.md).
 
 #### Instructions for basic usage:
@@ -547,7 +547,7 @@ whose documentation can be found [here](../../../../docs/reference/rgbd-hand-ges
 
 3. Default output topics:
    - Detection messages:`/opendr/gestures`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
@@ -555,8 +555,8 @@ whose documentation can be found [here](../../../../docs/reference/rgbd-hand-ges
 
 ### Audiovisual Emotion Recognition ROS Node
 
-You can find the audiovisual emotion recognition ROS node python script [here](./scripts/audiovisual_emotion_recognition_node.py) to inspect the code and modify it as you wish to fit your needs. 
-The node makes use of the toolkit's [audiovisual emotion recognition tool](../../../../src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/avlearner.py), 
+You can find the audiovisual emotion recognition ROS node python script [here](./scripts/audiovisual_emotion_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [audiovisual emotion recognition tool](../../../../src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/avlearner.py),
 whose documentation can be found [here](../../../../docs/reference/audiovisual-emotion-recognition-learner.md).
 
 #### Instructions for basic usage:
@@ -578,7 +578,7 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 
 4. Default output topics:
    - Detection messages: `/opendr/audiovisual_emotion`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
@@ -588,10 +588,10 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 
 A ROS node for recognizing speech commands from an audio stream using MatchboxNet, EdgeSpeechNets or Quadratic SelfONN models, pretrained on the Google Speech Commands dataset.
 
-You can find the speech command recognition ROS node python script [here](./scripts/speech_command_recognition_node.py) to inspect the code and modify it as you wish to fit your needs. 
-The node makes use of the toolkit's speech command recognition tools: 
-[EdgeSpeechNets tool](../../../../src/opendr/perception/speech_recognition/edgespeechnets/edgespeechnets_learner.py), [MatchboxNet tool](../../../../src/opendr/perception/speech_recognition/matchboxnet/matchboxnet_learner.py), [Quadratic SelfONN tool](../../../../src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py) 
-whose documentation can be found here: 
+You can find the speech command recognition ROS node python script [here](./scripts/speech_command_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's speech command recognition tools:
+[EdgeSpeechNets tool](../../../../src/opendr/perception/speech_recognition/edgespeechnets/edgespeechnets_learner.py), [MatchboxNet tool](../../../../src/opendr/perception/speech_recognition/matchboxnet/matchboxnet_learner.py), [Quadratic SelfONN tool](../../../../src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py)
+whose documentation can be found here:
 [EdgeSpeechNet docs](../../../../docs/reference/edgespeechnets.md), [MatchboxNet docs](../../../../docs/reference/matchboxnet.md), [Quadratic SelfONN docs](../../../../docs/reference/quadratic-selfonn.md).
 
 #### Instructions for basic usage:
@@ -613,10 +613,10 @@ whose documentation can be found here:
 
 3. Default output topics:
    - Detection messages, class id and confidence: `/opendr/speech_recognition`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
-**Notes** 
+**Notes**
 
 EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
 
@@ -628,7 +628,7 @@ EdgeSpeechNets currently does not have a pretrained model available for download
 A ROS node for performing 3D object detection Voxel using PointPillars or TANet methods with either pretrained models on KITTI dataset, or custom trained models.
 
 You can find the 3D object detection Voxel ROS node python script [here](./scripts/object_detection_3d_voxel_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [3D object detection Voxel tool](../../../../src/opendr/perception/object_detection_3d/voxel_object_detection_3d/voxel_object_detection_3d_learner.py) 
+The node makes use of the toolkit's [3D object detection Voxel tool](../../../../src/opendr/perception/object_detection_3d/voxel_object_detection_3d/voxel_object_detection_3d_learner.py)
 whose documentation can be found [here](../../../../docs/reference/voxel-object-detection-3d.md).
 
 #### Instructions for basic usage:
@@ -650,7 +650,7 @@ whose documentation can be found [here](../../../../docs/reference/voxel-object-
 
 3. Default output topics:
    - Detection messages: `/opendr/objects3d`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ### 3D Object Tracking AB3DMOT ROS Node
@@ -660,7 +660,7 @@ This is a detection-based method, and therefore the 3D object detector is needed
 The predicted tracking annotations are split into two topics with detections and tracking IDs.
 
 You can find the 3D object tracking AB3DMOT ROS node python script [here](./scripts/object_tracking_3d_ab3dmot_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [3D object tracking AB3DMOT tool](../../../../src/opendr/perception/object_tracking_3d/ab3dmot/object_tracking_3d_ab3dmot_learner.py) 
+The node makes use of the toolkit's [3D object tracking AB3DMOT tool](../../../../src/opendr/perception/object_tracking_3d/ab3dmot/object_tracking_3d_ab3dmot_learner.py)
 whose documentation can be found [here](../../../../docs/reference/object-tracking-3d-ab3dmot.md).
 
 #### Instructions for basic usage:
@@ -684,7 +684,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 3. Default output topics:
    - Detection messages: `/opendr/objects3d`
    - Tracking ID messages: `/opendr/objects_tracking_id`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
@@ -692,11 +692,11 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 
 ### Heart Anomaly Detection ROS Node
 
-A ROS node for performing heart anomaly (atrial fibrillation) detection from ECG data using GRU or ANBOF models trained on AF dataset. 
+A ROS node for performing heart anomaly (atrial fibrillation) detection from ECG data using GRU or ANBOF models trained on AF dataset.
 
 You can find the heart anomaly detection ROS node python script [here](./scripts/heart_anomaly_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](../../../../src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/attention_neural_bag_of_feature_learner.py) and 
-[GRU tool](../../../../src/opendr/perception/heart_anomaly_detection/gated_recurrent_unit/gated_recurrent_unit_learner.py), whose documentation can be found here: 
+The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](../../../../src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/attention_neural_bag_of_feature_learner.py) and
+[GRU tool](../../../../src/opendr/perception/heart_anomaly_detection/gated_recurrent_unit/gated_recurrent_unit_learner.py), whose documentation can be found here:
 [ANBOF docs](../../../../docs/reference/attention-neural-bag-of-feature-learner.md) and [GRU docs](../../../../docs/reference/gated-recurrent-unit-learner.md).
 
 #### Instructions for basic usage:
@@ -714,10 +714,10 @@ The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](
    - `-o or --output_heart_anomaly_topic OUTPUT_HEART_ANOMALY_TOPIC`: topic name for heart anomaly detection (default=`/opendr/heart_anomaly`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--model MODEL`: the model to use, choices are `anbof` or `gru` (default=`anbof`)
-   
+
 3. Default output topics:
    - Detection messages: `/opendr/heart_anomaly`
-   
+
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
@@ -730,10 +730,10 @@ The OpenDR toolkit currently provides two such nodes, an image dataset node and 
 
 ### Image Dataset ROS Node
 
-The image dataset node downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic, 
+The image dataset node downloads a `nano_MOT20` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic,
 which is intended to be used with the [2D object tracking nodes](#2d-object-tracking-ros-nodes).
 
-You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements, 
+You can create an instance of this node with any `DatasetIterator` object that returns `(Image, Target)` as elements,
 to use alongside other nodes and datasets.
 You can inspect [the node](./scripts/image_dataset_node.py) and modify it to your needs for other image datasets.
 
@@ -751,10 +751,10 @@ The following optional arguments are available:
 ### Point Cloud Dataset ROS Node
 
 The point cloud dataset node downloads a `nano_KITTI` dataset from OpenDR's FTP server and uses it to publish data to the ROS topic,
-which is intended to be used with the [3D object detection node](#3d-object-detection-voxel-ros-node), 
-as well as the [3D object tracking node](#3d-object-tracking-ab3dmot-ros-node). 
+which is intended to be used with the [3D object detection node](#3d-object-detection-voxel-ros-node),
+as well as the [3D object tracking node](#3d-object-tracking-ab3dmot-ros-node).
 
-You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements, 
+You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements,
 to use alongside other nodes and datasets.
 You can inspect [the node](./scripts/point_cloud_dataset_node.py) and modify it to your needs for other point cloud datasets.
 
@@ -768,3 +768,57 @@ The following optional arguments are available:
    - `-f or --fps FPS`: data fps (default=`10`)
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
+
+## SiamRPN Object Tracking 2D ROS Node
+
+The `object_tracking_2d_siamrpn.py` node implements an object tracking node using the SiamRPN
+single object tracker. The node works by providing a tracking service which can be called from
+another node (i.e., a detection node) or from the terminal. A `Detection2D` message is required
+to begin the tracking process, and the tracker is subscribed to a corresponding input image topic.
+Example usage:
+```shell
+# first start a video, e.g. using video_stream_opencv or usb_cam
+roslaunch video_stream_opencv camera.launch video_stream_provider:=/path/to/video.mp4 loop_videofile:=true
+```
+The default topic for this stream publisher is `/camera/image_raw`, which must be given as an
+input argument to the SiamRPN node:
+```shell
+# change the input image topic here to reflect your chosen publisher
+rosrun perception object_tracking_2d_siamrpn.py -i /camera/image_raw
+```
+The tracker node will subscribe to the image topic and start tracking after the tracking service is called.
+The provided service is called `/opendr/siamrpn_tracking_srv` and a `Detection2D` message is expected in
+order to get an initial bounding box. The service can be called from another node, such as an object detection
+node (note: most object detectors publish `Detection2DArray` messages, so the object of interest must be
+specified first), or from the terminal using `rosservice call` as follows:
+```shell
+rosservice call /opendr/siamrpn_tracking_srv "init_box:
+  header:
+    seq: 0
+    stamp:
+      secs: 0
+      nsecs: 0
+    frame_id: ''
+  results:
+  - id: 0
+    score: 0.0
+    pose:
+      pose:
+        position: {x: 0.0, y: 0.0, z: 0.0}
+        orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+      covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  bbox:
+    center: {x: 645.5, y: 312.0, theta: 0.0}
+    size_x: 75.0
+    size_y: 200.0
+  source_img:
+    header:
+      seq: 0
+      stamp: {secs: 0, nsecs: 0}
+    data: !!binary """
+```
+The `bbox` parameters must be set to point to the object to be tracked.
+The tracked locations are visualized and published by default to the `/opendr/image_tracking_annotated`
+topic which can be visualized using for example `rqt_image_view`.
