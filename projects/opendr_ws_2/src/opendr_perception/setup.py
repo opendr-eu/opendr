@@ -28,6 +28,7 @@ setup(
             'object_detection_2d_ssd = opendr_perception.object_detection_2d_ssd_node:main',
             'object_detection_2d_nanodet = opendr_perception.object_detection_2d_nanodet_node:main',
             'object_detection_2d_gem = opendr_perception.object_detection_2d_gem_node:main',
+            'object_tracking_2d_siamrpn = opendr_perception.object_tracking_2d_siamrpn_node:main',
             'face_detection_retinaface = opendr_perception.face_detection_retinaface_node:main',
             'semantic_segmentation_bisenet = opendr_perception.semantic_segmentation_bisenet_node:main',
             'panoptic_segmentation = opendr_perception.panoptic_segmentation_efficient_ps_node:main',
