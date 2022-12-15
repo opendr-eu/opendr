@@ -62,63 +62,37 @@ void preprocess_detr(cv::Mat *image, cv::Mat *normalizedImage, int modelInputSiz
   cv::multiply(*normalizedImage, stdValue, *normalizedImage);
 }
 
-/**
- * Very simple helper function to parse OpenDR model files for object detection detr
- * In the future this can be done at library level using a JSON-parser
- */
-std::string json_get_key_string_detr(std::string json, const std::string &key) {
-  std::size_t startIdx = json.find(key);
-  std::string value = json.substr(startIdx);
-  value = value.substr(value.find(":") + 1);
-  value = value.substr(0, value.find(","));
-  value = value.substr(value.find("\"") + 1);
-  value = value.substr(0, value.find("\""));
-  return value;
-}
-
-/**
- * Very simple helper function to parse dictionaries OpenDR model files for object detection detr
- * In the future this can be done at library level using a JSON-parser
- */
-std::string json_get_key_string_detr_in_dict(std::string json, const std::string &key) {
-  std::size_t startIdx = json.find(key);
-  std::string value = json.substr(startIdx);
-  value = value.substr(value.find(":") + 1);
-  value = value.substr(0, value.find(","));
-  value = value.substr(value.find("\"") + 1);
-  value = value.substr(0, value.find("}"));
-  return value;
-}
-
 void load_detr_model(const char *modelPath, detr_model_t *model) {
   // Initialize model
   model->onnx_session = model->env = model->session_options = NULL;
   model->threshold = 0;
 
   // Parse the model JSON file
-  std::string basePath(modelPath);
-  std::size_t splitPosition = basePath.find_last_of("/");
-  splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
-  std::string modelJsonPath = basePath + "/" + basePath.substr(splitPosition) + ".json";
-  std::ifstream inStream(modelJsonPath);
-  if (!inStream.is_open()) {
+  std::string model_json_path(model_path);
+  std::size_t split_pos = model_json_path.find_last_of("/");
+  split_pos = split_pos > 0 ? split_pos + 1 : 0;
+  model_json_path = model_json_path + "/" + model_json_path.substr(split_pos) + ".json";
+
+  std::ifstream in_stream(model_json_path);
+  if (!in_stream.is_open()) {
     std::cerr << "Cannot open JSON model file" << std::endl;
     return;
   }
+  std::string str((std::istreambuf_iterator<char>(in_stream)), std::istreambuf_iterator<char>());
+  const char *json = str.c_str();
 
-  std::string str;
-  inStream.seekg(0, std::ios::end);
-  str.reserve(inStream.tellg());
-  inStream.seekg(0, std::ios::beg);
-  str.assign((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
+  std::string basePath = model_json_path.substr(0, split_pos);
+  split_pos = basepath.find_last_of("/");
+  split_pos = split_pos > 0 ? split_pos + 1 : 0;
+  basepath.resize(split_pos);
 
   // Parse JSON
-  std::string onnxModelPath = basePath + "/" + json_get_key_string_detr(str, "model_paths");
+  std::string onnxModelPath = basePath + "/" + json_get_key_string(json, "model_paths");
 
-  std::string modelFormat = json_get_key_string_detr(str, "format");
+  std::string modelFormat = json_get_key_string(json, "format");
 
   // Parse inference params
-  std::string threshold = json_get_key_string_detr_in_dict(str, "threshold");
+  std::string threshold = json_get_key_string_detr(json, "threshold");
 
   if (!threshold.empty()) {
     model->threshold = std::stof(threshold);
