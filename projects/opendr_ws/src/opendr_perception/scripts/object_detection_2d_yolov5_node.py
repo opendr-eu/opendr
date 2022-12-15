@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import argparse
+import torch
 
 import rospy
 from vision_msgs.msg import Detection2DArray
@@ -92,7 +93,7 @@ class ObjectDetectionYOLONode:
             # Get an OpenCV image back
             image = image.opencv()
             # Annotate image with object detection boxes
-            image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes)
+            image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes, line_thickness=3)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 

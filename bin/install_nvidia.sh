@@ -22,6 +22,7 @@ cd $OPENDR_HOME
 
 sudo apt-get install -y gfortran build-essential git python3-pip python-numpy libopencv-dev graphviz libopenblas-dev libopenblas-base libatlas-base-dev python-numpy
 
+pip3 install --upgrade pip
 pip3 install setuptools==59.5.0
 pip3 install numpy==1.19.4
 
@@ -101,6 +102,8 @@ sudo python3 setup.py install
 cd $OPENDR_HOME
 rm dlib-19.21.tar.bz2
 
+apt-get install -y libprotobuf-dev protobuf-compiler
+apt-get install -y python3-tk
 # For AV
 apt-get update && apt-get install -y software-properties-common &&\
     add-apt-repository -y ppa:jonathonf/ffmpeg-4
@@ -133,6 +136,7 @@ pip3 install Automat==20.2.0
 pip3 install autopage==0.4.0
 pip3 install bcolz==1.2.1
 pip3 cache purge
+pip3 install scikit-build==0.16.3
 pip3 install cachetools==4.2.4
 pip3 install catkin-pkg==0.4.24
 pip3 install catkin-tools==0.8.2
@@ -224,7 +228,7 @@ pip3 install pooch==1.5.2
 pip3 install portalocker==2.3.2
 pip3 install prettytable==2.4.0
 pip3 install progress==1.5
-pip3 install protobuf==3.20.1
+pip3 install protobuf==3.19.6
 pip3 install py==1.11.0
 pip3 install py-cpuinfo==8.0.0
 pip3 install pyasn1==0.4.8
