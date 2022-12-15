@@ -20,6 +20,23 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <document.h>
+#include <stringbuffer.h>
+#include <writer.h>
+
+const char *json_get_key_string(const char *json, const char *key) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember(key))) {
+    return "";
+  }
+  const rapidjson::Value &value = doc[key];
+  if (!value.IsString()) {
+    return "";
+  }
+  return value.GetString();
+}
+
 void load_image(const char *path, opendr_image_t *image) {
   cv::Mat opencv_image = cv::imread(path, cv::IMREAD_COLOR);
   if (opencv_image.empty()) {

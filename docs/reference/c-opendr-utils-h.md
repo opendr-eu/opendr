@@ -3,6 +3,15 @@
 
 The *opendr_utils.h* header provides function definitions of OpenDR helpers (e.g., for creating OpenDR images).
 
+### Function *json_get_key_string()*
+```C
+const char* json_get_key_string(const char *json, const char *key);
+```
+The *json_get_key_string()* function allows for reading a json file and return the value of a key.
+A pointer (*json*) that have the json string and a pointer (*key*) with the wanted value is needed.
+
+##
+
 ### Function *load_image()*
 ```C
 void load_image(const char *path, opendr_image_t *image);

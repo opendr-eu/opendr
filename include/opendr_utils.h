@@ -25,6 +25,13 @@ extern "C" {
 #endif
 
 /**
+ * Json parser for OpenDR model files.
+ * @param json a string of json file.
+ * @param key the value to extract from json file.
+ */
+const char *json_get_key_string(const char *json, const char *key);
+
+/**
  * Reads an image from path and saves it into OpenDR an image structure
  * @param path path from which the image will be read
  * @param image OpenDR image data structure to store the image

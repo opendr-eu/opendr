@@ -74,20 +74,6 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
   }
 }
 
-/**
- * Very simple helper function to parse OpenDR model files for face recognition
- * In the future this can be done at library level using a JSON-parser
- */
-std::string json_get_key_string(std::string json, const std::string &key) {
-  std::size_t startIdx = json.find(key);
-  std::string value = json.substr(startIdx);
-  value = value.substr(value.find(":") + 1);
-  value = value.substr(0, value.find(","));
-  value = value.substr(value.find("\"") + 1);
-  value = value.substr(0, value.find("\""));
-  return value;
-}
-
 void load_face_recognition_model(const char *model_path, face_recognition_model_t *model) {
   // Initialize model
   model->onnx_session = model->env = model->session_options = NULL;
@@ -106,12 +92,8 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
     std::cerr << "Cannot open JSON model file" << std::endl;
     return;
   }
-
-  std::string str;
-  in_stream.seekg(0, std::ios::end);
-  str.reserve(in_stream.tellg());
-  in_stream.seekg(0, std::ios::beg);
-  str.assign((std::istreambuf_iterator<char>(in_stream)), std::istreambuf_iterator<char>());
+  std::string str((std::istreambuf_iterator<char>(in_stream)), std::istreambuf_iterator<char>());
+  const char *json = str.c_str();
 
   std::string basepath = model_json_path.substr(0, split_pos);
   split_pos = basepath.find_last_of("/");
@@ -119,11 +101,11 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
   basepath.resize(split_pos);
 
   // Parse JSON
-  std::string onnx_model_path = basepath + json_get_key_string(str, "model_paths");
-  std::string model_format = json_get_key_string(str, "format");
+  std::string onnx_model_path = basepath + json_get_key_string(json, "model_paths");
+  std::string model_format = json_get_key_string(json, "format");
 
   // Parse inference params
-  std::string threshold = json_get_key_string(str, "threshold");
+  std::string threshold = json_get_key_string(json, "threshold");
 
   if (!threshold.empty()) {
     model->threshold = std::stof(threshold);
