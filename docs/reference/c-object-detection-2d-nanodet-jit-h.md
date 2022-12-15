@@ -5,7 +5,6 @@ The *object_detection_2d_nanodet_jit.h* header provides function definitions tha
 
 ### Struct *nanodet_model_t*
 ```C
-
 struct nanodet_model {
   ...
 };
@@ -34,7 +33,7 @@ Releases the memory allocated for an object detection 2d nanodet model (*model*)
 ```C
 opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_image_t *image);
 ```
-This function perform inference using an objecte detection 2d nanodet model (*model*) and an input image (*image*).
+This function perform inference using an object detection 2d nanodet model (*model*) and an input image (*image*).
 The function returns an OpenDR detection vector structure with the inference results.
 
 
