@@ -82,7 +82,7 @@ class EndToEndPlannerNode(Node):
         self.target_pose.pose.position.y = self.current_pose.pose.position.y + forward_step * np.sin(
             self.current_yaw) + side_step * np.cos(self.current_yaw)
         self.target_pose.pose.position.z = self.current_pose.pose.position.z
-        self.target_pose.pose.orientation = euler_to_quaternion(0, 0, yaw=self.current_yaw+yaw_step)
+        self.target_pose.pose.orientation = euler_to_quaternion(0, 0, yaw=self.current_yaw + yaw_step)
         self.ros2_pub_target_pose.publish(self.target_pose)
 
 

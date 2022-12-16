@@ -18,16 +18,8 @@ import rclpy
 
 class EndToEndPlanningUAVRobotDriver:
     def init(self, webots_node, properties):
-        self.__robot = webots_node.robot
-
-        self.__gps = self.__robot.getDevice('gps')
-        self.__imu = self.__robot.getDevice('inertial_unit')
-
         rclpy.init(args=None)
         self.__node = rclpy.create_node('end_to_end_planning_uav_robot_driver')
 
     def step(self):
         rclpy.spin_once(self.__node, timeout_sec=0)
-
-        roll, pitch, yaw = self.__imu.getRollPitchYaw()
-        v1, v2, v3 = self.__gps.getValues()
