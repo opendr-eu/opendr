@@ -10,7 +10,6 @@ fi
 if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   TORCH_DIRECTORY="/usr/local/libtorch"
 
-  VISION_VERSION="0.14.0"
   if [[ "$OPENDR_DEVICE" == "gpu" ]]
   then
     echo "Downloading and installing libtorch and torchvision (gpu support) ..."
