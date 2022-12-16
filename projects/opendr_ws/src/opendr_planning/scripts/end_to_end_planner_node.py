@@ -52,18 +52,18 @@ class EndToEndPlannerNode:
             rospy.loginfo("Webots model is not started!")
             return
         self.input_depth_image_topic = "/range_finder/range_image"
-        self.position_topic = "/gps1/values"
+        self.position_topic = "/gps/values"
         self.orientation_topic = "/inertial_unit/quaternion"
         self.ros_srv_range_sensor_enable = rospy.ServiceProxy(
             "/range_finder/enable", webots_ros.srv.set_int)
-        self.ros_srv_gps1_sensor_enable = rospy.ServiceProxy(
-            "/gps1/enable", webots_ros.srv.set_int)
+        self.ros_srv_gps_sensor_enable = rospy.ServiceProxy(
+            "/gps/enable", webots_ros.srv.set_int)
         self.ros_srv_inertial_unit_enable = rospy.ServiceProxy(
             "/inertial_unit/enable", webots_ros.srv.set_int)
         self.end_to_end_planner = EndToEndPlanningRLLearner(env=None)
 
         try:
-            self.ros_srv_gps1_sensor_enable(1)
+            self.ros_srv_gps_sensor_enable(1)
             self.ros_srv_inertial_unit_enable(1)
             self.ros_srv_range_sensor_enable(1)
         except rospy.ServiceException as exc:

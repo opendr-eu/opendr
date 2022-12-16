@@ -3,7 +3,7 @@ from setuptools import setup
 package_name = 'opendr_planning'
 data_files = []
 data_files.append(('share/ament_index/resource_index/packages', ['resource/' + package_name]))
-data_files.append(('share/' + package_name + '/launch', ['launch/e2e_planning_robot_launch.py']))
+data_files.append(('share/' + package_name + '/launch', ['launch/end_to_end_planning_robot_launch.py']))
 data_files.append(('share/' + package_name + '/worlds', ['worlds/train-no-dynamic-random-obstacles.wbt']))
 data_files.append(('share/' + package_name + '/protos', ['protos/box.proto']))
 data_files.append(('share/' + package_name + '/resource', ['resource/uav_robot.urdf']))
@@ -25,7 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'end_to_end_planner = opendr_planning.end_to_end_planner_node:main',
-            'e2e_planning_robot_driver = opendr_planning.e2e_planning_robot_driver:main',
+            'end_to_end_planning_robot_driver = opendr_planning.end_to_end_planning_robot_driver:main',
         ],
     },
 )

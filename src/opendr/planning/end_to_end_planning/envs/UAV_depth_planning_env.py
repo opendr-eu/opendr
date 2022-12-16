@@ -127,7 +127,7 @@ class UAVDepthPlanningEnv(gym.Env):
         self.r.sleep()
 
         if no_dynamics:
-            self.ros_srv_gps1_sensor_enable = rospy.ServiceProxy(
+            self.ros_srv_gps_sensor_enable = rospy.ServiceProxy(
                 "/gps/enable", webots_ros.srv.set_int)
             self.ros_srv_inertial_unit_enable = rospy.ServiceProxy(
                 "/inertial_unit/enable", webots_ros.srv.set_int)
@@ -142,7 +142,7 @@ class UAVDepthPlanningEnv(gym.Env):
             rospy.Subscriber("/inertial_unit/quaternion", Imu, self.imu_callback)
             rospy.Subscriber("/gps/values", PointStamped, self.gps_callback)
             try:
-                self.ros_srv_gps1_sensor_enable(1)
+                self.ros_srv_gps_sensor_enable(1)
                 self.ros_srv_inertial_unit_enable(1)
             except rospy.ServiceException as exc:
                 print("Service did not process request: " + str(exc))

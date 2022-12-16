@@ -92,7 +92,7 @@ DEF DEF_VEHICLE Robot {
       name "compass1"
     }
     GPS {
-      name "gps1"
+      name "gps"
     }
     Accelerometer {
       name "accelerometer1"

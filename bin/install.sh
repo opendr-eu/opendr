@@ -42,13 +42,13 @@ make install_runtime_dependencies
 # Install additional ROS packages
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
   echo "Installing ROS dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam
+  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros
 fi
 
 # Install additional ROS2 packages
 if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   echo "Installing ROS2 dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam
+  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2
 fi
 
 # If working on GPU install GPU dependencies as needed

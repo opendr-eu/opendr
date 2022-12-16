@@ -33,7 +33,7 @@ def generate_launch_description():
 
     ros2_supervisor = Ros2SupervisorLauncher()
 
-    my_robot_driver = Node(
+    e2e_UAV_robot_driver = Node(
         package='webots_ros2_driver',
         executable='driver',
         output='screen',
@@ -45,7 +45,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         webots,
-        my_robot_driver,
+        e2e_UAV_robot_driver,
         ros2_supervisor,
         launch.actions.RegisterEventHandler(
             event_handler=launch.event_handlers.OnProcessExit(
