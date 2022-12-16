@@ -41,55 +41,57 @@ SpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_schedule,
 ```
 
 Constructor parameters:
-- **lr**: *float, default=0.1*
+- **lr**: *float, default=0.1*\
   Specifies the initial learning rate to be used during training.
-- **batch_size**: *int, default=128*
+- **batch_size**: *int, default=128*\
   Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
-- **optimizer_name**: *str {'sgd', 'adam'}, default='sgd'*
+- **optimizer_name**: *str {'sgd', 'adam'}, default='sgd'*\
   Specifies the optimizer type that should be used.
-- **lr_schedule**: *str, default=' '*
+- **lr_schedule**: *str, default=' '*\
   Specifies the learning rate scheduler.
-- **checkpoint_after_iter**: *int, default=0*
+- **checkpoint_after_iter**: *int, default=0*\
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
-- **checkpoint_load_iter**: *int, default=0*
+- **checkpoint_load_iter**: *int, default=0*\
   Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
 - **temp_path**: *str, default=''*
   Specifies a path where the algorithm saves the checkpoints and onnx optimized model (if needed).
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
+- **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **num_workers**: *int, default=32*
+- **num_workers**: *int, default=32*\
   Specifies the number of workers to be used by the data loader.
-- **epochs**: *int, default=50*
+- **epochs**: *int, default=50*\
   Specifies the number of epochs the training should run for.
-- **experiment_name**: *str, default='stgcn_nturgbd'*
+- **experiment_name**: *str, default='stgcn_nturgbd'*\
   String name to attach to checkpoints.
-- **device_ind**: *list, default=[0]*
+- **device_ind**: *list, default=[0]*\
   List of GPU indices to be used if the device is 'cuda'.
-- **val_batch_size**: *int, default=256*
+- **val_batch_size**: *int, default=256*\
   Specifies number of skeleton sequences to be bundled up in a batch during evaluation. This heavily affects memory usage, adjust according to your system.
-- **drop_after_epoch**: *list, default=[30,40]*
+- **drop_after_epoch**: *list, default=[30,40]*\
   List of epoch numbers in which the optimizer drops the learning rate.
-- **start_epoch**: *int, default=0*
+- **start_epoch**: *int, default=0*\
   Specifies the starting epoch number for training.
 - **dataset_name**: *str {'kinetics', 'nturgbd_cv', 'nturgbd_cs'}, default='nturgbd_cv'*
   Specifies the name of dataset that is used for training and evaluation.
-- **num_class**: *int, default=60*
+- **num_class**: *int, default=60*\
   Specifies the number of classes for the action dataset.
-- **num_point**: *int, default=25*
+- **num_point**: *int, default=25*\
   Specifies the number of body joints in each skeleton.
-- **num_person**: *int, default=2*
+- **num_person**: *int, default=2*\
   Specifies the number of body skeletons in each frame.
-- **in_channels**: *int, default=3*
+- **in_channels**: *int, default=3*\
   Specifies the number of input channels for each body joint.
-- **graph_type**: *str {'kinetics', 'ntu'}, default='ntu'*
+- **graph_type**: *str {'kinetics', 'ntu'}, default='ntu'*\
   Specifies the type of graph structure associated with the dataset.
-- **method_name**: *str {'stgcn', 'stbln', 'tagcn'}, default='stgcn'*
-  Specifies the name of method to be trained and evaluated. For each method, a different model is trained.
-- **stbln_symmetric**: *bool, default=False*
-  Specifies if the random graph in stbln method is symmetric or not. This parameter is used if method_name is 'stbln'.
-- **num_frames**: *int, default=300*
+- **method_name**: *str {'stgcn', 'stbln', 'tagcn'}, default='stgcn'*\
+  Specifies the name of method to be trained and evaluated.
+  For each method, a different model is trained.
+- **stbln_symmetric**: *bool, default=False*\
+  Specifies if the random graph in stbln method is symmetric or not.
+  This parameter is used if method_name is 'stbln'.
+- **num_frames**: *int, default=300*\
   Specifies the number of frames in each skeleton sequence. This parameter is used if the method_name is 'tagcn'.
-- **num_subframes**: *int, default=100*
+- **num_subframes**: *int, default=100*\
   Specifies the number of sub-frames that are going to be selected by the tagcn model. This parameter is used if the method_name is 'tagcn'.
 
 
@@ -101,40 +103,42 @@ SpatioTemporalGCNLearner.fit(self, dataset, val_dataset, logging_path, silent, v
                              val_labels_filename, skeleton_data_type)
 ```
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
+
 Parameters:
-- **dataset**: *object*
+
+- **dataset**: *object*\
   Object that holds the training dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **val_dataset**: *object*
+- **val_dataset**: *object*\
   Object that holds the validation dataset.
-- **logging_path**: *str, default=''*
+- **logging_path**: *str, default=''*\
   Path to save TensorBoard log files and the training log files.
   If set to None or '', TensorBoard logging is disabled and no log file is created.
 - **silent**: *bool, default=False*
   If set to True, disables all printing of training progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True***
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
-- **momentum**: *float, default=0.9*
+- **momentum**: *float, default=0.9*\
   Specifies the momentum value for optimizer.
-- **nesterov**: *bool, default=True***
+- **nesterov**: *bool, default=True*\
   If set to true, the optimizer uses Nesterov's momentum.
-- **weight_decay**: *float, default=0.0001***
+- **weight_decay**: *float, default=0.0001*\
   Specifies the weight_decay value of the optimizer.
-- **train_data_filename**: *str, default='train_joints.npy'*
+- **train_data_filename**: *str, default='train_joints.npy'*\
   Filename that contains the training data.
   This file should be contained in the dataset path provided.
   Note that this is a file name, not a path.
-- **train_labels_filename**: *str, default='train_labels.pkl'*
+- **train_labels_filename**: *str, default='train_labels.pkl'*\
   Filename of the labels .pkl file.
   This file should be contained in the dataset path provided.
-- **val_data_filename**: *str, default='val_joints.npy'*
+- **val_data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **val_labels_filename**: *str, default='val_labels.pkl'*
+- **val_labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
 
 #### `SpatioTemporalGCNLearner.eval`
@@ -146,37 +150,39 @@ SpatioTemporalGCNLearner.eval(self, val_dataset, val_loader, epoch, silent, verb
 
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
-- **val_dataset**: *object*
+
+- **val_dataset**: *object*\
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **val_loader**: *object, default=None*
+- **val_loader**: *object, default=None*\
   Object that holds a Python iterable over the evaluation dataset.
   Object of `torch.utils.data.DataLoader` class.
-- **epoch**: *int, default=0*
+- **epoch**: *int, default=0*\
   The training epoch in which the model is evaluated.
-- **silent**: *bool, default=False*
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
-- **val_data_filename**: *str, default='val_joints.npy'*
+- **val_data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **val_labels_filename**: *str, default='val_labels.pkl'*
+- **val_labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
-- **save_score**: *bool, default=False*
-  If set to True, it saves the classification score of all samples in differenc classes
-  in a log file. Default to False.
-- **wrong_file**: *str, default=None*
-  If set to True, it saves the results of wrongly classified samples. Default to False.
-- **result_file**: *str, default=None*
-  If set to True, it saves the classification results of all samples. Default to False.
-- **show_topk**: *list, default=[1, 5]*
-  Is set to a list of integer numbers defining the k in top-k accuracy. Default is set to [1,5].
+- **save_score**: *bool, default=False*\
+  If set to True, it saves the classification score of all samples in different classes
+  in a log file.
+- **wrong_file**: *str, default=None*\
+  If set to True, it saves the results of wrongly classified samples.
+- **result_file**: *str, default=None*\
+  If set to True, it saves the classification results of all samples.
+- **show_topk**: *list, default=[1, 5]*\
+  Is set to a list of integer numbers defining the k in top-k accuracy.
 
 #### `SpatioTemporalGCNLearner.init_model`
 ```python
@@ -193,7 +199,8 @@ This method is used to perform action recognition on a sequence of skeletons.
 It returns the action category as an object of `engine.target.Category` if a proper input object `engine.data.SkeletonSequence` is given.
 
 Parameters:
-- **SkeletonSeq_batch**: *object***
+
+- **SkeletonSeq_batch**: *object*\
   Object of type engine.data.SkeletonSequence.
 
 #### `SpatioTemporalGCNLearner.save`
@@ -201,20 +208,18 @@ Parameters:
 SpatioTemporalGCNLearner.save(self, path, model_name, verbose)
 ```
 This method is used to save a trained model.
-Provided with the path "/my/path" (absolute or relative), it creates the "path" directory, if it does not already
-exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
-already exists, the "model_name.pt" and "model_name.json" files are overwritten.
+Provided with the path "/my/path" (absolute or relative), it creates the "path" directory, if it does not already exist.
+Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
-If [`self.optimize`](/src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py#L539) was run previously, it saves the optimized ONNX model in
-a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously
-during conversion.
+If [`self.optimize`](/src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py#L539) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
-- **path**: *str*
+
+- **path**: *str*\
   Path to save the model.
-- **model_name**: *str*
+- **model_name**: *str*\
   The file name to be saved.
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 #### `SpatioTemporalGCNLearner.load`
@@ -226,11 +231,12 @@ This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
-- **path**: *str*
+
+- **path**: *str*\
   Path of the model to be loaded.
-- **model_name**: *str*
+- **model_name**: *str*\
   The file name to be loaded.
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 
@@ -242,7 +248,8 @@ SpatioTemporalGCNLearner.optimize(self, do_constant_folding)
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 Parameters:
-- **do_constant_folding**: *bool, default=False*
+
+- **do_constant_folding**: *bool, default=False*\
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
@@ -259,23 +266,25 @@ This method is used to ensemble the classification results of the model on two o
 It returns the top-k classification performance of ensembled model.
 
 Parameters:
-- **dataset**: *object*
+
+- **dataset**: *object*\
   Object that holds the dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **score**: *list*
-  A list of score arrays. Each array in the list contains the evaluation results for a data stream.
-- **data_filename**: *str, default='val_joints.npy'*
+- **score**: *list*\
+  A list of score arrays.
+  Each array in the list contains the evaluation results for a data stream.
+- **data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **labels_filename**: *str, default='val_labels.pkl'*
+- **labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
-- **silent**: *bool, default=False*
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
 
 
@@ -285,21 +294,21 @@ Parameters:
 SpatioTemporalGCNLearner.download(self, path, mode, verbose, url, file_name)
 ```
 
-Download utility for various skeleton-based action recognition components. Downloads files depending on mode and
-saves them in the path provided. It supports downloading:
+Download utility for various skeleton-based action recognition components. Downloads files depending on mode and saves them in the path provided. It supports downloading:
 1. the pretrained weights for stgcn, tagcn and stbln models.
 2. a dataset containing one or more skeleton sequences and its labels.
 
 Parameters:
-- **path**: *str, default=None*
+
+- **path**: *str, default=None*\
   Local path to save the files, defaults to self.parent_dir if None.
-- **mode**: *str, default="pretrained"*
+- **mode**: *str, default="pretrained"*\
   What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   Whether to print messages in the console.
-- **url**: *str, default=OpenDR FTP URL*
+- **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-- **file_name**: *str*
+- **file_name**: *str*\
   The name of the file containing the pretrained model.
 
 #### Examples
@@ -414,11 +423,9 @@ Parameters:
 ### Class ProgressiveSpatioTemporalGCNLearner
 Bases: `engine.learners.Learner`
 
-The *ProgressiveSpatioTemporalGCNLearner* class is an implementation of the proposed method PST-GCN [[4]](#4) for Skeleton-based Human
-Action Recognition.
+The *ProgressiveSpatioTemporalGCNLearner* class is an implementation of the proposed method PST-GCN [[4]](#4) for Skeleton-based Human Action Recognition.
 It finds an optimized and data dependant spatio-temporal graph convolutional network topology for skeleton-based action recognition.
-The [ProgressiveSpatioTemporalGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py) class has the
-following public methods:
+The [ProgressiveSpatioTemporalGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py) class has the following public methods:
 
 
 #### `ProgressiveSpatioTemporalGCNLearner` constructor
@@ -433,59 +440,65 @@ ProgressiveSpatioTemporalGCNLearner(self, lr, batch_size, optimizer_name, lr_sch
 ```
 
 Constructor parameters:
-- **lr**: *float, default=0.1*
+
+- **lr**: *float, default=0.1*\
   Specifies the initial learning rate to be used during training.
-- **batch_size**: *int, default=128*
-  Specifies number of skeleton sequences to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
-- **optimizer_name**: *str {'sgd', 'adam'}, default='sgd'*
+- **batch_size**: *int, default=128*\
+  Specifies number of skeleton sequences to be bundled up in a batch during training.
+  This heavily affects memory usage, adjust according to your system.
+- **optimizer_name**: *str {'sgd', 'adam'}, default='sgd'*\
   Specifies the optimizer type that should be used.
-- **lr_schedule**: *str, default=' '*
+- **lr_schedule**: *str, default=' '*\
   Specifies the learning rate scheduler.
-- **checkpoint_after_iter**: *int, default=0*
-  Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
-- **checkpoint_load_iter**: *int, default=0*
-  Specifies which checkpoint should be loaded. If it is set to 0, no checkpoints will be loaded.
-- **temp_path**: *str, default=''*
+- **checkpoint_after_iter**: *int, default=0*\
+  Specifies per how many training iterations a checkpoint should be saved.
+  If it is set to 0 no checkpoints will be saved.
+- **checkpoint_load_iter**: *int, default=0*\
+  Specifies which checkpoint should be loaded.
+  If it is set to 0, no checkpoints will be loaded.
+- **temp_path**: *str, default=''*\
   Specifies a path where the algorithm saves the checkpoints and onnx optimized model (if needed).
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
+- **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **num_workers**: *int, default=32*
+- **num_workers**: *int, default=32*\
   Specifies the number of workers to be used by the data loader.
-- **epochs**: *int, default=50*
+- **epochs**: *int, default=50*\
   Specifies the number of epochs the training should run for.
 - **experiment_name**: *str, default='stgcn_nturgbd'*
   String name to attach to checkpoints.
-- **device_ind**: *list, default=[0]*
+- **device_ind**: *list, default=[0]*\
   List of GPU indices to be used if the device is 'cuda'.
-- **val_batch_size**: *int, default=256*
-  Specifies number of skeleton sequences to be bundled up in a batch during evaluation. This heavily affects memory usage, adjust according to your system.
-- **drop_after_epoch**: *list, default=[30,40]*
+- **val_batch_size**: *int, default=256*\
+  Specifies number of skeleton sequences to be bundled up in a batch during evaluation.
+  This heavily affects memory usage, adjust according to your system.
+- **drop_after_epoch**: *list, default=[30,40]*\
   List of epoch numbers in which the optimizer drops the learning rate.
-- **start_epoch**: *int, default=0*
+- **start_epoch**: *int, default=0*\
   Specifies the starting epoch number for training.
-- **dataset_name**: *str {'kinetics', 'nturgbd_cv', 'nturgbd_cs'}, default='nturgbd_cv'*
+- **dataset_name**: *str {'kinetics', 'nturgbd_cv', 'nturgbd_cs'}, default='nturgbd_cv'*\
   Specifies the name of dataset that is used for training and evaluation.
-- **num_class**: *int, default=60*
+- **num_class**: *int, default=60*\
   Specifies the number of classes for the action dataset.
-- **num_point**: *int, default=25*
+- **num_point**: *int, default=25*\
   Specifies the number of body joints in each skeleton.
-- **num_person**: *int, default=2*
+- **num_person**: *int, default=2*\
   Specifies the number of body skeletons in each frame.
-- **in_channels**: *int, default=3*
+- **in_channels**: *int, default=3*\
   Specifies the number of input channels for each body joint.
-- **graph_type**: *str {'kinetics', 'ntu'}, default='ntu'*
+- **graph_type**: *str {'kinetics', 'ntu'}, default='ntu'*\
   Specifies the type of graph structure associated with the dataset.
-- **block_size**: *int, default=20*
+- **block_size**: *int, default=20*\
   Specifies the number of output channels (or neurons) that are added to each layer of the network at each progression iteration.
-- **numblocks**: *int, default=10*
+- **numblocks**: *int, default=10*\
   Specifies the maximum number of blocks that are added to each layer of the network at each progression iteration.
-- **numlayers**: *int, default=10*
+- **numlayers**: *int, default=10*\
   Specifies the maximum number of layers that are built for the network.
-- **topology**: *list, default=[]*
-  Specifies the initial topology of the network. The default is set to [], since the method gets an empty network as input and builds it progressively.
-- **layer_threshold**: *float, default=1e-4*
+- **topology**: *list, default=[]*\
+  Specifies the initial topology of the network.
+  The default is set to [], since the method gets an empty network as input and builds it progressively.
+- **layer_threshold**: *float, default=1e-4*\
   Specifies the threshold which is used by the method to identify when it should stop adding new layers.
-- **block_threshold**: *float, default=1e-4*
+- **block_threshold**: *float, default=1e-4*\
   Specifies the threshold which is used by the model to identify when it should stop adding new blocks in each layer.
 
 
@@ -498,40 +511,42 @@ ProgressiveSpatioTemporalGCNLearner.fit(self, dataset, val_dataset, logging_path
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
+
 Parameters:
-- **dataset**: *object*
+
+- **dataset**: *object*\
   Object that holds the training dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **val_dataset**: *object*
+- **val_dataset**: *object*\
   Object that holds the validation dataset.
-- **logging_path**: *str, default=''*
+- **logging_path**: *str, default=''*\
   Path to save TensorBoard log files and the training log files.
   If set to None or '', TensorBoard logging is disabled and no log file is created.
-- **silent**: *bool, default=False*
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of training progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True***
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
-- **momentum**: *float, default=0.9*
+- **momentum**: *float, default=0.9*\
   Specifies the momentum value for optimizer.
-- **nesterov**: *bool, default=True***
+- **nesterov**: *bool, default=True*\
   If set to true, the optimizer uses Nesterov's momentum.
-- **weight_decay**: *float, default=0.0001***
+- **weight_decay**: *float, default=0.0001*\
   Specifies the weight_decay value of the optimizer.
-- **train_data_filename**: *str, default='train_joints.npy'*
+- **train_data_filename**: *str, default='train_joints.npy'*\
   Filename that contains the training data.
   This file should be contained in the dataset path provided.
   Note that this is a file name, not a path.
-- **train_labels_filename**: *str, default='train_labels.pkl'*
+- **train_labels_filename**: *str, default='train_labels.pkl'*\
   Filename of the labels .pkl file.
   This file should be contained in the dataset path provided.
-- **val_data_filename**: *str, default='val_joints.npy'*
+- **val_data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **val_labels_filename**: *str, default='val_labels.pkl'*
+- **val_labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
 
 
@@ -544,38 +559,38 @@ ProgressiveSpatioTemporalGCNLearner.eval(self, val_dataset, val_loader, epoch, s
 
 This method is used to evaluate a trained model on an evaluation dataset.
 Returns a dictionary containing stats regarding evaluation.
+
 Parameters:
 
-- **val_dataset**: *object*
+- **val_dataset**: *object*\
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **val_loader**: *object, default=None*
+- **val_loader**: *object, default=None*\
   Object that holds a Python iterable over the evaluation dataset.
   Object of `torch.utils.data.DataLoader` class.
-- **epoch**: *int, default=0*
+- **epoch**: *int, default=0*\
   The training epoch in which the model is evaluated.
-- **silent**: *bool, default=False*
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
-- **val_data_filename**: *str, default='val_joints.npy'*
+- **val_data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **val_labels_filename**: *str, default='val_labels.pkl'*
+- **val_labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
-- **save_score**: *bool, default=False*
-  If set to True, it saves the classification score of all samples in differenc classes
-  in a log file. Default to False.
-- **wrong_file**: *str, default=None*
-  If set to True, it saves the results of wrongly classified samples. Default to False.
-- **result_file**: *str, default=None*
-  If set to True, it saves the classification results of all samples. Default to False.
-- **show_topk**: *list, default=[1, 5]*
-  Is set to a list of integer numbers defining the k in top-k accuracy. Default is set to [1,5].
+- **save_score**: *bool, default=False*\
+  If set to True, it saves the classification score of all samples in different classes in a log file.
+- **wrong_file**: *str, default=None*\
+  If set to True, it saves the results of wrongly classified samples.
+- **result_file**: *str, default=None*\
+  If set to True, it saves the classification results of all samples.
+- **show_topk**: *list, default=[1, 5]*\
+  Is set to a list of integer numbers defining the k in top-k accuracy.
 
 
 #### `ProgressiveSpatioTemporalGCNLearner.init_model`
@@ -592,30 +607,31 @@ ProgressiveSpatioTemporalGCNLearner.network_builder(self, dataset, val_dataset, 
                                                     val_labels_filename, skeleton_data_type, verbose)
 ```
 This method implement the ST-GCN Augmentation Module (ST-GCN-AM) which builds the network topology progressively.
+
 Parameters:
 
-- **dataset**: *object*
+- **dataset**: *object*\
   Object that holds the training dataset.
-- **val_dataset**: *object*
+- **val_dataset**: *object*\
   Object that holds the evaluation dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **train_data_filename**: *str, default='train_joints.npy'*
+- **train_data_filename**: *str, default='train_joints.npy'*\
   Filename that contains the training data.
   This file should be contained in the dataset path provided.
   Note that this is a file name, not a path.
-- **train_labels_filename**: *str, default='train_labels.pkl'*
+- **train_labels_filename**: *str, default='train_labels.pkl'*\
   Filename of the labels .pkl file.
   This file should be contained in the dataset path provided.
-- **val_data_filename**: *str, default='val_joints.npy'*
+- **val_data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **val_labels_filename**: *str, default='val_labels.pkl'*
+- **val_labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
-- **verbose**: *bool, default=True***
+- **verbose**: *bool, default=True*\
   Whether to print messages in the console.
 
 
@@ -627,28 +643,28 @@ This method is used to perform action recognition on a sequence of skeletons.
 It returns the action category as an object of `engine.target.Category` if a proper input object `engine.data.SkeletonSequence` is given.
 
 Parameters:
-- **SkeletonSeq_batch**: *object***
+
+- **SkeletonSeq_batch**: *object*\
   Object of type engine.data.SkeletonSequence.
 
 #### `ProgressiveSpatioTemporalGCNLearner.save`
 ```python
 ProgressiveSpatioTemporalGCNLearner.save(self, path, model_name, verbose)
 ```
-This method is used to save a trained model.
-Provided with the path "/my/path" (absolute or relative), it creates the "path" directory, if it does not already
-exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
-already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
-If [`self.optimize`](/src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py#L576) was run previously, it saves the optimized ONNX model in
-a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously
-during conversion.
+This method is used to save a trained model.
+Provided with the path "/my/path" (absolute or relative), it creates the "path" directory, if it does not already exist.
+Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory already exists, the "model_name.pt" and "model_name.json" files are overwritten.
+
+If [`self.optimize`](/src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py#L576) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
-- **path**: *str*
+
+- **path**: *str*\
   Path to save the model.
-- **model_name**: *str*
+- **model_name**: *str*\
   The file name to be saved.
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 #### `ProgressiveSpatioTemporalGCNLearner.load`
@@ -660,11 +676,12 @@ This method is used to load a previously saved model from its saved folder.
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
-- **path**: *str*
+
+- **path**: *str*\
   Path of the model to be loaded.
-- **model_name**: *str*
+- **model_name**: *str*\
   The file name to be loaded.
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
 
 
@@ -676,7 +693,8 @@ ProgressiveSpatioTemporalGCNLearner.optimize(self, do_constant_folding)
 This method is used to optimize a trained model to ONNX format which can be then used for inference.
 
 Parameters:
-- **do_constant_folding**: *bool, default=False*
+
+- **do_constant_folding**: *bool, default=False*\
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
   Constant-folding optimization will replace some of the operations that have all constant inputs, with pre-computed constant nodes.
@@ -692,23 +710,24 @@ This method is used to ensemble the classification results of the model on two o
 It returns the top-k classification performance of ensembled model.
 
 Parameters:
-- **dataset**: *object*
+
+- **dataset**: *object*\
   Object that holds the dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **score**: *list*
+- **score**: *list*\
   A list of score arrays. Each array in the list contains the evaluation results for a data stream.
-- **data_filename**: *str, default='val_joints.npy'*
+- **data_filename**: *str, default='val_joints.npy'*\
   Filename that contains the validation data.
   This file should be contained in the dataset path provided.
   Note that this is a filename, not a path.
-- **labels_filename**: *str, default='val_labels.pkl'*
+- **labels_filename**: *str, default='val_labels.pkl'*\
   Filename of the validation labels .pkl file.
   This file should be contained in the dataset path provided.
-- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*
+- **skeleton_data_type**: *str {'joint', 'bone', 'motion'}, default='joint'*\
   The data stream that should be used for training and evaluation.
-- **silent**: *bool, default=False*
+- **silent**: *bool, default=False*\
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
-- **verbose**: *bool, default=True*
+- **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
 
 
@@ -718,21 +737,23 @@ Parameters:
 ProgressiveSpatioTemporalGCNLearner.download(self, path, mode, verbose, url, file_name)
 ```
 
-Download utility for various skeleton-based action recognition components. Downloads files depending on mode and
-saves them in the path provided. It supports downloading:
+Download utility for various skeleton-based action recognition components.
+Downloads files depending on mode and saves them in the path provided.
+It supports downloading:
 1. the pretrained weights for stgcn, tagcn and stbln models.
 2. a dataset containing one or more skeleton sequences and its labels.
 
 Parameters:
-- **path**: *str, default=None*
+
+- **path**: *str, default=None*\
   Local path to save the files, defaults to self.parent_dir if None.
-- **mode**: *str, default="pretrained"*
+- **mode**: *str, default="pretrained"*\
   What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   Whether to print messages in the console.
-- **url**: *str, default=OpenDR FTP URL*
+- **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-- **file_name**: *str*
+- **file_name**: *str*\
   The name of the file containing the pretrained model.
 
 
@@ -755,39 +776,38 @@ CoSTGCNLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, ne
 
 Constructor parameters:
 
-- **lr**: *float, default=0.001*
+- **lr**: *float, default=0.001*\
   Specifies the learning rate to be used during training.
-- **iters**: *int, default=10*
-  Number of epochs to train for. Defaults to 10.
-- **batch_size**: *int, default=64*
+- **iters**: *int, default=10*\
+  Number of epochs to train for.
+- **batch_size**: *int, default=64*\
   Specifies number of skeleton sequences to be bundled up in a batch during training.
   This heavily affects memory usage, adjust according to your system.
-- **optimizer**: *str {'sgd', 'adam'}, default='adam'*
+- **optimizer**: *str {'sgd', 'adam'}, default='adam'*\
   Name of optimizer to use ("sgd" or "adam").
-  Defaults to "adam".
 - **lr_schedule**: *str, default=' '*
   Specifies the learning rate scheduler.
-- **network_head**: *str, default='classification'*
+- **network_head**: *str, default='classification'*\
   Head of network (only "classification" is currently available).
-- **checkpoint_after_iter**: *int, default=0*
-  Unused parameter. Defaults to 0.
-- **checkpoint_load_iter**: *int, default=0*
-  Unused parameter. Defaults to 0.
-- **temp_path**: *str, default=''*
-  Path in which to store temporary files. Defaults to "".
-- **device**: *{'cpu', 'cuda'}, default='cuda'*
+- **checkpoint_after_iter**: *int, default=0*\
+  Unused parameter.
+- **checkpoint_load_iter**: *int, default=0*\
+  Unused parameter.
+- **temp_path**: *str, default=''*\
+  Path in which to store temporary files.
+- **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **num_workers**: *int, default=0*
+- **num_workers**: *int, default=0*\
   Specifies the number of workers to be used by the data loader.
-- **num_class**: *int, default=60*
+- **num_class**: *int, default=60*\
   Specifies the number of classes for the action dataset.
-- **num_point**: *int, default=25*
+- **num_point**: *int, default=25*\
   Specifies the number of body joints in each skeleton.
-- **num_person**: *int, default=2*
+- **num_person**: *int, default=2*\
   Specifies the number of body skeletons in each frame.
-- **in_channels**: *int, default=3*
+- **in_channels**: *int, default=3*\
   Specifies the number of input channels for each body joint.
-- **graph_type**: *str {'ntu', 'openpose'}, default='ntu'*
+- **graph_type**: *str {'ntu', 'openpose'}, default='ntu'*\
   Specifies the type of graph structure associated with the dataset.
 
 #### `CoSTGCNLearner.fit`
@@ -799,17 +819,17 @@ This method is used for training the algorithm on a train dataset and validating
 
 Parameters:
 
-- **dataset**: *object*
+- **dataset**: *object*\
   Object that holds the training dataset.
   Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
-- **val_dataset**: *object*
+- **val_dataset**: *object*\
   Object that holds the validation dataset.
-- **epochs**: *int, default=None*
+- **epochs**: *int, default=None*\
   Number of epochs.
-  If none is supplied, self.iters will be used. Defaults to None.
-- **steps**: *int, default=None*
+  If none is supplied, self.iters will be used.
+- **steps**: *int, default=None*\
   Number of training steps to conduct.
-  If none, this is determined by epochs. Defaults to None.
+  If none, this is determined by epochs.
 
 
 #### `CoSTGCNLearner.eval`
@@ -822,18 +842,18 @@ Returns a dictionary containing stats regarding evaluation.
 
 Parameters:
 
-- **dataset**: *object*
+- **dataset**: *object*\
   Dataset on which to evaluate model
-- **steps**: *int, default=None*
+- **steps**: *int, default=None*\
   Number of validation batches to evaluate.
-  If None, all batches are evaluated. Defaults to None.
+  If None, all batches are evaluated.
 
 
 #### `CoSTGCNLearner.init_model`
 ```python
 CoSTGCNLearner.init_model(self)
 ```
-This method is used to initialise model with random parameters
+This method is used to initialize model with random parameters
 
 #### `ProgressiveSpatioTemporalGCNLearner.infer`
 ```python
@@ -845,7 +865,7 @@ It returns the action category as an object of `engine.target.Category` if a pro
 
 Parameters:
 
-- **SkeletonSeq_batch**: *object***
+- **SkeletonSeq_batch**: *object*\
   Object of type engine.data.SkeletonSequence.
 
 #### `CoSTGCNLearner.save`
@@ -856,7 +876,8 @@ CoSTGCNLearner.save(self, path)
 This method is used to save model weights and metadata to path.
 
 Parameters:
-- **path**: *str*
+
+- **path**: *str*\
   Directory in which to save model weights and meta data.
 
 
@@ -870,8 +891,8 @@ Loads the model from inside the directory of the path provided, using the metada
 
 Parameters:
 
-- **path**: *str*
-  Path to metadata file in json format or path to model weights
+- **path**: *str*\
+  Path to metadata file in json format or path to model weights.
 
 
 #### `CoSTGCNLearner.optimize`
@@ -883,7 +904,7 @@ This method is used to optimize a trained model to ONNX format which can be then
 
 Parameters:
 
-- **do_constant_folding**: *bool, default=False*
+- **do_constant_folding**: *bool, default=False*\
   ONNX format optimization.
   If True, the constant-folding optimization is applied to the model during export.
 
@@ -894,25 +915,26 @@ Parameters:
 CoSTGCNLearner.download(self, dataset_name, experiment_name, path, method_name, mode, verbose, url, file_name)
 ```
 
-Downloads files depending on mode and saves them in the path provided. It supports downloading:
+Downloads files depending on mode and saves them in the path provided.
+It supports downloading:
 1. the pretrained weights for stgcn model.
 2. a small sample dataset and its labels.
 
 Parameters:
 
-- **dataset_name**: *str, default='nturgbd_cv'*
+- **dataset_name**: *str, default='nturgbd_cv'*\
   The name of dataset that should be downloaded.
-- **experiment_name**: *str, default='stgcn_nturgbd'*
+- **experiment_name**: *str, default='stgcn_nturgbd'*\
   The name of experiment for which the pretrained model is saved.
-- **path**: *str, default=None*
+- **path**: *str, default=None*\
   Local path to save the files, defaults to self.parent_dir if None.
-- **mode**: *str, default="pretrained"*
+- **mode**: *str, default="pretrained"*\
   What file to download, can be one of "pretrained", "train_data", "val_data", "test_data"
-- **verbose**: *bool, default=False*
+- **verbose**: *bool, default=False*\
   Whether to print messages in the console.
-- **url**: *str, default=OpenDR FTP URL*
+- **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-- **file_name**: *str*
+- **file_name**: *str*\
   The name of the file containing the pretrained model.
 
 #### `CoSTGCNLearner.infer`
@@ -925,7 +947,7 @@ It returns a list of output categories
 
 Parameters:
 
-- **batch**: *object***
+- **batch**: *object*\
   Batch of skeletons for a single time-step.
   The batch should have shape (C, V, S), (C, T, V, S), or (B, C, T, V, S). Here, B is the batch size, C is the number of input channels, V is the number of vertices, and S is the number of skeletons
 
@@ -981,7 +1003,7 @@ Parameters:
 
   ```
 
-* **Optimization example for a previously trained model.**
+* **Optimization example for a previously trained model**
   Inference can be run with the trained model after running self.optimize.
   ```python
   from opendr.perception.skeleton_based_action_recognition.progressive_spatio_temporal_gcn_learner import ProgressiveSpatioTemporalGCNLearner
