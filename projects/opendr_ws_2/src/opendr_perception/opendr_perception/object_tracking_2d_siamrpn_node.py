@@ -22,7 +22,7 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
-from vision_msgs.msg import Detection2D, Detection2DArray
+from vision_msgs.msg import Detection2D
 from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
