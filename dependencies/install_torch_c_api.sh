@@ -57,7 +57,7 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   sudo rm -rf libtorch
   sudo rm -rf libtorch.zip
 
-  sudo rm -rf vision-${VISION_VERSION}
+  sudo rm -rf vision
   sudo rm -rf vision.tar.gz
 
   sudo ldconfig
