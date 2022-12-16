@@ -682,6 +682,12 @@ class FacialEmotionLearner(Learner):
         # Export the model
         self.model.eval()
         self.model.to_device(self.device)
+        num_branches = self.model.get_ensemble_size()
+
+
+        dynamic_axes_ = {'onnx_out_emotions': {i: 'emotion_branch_%d' %i for i in range(num_branches)},
+                        'onnx_out_va':  {j: 'va_branch_%d' %j for j in range(num_branches)}}
+
         torch.onnx.export(self.model,
                           onnx_input,
                           output_name,
@@ -689,7 +695,8 @@ class FacialEmotionLearner(Learner):
                           opset_version=11,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],
-                          output_names=['onnx_out_emotions', 'onnx_out_va', 'onnx_attn'])
+                          output_names=['onnx_out_emotions', 'onnx_out_va', 'onnx_attn'],
+                          dynamic_axes = dynamic_axes_)
 
     def __load_from_onnx(self, path):
         """
