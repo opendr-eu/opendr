@@ -689,7 +689,7 @@ class FacialEmotionLearner(Learner):
                           opset_version=11,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],
-                          output_names=['onnx_out_emotions'])
+                          output_names=['onnx_out_emotions', 'onnx_out_va', 'onnx_attn'])
 
     def __load_from_onnx(self, path):
         """
