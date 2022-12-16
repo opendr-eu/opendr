@@ -44,7 +44,8 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
 
   # TORCH VISION INSTALLATION
   tar zxf vision.tar.gz
-  cd vision-${VISION_VERSION}
+  mv vision-* vision
+  cd vision
   sudo mkdir -p build
   cd build
   sudo cmake .. -DCMAKE_CUDA_COMPILER=${CUDA_COMPILER} -DCMAKE_PREFIX_PATH=${TORCH_DIRECTORY} -DWITH_CUDA=${GPU}
