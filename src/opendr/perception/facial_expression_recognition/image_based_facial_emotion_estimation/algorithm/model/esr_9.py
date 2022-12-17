@@ -231,7 +231,7 @@ class ESR(nn.Module):
         # List of emotions and affect values from the ensemble
         emotions = []
         affect_values = []
-        attn_heads = []
+        attn_heads = 0
 
         # Get shared representations
         x_shared_representations = self.base(x)
