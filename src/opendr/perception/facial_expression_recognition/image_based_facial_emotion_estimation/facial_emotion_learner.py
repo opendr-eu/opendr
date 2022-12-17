@@ -685,7 +685,7 @@ class FacialEmotionLearner(Learner):
         num_branches = self.model.get_ensemble_size()
 
         dynamic_axes_ = {'onnx_out_emotions': {i: 'emotion_branch_%d' %i for i in range(num_branches)},
-                         'onnx_out_va':  {j: 'va_branch_%d' %j for j in range(num_branches)}}
+                         'onnx_out_va': {j: 'va_branch_%d' %j for j in range(num_branches)}}
 
         torch.onnx.export(self.model,
                           onnx_input,
