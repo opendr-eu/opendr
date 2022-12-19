@@ -30,6 +30,8 @@ START_TEST(model_creation_test) {
   ck_assert(model.onnx_session);
   ck_assert(model.env);
   ck_assert(model.session_options);
+
+  free_open_pose_model(&model);
 }
 END_TEST
 

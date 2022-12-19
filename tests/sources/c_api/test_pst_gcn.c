@@ -31,6 +31,8 @@ START_TEST(model_creation_test) {
   ck_assert(model.onnx_session);
   ck_assert(model.env);
   ck_assert(model.session_options);
+
+  free_pst_model(&model);
 }
 END_TEST
 
@@ -58,6 +60,7 @@ START_TEST(forward_pass_creation_test) {
 
   ck_assert(output_tensor_vector.n_tensors == 1);
 
+  free_pst_model(&model);
   free_tensor(&input_tensor);
   free_tensor_vector(&output_tensor_vector);
 }
@@ -70,6 +73,7 @@ Suite *pst_gcn_suite(void) {
   s = suite_create("Pst Gcn");
   tc_core = tcase_create("Core");
 
+  tcase_set_timeout(tc_core, 60.0);
   tcase_add_test(tc_core, model_creation_test);
   tcase_add_test(tc_core, forward_pass_creation_test);
   suite_add_tcase(s, tc_core);
