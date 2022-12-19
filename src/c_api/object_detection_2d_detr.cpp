@@ -68,12 +68,13 @@ void load_detr_model(const char *modelPath, detr_model_t *model) {
   model->threshold = 0;
 
   // Parse the model JSON file
-  std::string model_json_path(model_path);
-  std::size_t split_pos = model_json_path.find_last_of("/");
-  split_pos = split_pos > 0 ? split_pos + 1 : 0;
-  model_json_path = model_json_path + "/" + model_json_path.substr(split_pos) + ".json";
+  std::string modelJsonPath(modelPath);
+  std::size_t splitPos = modelJsonPath.find_last_of("/");
+  splitPos = splitPos > 0 ? splitPos + 1 : 0;
+  std::string basePath = modelJsonPath;
+  modelJsonPath = basePath + "/" + modelJsonPath.substr(splitPos) + ".json";
 
-  std::ifstream in_stream(model_json_path);
+  std::ifstream in_stream(modelJsonPath);
   if (!in_stream.is_open()) {
     std::cerr << "Cannot open JSON model file" << std::endl;
     return;
@@ -81,22 +82,14 @@ void load_detr_model(const char *modelPath, detr_model_t *model) {
   std::string str((std::istreambuf_iterator<char>(in_stream)), std::istreambuf_iterator<char>());
   const char *json = str.c_str();
 
-  std::string basePath = model_json_path.substr(0, split_pos);
-  split_pos = basepath.find_last_of("/");
-  split_pos = split_pos > 0 ? split_pos + 1 : 0;
-  basepath.resize(split_pos);
-
   // Parse JSON
-  std::string onnxModelPath = basePath + "/" + json_get_key_string(json, "model_paths");
-
-  std::string modelFormat = json_get_key_string(json, "format");
+  std::string modelPaths = json_get_key_string(json, "model_paths", 0);
+  std::string onnxModelPath = basePath + "/" + modelPaths;
+  std::string modelFormat = json_get_key_string(json, "format", 0);
 
   // Parse inference params
-  std::string threshold = json_get_key_string_detr(json, "threshold");
-
-  if (!threshold.empty()) {
-    model->threshold = std::stof(threshold);
-  }
+  float threshold = json_get_key_from_inference_params(json, "threshold", 0);
+  model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
   if (modelFormat != "onnx") {
