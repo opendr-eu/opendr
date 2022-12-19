@@ -21,7 +21,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
@@ -33,7 +33,7 @@ class FaceDetectionNode(Node):
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_faces_annotated",
                  detections_topic="/opendr/faces", device="cuda", backbone="resnet"):
         """
-        Creates a ROS Node for face detection with Retinaface.
+        Creates a ROS2 Node for face detection with Retinaface.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -48,7 +48,7 @@ class FaceDetectionNode(Node):
         where 'mnet' detects masked faces as well
         :type backbone: str
         """
-        super().__init__('face_detection_node')
+        super().__init__('opendr_face_detection_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
