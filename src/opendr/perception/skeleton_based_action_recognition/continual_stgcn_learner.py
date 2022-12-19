@@ -100,7 +100,8 @@ class CoSTGCNLearner(Learner):
             checkpoint_load_iter (int, optional): Unused parameter. Defaults to 0.
             temp_path (str, optional): Path in which to store temporary files. Defaults to "".
             device (str, optional): Name of computational device ("cpu" or "cuda"). Defaults to "cuda".
-            weight_decay ([type], optional): Weight decay used for optimization. Defaults to 1e-5.
+            loss (str): Name of loss in torch.nn.functional to use. Defaults to "cross_entropy".
+            weight_decay (float, optional): Weight decay used for optimization. Defaults to 1e-5.
             momentum (float, optional): Momentum used for optimization. Defaults to 0.9.
             drop_last (bool, optional): Drop last data point if a batch cannot be filled. Defaults to True.
             pin_memory (bool, optional): Pin memory in dataloader. Defaults to False.

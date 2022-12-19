@@ -797,8 +797,20 @@ Constructor parameters:
   Path in which to store temporary files.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
+- **loss**: *str, default="cross_entropy"*\
+  Name of loss in torch.nn.functional to use. Defaults to "cross_entropy".
+- **weight_decay**: *float, default=1e-5*\
+  Weight decay used for optimization. Defaults to 1e-5.
+- **momentum**: *float, default=0.9*\
+  Momentum used for optimization. Defaults to 0.9.
+- **drop_last**: *bool, default=True*\
+  Drop last data point if a batch cannot be filled. Defaults to True.
+- **pin_memory**: *bool, default=False*\
+  Pin memory in dataloader. Defaults to False.
 - **num_workers**: *int, default=0*\
   Specifies the number of workers to be used by the data loader.
+- **seed**: *int, default=123*\
+  Random seed. Defaults to 123.
 - **num_class**: *int, default=60*\
   Specifies the number of classes for the action dataset.
 - **num_point**: *int, default=25*\
@@ -809,6 +821,8 @@ Constructor parameters:
   Specifies the number of input channels for each body joint.
 - **graph_type**: *str {'ntu', 'openpose'}, default='ntu'*\
   Specifies the type of graph structure associated with the dataset.
+- **sequence_len** *int, default=300*\
+  Size of the final global average pooling. Defaults to 300.
 
 #### `CoSTGCNLearner.fit`
 ```python
