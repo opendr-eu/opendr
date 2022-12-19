@@ -69,9 +69,9 @@ class FacialEmotionEstimationNode:
         self.facial_emotion_estimator = FacialEmotionLearner(device=device, batch_size=2,
                                                              ensemble_size=9,
                                                              name_experiment='esr_9')
+        self.facial_emotion_estimator.init_model(num_branches=9)
 
         model_saved_path = self.facial_emotion_estimator.download(path=None, mode="pretrained")
-
         self.facial_emotion_estimator.load(ensemble_size=9, path_to_saved_network=model_saved_path)
 
     def listen(self):
