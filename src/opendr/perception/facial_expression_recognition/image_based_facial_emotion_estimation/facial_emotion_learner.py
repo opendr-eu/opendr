@@ -534,7 +534,8 @@ class FacialEmotionLearner(Learner):
         }
         return results
 
-    def __plot_dimensional(self, his_loss, his_val_loss_valence, his_val_loss_arousal, branch_idx, base_path_his):
+    @staticmethod
+    def __plot_dimensional(his_loss, his_val_loss_valence, his_val_loss_arousal, branch_idx, base_path_his):
         losses_plot = [[range(len(his_loss)), his_loss]]
         legends_plot_loss = ['Training']
         # Loss
