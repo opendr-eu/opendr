@@ -274,6 +274,52 @@ The pretrained models on AffectNet Categorical dataset are provided by [[1]](#1)
   ```
 
 
+#### Performance Evaluation
+
+The tests were conducted on the following computational devices:
+- Intel(R) Xeon(R) Gold 6230R CPU on server
+- Nvidia Jetson TX2
+- Nvidia Jetson Xavier AGX
+- Nvidia RTX 2080 Ti GPU on server with Intel Xeon Gold processors
+
+
+Inference time is measured as the time taken to transfer the input to the model (e.g., from CPU to GPU), run inference using the algorithm, and return results to CPU.
+The ESR and its extension diversified_ESR denoted as ESR*, which learns diversified feature representations to improve the model generalisation, are implemented in *FacialEmotionLearner*.
+The ESR-n and ESR*-n denote the ESR and diversified-ESR models with #n ensemble branches, respectively
+
+The model can receive either single images as input or a video, which can be captured by webcam, and perform the prediction frame-by-frame.
+
+We report speed (single sample per inference) as the mean of 100 runs, and the energy (Joules) on embedded devices.
+The noted memory is the maximum allocated memory on GPU during inference.
+
+| Method       | Acc. (%) | Params (M) | Mem. (MB) | 
+|--------------|----------|------------|-----------|
+| ESR-9        | 87.17    | 20.35      | 402.99    | 
+| ESR-15       | 88.59    | 33.67      | 455.61    | 
+| ESR*-9       | 89.15    | 20.83      | 406.83    |
+| ESR*-15      | 89.34    | 34.47      | 460.73    |
+
+The inference speed (evaluations/second) of both learners on various computational devices are as follows:
+
+| Method       | CPU   | Jetson TX2 | Jetson Xavier | RTX 2080 Ti | 
+|--------------|-------|------------|---------------|-------------|
+| ESR-9        | 22.23 | 27.08      | 28.79         | 117.91      | 
+| ESR-15       | 13.86 | 17.76      | 18.17         | 91.78       | 
+| ESR*-9       | 5.24  | 6.60       | 12.45         | 33.40       |
+| ESR*-15      | 3.38  | 4.18       | 8.47          | 20.57       | 
+
+Energy (Joules) of both learners’ inference on embedded devices is shown in the following: 
+
+| Method  | Jetson TX2 | Jetson Xavier | 
+|---------|------------|---------------|
+| ESR-9   | 0.96       | 0.67          | 
+| ESR-15  | 1.16       | 0.93          | 
+| ESR*-9  | 3.38       | 1.41          |
+| ESR*-15 | 6.26       | 2.51          | 
+
+
+
+
 ## References
 
 <a id="1">[1]</a>
