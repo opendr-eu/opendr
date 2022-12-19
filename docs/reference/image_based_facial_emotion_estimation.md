@@ -111,8 +111,7 @@ Parameters:
 FacialEmotionLearner.save(self, state_dicts, base_path_to_save_model)
 ```
 This method is used to save a trained model.
-Provided with the path (absolute or relative), it creates the "path" directory, if it does not already
-exist.
+Provided with the path (absolute or relative), it creates the "path" directory, if it does not already exist.
 Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
 If [`self.optimize`](#FacialEmotionLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
