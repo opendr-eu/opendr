@@ -221,10 +221,10 @@ The pretrained models on AffectNet Categorical dataset are provided by [[1]](#1)
   from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 
   learner = FacialEmotionLearner(device="cpu", temp_path='./tmp',
-                               batch_size=2, max_training_epoch=1, ensemble_size=1,
-                               name_experiment='esr_9', base_path_experiment='./experiments/',
-                               lr=1e-1, categorical_train=True, dimensional_finetune=True,
-                               base_path_to_dataset='./data', max_tuning_epoch=1)
+                                 batch_size=2, max_training_epoch=1, ensemble_size=1,
+                                 name_experiment='esr_9', base_path_experiment='./experiments/',
+                                 lr=1e-1, categorical_train=True, dimensional_finetune=True,
+                                 base_path_to_dataset='./data', max_tuning_epoch=1)
   learner.fit()
   learner.save(state_dicts=learner.model.to_state_dict(),
                base_path_to_save_model=learner.base_path_experiment,
