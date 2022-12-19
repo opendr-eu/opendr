@@ -108,7 +108,7 @@ Parameters:
 
 #### `FacialEmotionLearner.save`
 ```python
-FacialEmotionLearner.save(self, state_dicts, base_path_to_save_model, current_branch_save)
+FacialEmotionLearner.save(self, state_dicts, base_path_to_save_model)
 ```
 This method is used to save a trained model.
 Provided with the path (absolute or relative), it creates the "path" directory, if it does not already
