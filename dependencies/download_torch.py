@@ -119,8 +119,4 @@ if __name__ == '__main__':
     except:
         warnings.warn("\033[93m Not torchvision found with your specific torch version.\n"
                       "Please see the torchvision GitHub repository for more information.")
-
-    # Send environment variables to be used with sudo privileges from bash script
-    os.environ["TORCH_VERSION"] = TORCH_VERSION
-    os.environ["VISION_VERSION"] = VISION_VERSION
-    os.environ["DEVICE"] = DEVICE
+                      

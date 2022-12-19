@@ -10,7 +10,6 @@ fi
 if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   TORCH_DIRECTORY="/usr/local/libtorch"
 
-  VISION_VERSION="0.14.0"
   if [[ "$OPENDR_DEVICE" == "gpu" ]]
   then
     echo "Downloading and installing libtorch and torchvision (gpu support) ..."
@@ -44,7 +43,8 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
 
   # TORCH VISION INSTALLATION
   tar zxf vision.tar.gz
-  cd vision-${VISION_VERSION}
+  mv vision-* vision
+  cd vision
   sudo mkdir -p build
   cd build
   sudo cmake .. -DCMAKE_CUDA_COMPILER=${CUDA_COMPILER} -DCMAKE_PREFIX_PATH=${TORCH_DIRECTORY} -DWITH_CUDA=${GPU}
@@ -56,7 +56,7 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   sudo rm -rf libtorch
   sudo rm -rf libtorch.zip
 
-  sudo rm -rf vision-${VISION_VERSION}
+  sudo rm -rf vision
   sudo rm -rf vision.tar.gz
 
   sudo ldconfig
