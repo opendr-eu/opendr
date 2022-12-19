@@ -135,7 +135,7 @@ Parameters:
 
 - **ensemble_size**: *int, default=9*\
   Specifies the number of ensemble branches in the model for which the pretrained weights should be loaded.
-- **path_to_saved_network**: *str*\
+- **path_to_saved_network**: *str, default="./trained_models/esr_9"*\
   Path of the model to be loaded.
 - **file_name_base_network**: *str*\
   The file name of the base network to be loaded.
