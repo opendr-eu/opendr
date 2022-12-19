@@ -1,5 +1,6 @@
 <div align="center">
 
+
 <img src="docs/reference/images/opendr_logo.png" width="400px">
 
 **A modular, open and non-proprietary toolkit for core robotic functionalities by harnessing deep learning**
