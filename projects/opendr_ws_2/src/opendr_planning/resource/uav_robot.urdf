@@ -29,6 +29,6 @@
             <inertialUnitName>inertial_unit</inertialUnitName>
         </plugin>
 
-        <plugin type="opendr_planning.e2e_planning_robot_driver.EndToEndPlanningUAVRobotDriver" />
+        <plugin type="opendr_planning.end_to_end_planning_robot_driver.EndToEndPlanningUAVRobotDriver" />
     </webots>
 </robot>
