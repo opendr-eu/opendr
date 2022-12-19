@@ -20,7 +20,7 @@ You can also visualize regions in the image relevant for the classification of f
 ```python
 python inference_demo.py image -i 'image_path' -pre 'pretrained_path' -d -s 2 -g
 ```  
-The argument -g generates saliency maps with the Grad-CAM algorithm.
+The argument `-g` generates saliency maps with the Grad-CAM algorithm.
 
 To recognize a facial expression in videos, run the following command:
 ```python
