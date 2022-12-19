@@ -32,7 +32,7 @@ To recognize a facial expression in images captured from a webcam, run the follo
 ```python
 python inference_demo.py webcam -pre 'pretrained_path' -d -s 2 
 ```
-The argument "webcam" indicates the framework to capture images from a webcam. -d sets the display mode to true, -s 2 sets the window size to 1440 x 900.
+The argument `webcam` indicates the framework to capture images from a webcam. `-d` sets the display mode to true, `-s 2` sets the window size to 1440 x 900.
 
 #### List of Arguments
 Positional arguments:
