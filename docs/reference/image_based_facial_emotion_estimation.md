@@ -90,7 +90,7 @@ This method is used to initialize the model.
 
 Parameters:
 
-- **num_branches**: *int, default=9*\
+- **num_branches**: *int*\
   Specifies the number of ensemble branches in the model. ESR_9 model is built by 9 branches by default.
 
 #### `FacialEmotionLearner.infer`
