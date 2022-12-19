@@ -58,10 +58,10 @@ typedef struct face_recognition_model face_recognition_model_t;
 
 /**
  * Loads a face recognition model saved in OpenDR format
- * @param model_path path to the OpenDR face recongition model (as exported using OpenDR library)
+ * @param modelPath path to the OpenDR face recognition model (as exported using OpenDR library)
  * @param model the loaded model
  */
-void load_face_recognition_model(const char *model_path, face_recognition_model_t *model);
+void load_face_recognition_model(const char *modelPath, face_recognition_model_t *model);
 
 /**
  * This function perform inference using a face recognition model and an input image
@@ -74,28 +74,28 @@ opendr_category_target_t infer_face_recognition(face_recognition_model_t *model,
 /**
  * Builds a face recognition database (containing images for persons to be recognized). This function expects the
  * database_folder to have the same format as the main Python toolkit.
- * @param database_folder folder containing the database
- * @param output_path output path to store the binary database. This file should be loaded along with the face
+ * @param databaseFolder folder containing the database
+ * @param outputPath output path to store the binary database. This file should be loaded along with the face
  * recognition model before performing inference.
  * @param model the face recognition model to be used for extracting the database features
  */
-void build_database_face_recognition(const char *database_folder, const char *output_path, face_recognition_model_t *model);
+void build_database_face_recognition(const char *databaseFolder, const char *outputPath, face_recognition_model_t *model);
 
 /**
  * Loads an already built database into the face recognition model. After this step, the model can be used for
  * performing inference.
- * @param database_path path to the database file
+ * @param databasePath path to the database file
  * @param model the face recognition model to be used for inference
  */
-void load_database_face_recognition(const char *database_path, face_recognition_model_t *model);
+void load_database_face_recognition(const char *databasePath, face_recognition_model_t *model);
 
 /**
  * Returns the name of a recognition person by decoding the category id into a string
  * @param model the face recognition model to be used for inference
  * @param category the predicted category
- * @param person_name buffer to store the person name
+ * @param personName buffer to store the person name
  */
-void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category, char *person_name);
+void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category, char *personName);
 
 /**
  * Releases the memory allocated for a face recognition model

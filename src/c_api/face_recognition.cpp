@@ -74,7 +74,7 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
   }
 }
 
-void load_face_recognition_model(const char *model_path, face_recognition_model_t *model) {
+void load_face_recognition_model(const char *modelPath, face_recognition_model_t *model) {
   // Initialize model
   model->onnx_session = model->env = model->session_options = NULL;
   model->database = model->database_ids = NULL;
@@ -101,15 +101,12 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
   basePath = basePath.substr(0, splitPosition);
 
   // Parse JSON
-  std::string onnxModelPath = basePath + json_get_key_string(str, "model_paths");
-  std::string modelFormat = json_get_key_string(json, "format");
+  std::string onnxModelPath = basePath + json_get_key_string(json, "model_paths", 0);
+  std::string modelFormat = json_get_key_string(json, "format", 0);
 
   // Parse inference params
-  std::string threshold = json_get_key_string(json, "threshold");
-
-  if (!threshold.empty()) {
-    model->threshold = std::stof(threshold);
-  }
+  float threshold = json_get_key_from_inference_params(json, "threshold", 0);
+  model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
   if (modelFormat != "onnx") {
