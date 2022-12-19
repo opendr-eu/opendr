@@ -26,7 +26,6 @@ from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 
-from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from opendr.perception.facial_expression_recognition import image_processing
 from opendr.perception.facial_expression_recognition import ESR
