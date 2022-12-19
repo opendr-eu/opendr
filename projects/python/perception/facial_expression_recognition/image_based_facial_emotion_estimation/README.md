@@ -16,6 +16,7 @@ python inference_demo.py image -i ./media/jackie.jpg -d -s 2
 ```  
 
 The argument `image` indicates that the input is an image. The location of the image is specified after `-i` and `-d` sets the display mode to true and `-s 2` sets the window size to 1440 x 900.
+If the location of image file is not specified, the demo automatically downloads a sample image file from the FTP server.
 You can also visualize regions in the image relevant for the classification of facial expression by adding `-g` as arguments:
 ```python
 python inference_demo.py image -i 'image_path' -d -s 2 -g
@@ -27,6 +28,7 @@ To recognize a facial expression in videos, run the following command:
 python inference_demo.py video -i 'video_path' -d -f 5 -s 2
 ```
 The argument `video` indicates that the input is a video. The location of the video is specified after `-i`. `-d` sets the display mode to true, `-f` defines the number of frames to be processed, and `-s 2` sets the window size to 1440 x 900.
+If the location of video file is not specified, the demo automatically downloads a sample video file from the FTP server. 
 
 To recognize a facial expression in images captured from a webcam, run the following command:
 ```python

@@ -708,13 +708,13 @@ class FacialEmotionLearner(Learner):
         This method downloads data files and saves them in the path provided.
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
-        :param mode: Whether to download data or the pretrained model
-        :type mode: It can be an item in ["data", "pretrained"]
+        :param mode: Whether to download data or the pretrained model, or image/video for running demo
+        :type mode: It can be an item in ["data", "pretrained", "demo_image", "demo_video"]
         :param url: URL of the FTP server, defaults to OpenDR FTP URL
         :type url: str, optional
         """
 
-        valid_modes = ["data", "pretrained"]
+        valid_modes = ["data", "pretrained", "demo_image", "demo_video"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
         if path is None:
@@ -759,5 +759,37 @@ class FacialEmotionLearner(Learner):
                 print("Pretrained files already exist.")
             print("Pretrained model weights download complete.")
             downloaded_files_path = os.path.join(model_path, 'esr_9')
+
+        elif mode == "demo_image":
+            print("Downloading image...")
+            demo_path = os.path.join(path, 'demo')
+            if not os.path.exists(demo_path):
+                os.makedirs(demo_path)
+
+            img_path = os.path.join(demo_path, 'sheldon.jpg')
+            if not os.path.exists(img_path):
+                # Download data
+                file_url = os.path.join(url, 'demo/sheldon.jpg')
+                urlretrieve(file_url, img_path)
+            else:
+                print("Data files already exist.")
+            print("Data download complete.")
+            downloaded_files_path = img_path
+
+        elif mode == "demo_video":
+            print("Downloading video...")
+            demo_path = os.path.join(path, 'demo')
+            if not os.path.exists(demo_path):
+                os.makedirs(demo_path)
+
+            vid_path = os.path.join(demo_path, 'sheldon.mp4')
+            if not os.path.exists(vid_path):
+                # Download data
+                file_url = os.path.join(url, 'demo/big_bang.mp4')
+                urlretrieve(file_url, vid_path)
+            else:
+                print("Data files already exist.")
+            print("Data download complete.")
+            downloaded_files_path = vid_path
 
         return downloaded_files_path

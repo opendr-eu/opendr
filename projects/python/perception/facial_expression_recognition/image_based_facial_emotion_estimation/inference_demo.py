@@ -333,7 +333,7 @@ def main():
     parser.add_argument("-g", "--gradcam", help="run grad-CAM and displays the salience maps.",
                         action="store_true")
     parser.add_argument("-i", "--input", help="define the full path to an image or video.",
-                        type=str)
+                        type=str, default='')
     parser.add_argument("-o", "--output",
                         help="create and write ESR-9's outputs to a CSV file. The file is saved in a folder defined "
                              "by this argument (ex. '-o ./' saves the file with the same name as the input file "
@@ -358,9 +358,13 @@ def main():
 
     args = parser.parse_args()
 
+    learner = FacialEmotionLearner(device=args.cuda, ensemble_size=args.ensemble_size)
+
     # Calls to main methods
     if args.mode == "image":
         try:
+            if args_validation.is_none(args.input):
+                args.input = learner.download(mode="demo_image")
             args_validation.validate_image_video_mode_arguments(args)
             image(args.input, args.display, args.gradcam, args.output,
                   args.size, args.cuda, args.pretrained, args.ensemble_size)
@@ -368,6 +372,8 @@ def main():
             print(e)
     elif args.mode == "video":
         try:
+            if args_validation.is_none(args.input):
+                args.input = learner.download(mode="demo_video")
             args_validation.validate_image_video_mode_arguments(args)
             video(args.input, args.display, args.gradcam, args.output,
                   args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
