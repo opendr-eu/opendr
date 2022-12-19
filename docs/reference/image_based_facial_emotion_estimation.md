@@ -209,7 +209,7 @@ Parameters:
 #### Pre-trained models
 
 The pretrained models on AffectNet Categorical dataset are provided by [[1]](#1) which can be found [here](https://github.com/siqueira-hc/Efficient-Facial-Feature-Learning-with-Wide-Ensemble-based-Convolutional-Neural-Networks/tree/master/model/ml/trained_models/esr_9).
-Please note that the pretrained weights cannot be used for commercial purposes!
+**Please note that the pretrained weights cannot be used for commercial purposes.**
 
 #### Examples
 
