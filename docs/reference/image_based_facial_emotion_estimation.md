@@ -51,7 +51,7 @@ Constructor parameters:
   Specifies if the model should be trained on categorical data or not.
 - **base_path_to_dataset**: *str, default=''./data/AffectNet''*\
   Specifies the dataset path.
-- **max_tuning_epoch**: *int, default=20*\
+- **max_tuning_epoch**: *int, default=1*\
   Specifies the maximum number of epochs the model should be finetuned on dimensional data.
 - **max_tuning_epoch**: *bool, default=False*\
   Specifies if the learner diversifies the features of different branches or not.
