@@ -857,7 +857,7 @@ This method is used to initialize model with random parameters
 
 #### `ProgressiveSpatioTemporalGCNLearner.infer`
 ```python
-ProgressiveSpatioTemporalGCNLearner.infer(self, SkeletonSeq_batch)
+ProgressiveSpatioTemporalGCNLearner.infer(self, batch)
 ```
 
 This method is used to perform action recognition on a sequence of skeletons.
