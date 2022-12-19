@@ -441,7 +441,7 @@ class CoSTGCNLearner(Learner):
             path.is_file() and path.suffix == ".json"
         ), "The provided metadata path should be a .json file"
 
-        logger.debug(f"Loading ContinualSTGCNLearner metadata from {str(path)}")
+        logger.debug(f"Loading CoSTGCNLearner metadata from {str(path)}")
         with open(path, "r") as f:
             meta_data = json.load(f)
 
