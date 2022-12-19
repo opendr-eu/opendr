@@ -15,8 +15,8 @@ To recognize a facial expression in images, run the following command:
 python inference_demo.py image -i ./media/jackie.jpg -pre ./pretrained -d -s 2
 ```  
 
-The argument "image" indicates that the input is an image. The location of the image is specified after -i while -pre indicates the location of pretrained model weights. -d sets the display mode to true and -s 2 sets the window size to 1440 x 900.
-You can also visualize regions in the image relevant for the classification of facial expression by adding -g as arguments:
+The argument `image` indicates that the input is an image. The location of the image is specified after `-i` while `-pre` indicates the location of pretrained model weights. `-d` sets the display mode to true and `-s 2` sets the window size to 1440 x 900.
+You can also visualize regions in the image relevant for the classification of facial expression by adding `-g` as arguments:
 ```python
 python inference_demo.py image -i 'image_path' -pre 'pretrained_path' -d -s 2 -g
 ```  
