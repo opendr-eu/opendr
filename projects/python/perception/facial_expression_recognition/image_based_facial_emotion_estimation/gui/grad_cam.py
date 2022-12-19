@@ -24,7 +24,6 @@ class GradCAM:
         (AAAI-20), pages 1–1, New York, USA.
     """
 
-    # def __init__(self, esr_base, esr_branch_to_last_conv_layer, esr_branch_from_last_conv_layer_to_emotion_output):
     def __init__(self, esr, device):
         self._zero_grad = esr.zero_grad
         self._esr_base = esr.base
