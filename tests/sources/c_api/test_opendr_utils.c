@@ -34,6 +34,65 @@ START_TEST(image_load_test) {
 }
 END_TEST
 
+START_TEST(detection_vector_init_load_test) {
+  // Initialize a detection target vector
+  opendr_detection_vector_target_t detection_vector;
+  // init functions uses load internally
+  init_detections_vector(&detection_vector);
+  ck_assert(detection_vector.starting_pointer);
+  // Free the resources
+  free_detections_vector(&detection_vector);
+  ck_assert(detection_vector.starting_pointer == NULL);
+}
+END_TEST
+
+START_TEST(tensor_init_load_test) {
+  // Initialize a detection target vector
+  opendr_tensor_t opendr_tensor;
+  // init functions uses load internally
+  init_tensor(&opendr_tensor);
+  ck_assert(opendr_tensor.data == NULL);
+
+  void *tensor_data = malloc(1 * sizeof(float));
+  load_tensor(&opendr_tensor, tensor_data, 1, 1, 1, 1, 1);
+  ck_assert(opendr_tensor.data);
+  // Free the resources
+  free(tensor_data);
+  free_tensor(&opendr_tensor);
+  ck_assert(opendr_tensor.data == NULL);
+}
+END_TEST
+
+START_TEST(tensor_vector_init_load_test) {
+  // Initialize a detection target vector
+  opendr_tensor_vector_t tensor_vector;
+  // init functions uses load internally
+  init_tensor_vector(&tensor_vector);
+
+  ck_assert(tensor_vector.batch_sizes == NULL);
+  ck_assert(tensor_vector.frames == NULL);
+  ck_assert(tensor_vector.channels == NULL);
+  ck_assert(tensor_vector.widths == NULL);
+  ck_assert(tensor_vector.heights == NULL);
+  ck_assert(tensor_vector.memories == NULL);
+
+  opendr_tensor_t tensor[1];
+  init_tensor(&(tensor[0]));
+
+  void *tensor_data = malloc(1 * sizeof(float));
+  load_tensor(&(tensor[0]), tensor_data, 1, 1, 1, 1, 1);
+
+  load_tensor_vector(&tensor_vector, tensor, 1);
+  ck_assert(tensor_vector.memories);
+  // Free the resources
+  free(tensor_data);
+  free_tensor(&(tensor[0]));
+
+  free_tensor_vector(&tensor_vector);
+  ck_assert(tensor_vector.memories == NULL);
+}
+END_TEST
+
 Suite *opendr_utilities_suite(void) {
   Suite *s;
   TCase *tc_core;
@@ -42,6 +101,9 @@ Suite *opendr_utilities_suite(void) {
   tc_core = tcase_create("Core");
 
   tcase_add_test(tc_core, image_load_test);
+  tcase_add_test(tc_core, detection_vector_init_load_test);
+  tcase_add_test(tc_core, tensor_init_load_test);
+  tcase_add_test(tc_core, tensor_vector_init_load_test);
   suite_add_tcase(s, tc_core);
 
   return s;

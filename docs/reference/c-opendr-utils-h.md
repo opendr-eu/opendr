@@ -5,12 +5,30 @@ The *opendr_utils.h* header provides function definitions of OpenDR helpers (e.g
 
 ### Function *json_get_key_string()*
 ```C
-const char* json_get_key_string(const char *json, const char *key);
+const char* json_get_key_string(const char *json, const char *key, const int index);
 ```
-The *json_get_key_string()* function allows for reading a json file and return the value of a key.
+The *json_get_key_string()* function allows for reading a json file and return the value of a key as string.
+If the value is an array it will return only the (*index*) value of the array.
 A pointer (*json*) that have the json string and a pointer (*key*) with the wanted value is needed.
+If failes returns (*""*).
 
-##
+### Function *json_get_key_float()*
+```C
+float json_get_key_float(const char *json, const char *key, const int index);
+```
+The *json_get_key_float()* function allows for reading a json file and return the value of a key as float.
+If the value is an array it will return only the (*index*) value of the array.
+A pointer (*json*) that have the json string and a pointer (*key*) with the wanted value is needed.
+If failes returns (*0.0f*).
+
+### Function *json_get_key_from_inference_params()*
+```C
+float json_get_key_from_inference_params(const char *json, const char *key, const int index);
+```
+The *json_get_key_from_inference_params()* function allows for reading a json file and return the value of a key in inference_params section as float.
+If the value is an array it will return only the (*index*) value of the array.
+A pointer (*json*) that have the json string and a pointer (*key*) with the wanted value is needed.
+If failes returns (*0.0f*).
 
 ### Function *load_image()*
 ```C

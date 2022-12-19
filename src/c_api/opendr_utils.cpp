@@ -24,17 +24,76 @@
 #include <stringbuffer.h>
 #include <writer.h>
 
-const char *json_get_key_string(const char *json, const char *key) {
+#include <iostream>
+
+float json_get_key_from_inference_params(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {
+    return 0.0f;
+  }
+  const rapidjson::Value &inference_params = doc["inference_params"];
+  if ((!inference_params.IsObject()) || (!inference_params.HasMember(key))) {
+    return 0.0f;
+  }
+  const rapidjson::Value &value = inference_params[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return 0.0f;
+    }
+    if (!value[index].IsFloat()) {
+      return 0.0f;
+    }
+    return value[index].GetFloat();
+  }
+  if (!value.IsFloat()) {
+    return 0.0f;
+  }
+  return value.GetFloat();
+}
+
+const char *json_get_key_string(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
   if ((!doc.IsObject()) || (!doc.HasMember(key))) {
     return "";
   }
   const rapidjson::Value &value = doc[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return "";
+    }
+    if (!value[index].IsString()) {
+      return "";
+    }
+    return value[index].GetString();
+  }
   if (!value.IsString()) {
     return "";
   }
   return value.GetString();
+}
+
+float json_get_key_float(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember(key))) {
+    return 0.0f;
+  }
+  const rapidjson::Value &value = doc[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return 0.0f;
+    }
+    if (!value[index].IsFloat()) {
+      return 0.0f;
+    }
+    return value[index].IsFloat();
+  }
+  if (!value.IsFloat()) {
+    return 0.0f;
+  }
+  return value.GetFloat();
 }
 
 void load_image(const char *path, opendr_image_t *image) {
@@ -82,8 +141,10 @@ void load_detections_vector(opendr_detection_vector_target_t *detection_vector, 
 }
 
 void free_detections_vector(opendr_detection_vector_target_t *detection_vector) {
-  if (detection_vector->starting_pointer != NULL)
+  if (detection_vector->starting_pointer != NULL) {
     free(detection_vector->starting_pointer);
+    detection_vector->starting_pointer = NULL;
+  }
 }
 
 void init_tensor(opendr_tensor_t *opendr_tensor) {
@@ -113,7 +174,7 @@ void load_tensor(opendr_tensor_t *opendr_tensor, void *tensor_data, int batch_si
 void free_tensor(opendr_tensor_t *opendr_tensor) {
   if (opendr_tensor->data != NULL) {
     free(opendr_tensor->data);
-    opendr_tensor->data == NULL
+    opendr_tensor->data = NULL;
   }
 }
 
@@ -124,7 +185,7 @@ void init_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
   tensor_vector->channels = NULL;
   tensor_vector->widths = NULL;
   tensor_vector->heights = NULL;
-  tensor_vector->memories = 0;
+  tensor_vector->memories = NULL;
 }
 
 void load_tensor_vector(opendr_tensor_vector_t *tensor_vector, opendr_tensor_t *tensor, int number_of_tensors) {
@@ -185,7 +246,6 @@ void free_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
     tensor_vector->heights = NULL;
   }
 
-
   // free tensors data and vector memory
   if (tensor_vector->memories != NULL) {
     free(tensor_vector->memories);
@@ -194,7 +254,6 @@ void free_tensor_vector(opendr_tensor_vector_t *tensor_vector) {
 
   // reset tensor vector values
   tensor_vector->n_tensors = 0;
-
 }
 
 void iter_tensor_vector(opendr_tensor_t *output, opendr_tensor_vector_t *tensor_vector, int index) {

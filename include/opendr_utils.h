@@ -28,8 +28,28 @@ extern "C" {
  * Json parser for OpenDR model files.
  * @param json a string of json file.
  * @param key the value to extract from json file.
+ * @param index the index to choose the value if it is an array.
+ * @return string with the value of key
  */
-const char *json_get_key_string(const char *json, const char *key);
+const char *json_get_key_string(const char *json, const char *key, const int index);
+
+/**
+ * Json parser for OpenDR model files.
+ * @param json a string of json file.
+ * @param key the value to extract from json file.
+ * @param index the index to choose the value if it is an array.
+ * @return float with the value of key
+ */
+float json_get_key_float(const char *json, const char *key, const int index);
+
+/**
+ * Json parser for OpenDR model files from inference_params key.
+ * @param json a string of json file.
+ * @param key the value to extract from inference_params.
+ * @param index the index to choose the value if it is an array.
+ * @return float with the value of key
+ */
+float json_get_key_from_inference_params(const char *json, const char *key, const int index);
 
 /**
  * Reads an image from path and saves it into OpenDR an image structure
