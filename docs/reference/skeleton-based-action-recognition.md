@@ -948,7 +948,7 @@ Parameters:
   Whether to print messages in the console.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-- **file_name**: *str*\
+- **file_name**: *str, default="costgcn_ntu60_xview_joint.ckpt"*\
   The name of the file containing the pretrained model.
 
 #### `CoSTGCNLearner.infer`
