@@ -137,7 +137,7 @@ class FacialEmotionLearner(Learner):
         :param file_name_base_network: The file name of the base network to be loaded.
         :param file_name_conv_branch: The file name of the ensemble branch network to be loaded.
         :param fix_backbone:  If true, all the model weights except the classifier are fixed so that the last layers'
-        weights are finetuned on dimensional data. Otherwise, all the model weights will be trained from scratch.
+        weights are fine-tuned on dimensional data. Otherwise, all the model weights will be trained from scratch.
 
         """
         with open(path.join(path_to_saved_network, self.name_experiment + ".json")) as metadata_file:
