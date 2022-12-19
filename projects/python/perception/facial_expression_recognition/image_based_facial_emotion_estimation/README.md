@@ -12,25 +12,25 @@ The pretrained models on AffectNet Categorical dataset are provided by [[1]](#1)
 **Please note that the pretrained weights cannot be used for commercial purposes**
 To recognize a facial expression in images, run the following command:
 ```python
-python inference_demo.py image -i ./media/jackie.jpg -pre ./pretrained -d -s 2
+python inference_demo.py image -i ./media/jackie.jpg -d -s 2
 ```  
 
-The argument `image` indicates that the input is an image. The location of the image is specified after `-i` while `-pre` indicates the location of pretrained model weights. `-d` sets the display mode to true and `-s 2` sets the window size to 1440 x 900.
+The argument `image` indicates that the input is an image. The location of the image is specified after `-i` and `-d` sets the display mode to true and `-s 2` sets the window size to 1440 x 900.
 You can also visualize regions in the image relevant for the classification of facial expression by adding `-g` as arguments:
 ```python
-python inference_demo.py image -i 'image_path' -pre 'pretrained_path' -d -s 2 -g
+python inference_demo.py image -i 'image_path' -d -s 2 -g
 ```  
 The argument `-g` generates saliency maps with the Grad-CAM algorithm.
 
 To recognize a facial expression in videos, run the following command:
 ```python
-python inference_demo.py video -i 'video_path' -pre 'pretrained_path' -d -f 5 -s 2
+python inference_demo.py video -i 'video_path' -d -f 5 -s 2
 ```
 The argument `video` indicates that the input is a video. The location of the video is specified after `-i`. `-d` sets the display mode to true, `-f` defines the number of frames to be processed, and `-s 2` sets the window size to 1440 x 900.
 
 To recognize a facial expression in images captured from a webcam, run the following command:
 ```python
-python inference_demo.py webcam -pre 'pretrained_path' -d -s 2 
+python inference_demo.py webcam -d -s 2 
 ```
 The argument `webcam` indicates the framework to capture images from a webcam. `-d` sets the display mode to true, `-s 2` sets the window size to 1440 x 900.
 
@@ -51,9 +51,6 @@ Display a window with the input data on the left and the output data on the righ
 
 - **-i (--input)**:\
 Define the full path to an image or video.
-
-- **-pre (--pretrained)**:\
-Define the full path to pretrained model weights.
 
 - **-s (--size)**:\
 Define the size of the window:

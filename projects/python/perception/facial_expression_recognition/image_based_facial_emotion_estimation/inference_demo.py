@@ -89,19 +89,19 @@ def _pre_process_input_image(image):
     return image
 
 
-def _predict(input_face, device, model_path, ensemble_size):
+def _predict(input_face, device, ensemble_size):
     """
     Facial emotion/expression estimation. Classifies the pre-processed input image with FacialEmotionLearner.
 
     :param input_face: (ndarray) input image.
     :param device: runs the classification on CPU or GPU
-    :param model_path: path to the saved network
-    :param model_path: number of branches in the network
+    :param ensemble_size: number of branches in the network
     :return: Lists of emotions and affect values including the ensemble predictions based on plurality.
     """
 
     learner = FacialEmotionLearner(device=device, ensemble_size=ensemble_size)
     learner.init_model(num_branches=ensemble_size)
+    model_path = learner.download(mode="pretrained")
     learner.load(ensemble_size, path_to_saved_network=model_path)
 
     to_return_emotion = []
@@ -144,7 +144,7 @@ def _predict(input_face, device, model_path, ensemble_size):
     return to_return_emotion, to_return_affect, to_return_emotion_idx, learner.model
 
 
-def recognize_facial_expression(image, on_gpu, grad_cam, model_path, ensemble_size):
+def recognize_facial_expression(image, on_gpu, grad_cam, ensemble_size):
     """
     Detects a face in the input image.
     If more than one face is detected, the biggest one is used.
@@ -174,7 +174,7 @@ def recognize_facial_expression(image, on_gpu, grad_cam, model_path, ensemble_si
 
         # Recognize facial expression
         # emotion_idx is needed to run Grad-CAM
-        emotion, affect, emotion_idx, model = _predict(input_face, device, model_path, ensemble_size)
+        emotion, affect, emotion_idx, model = _predict(input_face, device, ensemble_size)
 
         # Grad-CAM
         if grad_cam:
@@ -187,8 +187,7 @@ def recognize_facial_expression(image, on_gpu, grad_cam, model_path, ensemble_si
     return to_return_fer
 
 
-def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, frames, no_plot, pretrained_model_path,
-           ensemble_size):
+def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, frames, no_plot, ensemble_size):
     """
     Receives images from a camera and recognizes
     facial expressions of the closets face in a frame-based approach.
@@ -219,8 +218,7 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
         while image_processing.is_video_capture_open() and ((not display) or (display and fer_display.is_running())):
             # Get a frame
             img, _ = image_processing.get_frame()
-            fer = None if (img is None) else recognize_facial_expression(img, device, gradcam,
-                                                                         pretrained_model_path, ensemble_size)
+            fer = None if (img is None) else recognize_facial_expression(img, device, gradcam, ensemble_size)
 
             # Display blank screen if no face is detected, otherwise,
             # display detected faces and perceived facial expression labels
@@ -244,8 +242,7 @@ def webcam(camera_id, display, gradcam, output_csv_file, screen_size, device, fr
             file_maker.close_file()
 
 
-def image(input_image_path, display, gradcam, output_csv_file, screen_size, device, pretrained_model_path,
-          ensemble_size):
+def image(input_image_path, display, gradcam, output_csv_file, screen_size, device, ensemble_size):
     """
     Receives the full path to an image file and recognizes
     facial expressions of the closets face in a frame-based approach.
@@ -255,7 +252,7 @@ def image(input_image_path, display, gradcam, output_csv_file, screen_size, devi
     img = image_processing.read(input_image_path)
 
     # Call FER method
-    fer = recognize_facial_expression(img, device, gradcam, pretrained_model_path, ensemble_size)
+    fer = recognize_facial_expression(img, device, gradcam, ensemble_size)
 
     if write_to_file:
         file_maker.create_file(output_csv_file, input_image_path)
@@ -272,7 +269,7 @@ def image(input_image_path, display, gradcam, output_csv_file, screen_size, devi
 
 
 def video(input_video_path, display, gradcam, output_csv_file, screen_size,
-          device, frames, no_plot, pretrained_model_path, ensemble_size):
+          device, frames, no_plot, ensemble_size):
     """
     Receives the full path to a video file and recognizes
     facial expressions of the closets face in a frame-based approach.
@@ -305,9 +302,7 @@ def video(input_video_path, display, gradcam, output_csv_file, screen_size,
             if img is None:
                 break
             else:  # Process frame
-                fer = None if (img is None) else recognize_facial_expression(img, device, gradcam,
-                                                                             pretrained_model_path,
-                                                                             ensemble_size)
+                fer = None if (img is None) else recognize_facial_expression(img, device, gradcam, ensemble_size)
                 # Display blank screen if no face is detected, otherwise,
                 # display detected faces and perceived facial expression labels
                 if display:
@@ -343,8 +338,6 @@ def main():
                         help="create and write ESR-9's outputs to a CSV file. The file is saved in a folder defined "
                              "by this argument (ex. '-o ./' saves the file with the same name as the input file "
                              "in the working directory).",
-                        type=str)
-    parser.add_argument("-pre", "--pretrained", help="define the full path to the pretrained model weights.",
                         type=str)
     parser.add_argument("-es", "--ensemble_size",
                         help="define the size of the ensemble, the number of branches in the model",
