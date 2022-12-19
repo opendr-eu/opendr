@@ -139,7 +139,7 @@ Parameters:
   Path of the model to be loaded.
 - **file_name_base_network**: *str, default="Net-Base-Shared_Representations.pt"*\
   The file name of the base network to be loaded.
-- **file_name_conv_branch**: *str*\
+- **file_name_conv_branch**: *str, default="Net-Branch_{}.pt"*\
   The file name of the ensemble branch network to be loaded.
 - **fix_backbone**: *bool, default=True*\
   If true, all the model weights except the classifier are fixed so that the last layers' weights are fine-tuned on dimensional data.
