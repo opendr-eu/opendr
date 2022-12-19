@@ -127,7 +127,7 @@ class ObjectTrackingSiamRPNNode:
                 cv2.rectangle(image, (box.left, box.top),
                               (box.left + box.width, box.top + box.height),
                               (0, 255, 255), 3)
-                # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+                # Convert the annotated OpenDR image to ROS image message using bridge and publish it
                 self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
