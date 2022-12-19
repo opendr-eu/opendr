@@ -21,6 +21,7 @@ import random
 import time
 import warnings
 import torch
+torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 import ntpath
 import contextlib
 from torch.utils.data import DataLoader, DistributedSampler

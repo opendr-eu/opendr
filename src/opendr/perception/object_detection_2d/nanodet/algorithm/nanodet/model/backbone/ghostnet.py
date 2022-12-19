@@ -13,6 +13,7 @@ import math
 import warnings
 
 import torch
+torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 import torch.nn as nn
 import torch.nn.functional as F
 
