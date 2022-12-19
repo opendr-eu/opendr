@@ -39,7 +39,7 @@ class ObjectTrackingSiamRPNNode(Node):
                  device="cuda"):
         """
         Creates a ROS2 Node for object tracking with SiamRPN.
-        :param object_detector:
+        :param object_detector: An object detector learner to use for initialization
         :type object_detector: opendr.engine.learners.Learner
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
