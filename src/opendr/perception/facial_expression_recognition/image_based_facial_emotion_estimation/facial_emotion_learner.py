@@ -560,7 +560,8 @@ class FacialEmotionLearner(Learner):
         np.save(path.join(base_path_his, 'Loss_Val_Branch_{}_Arousal'.format(branch_idx)),
                 np.array(his_val_loss_arousal))
 
-    def __plot_categorical(self, his_loss, his_acc, his_val_loss, his_val_acc, branch_idx, base_path_his):
+    @staticmethod
+    def __plot_categorical(his_loss, his_acc, his_val_loss, his_val_acc, branch_idx, base_path_his):
         accuracies_plot = []
         legends_plot_acc = []
         losses_plot = [[range(len(his_loss)), his_loss]]
