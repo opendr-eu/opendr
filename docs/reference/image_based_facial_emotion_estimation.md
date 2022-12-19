@@ -35,7 +35,7 @@ Constructor parameters:
   List of GPU indices to be used if the device is 'cuda'.
 - **validation_interval**: *int, default=1*\
   Specifies the validation interval.
-- **max_training_epoch**: *int, default=100*\
+- **max_training_epoch**: *int, default=2*\
   Specifies the maximum number of epochs the training should run for.
 - **momentum**: *float, default=0.9*\
   Specifies the momentum value used for optimizer.
