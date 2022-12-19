@@ -799,7 +799,7 @@ Constructor parameters:
   Specifies the device to be used.
 - **num_workers**: *int, default=0*\
   Specifies the number of workers to be used by the data loader.
-- **num_class**: *int, default=60*\
+- **num_classes**: *int, default=60*\
   Specifies the number of classes for the action dataset.
 - **num_point**: *int, default=25*\
   Specifies the number of body joints in each skeleton.
