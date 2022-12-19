@@ -195,7 +195,7 @@ if __name__ == '__main__':
         device = 'cpu'
 
     facial_emotion_estimation_node = FacialEmotionEstimationNode(
-        input_image_topic=args.input_image_topic,
+        input_rgb_image_topic=args.input_rgb_image_topic,
         output_emotions_topic=args.output_emotions_topic,
         output_emotions_description_topic=args.output_emotions_description_topic,
         device=device)
