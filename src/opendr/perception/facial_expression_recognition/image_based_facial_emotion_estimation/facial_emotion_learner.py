@@ -736,7 +736,7 @@ class FacialEmotionLearner(Learner):
                     zip_ref.extractall(data_path)
                 os.remove(zip_path)
             else:
-                print("data files already exists.")
+                print("Data files already exist.")
             print("Data download complete.")
             downloaded_files_path = os.path.join(data_path, 'AffectNet_micro')
 
