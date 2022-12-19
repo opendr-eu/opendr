@@ -39,7 +39,7 @@ OpenDR aims to develop, train, deploy and evaluate deep learning models that imp
 
 ## Where to start?
 
-You can start by [installing](docs/reference/installation.md) the OpenDR toolkit. 
+You can start by [installing](docs/reference/installation.md) the OpenDR toolkit.
 OpenDR can be installed in the following ways:
 1. By *cloning* this repository (CPU/GPU support)
 2. Using *pip* (CPU/GPU support only)
@@ -53,7 +53,7 @@ OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbot
 
 ## How can I start using OpenDR?
 
-You can find detailed documentation in OpenDR [wiki](https://github.com/opendr-eu/opendr/wiki). 
+You can find detailed documentation in OpenDR [wiki](https://github.com/opendr-eu/opendr/wiki).
 The main point of reference after installing the toolkit is the [tools index](docs/reference/index.md).
 Starting from there, you can find detailed documentation for all the tools included in OpenDR.
 
