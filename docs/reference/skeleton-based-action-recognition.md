@@ -865,7 +865,7 @@ It returns the action category as an object of `engine.target.Category` if a pro
 
 Parameters:
 
-- **SkeletonSeq_batch**: *object*\
+- **batch**: *object*\
   Object of type engine.data.SkeletonSequence.
 
 #### `CoSTGCNLearner.save`
