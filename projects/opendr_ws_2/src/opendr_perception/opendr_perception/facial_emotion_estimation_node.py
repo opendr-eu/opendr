@@ -27,7 +27,6 @@ from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_ros2_bridge import ROS2Bridge
 
-from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from opendr.perception.facial_expression_recognition import image_processing
 from opendr.perception.facial_expression_recognition import ESR
@@ -36,11 +35,11 @@ from opendr.perception.facial_expression_recognition import ESR
 class FacialEmotionEstimationNode(Node):
     def __init__(self,
                  input_rgb_image_topic="/usb_cam/image_raw",
-                 output_emotions_topic="/opendr/facial_emotion",
+                 output_emotions_topic="/opendr/facial_emotion_estimation",
                  output_emotions_description_topic="/opendr/facial_emotion_estimation_description",
                  device="cuda"):
         """
-        Creates a ROS Node for facial emotion estimation
+        Creates a ROS Node for facial emotion estimation.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_emotions_topic: Topic to which we are publishing the facial emotion results
@@ -72,18 +71,15 @@ class FacialEmotionEstimationNode(Node):
                                                              ensemble_size=9,
                                                              name_experiment='esr_9')
 
-        URL_PATH = OPENDR_SERVER_URL + "perception/ensemble_based_cnn"
-        model_saved_path = self.facial_emotion_estimator.download(self, path=None, mode="pretrained", url=URL_PATH)
+        model_saved_path = self.facial_emotion_estimator.download(path=None, mode="pretrained")
 
-        self.facial_emotion_estimator.load(self, ensemble_size=9, path_to_saved_network=model_saved_path,
-                                           file_name_base_network="Net-Base-Shared_Representations.pt",
-                                           file_name_conv_branch="Net-Branch_{}.pt", fix_backbone=True)
+        self.facial_emotion_estimator.load(ensemble_size=9, path_to_saved_network=model_saved_path)
 
-        self.get_logger().info("Facial emotion estimation node started!")
+        self.get_logger().info("Facial emotion estimation node started.")
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -102,7 +98,7 @@ class FacialEmotionEstimationNode(Node):
             return
         else:
             face = image[face_coordinates[0][1]:face_coordinates[1][1],
-                         face_coordinates[0][0]:face_coordinates[1][0], :]
+                   face_coordinates[0][0]:face_coordinates[1][0], :]
 
             # Pre_process detected face
             input_face = _pre_process_input_image(face)
@@ -158,10 +154,8 @@ def _pre_process_input_image(image):
 
 
 if __name__ == '__main__':
-    # Select the device for running the
-
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input_image_topic', type=str, help='Topic name for input rgb image',
+    parser.add_argument('-i', '--input_rgb_image_topic', type=str, help='Topic name for input rgb image',
                         default='/usb_cam/image_raw')
     parser.add_argument("-o", "--output_emotions_topic", help="Topic name for output emotion",
                         type=lambda value: value if value.lower() != "none" else None,
@@ -172,7 +166,6 @@ if __name__ == '__main__':
                         default="/opendr/facial_emotion_estimation_description")
     parser.add_argument('-d', '--device', help='Device to use, either cpu or cuda',
                         type=str, default="cuda", choices=["cuda", "cpu"])
-
     args = parser.parse_args()
 
     try:
@@ -190,7 +183,7 @@ if __name__ == '__main__':
         device = 'cpu'
 
     facial_emotion_estimation_node = FacialEmotionEstimationNode(
-        input_image_topic=args.input_image_topic,
+        input_rgb_image_topic=args.input_rgb_image_topic,
         output_emotions_topic=args.output_emotions_topic,
         output_emotions_description_topic=args.output_emotions_description_topic,
         device=device)
