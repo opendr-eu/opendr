@@ -77,9 +77,6 @@ def benchmark_esr(args):
         print("== Benchmarking learner.infer ==", file=f)
         print(yaml.dump({"learner.infer": results1}), file=f)
         print("\n\n", file=f)
-        '''print("== Benchmarking model directly ==", file=f)
-        results2 = benchmark(learner.model, input_batch, num_runs=num_runs, print_fn=print)
-        print(yaml.dump({"learner.model.forward": results2}))'''
 
 
 if __name__ == '__main__':
