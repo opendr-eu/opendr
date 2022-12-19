@@ -769,7 +769,7 @@ The [CoSTGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/co
 ```python
 CoSTGCNLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head,
                checkpoint_after_iter, checkpoint_load_iter, temp_path,
-               device, loss, weight_decay, momentun, drop_last, pin_memory, num_workers, seed,
+               device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed,
                num_classes, num_point, num_person, in_channels, graph_type, sequence_len
                )
 ```
@@ -785,7 +785,7 @@ Constructor parameters:
   This heavily affects memory usage, adjust according to your system.
 - **optimizer**: *str {'sgd', 'adam'}, default='adam'*\
   Name of optimizer to use ("sgd" or "adam").
-- **lr_schedule**: *str, default=' '*
+- **lr_schedule**: *str, default=''*
   Specifies the learning rate scheduler.
 - **network_head**: *str, default='classification'*\
   Head of network (only "classification" is currently available).
@@ -811,7 +811,7 @@ Constructor parameters:
   Specifies the number of workers to be used by the data loader.
 - **seed**: *int, default=123*\
   Random seed. Defaults to 123.
-- **num_class**: *int, default=60*\
+- **num_classes**: *int, default=60*\
   Specifies the number of classes for the action dataset.
 - **num_point**: *int, default=25*\
   Specifies the number of body joints in each skeleton.
@@ -871,7 +871,7 @@ This method is used to initialize model with random parameters
 
 #### `ProgressiveSpatioTemporalGCNLearner.infer`
 ```python
-ProgressiveSpatioTemporalGCNLearner.infer(self, SkeletonSeq_batch)
+ProgressiveSpatioTemporalGCNLearner.infer(self, batch)
 ```
 
 This method is used to perform action recognition on a sequence of skeletons.
@@ -879,7 +879,7 @@ It returns the action category as an object of `engine.target.Category` if a pro
 
 Parameters:
 
-- **SkeletonSeq_batch**: *object*\
+- **batch**: *object*\
   Object of type engine.data.SkeletonSequence.
 
 #### `CoSTGCNLearner.save`
