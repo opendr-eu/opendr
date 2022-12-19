@@ -53,7 +53,7 @@ Constructor parameters:
   Specifies the dataset path.
 - **max_tuning_epoch**: *int, default=1*\
   Specifies the maximum number of epochs the model should be finetuned on dimensional data.
-- **max_tuning_epoch**: *bool, default=False*\
+- **diversity**: *bool, default=False*\
   Specifies if the learner diversifies the features of different branches or not.
 
 #### `FacialEmotionLearner.fit`
