@@ -94,7 +94,7 @@ class FacialEmotionLearner(Learner):
             self.model = ESR(device=self.device, ensemble_size=num_branches)
         self.model.to_device(self.device)
 
-    def save(self, state_dicts, base_path_to_save_model):
+    def save(self, state_dicts, base_path_to_save_model, verbose=True):
         """
         This method is used to save a trained model.
         :param state_dicts: Object of type Python dictionary containing the trained model weights.
@@ -111,15 +111,16 @@ class FacialEmotionLearner(Learner):
             torch.save(state_dicts[0], path.join(base_path_to_save_model, "Net-Base-Shared_Representations.pt"))
             for i in range(1, len(state_dicts)):
                 torch.save(state_dicts[i], path.join(base_path_to_save_model, "Net-Branch_{}.pt".format(i)))
-            print("Pytorch model has been saved at: {}".format(base_path_to_save_model))
+            if verbose:
+                print("Pytorch model has been saved at: {}".format(base_path_to_save_model))
         else:
             model_metadata["model_paths"] = [base_path_to_save_model]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
             shutil.copy2(path.join(self.temp_path, self.name_experiment + ".onnx"),
                          model_metadata["model_paths"][0])
-            print("ONNX model has been "
-                  "saved at: {}".format(base_path_to_save_model))
+            if verbose:
+                print("ONNX model has been saved at: {}".format(base_path_to_save_model))
         json_model_name = self.name_experiment + '.json'
         json_model_path = path.join(base_path_to_save_model, json_model_name)
         with open(json_model_path, 'w') as outfile:
@@ -160,7 +161,7 @@ class FacialEmotionLearner(Learner):
                     for p in self.model.convolutional_branches[i].fc_dimensional.parameters():
                         p.requires_grad = True
 
-    def fit(self):
+    def fit(self, verbose=True):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
         """
@@ -174,8 +175,9 @@ class FacialEmotionLearner(Learner):
                                                    translate=(.1, .1),
                                                    scale=(1.0, 1.25),
                                                    resample=PIL.Image.BILINEAR)]
-        print("Starting: {}".format(str(self.name_experiment)))
-        print("Running on {}".format(self.device))
+        if verbose:
+            print("Starting: {}".format(str(self.name_experiment)))
+            print("Running on {}".format(self.device))
 
         # Train a new model on AffectNet_Categorical from scratch
         if self.categorical_train:
@@ -248,9 +250,10 @@ class FacialEmotionLearner(Learner):
                         running_loss += loss.item()
                         running_updates += 1
                     # Statistics
-                    print('[Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f} Acc: {}'.
-                          format(self.model.get_ensemble_size(), epoch+1, self.max_training_epoch,
-                                 running_loss / running_updates, np.array(running_corrects) / len(train_data)))
+                    if verbose:
+                        print('[Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f} Acc: {}'.
+                              format(self.model.get_ensemble_size(), epoch+1, self.max_training_epoch,
+                                     running_loss / running_updates, np.array(running_corrects) / len(train_data)))
 
                     # Validation
                     if ((epoch % self.validation_interval) == 0) or ((epoch + 1) == self.max_training_epoch):
@@ -258,10 +261,10 @@ class FacialEmotionLearner(Learner):
                         eval_results = self.eval(eval_type='categorical', current_branch_on_training=branch_on_training)
                         val_loss = eval_results["running_emotion_loss"]
                         val_corrects = eval_results["running_emotion_corrects"]
-
-                        print('Validation - [Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f} Acc: {}'.format(
-                               self.model.get_ensemble_size(), epoch + 1, self.max_training_epoch, val_loss[-1],
-                               np.array(val_corrects) / len(val_data)))
+                        if verbose:
+                            print('Validation - [Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f} Acc: {}'.format(
+                                   self.model.get_ensemble_size(), epoch + 1, self.max_training_epoch, val_loss[-1],
+                                   np.array(val_corrects) / len(val_data)))
 
                         # Add to history training and validation statistics
                         history_loss.append(running_loss / running_updates)
@@ -279,7 +282,8 @@ class FacialEmotionLearner(Learner):
                             best_ensemble = self.model.to_state_dict()
                             # Save network
                             self.save(best_ensemble,
-                                      path.join(self.base_path_experiment, self.name_experiment, 'trained_models'))
+                                      path.join(self.base_path_experiment, self.name_experiment, 'trained_models'),
+                                      verbose=verbose)
 
                         # Save graphs
                         self.__plot_categorical(history_loss, history_acc, history_val_loss, history_val_acc,
@@ -332,9 +336,9 @@ class FacialEmotionLearner(Learner):
             train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=True, num_workers=8)
 
             # Finetune the pretrained model on continuous affect values
-            self.__finetune(train_loader=train_loader)
+            self.__finetune(train_loader=train_loader, verbose=verbose)
 
-    def __finetune(self, train_loader):
+    def __finetune(self, train_loader, verbose=True):
         current_branch_on_training = 0
         for branch_on_training in range(self.ensemble_size):
             # Best network
@@ -374,9 +378,10 @@ class FacialEmotionLearner(Learner):
                     running_loss += loss.item()
                     running_updates += 1
                 # Statistics
-                print('[Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f}'.
-                      format(current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
-                             running_loss / running_updates))
+                if verbose:
+                    print('[Branch {:d}, Epochs {:d}--{:d}] Loss: {:.4f}'.
+                          format(current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
+                                 running_loss / running_updates))
                 # Validation
                 if (epoch % self.validation_interval) == 0:
                     self.model.eval()
@@ -392,10 +397,11 @@ class FacialEmotionLearner(Learner):
                     # Add ensemble rmse to history
                     history_val_loss_valence[-1].append(val_loss[0][-1])
                     history_val_loss_arousal[-1].append(val_loss[1][-1])
-                    print('Validation - [Branch {:d}, Epochs {:d}--{:d}] Loss (V) - (A): ({}) - ({})'.format(
-                          current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
-                          [hvlv[-1] for hvlv in history_val_loss_valence],
-                          [hvla[-1] for hvla in history_val_loss_arousal]))
+                    if verbose:
+                        print('Validation - [Branch {:d}, Epochs {:d}--{:d}] Loss (V) - (A): ({}) - ({})'.format(
+                              current_branch_on_training + 1, epoch + 1, self.max_training_epoch,
+                              [hvlv[-1] for hvlv in history_val_loss_valence],
+                              [hvla[-1] for hvla in history_val_loss_arousal]))
 
                     # Save best ensemble
                     ensemble_rmse = float(history_val_loss_valence[-1][-1]) + float(history_val_loss_arousal[-1][-1])
@@ -404,12 +410,12 @@ class FacialEmotionLearner(Learner):
                         best_ensemble = self.model.to_state_dict()
                         # Save network
                         self.save(best_ensemble, path.join(self.base_path_experiment,
-                                                           self.name_experiment, 'trained_models'))
+                                                           self.name_experiment, 'trained_models'), verbose=verbose)
 
                     # Save graphs
                     self.__plot_dimensional(history_loss, history_val_loss_valence, history_val_loss_arousal,
                                             current_branch_on_training + 1,
-                                            path.join(self.base_path_experiment, self.name_experiment))
+                                            path.join(self.base_path_experiment, self.name_experiment), verbose=verbose)
                     self.model.train()
 
             # Change branch on training
@@ -534,7 +540,8 @@ class FacialEmotionLearner(Learner):
         return results
 
     @staticmethod
-    def __plot_dimensional(his_loss, his_val_loss_valence, his_val_loss_arousal, branch_idx, base_path_his):
+    def __plot_dimensional(his_loss, his_val_loss_valence, his_val_loss_arousal, branch_idx, base_path_his,
+                           verbose=True):
         losses_plot = [[range(len(his_loss)), his_loss]]
         legends_plot_loss = ['Training']
         # Loss
@@ -552,7 +559,8 @@ class FacialEmotionLearner(Learner):
                       file_name='Loss_Branch_{}'.format(branch_idx),
                       axis_x='Training Epoch',
                       axis_y='Loss',
-                      limits_axis_y=(0.2, 0.6, 0.025))
+                      limits_axis_y=(0.2, 0.6, 0.025),
+                      verbose=verbose)
 
         np.save(path.join(base_path_his, 'Loss_Branch_{}'.format(branch_idx)), np.array(his_loss))
         np.save(path.join(base_path_his, 'Loss_Val_Branch_{}_Valence'.format(branch_idx)),
@@ -561,7 +569,7 @@ class FacialEmotionLearner(Learner):
                 np.array(his_val_loss_arousal))
 
     @staticmethod
-    def __plot_categorical(his_loss, his_acc, his_val_loss, his_val_acc, branch_idx, base_path_his):
+    def __plot_categorical(his_loss, his_acc, his_val_loss, his_val_acc, branch_idx, base_path_his, verbose=True):
         accuracies_plot = []
         legends_plot_acc = []
         losses_plot = [[range(len(his_loss)), his_loss]]
@@ -586,7 +594,8 @@ class FacialEmotionLearner(Learner):
                       file_name="Acc_Branch_{}".format(branch_idx),
                       axis_x="Training Epoch",
                       axis_y="Accuracy",
-                      limits_axis_y=(0.0, 1.0, 0.025))
+                      limits_axis_y=(0.0, 1.0, 0.025),
+                      verbose=verbose)
 
         # Loss
         for b_plot in range(len(his_val_loss)):
@@ -598,7 +607,8 @@ class FacialEmotionLearner(Learner):
                       file_path=base_path_his,
                       file_name="Loss_Branch_{}".format(branch_idx),
                       axis_x="Training Epoch",
-                      axis_y="Loss")
+                      axis_y="Loss",
+                      verbose=verbose)
 
         # Save plots
         np.save(path.join(base_path_his, "Loss_Branch_{}".format(branch_idx)), np.array(his_loss))
@@ -619,7 +629,6 @@ class FacialEmotionLearner(Learner):
             input_batch = [input_batch]
         if type(input_batch) is list:
             input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
-        # print('input_batch shape', input_batch.shape)
         cpu_device = torch.device('cpu')
 
         input_batch = input_batch.to(device=self.device, dtype=torch.float)

@@ -10,7 +10,8 @@ from matplotlib import pyplot as plt
 
 
 def plot(data, title='Figure', legends=None, axis_x=None, axis_y=None, file_path=None, file_name=None,
-         figure_size=(16, 9), has_grid=True, limits_axis_y=None, upper_lower_data=None, limits_axis_x=None):
+         figure_size=(16, 9), has_grid=True, limits_axis_y=None, upper_lower_data=None, limits_axis_x=None,
+         verbose=True):
     """
     Plot a graph from a list of x and y values.
 
@@ -104,4 +105,5 @@ def plot(data, title='Figure', legends=None, axis_x=None, axis_y=None, file_path
             makedirs(file_path)
         plt.savefig(full_path, format='svg')
         plt.close()
-        print('Figure saved at %s successfully.' % full_path)
+        if verbose:
+            print('Figure saved at %s successfully.' % full_path)
