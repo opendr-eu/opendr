@@ -131,7 +131,7 @@ def detect_face(image):
     # Converts to greyscale
     greyscale_image = image_processing.convert_bgr_to_grey(image)
 
-    _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("perception/facial_expression_recognition/"
+    _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("python/perception/facial_expression_recognition/"
                                                         "image_based_facial_expression_recognition/"
                                                         "face_detector/frontal_face.xml")
     faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(greyscale_image, scaleFactor=1.2, minNeighbors=9,

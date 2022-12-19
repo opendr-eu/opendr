@@ -65,7 +65,7 @@ def detect_face(image):
     greyscale_image = image_processing.convert_bgr_to_grey(image)
 
     # Runs haar cascade classifiers
-    _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("/face_detector/frontal_face.xml")
+    _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("./face_detector/frontal_face.xml")
     faces = _FACE_DETECTOR_HAAR_CASCADE.detectMultiScale(greyscale_image, scaleFactor=1.2, minNeighbors=9,
                                                          minSize=(60, 60))
     face_coordinates = [[[x, y], [x + w, y + h]] for (x, y, w, h) in faces] if not (faces is None) else []
