@@ -31,7 +31,8 @@ def bbox_to_np(bbox):
     """
     BoundingBox to [xmin, ymin, xmax, ymax, conf, cls] numpy array.
     """
-    bbox_np = np.asarray([bbox.left, bbox.top, bbox.left + bbox.width, bbox.top + bbox.height, bbox.confidence, bbox.name])
+    bbox_np = np.asarray([bbox.left, bbox.top, bbox.left + bbox.width, bbox.top + bbox.height, bbox.confidence, bbox.name],
+                         dtype=object)
     return bbox_np
 
 

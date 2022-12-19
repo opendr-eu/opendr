@@ -21,19 +21,19 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-class ObjectDetectionYOLONode(Node):
+class ObjectDetectionYOLOV3Node(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
                  detections_topic="/opendr/objects", device="cuda", backbone="darknet53"):
         """
-        Creates a ROS Node for object detection with YOLOV3
+        Creates a ROS2 Node for object detection with YOLOV3
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -47,7 +47,7 @@ class ObjectDetectionYOLONode(Node):
         :param backbone: backbone network
         :type backbone: str
         """
-        super().__init__('object_detection_yolov3_node')
+        super().__init__('object_detection_2d_yolov3_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
@@ -71,7 +71,7 @@ class ObjectDetectionYOLONode(Node):
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics.
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -125,10 +125,10 @@ def main(args=None):
         print("Using CPU.")
         device = "cpu"
 
-    object_detection_yolov3_node = ObjectDetectionYOLONode(device=device, backbone=args.backbone,
-                                                           input_rgb_image_topic=args.input_rgb_image_topic,
-                                                           output_rgb_image_topic=args.output_rgb_image_topic,
-                                                           detections_topic=args.detections_topic)
+    object_detection_yolov3_node = ObjectDetectionYOLOV3Node(device=device, backbone=args.backbone,
+                                                             input_rgb_image_topic=args.input_rgb_image_topic,
+                                                             output_rgb_image_topic=args.output_rgb_image_topic,
+                                                             detections_topic=args.detections_topic)
 
     rclpy.spin(object_detection_yolov3_node)
 

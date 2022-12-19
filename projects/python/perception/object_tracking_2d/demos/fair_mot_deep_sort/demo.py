@@ -199,7 +199,7 @@ def fair_mot_tracking(model_name, device):
     if predict:
 
         # Init model
-        learner = ObjectTracking2DFairMotLearner(device=device)
+        learner = ObjectTracking2DFairMotLearner(device=device, use_pretrained_backbone=False)
         if not os.path.exists("./models/" + model_name):
             learner.download(model_name, "./models")
         learner.load("./models/" + model_name, verbose=True)

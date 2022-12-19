@@ -93,12 +93,14 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/cox3d/algorithm',
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/object_tracking_2d/deep_sort/algorithm',
+            'src/opendr/perception/object_tracking_2d/siamrpn/data_utils',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/algorithm',
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'projects/python/simulation/synthetic_multi_view_facial_image_generation/algorithm',
+            'projects/opendr_ws/devel',
             'src/opendr/perception/semantic_segmentation/bisenet/algorithm',
             'src/opendr/perception/object_detection_2d/retinaface/algorithm',
             'src/opendr/perception/object_detection_2d/gem/algorithm',
@@ -107,7 +109,9 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
             'projects/opendr_ws_2/src/opendr_perception/test',
-            'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
+            'projects/opendr_ws_2/src/opendr_bridge/test',
+            'projects/opendr_ws_2/src/opendr_interface/test',
+            'projects/opendr_ws_2/src/opendr_data_generation/test',
             'projects/opendr_ws_2/src/opendr_simulation/test',
         ]
 
@@ -122,7 +126,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/transformer_timm.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
             'projects/opendr_ws_2/src/opendr_perception/setup.py',
-            'projects/opendr_ws_2/src/opendr_ros2_bridge/setup.py',
+            'projects/opendr_ws_2/src/opendr_bridge/setup.py',
+            'projects/opendr_ws_2/src/data_generation/setup.py',
             'projects/opendr_ws_2/src/opendr_simulation/setup.py',
         ]
 

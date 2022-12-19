@@ -51,7 +51,7 @@ class DeepSortTracker(object):
         self.deepsort = self.build_tracker()
         self.frame = 0
 
-    def infer(self, imageWithDetections: ImageWithDetections, frame_id=None):
+    def infer(self, imageWithDetections: ImageWithDetections, frame_id=None, swap_left_top=False):
 
         if frame_id is not None:
             self.frame = frame_id
@@ -65,8 +65,8 @@ class DeepSortTracker(object):
 
         for detection in detections:
             bbox_xywh.append(np.array([
-                detection.left,
-                detection.top,
+                detection.top if swap_left_top else detection.left,
+                detection.left if swap_left_top else detection.top,
                 detection.width,
                 detection.height,
             ]))
@@ -96,8 +96,8 @@ class DeepSortTracker(object):
                 bb_tlwh = self.deepsort._xyxy_to_tlwh(bb_xyxy)
                 results.append(TrackingAnnotation(
                     cls_id,
-                    bb_tlwh[0],
-                    bb_tlwh[1],
+                    (bb_tlwh[1] + bb_tlwh[3] / 2 if swap_left_top else bb_tlwh[0] + bb_tlwh[2] / 2),
+                    (bb_tlwh[0] + bb_tlwh[2] / 2 if swap_left_top else bb_tlwh[1] + bb_tlwh[3] / 2),
                     bb_tlwh[2],
                     bb_tlwh[3],
                     id,

@@ -40,9 +40,9 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-from algorithm.DDFA import preprocessing_1
-from algorithm.DDFA import preprocessing_2
-from algorithm.Rotate_and_Render import test_multipose
+from .algorithm.DDFA import preprocessing_1
+from .algorithm.DDFA import preprocessing_2
+from .algorithm.Rotate_and_Render import test_multipose
 
 
 class MultiviewDataGeneration():

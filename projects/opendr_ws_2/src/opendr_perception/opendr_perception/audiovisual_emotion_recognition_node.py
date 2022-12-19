@@ -28,7 +28,7 @@ from sensor_msgs.msg import Image as ROS_Image
 from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.multimodal_human_centric import AudiovisualEmotionLearner
 from opendr.perception.multimodal_human_centric import spatial_transforms as transforms
 from opendr.engine.data import Video, Timeseries
@@ -54,7 +54,7 @@ class AudiovisualEmotionNode(Node):
         :param delay: Define the delay (in seconds) with which rgb message and depth message can be synchronized
         :type delay: float
         """
-        super().__init__("audiovisual_emotion_recognition_node")
+        super().__init__("opendr_audiovisual_emotion_recognition_node")
 
         self.publisher = self.create_publisher(Classification2D, output_emotions_topic, 1)
 
@@ -124,22 +124,21 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video_topic", type=str, default="/image_raw",
+    parser.add_argument("-iv", "--input_video_topic", type=str, default="/image_raw",
                         help="Listen to video input data on this topic")
-    parser.add_argument("--input_audio_topic", type=str, default="/audio",
+    parser.add_argument("-ia", "--input_audio_topic", type=str, default="/audio",
                         help="Listen to audio input data on this topic")
-    parser.add_argument("--output_emotions_topic", type=str, default="/opendr/audiovisual_emotion",
+    parser.add_argument("-o", "--output_emotions_topic", type=str, default="/opendr/audiovisual_emotion",
                         help="Topic name for output emotions recognition")
-    parser.add_argument("--buffer_size", type=float, default=3.6,
-                        help="Size of the audio buffer in seconds")
     parser.add_argument("--device", type=str, default="cuda",
                         help="Device to use (cpu, cuda)", choices=["cuda", "cpu"])
+    parser.add_argument("--buffer_size", type=float, default=3.6,
+                        help="Size of the audio buffer in seconds")
     parser.add_argument("--delay", help="The delay (in seconds) with which RGB message and"
                         "depth message can be synchronized", type=float, default=0.1)
 
     args = parser.parse_args()
 
-    # Select the device for running
     try:
         if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
