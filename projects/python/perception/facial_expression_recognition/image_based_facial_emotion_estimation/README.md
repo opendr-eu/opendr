@@ -26,7 +26,7 @@ To recognize a facial expression in videos, run the following command:
 ```python
 python inference_demo.py video -i 'video_path' -pre 'pretrained_path' -d -f 5 -s 2
 ```
-The argument "video" indicates that the input is a video. The location of the video is specified after -i. -d sets the display mode to true, -f defines the number of frames to be processed, and -s 2 sets the window size to 1440 x 900.
+The argument `video` indicates that the input is a video. The location of the video is specified after `-i`. `-d` sets the display mode to true, `-f` defines the number of frames to be processed, and `-s 2` sets the window size to 1440 x 900.
 
 To recognize a facial expression in images captured from a webcam, run the following command:
 ```python
