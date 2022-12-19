@@ -47,7 +47,7 @@ Constructor parameters:
   String name for saving checkpoints.
 - **dimensional_finetune**: *bool, default=True*\
   Specifies if the model should be fintuned on dimensional data or not.
-- **categorical_train**: *bool, default=True*\
+- **categorical_train**: *bool, default=False*\
   Specifies if the model should be trained on categorical data or not.
 - **base_path_to_dataset**: *str, default=''./data/AffectNet''*\
   Specifies the dataset path.
