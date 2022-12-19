@@ -755,7 +755,7 @@ class FacialEmotionLearner(Learner):
                     zip_ref.extractall(model_path)
                 os.remove(zip_path)
             else:
-                print("pretrained files already exists.")
+                print("Pretrained files already exist.")
             print("Pretrained model weights download complete.")
             downloaded_files_path = os.path.join(model_path, 'esr_9')
 
