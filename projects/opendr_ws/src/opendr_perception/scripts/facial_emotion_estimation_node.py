@@ -103,8 +103,7 @@ class FacialEmotionEstimationNode:
         if face_coordinates is None:
             return
         else:
-            face = image[face_coordinates[0][1]:face_coordinates[1][1],
-                   face_coordinates[0][0]:face_coordinates[1][0], :]
+            face = image[face_coordinates[0][1]:face_coordinates[1][1], face_coordinates[0][0]:face_coordinates[1][0], :]
 
             # Pre_process detected face
             input_face = _pre_process_input_image(face)
