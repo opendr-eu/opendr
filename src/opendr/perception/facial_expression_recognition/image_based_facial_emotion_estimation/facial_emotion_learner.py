@@ -200,7 +200,6 @@ class FacialEmotionLearner(Learner):
                                                      base_path_to_affectnet=self.base_path_to_dataset)
 
             for branch_on_training in range(self.ensemble_size):
-                branch_on_training
                 # Best network
                 best_ensemble = self.model.to_state_dict()
                 best_ensemble_acc = 0.0
