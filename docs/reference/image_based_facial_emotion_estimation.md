@@ -6,15 +6,18 @@ The *image_based_facial_emotion_estimation* module contains the *FacialEmotionLe
 Bases: `engine.learners.Learner`
 
 The *FacialEmotionLearner* class is an implementation of the state-of-the-art method ESR [[1]](#1) for efficient facial feature learning with wide ensemble-based convolutional neural networks.
-An ESR consists of two building blocks. (1) The base of the network is an array of convolutional layers for low- and middle-level feature learning. (2) These informative features are then shared with independent convolutional branches that constitute the ensemble. From this point, each branch can learn distinctive features while competing for a common resource - the shared layers.
+An ESR consists of two building blocks.
+(1) The base of the network is an array of convolutional layers for low- and middle-level feature learning.
+(2) These informative features are then shared with independent convolutional branches that constitute the ensemble.
+From this point, each branch can learn distinctive features while competing for a common resource - the shared layers.
 The [FacialEmotionLearner](/src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/facial_emotion_learner.py) class has the following public methods:
 
 
 #### `FacialEmotionLearner` constructor
 ```python
-FacialEmotionLearner(self, lr, batch_size, temp_path, device, device_ind, validation_interval, 
-                     max_training_epoch, momentum, ensemble_size, base_path_experiment, name_experiment,
-                     dimensional_finetune, categorical_train, base_path_to_dataset, max_tuning_epoch, diversify)
+FacialEmotionLearner(self, lr, batch_size, temp_path, device, device_ind, validation_interval,
+                     max_training_epoch, momentum, ensemble_size, base_path_experiment, name_experiment, dimensional_finetune, categorical_train,
+                     base_path_to_dataset, max_tuning_epoch, diversify)
 ```
 
 Constructor parameters:
@@ -22,7 +25,8 @@ Constructor parameters:
 - **lr**: *float, default=0.1*\
   Specifies the initial learning rate to be used during training.
 - **batch_size**: *int, default=32*\
-  Specifies number of samples to be bundled up in a batch during training. This heavily affects memory usage, adjust according to your system.
+  Specifies number of samples to be bundled up in a batch during training.
+  This heavily affects memory usage, adjust according to your system.
 - **temp_path**: *str, default='temp'*\
   Specifies a path where the algorithm saves the checkpoints and onnx optimized model (if needed).
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
@@ -30,25 +34,25 @@ Constructor parameters:
 - **device_ind**: *list, default=[0]*\
   List of GPU indices to be used if the device is 'cuda'.
 - **validation_interval**: *int, default=1*\
-  Specifies the validation interval. 
+  Specifies the validation interval.
 - **max_training_epoch**: *int, default=100*\
   Specifies the maximum number of epochs the training should run for.
 - **momentum**: *float, default=0.9*\
-  Specifies the momentum value used for optimizer. 
+  Specifies the momentum value used for optimizer.
 - **ensemble_size**: *int, default=9*\
-  Specifies the number of ensemble branches in the model. 
+  Specifies the number of ensemble branches in the model.
 - **base_path_experiment**: *str, default='./experiments/'*\
   Specifies the path in which the experimental results will be saved.
 - **name_experiment**: *str, default='esr_9'*\
   String name for saving checkpoints.
 - **dimensional_finetune**: *bool, default=True*\
-  Specifies if the model should be fintuned on dimensional data or not. 
+  Specifies if the model should be fintuned on dimensional data or not.
 - **categorical_train**: *bool, default=True*\
-  Specifies if the model should be trained on categorical data or not. 
+  Specifies if the model should be trained on categorical data or not.
 - **base_path_to_dataset**: *str, default=''./data/AffectNet''*\
-  Specifies the dataset path. 
+  Specifies the dataset path.
 - **max_tuning_epoch**: *int, default=20*\
-  Specifies the maximum number of epochs the model should be finetuned on dimensional data. 
+  Specifies the maximum number of epochs the model should be finetuned on dimensional data.
 - **max_tuning_epoch**: *bool, default=False*\
   Specifies if the learner diversifies the features of different branches or not.
 
@@ -71,16 +75,18 @@ Returns a dictionary containing stats regarding evaluation.
 Parameters:
 
 - **eval_type**: *str, default='categorical'*\
-  Specifies the type of data that model is evaluated on. It can be either categorical or dimensional data. 
+  Specifies the type of data that model is evaluated on.
+  It can be either categorical or dimensional data.
 - **current_branch_on_training**: *int, default=0*\
-  Specifies the index of trained branch which should be evaluated on validation data. 
+  Specifies the index of trained branch which should be evaluated on validation data.
 
 
 #### `FacialEmotionLearner.init_model`
 ```python
 FacialEmotionLearner.init_model(self, num_branches)
 ```
-This method is used to initialize the model. 
+
+This method is used to initialize the model.
 
 Parameters:
 
@@ -91,12 +97,14 @@ Parameters:
 ```python
 FacialEmotionLearner.infer(self, input_batch)
 ```
+
 This method is used to perform inference on an image or a batch of images.
 It returns dimensional emotion results and also the categorical emotion results as an object of `engine.target.Category` if a proper input object `engine.data.Image` is given.
 
 Parameters:
+
 - **input_batch**: *object***
-  Object of type `engine.data.Image`. It also can be a list of Image objects, or a Torch tensor which will be converted to Image object. 
+  Object of type `engine.data.Image`. It also can be a list of Image objects, or a Torch tensor which will be converted to Image object.
 
 #### `FacialEmotionLearner.save`
 ```python
@@ -104,18 +112,17 @@ FacialEmotionLearner.save(self, state_dicts, base_path_to_save_model, current_br
 ```
 This method is used to save a trained model.
 Provided with the path (absolute or relative), it creates the "path" directory, if it does not already
-exist. Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory
-already exists, the "model_name.pt" and "model_name.json" files are overwritten.
+exist.
+Inside this folder, the model is saved as "model_name.pt" and the metadata file as "model_name.json". If the directory already exists, the "model_name.pt" and "model_name.json" files are overwritten.
 
-If [`self.optimize`](#FacialEmotionLearner.optimize) was run previously, it saves the optimized ONNX model in
-a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously
-during conversion.
+If [`self.optimize`](#FacialEmotionLearner.optimize) was run previously, it saves the optimized ONNX model in a similar fashion with an ".onnx" extension, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
+
 - **state_dicts**: *object*\
   Object of type Python dictionary containing the trained model weights.
 - **base_path_to_save_model**: *str*\
-  Specifies the path in which the model will be saved. 
+  Specifies the path in which the model will be saved.
 - **current_branch_save**: *int*\
   Specifies the index of the model branch which should be saved.
 
@@ -124,6 +131,7 @@ Parameters:
 FacialEmotionLearner.load(self, ensemble_size, path_to_saved_network, file_name_base_network,
                         file_name_conv_branch, fix_backbone)
 ```
+
 Loads the model from inside the directory of the path provided, using the metadata .json file included.
 
 Parameters:
@@ -137,7 +145,8 @@ Parameters:
 - **file_name_conv_branch**: *str*\
   The file name of the ensemble branch network to be loaded.
 - **fix_backbone**: *bool, default=True*\
-  If true, all the model weights except the classifier are fixed so that the last layers' weights are finetuned on dimensional data. Otherwise, all the model weights will be trained from scratch. 
+  If true, all the model weights except the classifier are fixed so that the last layers' weights are fine-tuned on dimensional data.
+  Otherwise, all the model weights will be trained from scratch.
 
 
 #### `FacialEmotionLearner.optimize`
@@ -159,6 +168,7 @@ Parameters:
 @staticmethod
 FacialEmotionLearner.download(self, path, mode, url)
 ```
+
 Downloads data and saves them in the path provided.
 
 Parameters:
@@ -174,7 +184,7 @@ Parameters:
 #### Data preparation
   Download the [AffectNet](http://mohammadmahoor.com/affectnet/) [[2]](https://www.computer.org/csdl/magazine/mu/2012/03/mmu2012030034/13rRUxjQyrW) dataset, and organize it in the following structure:
   ```
-  AffectNet/    
+  AffectNet/
       Training_Labeled/
           0/
           1/
@@ -206,12 +216,13 @@ Please note that the pretrained weights cannot be used for commercial purposes!
 
 #### Examples
 
-* **Train the ensemble model on AffectNet Categorical dataset and then finetune it on the AffectNet dimensional dataset.**.
-  The training and evaluation dataset should be present in the path provided. The `batch_size` argument should be adjusted according to available memory.
+* **Train the ensemble model on AffectNet Categorical dataset and then fine-tune it on the AffectNet dimensional dataset**
+  The training and evaluation dataset should be present in the path provided.
+  The `batch_size` argument should be adjusted according to available memory.
 
   ```python
   from opendr.perception.facial_expression_recognition import FacialEmotionLearner
-    
+
   learner = FacialEmotionLearner(device="cpu", temp_path='./tmp',
                                batch_size=2, max_training_epoch=1, ensemble_size=1,
                                name_experiment='esr_9', base_path_experiment='./experiments/',
@@ -222,7 +233,7 @@ Please note that the pretrained weights cannot be used for commercial purposes!
                base_path_to_save_model=learner.base_path_experiment,
                current_branch_save=8)
   ```
-  
+
 * **Inference on a batch of images**
   ```python
   from opendr.perception.facial_expression_recognition import FacialEmotionLearner
@@ -234,21 +245,21 @@ Please note that the pretrained weights cannot be used for commercial purposes!
                                lr=1e-1, categorical_train=True, dimensional_finetune=True,
                                base_path_to_dataset='./data', max_tuning_epoch=1)
 
-  # Download the validation data 
+  # Download the validation data
   dataset_path = learner.download(mode='data')
   val_data = datasets.AffectNetCategorical(idx_set=2,
                                            max_loaded_images_per_label=2,
                                            transforms=None,
                                            is_norm_by_mean_std=False,
                                            base_path_to_affectnet=learner.dataset_path)
-  
+
   val_loader = DataLoader(val_data, batch_size=32, shuffle=False, num_workers=8)
   batch = next(iter(val_loader))[0]
   learner.load(learner.ensemble_size, path_to_saved_network=learner.base_path_experiment, fix_backbone=True)
   ensemble_emotion_results, ensemble_dimension_results = learner.infer(batch[0])
   ```
 
-* **Optimization example for a previously trained model.**
+* **Optimization example for a previously trained model**
   Inference can be run with the trained model after running self.optimize.
   ```python
   from opendr.perception.facial_expression_recognition import FacialEmotionLearner
