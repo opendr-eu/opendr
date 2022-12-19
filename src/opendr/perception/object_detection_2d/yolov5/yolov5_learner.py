@@ -21,6 +21,7 @@ from opendr.engine.target import BoundingBox, BoundingBoxList
 import torch
 torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 
+
 class YOLOv5DetectorLearner(Learner):
     available_models = ['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
                         'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom']

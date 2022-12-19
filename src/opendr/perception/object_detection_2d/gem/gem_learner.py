@@ -20,7 +20,6 @@ import random
 import time
 import warnings
 import torch
-torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 import ntpath
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -48,6 +47,8 @@ import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
 from PIL import Image as im
 
 import zipfile
+
+torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 
 
 class GemLearner(Learner):

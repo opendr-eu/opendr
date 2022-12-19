@@ -21,7 +21,6 @@ import random
 import time
 import warnings
 import torch
-torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 import ntpath
 import contextlib
 from torch.utils.data import DataLoader, DistributedSampler
@@ -47,6 +46,7 @@ import onnxruntime as ort
 import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
 from PIL import Image as im
 
+torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
 
 class DetrLearner(Learner):
     def __init__(
