@@ -73,7 +73,7 @@ class DeepSortTracker(object):
             cls_conf.append(detection.confidence)
             cls_ids.append(detection.name)
 
-        bbox_xywh = np.array(bbox_xywh)
+        bbox_xywh = np.array(bbox_xywh).reshape(-1, 4)
         cls_conf = np.array(cls_conf)
         cls_ids = np.array(cls_ids)
 

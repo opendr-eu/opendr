@@ -109,6 +109,7 @@ class ObjectTracking2DDeepSortNode(Node):
         detection_boxes = self.detector.infer(image)
         image_with_detections = ImageWithDetections(image.numpy(), detection_boxes)
         tracking_boxes = self.learner.infer(image_with_detections, swap_left_top=False)
+        detection_boxes = tracking_boxes.bounding_box_list()
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
