@@ -21,7 +21,7 @@ import torch
 
 from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
 
-torch.hub._validate_not_a_forked_repo=lambda a,b,c: True # workaround for rate limit bug
+torch.hub._validate_not_a_forked_repo=lambda a, b, c: True  # workaround for rate limit bug
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
