@@ -106,6 +106,7 @@ jobs:
         make install_compilation_dependencies
         make install_runtime_dependencies
         pip install -r tests/sources/requirements.txt
+        pip list
         if [ ${{ matrix.package }} = "ctests" ]; then
             make ctests
         else
