@@ -46,7 +46,7 @@ Constructor parameters:
 - **name_experiment**: *str, default='esr_9'*\
   String name for saving checkpoints.
 - **dimensional_finetune**: *bool, default=True*\
-  Specifies if the model should be fintuned on dimensional data or not.
+  Specifies if the model should be fine-tuned on dimensional data or not.
 - **categorical_train**: *bool, default=False*\
   Specifies if the model should be trained on categorical data or not.
 - **base_path_to_dataset**: *str, default=''./data/AffectNet''*\
