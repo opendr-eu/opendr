@@ -51,7 +51,7 @@ class ObjectTrackingSiamRPNNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__('object_tracking_2d_siamrpn_node')
+        super().__init__('opendr_object_tracking_2d_siamrpn_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
