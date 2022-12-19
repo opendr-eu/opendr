@@ -769,7 +769,7 @@ The [CoSTGCNLearner](/src/opendr/perception/skeleton_based_action_recognition/co
 ```python
 CoSTGCNLearner(self, lr, iters, batch_size, optimizer, lr_schedule, backbone, network_head,
                checkpoint_after_iter, checkpoint_load_iter, temp_path,
-               device, loss, weight_decay, momentun, drop_last, pin_memory, num_workers, seed,
+               device, loss, weight_decay, momentum, drop_last, pin_memory, num_workers, seed,
                num_classes, num_point, num_person, in_channels, graph_type, sequence_len
                )
 ```
