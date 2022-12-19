@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
                                                 mobilenet_use_stride=stride, half_precision=half_precision)
-    pose_estimator.download(path="", verbose=True)
+    pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
     if onnx:

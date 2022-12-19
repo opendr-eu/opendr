@@ -164,10 +164,9 @@ class HighResolutionPoseEstimationLearner(Learner):
         return heatmaps, pafs, scale, pad
 
     def __pooling(self, img, kernel):  # Pooling on input image for dim reduction
-        pool = torch.nn.AvgPool2d(kernel)
         pool_img = torchvision.transforms.ToTensor()(img)
         pool_img = pool_img.unsqueeze(0)
-        pool_img = pool(pool_img)
+        pool_img = torch.nn.functional.avg_pool2d(pool_img, kernel)
         pool_img = pool_img.squeeze(0).permute(1, 2, 0).cpu().float().numpy()
         return pool_img
 

@@ -192,6 +192,18 @@ Parameters:
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
 
+#### `HighResolutionPoseEstimation.load`
+```python
+HighResolutionPoseEstimation.load(self, path, verbose)
+```
+This method is used to load a pretrained model that has trained with Lightweight OpenPose. The model is loaded from  inside the directory of the path provided, using the metadata .json file included.
+
+Parameters: 
+- **path**: *str*\
+  Path of the model to be loaded.
+- **verbose**: *bool, default=False*\
+  If set to True, prints a message on success.
+
 
 #### Examples
 

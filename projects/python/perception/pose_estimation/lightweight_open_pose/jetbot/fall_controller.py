@@ -82,7 +82,7 @@ if __name__ == '__main__':
                                                     mobilenet_use_stride=False, half_precision=False)
         infer_delay = 0.43  # delay calculated based on FPS on jetbot
 
-    pose_estimator.download(path="", verbose=True)
+    pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("./openpose_default")
 
     def fall_handler_fn_file(imgs):
