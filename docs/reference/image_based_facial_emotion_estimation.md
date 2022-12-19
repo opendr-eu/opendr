@@ -122,8 +122,6 @@ Parameters:
   Object of type Python dictionary containing the trained model weights.
 - **base_path_to_save_model**: *str*\
   Specifies the path in which the model will be saved.
-- **current_branch_save**: *int*\
-  Specifies the index of the model branch which should be saved.
 
 #### `FacialEmotionLearner.load`
 ```python
