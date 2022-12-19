@@ -60,8 +60,6 @@ class FacialEmotionLearner(Learner):
                  max_tuning_epoch=1, diversify=False
                  ):
         super(FacialEmotionLearner, self).__init__(lr=lr, batch_size=batch_size, temp_path=temp_path, device=device)
-        # dataset_name = ''
-        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = device
         self.device_ind = device_ind
         self.output_device = self.device_ind[0] if type(self.device_ind) is list else self.device_ind
