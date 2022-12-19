@@ -785,7 +785,7 @@ Constructor parameters:
   This heavily affects memory usage, adjust according to your system.
 - **optimizer**: *str {'sgd', 'adam'}, default='adam'*\
   Name of optimizer to use ("sgd" or "adam").
-- **lr_schedule**: *str, default=' '*
+- **lr_schedule**: *str, default=''*
   Specifies the learning rate scheduler.
 - **network_head**: *str, default='classification'*\
   Head of network (only "classification" is currently available).
