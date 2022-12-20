@@ -177,10 +177,9 @@ def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=Fal
         )
 
 
-def main(
-    args=None,
-):
+def main(args=None):
     rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic",
                         help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
