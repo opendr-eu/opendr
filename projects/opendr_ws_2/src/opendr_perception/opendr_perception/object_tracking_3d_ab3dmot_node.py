@@ -28,12 +28,12 @@ from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 class ObjectTracking3DAb3dmotNode(Node):
     def __init__(
-        self,
-        detector=None,
-        input_point_cloud_topic="/opendr/dataset_point_cloud",
-        output_detection3d_topic="/opendr/detection3d",
-        output_tracking3d_id_topic="/opendr/tracking3d_id",
-        device="cuda:0",
+            self,
+            detector=None,
+            input_point_cloud_topic="/opendr/dataset_point_cloud",
+            output_detection3d_topic="/opendr/detection3d",
+            output_tracking3d_id_topic="/opendr/tracking3d_id",
+            device="cuda:0",
     ):
         """
         Creates a ROS2 Node for 3D object tracking
