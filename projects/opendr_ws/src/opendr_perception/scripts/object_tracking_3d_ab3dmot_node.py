@@ -126,7 +126,7 @@ def main():
             "car", "xyres_16.proto"
         )
     )
-    parser.add_argument("-t", "--temp_dir", help="Path to a temporary directory with models",
+    parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
     args = parser.parse_args()
 
