@@ -68,11 +68,10 @@ void load_detr_model(const char *modelPath, detr_model_t *model) {
   model->threshold = 0;
 
   // Parse the model JSON file
-  std::string modelJsonPath(modelPath);
-  std::size_t splitPos = modelJsonPath.find_last_of("/");
+  std::string basePath(modelPath);
+  std::size_t splitPos = basePath.find_last_of("/");
   splitPos = splitPos > 0 ? splitPos + 1 : 0;
-  std::string basePath = modelJsonPath;
-  modelJsonPath = basePath + "/" + modelJsonPath.substr(splitPos) + ".json";
+  std::string modelJsonPath = basePath + "/" + basePath.substr(splitPos) + ".json";
 
   std::ifstream in_stream(modelJsonPath);
   if (!in_stream.is_open()) {

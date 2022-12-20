@@ -98,7 +98,7 @@ void load_face_recognition_model(const char *modelPath, face_recognition_model_t
   std::string basePath = modelJsonPath.substr(0, splitPosition);
   splitPosition = basePath.find_last_of("/");
   splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
-  basePath = basePath.substr(0, splitPosition);
+  basePath.resize(splitPosition);
 
   // Parse JSON
   std::string onnxModelPath = basePath + json_get_key_string(json, "model_paths", 0);
