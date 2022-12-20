@@ -15,9 +15,9 @@
 
 import argparse
 import os
-from sensor_msgs.msg import PointCloud as ROS_PointCloud
 import rclpy
 from rclpy.node import Node
+from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROS2Bridge
 from opendr.engine.datasets import DatasetIterator
 from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
@@ -34,7 +34,7 @@ class PointCloudDatasetNode(Node):
         Creates a ROS Node for publishing dataset point clouds
         """
 
-        super().__init__('point_cloud_dataset_node')
+        super().__init__('opendr_point_cloud_dataset_node')
 
         self.dataset = dataset
         self.bridge = ROS2Bridge()
@@ -44,13 +44,13 @@ class PointCloudDatasetNode(Node):
         self.output_point_cloud_publisher = self.create_publisher(
             ROS_PointCloud, output_point_cloud_topic, 1
         )
+        self.get_logger().info("Publishing point_cloud images.")
 
     def timer_callback(self):
 
         point_cloud = self.dataset[self.sample_index % len(self.dataset)][0]
         # Dataset should have a (PointCloud, Target) pair as elements
 
-        self.get_logger().info("Publishing point_cloud [" + str(self.sample_index) + "]")
         message = self.bridge.to_ros_point_cloud(
             point_cloud, self.get_clock().now().to_msg()
         )
@@ -59,10 +59,9 @@ class PointCloudDatasetNode(Node):
         self.sample_index += 1
 
 
-def main(
-    args=None,
-):
+def main(args=None):
     rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset_path",
                         help="Path to a dataset. If does not exist, nano KITTI dataset will be downloaded there.",
@@ -71,7 +70,7 @@ def main(
                         help="Path to kitti subsets. Used only if a KITTI dataset is downloaded",
                         type=str,
                         default="../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets")
-    parser.add_argument("-o", "--output_point_cloud_topic", help="Topic name to upload the data",
+    parser.add_argument("-o", "--output_point_cloud_topic", help="Topic name to publish the data",
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-f", "--fps", help="Data FPS",
                         type=float, default=10)
