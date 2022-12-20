@@ -33,15 +33,15 @@ from opendr.engine.data import Image, ImageWithDetections
 
 class ObjectTracking2DDeepSortNode(Node):
     def __init__(
-        self,
-        detector=None,
-        input_rgb_image_topic="image_raw",
-        output_detection_topic="/opendr/objects",
-        output_tracking_id_topic="/opendr/objects_tracking_id",
-        output_rgb_image_topic="/opendr/image_objects_annotated",
-        device="cuda:0",
-        model_name="deep_sort",
-        temp_dir="temp",
+            self,
+            detector=None,
+            input_rgb_image_topic="image_raw",
+            output_detection_topic="/opendr/objects",
+            output_tracking_id_topic="/opendr/objects_tracking_id",
+            output_rgb_image_topic="/opendr/image_objects_annotated",
+            device="cuda:0",
+            model_name="deep_sort",
+            temp_dir="temp",
     ):
         """
         Creates a ROS2 Node for 2D object tracking
@@ -98,7 +98,7 @@ class ObjectTracking2DDeepSortNode(Node):
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -108,7 +108,6 @@ class ObjectTracking2DDeepSortNode(Node):
         detection_boxes = self.detector.infer(image)
         image_with_detections = ImageWithDetections(image.numpy(), detection_boxes)
         tracking_boxes = self.learner.infer(image_with_detections, swap_left_top=False)
-        detection_boxes = tracking_boxes.bounding_box_list()
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
@@ -120,6 +119,7 @@ class ObjectTracking2DDeepSortNode(Node):
             self.get_logger().info("Published annotated image")
 
         if self.detection_publisher is not None:
+            detection_boxes = tracking_boxes.bounding_box_list()
             ros_boxes = self.bridge.to_ros_boxes(detection_boxes)
             self.detection_publisher.publish(ros_boxes)
             self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
