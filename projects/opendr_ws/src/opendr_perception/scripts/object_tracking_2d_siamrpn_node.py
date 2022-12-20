@@ -17,23 +17,28 @@ import argparse
 import mxnet as mx
 
 import cv2
+from math import dist
 import rospy
-from vision_msgs.msg import Detection2D
+
 from sensor_msgs.msg import Image as ROS_Image
+from vision_msgs.msg import Detection2D
 from opendr_bridge import ROSBridge
-from ros_bridge.srv import OpenDRSingleObjectTracking
 
 from opendr.engine.data import Image
+from opendr.engine.target import TrackingAnnotation, BoundingBox
 from opendr.perception.object_tracking_2d import SiamRPNLearner
+from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 
 
 class ObjectTrackingSiamRPNNode:
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+    def __init__(self, object_detector, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_tracking_annotated",
                  tracker_topic="/opendr/tracked_object",
                  device="cuda"):
         """
         Creates a ROS Node for object tracking with SiamRPN.
+        :param object_detector: An object detector learner to use for initialization
+        :type object_detector: opendr.engine.learners.Learner
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -58,31 +63,20 @@ class ObjectTrackingSiamRPNNode:
 
         self.bridge = ROSBridge()
 
+        self.object_detector = object_detector
         # Initialize the object detector
         self.tracker = SiamRPNLearner(device=device)
         self.image = None
         self.initialized = False
 
-        rospy.Service("/opendr/siamrpn_tracking_srv",
-                      OpenDRSingleObjectTracking,
-                      self.init_box_srv_callback)
-
     def listen(self):
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('opendr_object_tracking_siamrpn_node', anonymous=True)
+        rospy.init_node('opendr_object_tracking_2d_siamrpn_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.img_callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Object tracking SiamRPN node started.")
+        rospy.loginfo("Object Tracking 2D SiamRPN node started.")
         rospy.spin()
-
-    def init_box_srv_callback(self, request):
-        # combine incoming box with current image to initialize tracker
-        self.initialized = False
-        init_box = self.bridge.from_ros_single_tracking_annotation(request.init_box)
-        self.tracker.infer(self.image, init_box)
-        self.initialized = True
-        return True
 
     def img_callback(self, data):
         """
@@ -94,13 +88,37 @@ class ObjectTrackingSiamRPNNode:
         image = self.bridge.from_ros_image(data, encoding='bgr8')
         self.image = image
 
-        # Run object detection
+        if not self.initialized:
+            # Run object detector to initialize the tracker
+            image = self.bridge.from_ros_image(data, encoding='bgr8')
+            boxes = self.object_detector.infer(image)
+
+            img_center = [int(image.data.shape[2] // 2), int(image.data.shape[1] // 2)]  # width, height
+            # Find the box that is closest to the center of the image
+            center_box = BoundingBox("", left=0, top=0, width=0, height=0)
+            min_distance = dist([center_box.left, center_box.top], img_center)
+            for box in boxes:
+                new_distance = dist([int(box.left + box.width // 2), int(box.top + box.height // 2)], img_center)
+                if new_distance < min_distance:
+                    center_box = box
+                    min_distance = dist([center_box.left, center_box.top], img_center)
+
+            # Initialize tracker with the most central box found
+            init_box = TrackingAnnotation(center_box.name,
+                                          center_box.left, center_box.top, center_box.width, center_box.height,
+                                          id=0, score=center_box.confidence)
+
+            self.tracker.infer(self.image, init_box)
+            self.initialized = True
+            rospy.loginfo("Object Tracking 2D SiamRPN node initialized with the most central bounding box.")
+
         if self.initialized:
+            # Run object tracking
             box = self.tracker.infer(image)
 
-            # Publish detections in ROS message
-            ros_boxes = self.bridge.to_ros_single_tracking_annotation(box)
             if self.object_publisher is not None:
+                # Publish detections in ROS message
+                ros_boxes = self.bridge.to_ros_single_tracking_annotation(box)
                 self.object_publisher.publish(ros_boxes)
 
             if self.image_publisher is not None:
@@ -109,7 +127,7 @@ class ObjectTrackingSiamRPNNode:
                 cv2.rectangle(image, (box.left, box.top),
                               (box.left + box.width, box.top + box.height),
                               (0, 255, 255), 3)
-                # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+                # Convert the annotated OpenDR image to ROS image message using bridge and publish it
                 self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
@@ -140,11 +158,15 @@ def main():
         print("Using CPU.")
         device = "cpu"
 
-    object_tracking_siamrpn_node = ObjectTrackingSiamRPNNode(device=device,
-                                                             input_rgb_image_topic=args.input_rgb_image_topic,
-                                                             output_rgb_image_topic=args.output_rgb_image_topic,
-                                                             tracker_topic=args.tracker_topic)
-    object_tracking_siamrpn_node.listen()
+    object_detector = YOLOv3DetectorLearner(backbone="darknet53", device=device)
+    object_detector.download(path=".", verbose=True)
+    object_detector.load("yolo_default")
+
+    object_tracker_2d_siamrpn_node = ObjectTrackingSiamRPNNode(object_detector=object_detector, device=device,
+                                                               input_rgb_image_topic=args.input_rgb_image_topic,
+                                                               output_rgb_image_topic=args.output_rgb_image_topic,
+                                                               tracker_topic=args.tracker_topic)
+    object_tracker_2d_siamrpn_node.listen()
 
 
 if __name__ == '__main__':
