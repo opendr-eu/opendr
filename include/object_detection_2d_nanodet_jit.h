@@ -68,7 +68,7 @@ opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_im
 void free_nanodet_model(nanodet_model_t *model);
 
 /**
- * draw the bounding boxes from detections in the given image
+ * Draws the bounding boxes from detections in the given image
  * @param image image that has been used for inference
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference

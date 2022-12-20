@@ -18,7 +18,7 @@ The *pst_model_t* structure keeps all the necessary information that are require
 void load_pst_model(char *modelPath, pst_model_t *model);
 ```
  Loads a progressive spatiotemporal gcn skeleton based action recognition model saved in the local filesystem (*modelPath*) in OpenDR format.
- This function also initializes a (*device*) Jit network for performing inference using this model.
+ This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  

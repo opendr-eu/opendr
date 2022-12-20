@@ -1,4 +1,4 @@
-## C_API: object_detection_2d_detr_jit.h
+## C_API: object_detection_2d_detr.h
 
 
 The *object_detection_2d_detr.h* header provides function definitions that can be used for accessing the OpenDR object detection 2d detr tool.
@@ -18,7 +18,7 @@ The *detr_model_t* structure keeps all the necessary information that are requir
 void load_detr_model(char *modelPath, detr_model_t *model);
 ```
  Loads a detr object detection model saved in the local filesystem (*modelPath*) in OpenDR format.
- This function also initializes a (*device*) Jit network for performing inference using this model.
+ This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  

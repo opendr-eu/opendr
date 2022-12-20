@@ -104,7 +104,6 @@ void load_detr_model(const char *modelPath, detr_model_t *model) {
   model->onnx_session = session;
   model->session_options = sessionOptions;
 
-  // Should we pass these parameters through the model json file?
   model->mean_value[0] = -0.485f;
   model->mean_value[1] = -0.456f;
   model->mean_value[2] = -0.406f;

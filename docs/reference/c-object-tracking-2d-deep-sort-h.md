@@ -1,4 +1,4 @@
-## C_API: object_tracking_2d_deep_sort_jit.h
+## C_API: object_tracking_2d_deep_sort.h
 
 
 The *object_tracking_2d_deep_sort.h* header provides function definitions that can be used for accessing the OpenDR object tracking 2d deep sort tool.
@@ -18,7 +18,7 @@ The *deep_sort_model_t* structure keeps all the necessary information that are r
 void load_deep_sort_model(char *modelPath, deep_sort_model_t *model);
 ```
  Loads a deep sort object tracking model saved in the local filesystem (*modelPath*) in OpenDR format.
- This function also initializes a (*device*) Jit network for performing inference using this model.
+ This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  

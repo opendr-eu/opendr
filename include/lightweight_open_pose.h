@@ -72,14 +72,14 @@ void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorVal
 void free_open_pose_model(open_pose_model_t *model);
 
 /**
- * initialize a tensor with values from an opendr image for testing the forward pass of the model
+ * This function initializes a tensor with values from an opendr image for testing the forward pass of the model
  * @param inputTensorValues opendr tensor to be loaded with random values
  * @param model model to be used for hyper parameters
  */
 void init_opendr_tensor_from_img_op(opendr_image_t *image, opendr_tensor_t *inputTensorValues, open_pose_model_t *model);
 
 /**
- * initialize a tensor with random values for testing the forward pass of the model
+ * This function initializes a tensor with random values for testing the forward pass of the model
  * @param inputTensorValues opendr tensor to be loaded with random values
  * @param model model to be used for hyper parameters
  */

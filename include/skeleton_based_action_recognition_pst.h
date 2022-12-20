@@ -62,7 +62,7 @@ void forward_pst(pst_model_t *model, opendr_tensor_t *inputTensorValues, opendr_
 void free_pst_model(pst_model_t *model);
 
 /**
- * initialize a tensor with random values for testing the forward pass of the model
+ * This function initializes a tensor with random values for testing the forward pass of the model
  * @param inputTensorValues opendr tensor to be loaded with random values
  * @param model model to be used for hyper parameters
  */

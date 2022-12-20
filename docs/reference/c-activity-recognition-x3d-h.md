@@ -1,4 +1,4 @@
-## C_API: activity_recognition_2d_x3d_jit.h
+## C_API: activity_recognition_2d_x3d.h
 
 
 The *activity_recognition_2d_x3d.h* header provides function definitions that can be used for accessing the OpenDR activity recognition 2d x3d tool.
@@ -18,7 +18,7 @@ The *x3d_model_t* structure keeps all the necessary information that are require
 void load_x3d_model(char *modelPath, x3d_model_t *model);
 ```
  Loads a x3d activity recognition model saved in the local filesystem (*modelPath*) in OpenDR format.
- This function also initializes a (*device*) Jit network for performing inference using this model.
+ This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  

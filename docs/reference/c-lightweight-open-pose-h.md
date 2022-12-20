@@ -1,4 +1,4 @@
-## C_API: lightweight_open_pose_jit.h
+## C_API: lightweight_open_pose.h
 
 
 The *lightweight_open_pose.h* header provides function definitions that can be used for accessing the OpenDR pose estimation, lightweight open pose tool.
@@ -18,7 +18,7 @@ The *open_pose_model_t* structure keeps all the necessary information that are r
 void load_open_pose_model(char *modelPath, open_pose_model_t *model);
 ```
  Loads a lightweight open pose, pose estimation model saved in the local filesystem (*modelPath*) in OpenDR format.
- This function also initializes a (*device*) Jit network for performing inference using this model.
+ This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  
