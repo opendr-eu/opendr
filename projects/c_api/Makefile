@@ -42,9 +42,7 @@ detr: $(BUILD_DIR)/object_detection_2d/detr_demo
 nanodet: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
 deep_sort: $(BUILD_DIR)/object_tracking_2d/deep_sort_demo
 skeleton_based_action_recognition_pst: $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo
-demos: $(BUILD_DIR)/face_recognition_demo $(BUILD_DIR)/nanodet_demo
 face: $(BUILD_DIR)/face_recognition_demo
-nano: $(BUILD_DIR)/nanodet_demo
 
 download:
 	@+if [ -a $(DATA_DIR) ] ; \
@@ -64,6 +62,8 @@ download:
 		$(MKDIR_P) $(DATA_DIR)/lightweight_open_pose; \
    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/optimized_model/*; \
    		$(MV) opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/optimized_model  $(DATA_DIR)/lightweight_open_pose/optimized_model; \
+   		$(WGET) ftp://opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/dataset/image/*; \
+   		$(MV) opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/dataset/image  $(DATA_DIR)/lightweight_open_pose/database; \
 		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/detr; \
         $(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/detr/optimized_model/*; \
         $(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/detr/optimized_model  $(DATA_DIR)/object_detection_2d/detr/optimized_model; \
@@ -92,7 +92,6 @@ $(BUILD_DIR)/face_recognition_demo:
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/face_recognition_demo samples/face_recognition/face_recognition_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 $(BUILD_DIR)/lightweight_open_pose_demo:
-$(BUILD_DIR)/nanodet_demo:
 	$(MKDIR_P) $(BUILD_DIR)
 	@+echo "Building lightweight open pose demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/lightweigth_open_pose_demo samples/lightweight_open_pose/lightweight_open_pose_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
@@ -106,7 +105,6 @@ $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
 	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
 	@+echo "Building nanodet object detection demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
-	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/nanodet_libtorch_demo samples/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 $(BUILD_DIR)/object_tracking_2d/deep_sort_demo:
 	$(MKDIR_P) $(BUILD_DIR)/object_tracking_2d

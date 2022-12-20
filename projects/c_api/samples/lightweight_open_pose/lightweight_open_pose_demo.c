@@ -30,10 +30,15 @@ int main(int argc, char **argv) {
   opendr_tensor_t input_tensor;
   init_tensor(&input_tensor);
 
-  init_random_opendr_tensor_op(&input_tensor, &model);
+  // Load an image and performance inference
+  opendr_image_t image;
+  load_image("data/lightweight_open_pose/database/000000000785.jpg", &image);
+  if (!image.data) {
+    printf("Image not found!");
+    return 1;
+  }
 
-  /* If user wants to import an Opendr Image, first must load the image and then use this function */
-  //  init_opendr_tensor_from_img_op(&image, &input_tensor, &model);
+  init_opendr_tensor_from_img_op(&image, &input_tensor, &model);
 
   // Initialize opendr tensor vector for output
   opendr_tensor_vector_t output_tensor_vector;
