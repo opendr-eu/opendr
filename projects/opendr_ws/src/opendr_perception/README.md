@@ -262,7 +262,7 @@ whose documentation can be found here:
 
    For viewing the output, refer to the [notes above.](#notes)
 
-## 2D Single Object Tracking ROS Node
+### 2D Single Object Tracking ROS Node
 
 You can find the single object tracking 2D ROS node python script [here](./scripts/object_tracking_2d_siamrpn_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [single object tracking 2D SiamRPN tool](../../../../src/opendr/perception/object_tracking_2d/siamrpn/siamrpn_learner.py) whose documentation can be found [here](../../../../docs/reference/object-tracking-2d-siamrpn.md).
