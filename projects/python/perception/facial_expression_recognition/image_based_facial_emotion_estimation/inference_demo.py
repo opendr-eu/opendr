@@ -103,7 +103,7 @@ def _predict(input_face, device, ensemble_size):
     :return: Lists of emotions and affect values including the ensemble predictions based on plurality.
     """
 
-    learner = FacialEmotionLearner(device=device, ensemble_size=ensemble_size)
+    learner = FacialEmotionLearner(device=str(device), ensemble_size=ensemble_size)
     learner.init_model(num_branches=ensemble_size)
     model_path = learner.download(mode="pretrained")
     learner.load(ensemble_size, path_to_saved_network=model_path)
