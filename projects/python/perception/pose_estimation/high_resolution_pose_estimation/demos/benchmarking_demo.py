@@ -51,8 +51,8 @@ if __name__ == '__main__':
 
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
                                                          mobilenet_use_stride=stride, half_precision=half_precision,
-                                                         first_pass_height=base_height1,
-                                                         second_pass_height=base_height2)
+                                                         first_pass_height=int(base_height1),
+                                                         second_pass_height=int(base_height2))
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
