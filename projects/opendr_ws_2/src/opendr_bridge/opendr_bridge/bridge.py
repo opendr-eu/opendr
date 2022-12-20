@@ -32,7 +32,7 @@ from geometry_msgs.msg import (
     Quaternion as QuaternionMsg, Pose as Pose3D,
     Point
 )
-from opendr_ros2_messages.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
+from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 
 
 class ROS2Bridge:
