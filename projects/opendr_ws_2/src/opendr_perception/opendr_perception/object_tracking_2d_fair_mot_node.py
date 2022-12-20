@@ -32,17 +32,17 @@ from opendr.engine.data import Image
 
 class ObjectTracking2DFairMotNode(Node):
     def __init__(
-        self,
-        input_rgb_image_topic="image_raw",
-        output_detection_topic="/opendr/fairmot_detection",
-        output_tracking_id_topic="/opendr/fairmot_tracking_id",
-        output_rgb_image_topic="/opendr/fairmot_image_annotated",
-        device="cuda:0",
-        model_name="fairmot_dla34",
-        temp_dir="temp",
+            self,
+            input_rgb_image_topic="image_raw",
+            output_rgb_image_topic="/opendr/image_objects_annotated",
+            output_detection_topic="/opendr/objects",
+            output_tracking_id_topic="/opendr/objects_tracking_id",
+            device="cuda:0",
+            model_name="fairmot_dla34",
+            temp_dir="temp",
     ):
         """
-        Creates a ROS Node for 2D object tracking
+        Creates a ROS2 Node for 2D object tracking
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
@@ -60,9 +60,8 @@ class ObjectTracking2DFairMotNode(Node):
         :type temp_dir: str
         """
 
-        super().__init__('object_tracking_2d_fair_mot_node')
+        super().__init__('opendr_object_tracking_2d_fair_mot_node')
 
-        # # Initialize the face detector
         self.learner = ObjectTracking2DFairMotLearner(
             device=device, temp_path=temp_dir,
         )
@@ -93,7 +92,7 @@ class ObjectTracking2DFairMotNode(Node):
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -170,29 +169,31 @@ def draw_predictions(frame, predictions: TrackingAnnotationList, is_centered=Fal
         )
 
 
-def main(
-    args=None,
-):
+def main(args=None):
     rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--model_name", help="Name of the trained model",
-                        type=str, default="fairmot_dla34")
-    parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
-                        type=str, default="temp")
     parser.add_argument("-i", "--input_rgb_image_topic",
                         help="Input Image topic provided by either an image_dataset_node, webcam or any other image node",
-                        type=str, default="/opendr/dataset_image")
-    parser.add_argument("-od", "--output_detection_topic",
+                        type=str, default="/image_raw")
+    parser.add_argument("-o", "--output_rgb_image_topic",
+                        help="Output annotated image topic with a visualization of detections and their ids",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/image_objects_annotated")
+    parser.add_argument("-d", "--detections_topic",
                         help="Output detections topic",
-                        type=str, default="/opendr/fairmot_detection")
-    parser.add_argument("-ot", "--output_tracking_id_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/fairmot_tracking_id")
-    parser.add_argument("-oi", "--output_rgb_image_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/fairmot_image_annotated")
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects")
+    parser.add_argument("-t", "--tracking_id_topic",
+                        help="Output tracking ids topic with the same element count as in output_detection_topic",
+                        type=lambda value: value if value.lower() != "none" else None,
+                        default="/opendr/objects_tracking_id")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("-n", "--model_name", help="Name of the trained model",
+                        type=str, default="fairmot_dla34", choices=["fairmot_dla34"])
+    parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
+                        type=str, default="temp")
     args = parser.parse_args()
 
     try:
@@ -213,9 +214,9 @@ def main(
         model_name=args.model_name,
         input_rgb_image_topic=args.input_rgb_image_topic,
         temp_dir=args.temp_dir,
-        output_detection_topic=args.output_detection_topic if args.output_detection_topic != "None" else None,
-        output_tracking_id_topic=args.output_tracking_id_topic if args.output_tracking_id_topic != "None" else None,
-        output_rgb_image_topic=args.output_rgb_image_topic if args.output_rgb_image_topic != "None" else None,
+        output_detection_topic=args.detections_topic,
+        output_tracking_id_topic=args.tracking_id_topic,
+        output_rgb_image_topic=args.output_rgb_image_topic,
     )
 
     rclpy.spin(fair_mot_node)
