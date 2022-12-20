@@ -115,7 +115,7 @@ def _predict(input_face, device, ensemble_size):
     affect = np.array([a[0].cpu().detach().numpy() for a in affect])
 
     # Normalizes arousal
-    affect[:, 1] = np.clip((affect[:, 1] + 1)/2.0, 0, 1)
+    affect[:, 1] = np.clip((affect[:, 1] + 1) / 2.0, 0, 1)
 
     # Computes mean arousal and valence as the ensemble prediction
     ensemble_affect = np.expand_dims(np.mean(affect, 0), axis=0)
@@ -345,8 +345,8 @@ def main():
     parser.add_argument("-s", "--size",
                         help="define the size of the window: \n1 - 1920 x 1080;\n2 - 1440 x 900;\n3 - 1024 x 768.",
                         type=int, choices=[1, 2, 3], default=1)
-    parser.add_argument("-c", "--cuda", help="run on GPU.",
-                        action="store_true")
+    parser.add_argument("--device", help="device to run on, either \'cpu\' or \'cuda\', defaults to \'cuda\'.",
+                        default="cuda")
     parser.add_argument("-w", "--webcam_id",
                         help="define the webcam by 'id' to capture images in the webcam mode." +
                              "If none is selected, the default camera by the OS is used.",
@@ -358,7 +358,7 @@ def main():
 
     args = parser.parse_args()
 
-    learner = FacialEmotionLearner(device=args.cuda, ensemble_size=args.ensemble_size)
+    learner = FacialEmotionLearner(device=args.device, ensemble_size=args.ensemble_size)
 
     # Calls to main methods
     if args.mode == "image":
@@ -366,8 +366,12 @@ def main():
             if args_validation.is_none(args.input):
                 args.input = learner.download(mode="demo_image")
             args_validation.validate_image_video_mode_arguments(args)
-            image(args.input, args.display, args.gradcam, args.output,
-                  args.size, args.cuda, args.pretrained, args.ensemble_size)
+            if args.device == "cuda":
+                image(args.input, args.display, args.gradcam, args.output,
+                      args.size, True, args.ensemble_size)
+            else:
+                image(args.input, args.display, args.gradcam, args.output,
+                      args.size, False, args.ensemble_size)
         except RuntimeError as e:
             print(e)
     elif args.mode == "video":
@@ -375,15 +379,23 @@ def main():
             if args_validation.is_none(args.input):
                 args.input = learner.download(mode="demo_video")
             args_validation.validate_image_video_mode_arguments(args)
-            video(args.input, args.display, args.gradcam, args.output,
-                  args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
+            if args.device == "cuda":
+                video(args.input, args.display, args.gradcam, args.output,
+                      args.size, True, args.frames, args.no_plot, args.ensemble_size)
+            else:
+                video(args.input, args.display, args.gradcam, args.output,
+                      args.size, False, args.frames, args.no_plot, args.ensemble_size)
         except RuntimeError as e:
             print(e)
     elif args.mode == "webcam":
         try:
             args_validation.validate_webcam_mode_arguments(args)
-            webcam(args.webcam_id, args.display, args.gradcam, args.output,
-                   args.size, args.cuda, args.frames, args.no_plot, args.pretrained, args.ensemble_size)
+            if args.device == "cuda":
+                webcam(args.webcam_id, args.display, args.gradcam, args.output,
+                       args.size, True, args.frames, args.no_plot, args.ensemble_size)
+            else:
+                webcam(args.webcam_id, args.display, args.gradcam, args.output,
+                       args.size, False, args.frames, args.no_plot, args.ensemble_size)
         except RuntimeError as e:
             print(e)
 
