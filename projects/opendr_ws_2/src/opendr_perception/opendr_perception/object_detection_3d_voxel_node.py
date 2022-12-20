@@ -28,7 +28,7 @@ class ObjectDetection3DVoxelNode(Node):
     def __init__(
         self,
         input_point_cloud_topic="/opendr/dataset_point_cloud",
-        output_detection3d_topic="/opendr/detection3d",
+        output_detection3d_topic="/opendr/objects3d",
         device="cuda:0",
         model_name="tanet_car_xyres_16",
         model_config_path=os.path.join(
@@ -52,7 +52,7 @@ class ObjectDetection3DVoxelNode(Node):
         :type temp_dir: str
         """
 
-        super().__init__('object_detection_3d_voxel_node')
+        super().__init__('opendr_object_detection_3d_voxel_node')
 
         self.get_logger().info("Using model_name: {}".format(model_name))
 
@@ -73,7 +73,7 @@ class ObjectDetection3DVoxelNode(Node):
 
         self.create_subscription(ROS_PointCloud, input_point_cloud_topic, self.callback, 1)
 
-        self.get_logger().info("Ready to listen")
+        self.get_logger().info("Object Detection 3D Voxel Node initialized.")
 
     def callback(self, data):
         """
@@ -89,14 +89,20 @@ class ObjectDetection3DVoxelNode(Node):
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
         self.detection_publisher.publish(ros_boxes)
-        self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
 
 
-def main(
-    args=None,
-):
+def main(args=None):
     rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input_point_cloud_topic",
+                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
+                        type=str, default="/opendr/dataset_point_cloud")
+    parser.add_argument("-o", "--output_detection3d_topic",
+                        help="Output detections topic",
+                        type=str, default="/opendr/objects3d")
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
+                        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="tanet_car_xyres_16")
     parser.add_argument(
@@ -109,14 +115,6 @@ def main(
     )
     parser.add_argument("-t", "--temp_dir", help="Path to a temp dir with models",
                         type=str, default="temp")
-    parser.add_argument("-i", "--input_point_cloud_topic",
-                        help="Point Cloud topic provided by either a point_cloud_dataset_node or any other 3D Point Cloud Node",
-                        type=str, default="/opendr/dataset_point_cloud")
-    parser.add_argument("-o", "--output_detection3d_topic",
-                        help="Output detections topic",
-                        type=str, default="/opendr/detection3d")
-    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
-                        type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
     try:
