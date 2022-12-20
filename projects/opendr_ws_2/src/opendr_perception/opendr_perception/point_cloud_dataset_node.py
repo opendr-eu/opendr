@@ -18,7 +18,7 @@ import os
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 import rclpy
 from rclpy.node import Node
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.engine.datasets import DatasetIterator
 from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
 

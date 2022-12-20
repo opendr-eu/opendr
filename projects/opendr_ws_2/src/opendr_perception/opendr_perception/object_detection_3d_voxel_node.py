@@ -20,7 +20,7 @@ import rclpy
 from rclpy.node import Node
 from vision_msgs.msg import Detection3DArray
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 

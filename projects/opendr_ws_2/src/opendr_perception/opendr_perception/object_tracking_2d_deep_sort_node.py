@@ -23,7 +23,7 @@ from rclpy.node import Node
 from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.engine.learners import Learner
 from opendr.perception.object_tracking_2d import (
     ObjectTracking2DDeepSortLearner,

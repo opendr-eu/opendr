@@ -18,7 +18,7 @@ import os
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.engine.datasets import DatasetIterator
 from opendr.perception.object_tracking_2d import MotDataset, RawMotDatasetIterator
 
