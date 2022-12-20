@@ -94,8 +94,6 @@ class FacialEmotionEstimationNode:
         image = self.bridge.from_ros_image(data, encoding='bgr8')
         if image is None:
             return
-        # preprocess the image
-        image = image_processing.read(image)
 
         # Detect face
         face_coordinates = detect_face(image)
