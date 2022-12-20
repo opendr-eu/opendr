@@ -26,17 +26,17 @@ from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 class ObjectDetection3DVoxelNode(Node):
     def __init__(
-        self,
-        input_point_cloud_topic="/opendr/dataset_point_cloud",
-        detections_topic="/opendr/objects3d",
-        device="cuda:0",
-        model_name="tanet_car_xyres_16",
-        model_config_path=os.path.join(
-            "$OPENDR_HOME", "src", "opendr", "perception", "object_detection_3d",
-            "voxel_object_detection_3d", "second_detector", "configs", "tanet",
-            "ped_cycle", "test_short.proto"
-        ),
-        temp_dir="temp",
+            self,
+            input_point_cloud_topic="/opendr/dataset_point_cloud",
+            detections_topic="/opendr/objects3d",
+            device="cuda:0",
+            model_name="tanet_car_xyres_16",
+            model_config_path=os.path.join(
+                "$OPENDR_HOME", "src", "opendr", "perception", "object_detection_3d",
+                "voxel_object_detection_3d", "second_detector", "configs", "tanet",
+                "ped_cycle", "test_short.proto"
+            ),
+            temp_dir="temp",
     ):
         """
         Creates a ROS2 Node for 3D object detection
