@@ -25,16 +25,16 @@ from opendr.perception.object_tracking_2d import MotDataset, RawMotDatasetIterat
 
 class ImageDatasetNode(Node):
     def __init__(
-        self,
-        dataset: DatasetIterator,
-        output_rgb_image_topic="/opendr/dataset_image",
-        data_fps=10,
+            self,
+            dataset: DatasetIterator,
+            output_rgb_image_topic="/opendr/dataset_image",
+            data_fps=10,
     ):
         """
         Creates a ROS2 Node for publishing dataset images
         """
 
-        super().__init__('image_dataset_node')
+        super().__init__('opendr_image_dataset_node')
 
         self.dataset = dataset
         self.bridge = ROS2Bridge()
@@ -44,13 +44,12 @@ class ImageDatasetNode(Node):
         self.output_image_publisher = self.create_publisher(
             ROS_Image, output_rgb_image_topic, 1
         )
+        self.get_logger().info("Publishing images.")
 
     def timer_callback(self):
-
         image = self.dataset[self.sample_index % len(self.dataset)][0]
         # Dataset should have an (Image, Target) pair as elements
 
-        self.get_logger().info("Publishing image [" + str(self.sample_index) + "]")
         message = self.bridge.to_ros_image(
             image, encoding="bgr8"
         )
@@ -59,13 +58,12 @@ class ImageDatasetNode(Node):
         self.sample_index += 1
 
 
-def main(
-    args=None,
-):
+def main(args=None):
     rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dataset_path", help="Path to a dataset",
-                        type=str, default="KITTI/opendr_nano_kitti")
+                        type=str, default="MOT")
     parser.add_argument(
         "-ks", "--mot20_subsets_path", help="Path to mot20 subsets",
         type=str, default=os.path.join(
@@ -73,7 +71,7 @@ def main(
             "datasets", "splits", "nano_mot20.train"
         )
     )
-    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name to upload the data",
+    parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name to publish the data",
                         type=str, default="/opendr/dataset_image")
     parser.add_argument("-f", "--fps", help="Data FPS",
                         type=float, default=30)
