@@ -262,6 +262,41 @@ whose documentation can be found here:
 
    For viewing the output, refer to the [notes above.](#notes)
 
+## 2D Single Object Tracking ROS Node
+
+You can find the single object tracking 2D ROS node python script [here](./scripts/object_tracking_2d_siamrpn_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [single object tracking 2D SiamRPN tool](../../../../src/opendr/perception/object_tracking_2d/siamrpn/siamrpn_learner.py) whose documentation can be found [here](../../../../docs/reference/object-tracking-2d-siamrpn.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the single object tracking 2D node:
+
+    ```shell
+    rosrun opendr_perception object_tracking_2d_siamrpn_node.py
+    ```
+
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_tracking_annotated`)
+   - `-t or --tracker_topic TRACKER_TOPIC`: topic name for tracker messages, `None` to stop the node from publishing on this topic (default=`/opendr/tracked_object`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/image_tracking_annotated`
+   - Detection messages: `/opendr/tracked_object`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+To initialize this node it is required to provide a bounding box of an object to track.
+This is achieved by initializing one of the toolkit's 2D object detectors (YOLOv3) and running object detection once on the input.
+Afterwards, **the detected bounding box that is closest to the center of the image** is used to initialize the tracker. 
+Feel free to modify the node to initialize it in a different way that matches your use case.
+
 ### 2D Object Tracking ROS Nodes
 
 For 2D object tracking, there two ROS nodes provided, one using Deep Sort and one using FairMOT which use either pretrained models, or custom trained models.
@@ -768,57 +803,3 @@ The following optional arguments are available:
    - `-f or --fps FPS`: data fps (default=`10`)
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
-
-## SiamRPN Object Tracking 2D ROS Node
-
-The `object_tracking_2d_siamrpn.py` node implements an object tracking node using the SiamRPN
-single object tracker. The node works by providing a tracking service which can be called from
-another node (i.e., a detection node) or from the terminal. A `Detection2D` message is required
-to begin the tracking process, and the tracker is subscribed to a corresponding input image topic.
-Example usage:
-```shell
-# first start a video, e.g. using video_stream_opencv or usb_cam
-roslaunch video_stream_opencv camera.launch video_stream_provider:=/path/to/video.mp4 loop_videofile:=true
-```
-The default topic for this stream publisher is `/camera/image_raw`, which must be given as an
-input argument to the SiamRPN node:
-```shell
-# change the input image topic here to reflect your chosen publisher
-rosrun perception object_tracking_2d_siamrpn.py -i /camera/image_raw
-```
-The tracker node will subscribe to the image topic and start tracking after the tracking service is called.
-The provided service is called `/opendr/siamrpn_tracking_srv` and a `Detection2D` message is expected in
-order to get an initial bounding box. The service can be called from another node, such as an object detection
-node (note: most object detectors publish `Detection2DArray` messages, so the object of interest must be
-specified first), or from the terminal using `rosservice call` as follows:
-```shell
-rosservice call /opendr/siamrpn_tracking_srv "init_box:
-  header:
-    seq: 0
-    stamp:
-      secs: 0
-      nsecs: 0
-    frame_id: ''
-  results:
-  - id: 0
-    score: 0.0
-    pose:
-      pose:
-        position: {x: 0.0, y: 0.0, z: 0.0}
-        orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
-      covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-  bbox:
-    center: {x: 645.5, y: 312.0, theta: 0.0}
-    size_x: 75.0
-    size_y: 200.0
-  source_img:
-    header:
-      seq: 0
-      stamp: {secs: 0, nsecs: 0}
-    data: !!binary """
-```
-The `bbox` parameters must be set to point to the object to be tracked.
-The tracked locations are visualized and published by default to the `/opendr/image_tracking_annotated`
-topic which can be visualized using for example `rqt_image_view`.
