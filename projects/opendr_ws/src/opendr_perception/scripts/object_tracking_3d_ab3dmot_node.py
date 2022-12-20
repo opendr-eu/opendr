@@ -16,7 +16,6 @@
 import argparse
 import os
 import torch
-from opendr.engine.learners import Learner
 import rospy
 from vision_msgs.msg import Detection3DArray
 from std_msgs.msg import Int32MultiArray
