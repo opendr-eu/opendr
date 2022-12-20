@@ -64,7 +64,7 @@ class ObjectTracking2DDeepSortNode(Node):
         :type temp_dir: str
         """
 
-        super().__init__('object_tracking_2d_deep_sort_node')
+        super().__init__('opendr_object_tracking_2d_deep_sort_node')
 
         self.get_logger().info("Using model_name: {}".format(model_name))
 
