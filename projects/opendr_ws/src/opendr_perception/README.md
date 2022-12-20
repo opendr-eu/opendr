@@ -201,14 +201,14 @@ under `/opendr/face_recognition_id`.
 For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet and DETR.
 
 You can find the 2D object detection ROS node python scripts here:
-[SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py),
+[SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py), [Nanodet node](./scripts/object_detection_2d_nanodet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py),
 where you can inspect the code and modify it as you wish to fit your needs.
 The nodes makes use of the toolkit's various 2D object detection tools:
 [SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [YOLOv5 tool](../../../../src/opendr/perception/object_detection_2d/yolov5/yolov5_learner.py),
-[CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py),
+[CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [Nanodet tool](../../../../src/opendr/perception/object_detection_2d/nanodet/nanodet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py),
 whose documentation can be found here:
 [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [YOLOv5 docs](../../../../docs/reference/object-detection-2d-yolov5.md),
-[CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
+[CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [Nanodet docs](../../../../docs/reference/nanodet.md), [DETR docs](../../../../docs/reference/detr.md).
 
 #### Instructions for basic usage:
 
@@ -241,10 +241,17 @@ whose documentation can be found here:
       ```shell
       rosrun opendr_perception object_detection_2d_centernet_node.py
       ```
-      The following optional argument is available for the YOLOv3 node:
+      The following optional argument is available for the CenterNet node:
       - `--backbone BACKBONE`: Backbone network (default=`resnet50_v1b`)
 
-   5. DETR node
+   5. Nanodet node
+      ```shell
+      rosrun opendr_perception object_detection_2d_nanodet_node.py
+      ```
+      The following optional argument is available for the Nanodet node:
+      - `--model Model`: Model that config file will be used (default=`plus_m_1.5x_416`)
+
+   6. DETR node
       ```shell
       rosrun opendr_perception object_detection_2d_detr_node.py
       ```
