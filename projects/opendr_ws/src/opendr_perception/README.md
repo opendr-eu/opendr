@@ -198,7 +198,7 @@ under `/opendr/face_recognition_id`.
 
 ### 2D Object Detection ROS Nodes
 
-For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet and DETR.
+For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet, Nanodet and DETR.
 
 You can find the 2D object detection ROS node python scripts here:
 [SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py), [Nanodet node](./scripts/object_detection_2d_nanodet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py),
