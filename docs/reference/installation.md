@@ -282,3 +282,9 @@ You can enable a USB camera, given it is mounted as `/dev/video0`,  by running t
 xhost +local:root
 sudo docker run -it --privileged -v /dev/video0:/dev/video0 opendr/opendr-toolkit:nx_v2 /bin/bash
 ```
+
+To use the docker on an embedded device with a monitor and a usb camera attached, as well as network access through the hosts network settings you can run:
+```
+xhost +local:root
+sudo docker run -it --privileged --network host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DSIPLAY -v /dev/video0:/dev/video0 opendr/opendr-toolkit:nx_v2 /bin/bash
+```
