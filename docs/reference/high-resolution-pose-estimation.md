@@ -48,7 +48,7 @@ Constructor parameters:
 - **percentage_arround_crop**: *float, default=0.3*\
   Specifies the percentage of an extra pad arround the cropped image
 - **heatmap_threshold**: *float, default=0.1*\
-  Specifies a threshlod value that the heatmap elements should have
+  Specifies the threshold value that the heatmap elements should have during the first pass in order to trigger the second pass
 - **experiment_name**: *str, default='default'*\
   String name to attach to checkpoints.
 - **num_workers**: *int, default=8*\
