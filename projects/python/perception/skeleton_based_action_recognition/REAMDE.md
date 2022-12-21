@@ -26,7 +26,7 @@ Please use the `--device cpu` flag if you are running them on a machine without 
 python3 demo.py --device cpu --video 0 --method pstgcn --action_checkpoint_name pstgcn_ntu_cv_lw_openpose
 ```  
 
-A demo script for the Continual ST-GCN can be found in [costgcn_usage_demo.py](costgcn_usage_demo.py). To fit, evaluate, and run inference on the model, you may use the following command:
+A demo script for the Continual ST-GCN can be found in [costgcn_usage_demo.py](./demos/costgcn_usage_demo.py). To fit, evaluate, and run inference on the model, you may use the following command:
 ```bash
 python3 costgcn_usage_demo.py --fit --eval --infer
 ```  
