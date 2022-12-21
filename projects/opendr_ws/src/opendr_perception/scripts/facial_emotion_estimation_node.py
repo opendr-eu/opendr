@@ -109,7 +109,6 @@ class FacialEmotionEstimationNode:
 
             # Pre_process detected face
             input_face = _pre_process_input_image(face)
-            input_face = input_face.to(device)
 
             # Recognize facial expression
             emotion, affect = self.facial_emotion_estimator.infer(input_face)
