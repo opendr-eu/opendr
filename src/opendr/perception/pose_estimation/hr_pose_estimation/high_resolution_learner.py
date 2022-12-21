@@ -512,7 +512,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             h, w, _ = crop_img.shape
 
             # ------- Second pass of the image, inference for pose estimation -------
-            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img,self.second_pass_height,
+            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img, self.second_pass_height,
                                                                     max_width, stride, upsample_ratio)
 
             total_keypoints_num = 0
