@@ -49,8 +49,8 @@ For the initial setup you can follow the instructions below:
    You can now run an OpenDR ROS node. More information below.
 
 #### After first time setup
-For running OpenDR nodes after you have completed the initial setup, you can skip steps 2 and 5 from the list above.
-You can also skip building the workspace (step 6) granted it's been already built and no changes were made to the code inside the workspace, e.g. you modified the source code of a node.
+For running OpenDR nodes after you have completed the initial setup, you can skip step 0 from the list above.
+You can also skip building the workspace (step 4) granted it's been already built and no changes were made to the code inside the workspace, e.g. you modified the source code of a node.
 
 #### More information
 After completing the setup you can read more information on the [opendr perception package README](src/opendr_perception/README.md), where you can find a concise list of prerequisites and helpful notes to view the output of the nodes or optimize their performance.
