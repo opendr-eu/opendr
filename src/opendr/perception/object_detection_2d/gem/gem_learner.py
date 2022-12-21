@@ -48,6 +48,8 @@ from PIL import Image as im
 
 import zipfile
 
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
+
 
 class GemLearner(Learner):
     def __init__(
