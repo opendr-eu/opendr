@@ -74,7 +74,6 @@ class Predictor(nn.Module):
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
 
         _input = meta["img"]
-        print(f"[{_input[0][50][50]}, {_input[1][50][50]}, {_input[2][50][50]}]")
         _height = torch.tensor(height)
         _width = torch.tensor(width)
         _warp_matrix = torch.from_numpy(meta["warp_matrix"])
