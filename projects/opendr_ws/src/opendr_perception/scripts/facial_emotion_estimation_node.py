@@ -28,7 +28,10 @@ from opendr_bridge import ROSBridge
 
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner
 from opendr.perception.facial_expression_recognition import image_processing
-from opendr.perception.facial_expression_recognition import ESR
+
+INPUT_IMAGE_SIZE = (96, 96)
+INPUT_IMAGE_NORMALIZATION_MEAN = [0.0, 0.0, 0.0]
+INPUT_IMAGE_NORMALIZATION_STD = [1.0, 1.0, 1.0]
 
 
 class FacialEmotionEstimationNode:
@@ -149,10 +152,10 @@ def _pre_process_input_image(image):
     :return: (ndarray) image
     """
 
-    image = image_processing.resize(image, ESR.INPUT_IMAGE_SIZE)
+    image = image_processing.resize(image, INPUT_IMAGE_SIZE)
     image = PIL.Image.fromarray(image)
-    image = transforms.Normalize(mean=ESR.INPUT_IMAGE_NORMALIZATION_MEAN,
-                                 std=ESR.INPUT_IMAGE_NORMALIZATION_STD)(transforms.ToTensor()(image)).unsqueeze(0)
+    image = transforms.Normalize(mean=INPUT_IMAGE_NORMALIZATION_MEAN,
+                                 std=INPUT_IMAGE_NORMALIZATION_STD)(transforms.ToTensor()(image)).unsqueeze(0)
 
     return image
 
