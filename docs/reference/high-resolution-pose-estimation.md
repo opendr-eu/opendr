@@ -131,7 +131,7 @@ Parameters:
 
 #### `HighResolutionPoseEstimationLearner.__first_pass`
 ```python
-HighResolutionPoseEstimationLearner.__first_pass(self, net, img)
+HighResolutionPoseEstimationLearner.__first_pass(self, img)
 ```
 
 This method is used for extracting a heatmap from the input image about human locations in the picture.
@@ -140,12 +140,11 @@ Parameters:
 
 - **img**: *object***\
   Object of type engine.data.Image.
-- **net**: *object*\
-  The model that is used for creating the heatmap.
+
 
 #### `HighResolutionPoseEstimationLearner.__second_pass`
 ```python
-HighResolutionPoseEstimationLearner.__second_pass(self, net, img, net_input_height_size, max_width, stride, upsample_ratio, pad_value, img_mean, img_scale)
+HighResolutionPoseEstimationLearner.__second_pass(self, img, net_input_height_size, max_width, stride, upsample_ratio, pad_value, img_mean, img_scale)
 ```
 
 On this method the second inference step is carried out, which estimates the human poses on the image that is provided.
@@ -153,8 +152,6 @@ Following the steps of the proposed method this image should be the cropped part
 
 Parameters:
 
-- **net**: *object*\
-  The model that is used for creating the heatmap.
 - **img**: *object***\
   Object of type engine.data.Image.
 - **net_input_height_size**: *int*\

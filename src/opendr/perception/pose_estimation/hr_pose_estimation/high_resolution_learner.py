@@ -69,14 +69,11 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         self.perc = percentage_arround_crop
         self.threshold = heatmap_threshold
 
-    def __first_pass(self, net, img):
+    def __first_pass(self, img):
         """
         This method is generating a rough heatmap of the input image in order to specify the approximate location
         of humans in the picture.
 
-        :param net: the pose estimation model that has been loaded
-        :type net: opendr.perception.pose_estimation.lightweight_open_pose.\
-            algorithm.models.with_mobilenet.PoseEstimationWithMobileNet class object
         :param img: input image for heatmap generation
         :type img: numpy.ndarray
 
@@ -92,22 +89,19 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         else:
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().cpu()
 
-        stages_output = net(tensor_img)
+        stages_output = self.model(tensor_img)
 
         stage2_pafs = stages_output[-1]
         pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
         return pafs
 
-    def __second_pass(self, net, img, net_input_height_size, max_width, stride, upsample_ratio,
+    def __second_pass(self, img, net_input_height_size, max_width, stride, upsample_ratio,
                       pad_value=(0, 0, 0),
                       img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256)):
         """
         This method detects the keypoints and estimates the pose of humans using the cropped image from the
         previous step (__first_pass_).
 
-        param net: the pose estimation model that has been loaded
-        :type net: opendr.perception.pose_estimation.lightweight_open_pose.\
-            algorithm.models.with_mobilenet.PoseEstimationWithMobileNet class object
         :param img: input image for heatmap generation
         :type img: numpy.ndarray
         :param net_input_height_size: the height that the input image will be resized  for inference
@@ -145,7 +139,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         else:
             tensor_img = torch.from_numpy(padded_img).permute(2, 0, 1).unsqueeze(0).float().cpu()
 
-        stages_output = net(tensor_img)
+        stages_output = self.model(tensor_img)
 
         stage2_heatmaps = stages_output[-2]
         heatmaps = np.transpose(stage2_heatmaps.squeeze().cpu().data.numpy(), (1, 2, 0))
@@ -297,7 +291,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 pool_img = img
 
             # ------- Heatmap Generation -------
-            avg_pafs = self.__first_pass(self.model, pool_img)
+            avg_pafs = self.__first_pass(pool_img)
             avg_pafs = avg_pafs.astype(np.float32)
 
             pafs_map = cv2.blur(avg_pafs, (5, 5))
@@ -349,8 +343,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 h, w, _ = crop_img.shape
 
                 # ------- Second pass of the image, inference for pose estimation -------
-                avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(self.model, crop_img,
-                                                                        self.second_pass_height, max_width,
+                avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img, self.second_pass_height, max_width,
                                                                         self.stride, upsample_ratio)
                 total_keypoints_num = 0
                 all_keypoints_by_type = []
@@ -468,7 +461,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             pool_img = img
 
         # ------- Heatmap Generation -------
-        avg_pafs = self.__first_pass(self.model, pool_img)
+        avg_pafs = self.__first_pass(pool_img)
         avg_pafs = avg_pafs.astype(np.float32)
         pafs_map = cv2.blur(avg_pafs, (5, 5))
 
@@ -519,8 +512,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             h, w, _ = crop_img.shape
 
             # ------- Second pass of the image, inference for pose estimation -------
-            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(self.model, crop_img,
-                                                                    self.second_pass_height,
+            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img,self.second_pass_height,
                                                                     max_width, stride, upsample_ratio)
 
             total_keypoints_num = 0
