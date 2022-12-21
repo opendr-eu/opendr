@@ -419,6 +419,41 @@ On the table below you can find the detectable classes and their corresponding I
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
 
+### Image-based Facial Emotion Estimation ROS Node
+
+You can find the image-based facial emotion estimation ROS node python script [here](./scripts/facial_emotion_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's image-based facial emotion estimation tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/facial_emotion_learner.py)
+whose documentation can be found [here](../../../../docs/reference/image_based_facial_emotion_estimation.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the image-based facial emotion estimation node:
+
+    ```shell
+    rosrun opendr_perception facial_emotion_estimation_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_emotion_estimation_annotated`)
+   - `-e or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the facial emotion results, `None` to stop the node from publishing on this topic (default=`"/opendr/facial_emotion_estimation"`)
+   - `-m or --output_emotions_description_topic OUTPUT_EMOTIONS_DESCRIPTION_TOPIC`: topic to which we are publishing the description of the estimated facial emotion, `None` to stop the node from publishing on this topic (default=`/opendr/facial_emotion_estimation_description`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/image_emotion_estimation_annotated`
+   - Detection messages: `/opendr/facial_emotion_estimation`, `/opendr/facial_emotion_estimation_description`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+This node requires the detection of a face first. This is achieved by including of the toolkit's face detector and running face detection on the input.
+Afterwards, the detected bounding box of the face is cropped and fed into the facial emotion estimator. 
+Feel free to modify the node to detect faces in a different way that matches your use case.
+
 ### Landmark-based Facial Expression Recognition ROS Node
 
 A ROS node for performing landmark-based facial expression recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
