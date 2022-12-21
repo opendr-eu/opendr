@@ -196,7 +196,8 @@ class CoSTGCNLearner(Learner):
             if target_path.exists():
                 return str(target_path)
             target_path.parent.mkdir(exist_ok=True, parents=True)
-            print(f"Downloading {file_name} to {str(target_path)}")
+            if verbose:
+                print(f"Downloading {file_name} to {str(target_path)}")
             urlretrieve(file_url, str(target_path))
             return target_path
 
