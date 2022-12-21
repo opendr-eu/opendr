@@ -1,4 +1,4 @@
-# Simulation Package
+# OpenDR Simulation Package
 
 This package contains ROS nodes related to simulation package of OpenDR.
 
