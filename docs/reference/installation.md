@@ -1,9 +1,9 @@
 # Installing OpenDR toolkit
 
 OpenDR can be installed in the following ways:
-1. By cloning this repository (CPU/GPU support)
-2. Using *pip* (CPU/GPU support)
-3. Using *docker* (CPU/GPU support)
+1. Using *pip* (CPU/GPU support)
+2. Using *docker* (CPU/GPU support)
+3. By cloning this repository (CPU/GPU support, for advanced users only)
 
 The following table summarizes the installation options based on your system architecture and OS:
 
@@ -196,48 +196,6 @@ If you plan to use GPU-enabled functionalities, then you are advised to install 
 **HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
 If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
 
-## Build the docker images yourself _(optional)_
-Alternatively you can also build the docker images locally using the [Dockerfile](/Dockerfile) ([Dockerfile-cuda](/Dockerfile-cuda) for cuda) provided in the root folder of the toolkit.
-
-For the CPU image, execute the following commands:
-```bash
-git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
-cd opendr
-sudo docker build -t opendr/opendr-toolkit:cpu .
-```
-
-For the cuda-enabled image, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
-```
-{
-    "runtimes": {
-        "nvidia": {
-            "path": "nvidia-container-runtime",
-            "runtimeArgs": []
-        }
-    },
-    "default-runtime": "nvidia"
-}
-```
-
-Restart docker afterwards:
-```
-sudo systemctl restart docker.service
-```
-Then you can build the supplied dockerfile:
-```bash
-git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
-cd opendr
-sudo docker build -t opendr/opendr-toolkit:cuda -f Dockerfile-cuda .
-```
-
-In order to run them, the commands are respectively:
-```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cpu
-```
-and
-```
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
-```
 
 ## Nvidia embedded devices docker
 You can also run the corresponding docker image on an Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
