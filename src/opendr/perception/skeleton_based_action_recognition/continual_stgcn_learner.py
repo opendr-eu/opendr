@@ -431,7 +431,7 @@ class CoSTGCNLearner(Learner):
         """
         path = Path(path)
 
-        # Allow direct loading of weights, omitting the metadatafile
+        # Allow direct loading of weights, omitting the metadata file
         if path.suffix in {".pyth", ".pth", ".onnx", ".ckpt"}:
             self._load_model_weights(path)
             return self
