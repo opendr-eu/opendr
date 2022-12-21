@@ -23,7 +23,7 @@ from opendr_bridge import ROSBridge
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
-from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
 
 
 class PoseEstimationNode:
@@ -32,7 +32,7 @@ class PoseEstimationNode:
                  output_rgb_image_topic="/opendr/image_pose_annotated", detections_topic="/opendr/poses", device="cuda",
                  num_refinement_stages=2, use_stride=False, half_precision=False):
         """
-        Creates a ROS Node for pose estimation with Lightweight OpenPose.
+        Creates a ROS Node for high resolution pose estimation with HR Pose Estimation.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
@@ -68,10 +68,10 @@ class PoseEstimationNode:
 
         self.bridge = ROSBridge()
 
-        # Initialize the pose estimation learner
-        self.pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=num_refinement_stages,
-                                                         mobilenet_use_stride=use_stride,
-                                                         half_precision=half_precision)
+        # Initialize the high resolution pose estimation learner
+        self.pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=num_refinement_stages,
+                                                                  mobilenet_use_stride=use_stride,
+                                                                  half_precision=half_precision)
         self.pose_estimator.download(path=".", verbose=True)
         self.pose_estimator.load("openpose_default")
 
@@ -79,7 +79,7 @@ class PoseEstimationNode:
         """
         Start the node and begin processing input data.
         """
-        rospy.init_node('opendr_pose_estimation_node', anonymous=True)
+        rospy.init_node('opendr_hr_pose_estimation_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
         rospy.loginfo("Pose estimation node started.")
         rospy.spin()
@@ -99,6 +99,8 @@ class PoseEstimationNode:
         #  Publish detections in ROS message
         if self.pose_publisher is not None:
             for pose in poses:
+                if pose.id is None:  # Temporary fix for pose not having id
+                    pose.id = -1
                 # Convert OpenDR pose to ROS pose message using bridge and publish it
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 

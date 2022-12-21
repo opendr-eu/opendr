@@ -107,12 +107,14 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/detr/algorithm',
             'src/opendr/perception/object_detection_2d/nanodet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
-            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
+            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/algorithm',
+            'src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/algorithm',
+            'projects/python/perception/facial_expression_recognition/image_based_facial_emotion_estimation',
         ]
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
-            'projects/python/perception/lightweight_open_pose/jetbot/utils/pid.py',
+            'projects/python/perception/pose_estimation/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_modulator.py',
