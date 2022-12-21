@@ -7,7 +7,6 @@ https://github.com/siqueira-hc/Efficient-Facial-Feature-Learning-with-Wide-Ensem
 
 import os
 import cv2
-import numpy as np
 
 # Private variables
 _MAX_FPS = 30

@@ -31,7 +31,6 @@ import torch
 import os
 from os import path, makedirs
 import onnxruntime
-from typing import Union, List
 import shutil
 import json
 from urllib.request import urlretrieve
