@@ -149,9 +149,8 @@ def webcam(learner, camera_id, display, frames):
             img, _ = image_processing.get_frame()
             img = None if (img is None) else recognize_facial_expression(learner, img, display)
             if display and img is not None:
-                while cv2.waitKey(1) != 27 or cv2.waitKey(1) != ord('q'):
-                    cv2.imshow('Result', img)
-                cv2.destroyAllWindows()
+                cv2.imshow('Result', img)
+                cv2.waitKey(1)
 
     except Exception as e:
         print("Error raised during video mode.")
