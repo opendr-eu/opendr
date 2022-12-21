@@ -548,7 +548,7 @@ class ROS2Bridge:
         """
         result = ObjectHypothesis()
         result.id = str(category.data)
-        result.score = category.confidence
+        result.score = float(category.confidence)
         return result
 
     def from_ros_category(self, ros_hypothesis):

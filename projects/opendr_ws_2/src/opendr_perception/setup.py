@@ -48,6 +48,7 @@ setup(
             'rgbd_hand_gestures_recognition = opendr_perception.rgbd_hand_gesture_recognition_node:main',
             'landmark_based_facial_expression_recognition = \
             opendr_perception.landmark_based_facial_expression_recognition_node:main',
+            'facial_emotion_estimation = opendr_perception.facial_emotion_estimation_node:main',
             'skeleton_based_action_recognition = opendr_perception.skeleton_based_action_recognition_node:main',
         ],
     },
