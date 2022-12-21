@@ -22,7 +22,7 @@ import rclpy
 from rclpy.node import Node
 
 from sensor_msgs.msg import Image as ROS_Image
-from vision_msgs.msg import Detection2D, Detection2DArray
+from vision_msgs.msg import Detection2D
 from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
@@ -39,7 +39,7 @@ class ObjectTrackingSiamRPNNode(Node):
                  device="cuda"):
         """
         Creates a ROS2 Node for object tracking with SiamRPN.
-        :param object_detector:
+        :param object_detector: An object detector learner to use for initialization
         :type object_detector: opendr.engine.learners.Learner
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
@@ -51,7 +51,7 @@ class ObjectTrackingSiamRPNNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__('object_tracking_2d_siamrpn_node')
+        super().__init__('opendr_object_tracking_2d_siamrpn_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
