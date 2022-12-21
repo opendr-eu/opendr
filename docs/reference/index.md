@@ -30,6 +30,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
+            - [high_resolution_pose_estimation Module](high-resolution-pose-estimation.md)
         - activity recognition:
             - [skeleton-based action recognition](skeleton-based-action-recognition.md)
             - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#class-costgcnlearner)
@@ -111,7 +112,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - heart anomaly detection:
             - [heart anomaly detection Demo](/projects/python/perception/heart_anomaly_detection)
         - pose estimation:
-            - [lightweight_open_pose Demo](/projects/python/perception/lightweight_open_pose)
+            - [lightweight_open_pose Demo](/projects/python/perception/pose_estimation/lightweight_open_pose)
+            - [high_resolution_pose_estimation Demo](/projects/python/perception/pose_estimation/high_resolution_pose_estimation)
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Demo](/projects/python/perception/multimodal_human_centric/rgbd_hand_gesture_recognition)
             - [audiovisual_emotion_recognition Demo](/projects/python/perception/multimodal_human_centric/audiovisual_emotion_recognition)

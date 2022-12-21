@@ -29,6 +29,7 @@ include_directories(
 
 catkin_install_python(PROGRAMS
    scripts/pose_estimation_node.py
+   scripts/hr_pose_estimation_node.py
    scripts/fall_detection_node.py
    scripts/object_detection_2d_nanodet_node.py
    scripts/object_detection_2d_yolov5_node.py
