@@ -14,13 +14,13 @@ WorldInfo {
   randomSeed 52
 }
 Viewpoint {
-  orientation 0.23912921076912644 -0.010500223692226803 -0.9709309789368902 3.1000770696059305
-  position 16.599575477443874 0.11479760710878642 11.449782726362042
+  orientation 0.2493542513111129 -0.0015806740935321666 -0.9684110484822468 3.0320770615235597
+  position 31.77129355822201 3.9289180767659815 21.40152949153122
   followType "Mounted Shot"
 }
 DEF DEF_VEHICLE Robot {
-  translation 2.01714 -0.173907 2.57
-  rotation 0.5773502691896257 -0.5773502691896257 -0.5773502691896257 2.0943951023931957
+  translation -3.20133 -0.667551 2.5
+  rotation 0.5387460067434838 -0.5957150074565648 -0.5957150074565648 2.15327
   children [
     Lidar {
       translation 0 0.07 0
@@ -97,12 +97,12 @@ DEF DEF_VEHICLE Robot {
     Accelerometer {
       name "accelerometer1"
     }
-    Gyro {
-      name "gyro1"
-    }
     InertialUnit {
       rotation 0 1 0 1.5707947122222805
       name "inertial_unit"
+    }
+    Gyro {
+      name "gyro1"
     }
     Transform {
       translation 0 0 0.1
@@ -165,7 +165,7 @@ DEF DEF_VEHICLE Robot {
     size 0.1 0.1 0.1
   }
   rotationStep 0.261799
-  controller "ros"
+  controller "<extern>"
   customData "1"
   supervisor TRUE
 }
@@ -203,8 +203,8 @@ Floor {
   }
 }
 DEF cyl1 Solid {
-  translation -33.571763188537474 19.604630321122315 2.324472693591628
-  rotation 0.8184168164849583 -0.008454983970179998 0.5745628144430251 2.855354311428324
+  translation -13.30571834554473 -1.447574483178714 2.7665126217916747
+  rotation 0.7046199859242116 -0.2718054272768975 -0.6554635650735948 1.3264162624880482
   children [
     Shape {
       appearance PBRAppearance {
@@ -213,8 +213,8 @@ DEF cyl1 Solid {
         metalness 0
       }
       geometry DEF cyl_geo1 Cylinder {
-        height 2.1392156472456616
-        radius 1.6973091143376589
+        height 1.6358972201698152
+        radius 0.8305567381873773
       }
       castShadows FALSE
     }
@@ -223,8 +223,8 @@ DEF cyl1 Solid {
   boundingObject USE cyl_geo1
 }
 DEF cyl2 Solid {
-  translation -20.440751891815367 13.747862151581423 2.2037661733607323
-  rotation -0.9576802011973716 0.046082095001687674 0.2841215809381919 2.291645054624233
+  translation -11.573784058504305 -0.5709706439613236 2.7898036661292727
+  rotation 0.80041453284557 -0.23379069518091386 -0.5519768894224041 3.004019614452083
   children [
     Shape {
       appearance PBRAppearance {
@@ -233,8 +233,8 @@ DEF cyl2 Solid {
         metalness 0
       }
       geometry DEF cyl_geo2 Cylinder {
-        height 1.9024561085079923
-        radius 1.1790909016521525
+        height 1.5666220746502095
+        radius 1.4073464879682038
       }
       castShadows FALSE
     }
@@ -243,8 +243,8 @@ DEF cyl2 Solid {
   boundingObject USE cyl_geo2
 }
 DEF cyl3 Solid {
-  translation -26.698438622531555 14.389081419732586 2.865288247046378
-  rotation 0.06344984160283776 -0.037805321362627146 -0.9972687076596976 -2.2281994020336473
+  translation 6.495757807871515 -1.6144414097525925 2.055833951531991
+  rotation 0.9501520694787192 0.1803287878394691 -0.254347347424059 1.1144016628344635
   children [
     Shape {
       appearance PBRAppearance {
@@ -253,8 +253,8 @@ DEF cyl3 Solid {
         metalness 0
       }
       geometry DEF cyl_geo3 Cylinder {
-        height 2.4713739170413263
-        radius 1.7748883243712648
+        height 2.9932008423005847
+        radius 1.3817552987759123
       }
       castShadows FALSE
     }
@@ -263,7 +263,7 @@ DEF cyl3 Solid {
   boundingObject USE cyl_geo3
 }
 DEF cyl4 Solid {
-  translation -30.029891046849826 18.478910598526205 2.975906443581888
+  translation 0 0 -10
   rotation 0.8826129905240483 -0.436261871860521 0.17512820480707927 -3.0124718491193443
   children [
     Shape {
@@ -283,7 +283,7 @@ DEF cyl4 Solid {
   boundingObject USE cyl_geo4
 }
 DEF cyl5 Solid {
-  translation -24.09970968828449 16.57710468047925 2.4982480911172904
+  translation 0 0 -10
   rotation -0.3917242543263733 0.07876246896092191 -0.9167052863683216 0.9303512269603899
   children [
     Shape {
@@ -303,8 +303,8 @@ DEF cyl5 Solid {
   boundingObject USE cyl_geo5
 }
 DEF box1 Solid {
-  translation -21.633230654472253 0.26435729418541554 2.44667080338155
-  rotation -0.9504828289471485 -0.2846212101353512 0.1247924621830743 -2.5557071516379524
+  translation 4.4381089093275685 0.5548170365208641 2.05131692563986
+  rotation 0.2448556165007751 0.9367176515026089 0.2502114474428831 -2.914945226248721
   children [
     Shape {
       appearance PBRAppearance {
@@ -313,7 +313,7 @@ DEF box1 Solid {
         metalness 0
       }
       geometry DEF box_geo1 Box {
-        size 0.6703828008453012 1.144210412169449 0.606098167324667
+        size 0.8334023756695101 0.6127140086440774 2.1756103342302913
       }
       castShadows FALSE
     }
@@ -322,7 +322,7 @@ DEF box1 Solid {
   boundingObject USE box_geo1
 }
 DEF box2 Solid {
-  translation -49.944469797724835 1.6898234337915463 2.2675614976470575
+  translation 0 0 -10
   rotation -0.7163183367896099 0.6204835974021974 0.31919922577254956 2.929261604379051
   children [
     Shape {
@@ -341,7 +341,7 @@ DEF box2 Solid {
   boundingObject USE box_geo2
 }
 DEF box3 Solid {
-  translation -20.292422865902708 8.238761971490536 2.6721509445938736
+  translation 0 0 -10
   rotation 0.492702975086357 0.008495842259129496 0.8701560773823055 -3.124774550627343
   children [
     Shape {
@@ -360,7 +360,7 @@ DEF box3 Solid {
   boundingObject USE box_geo3
 }
 DEF box4 Solid {
-  translation -44.90744150542008 8.527463770969087 2.641006035191632
+  translation 0 0 -10
   rotation -0.47381905460959706 -0.5794103506313973 0.6631584645241805 -2.2430503148315895
   children [
     Shape {
@@ -379,7 +379,7 @@ DEF box4 Solid {
   boundingObject USE box_geo4
 }
 DEF box5 Solid {
-  translation -38.86442228484968 6.8392747579709265 2.2856439867583433
+  translation 0 0 -10
   rotation 0.1849655628048051 0.930668272300889 0.3156648658130647 3.098971634530017
   children [
     Shape {
@@ -398,7 +398,7 @@ DEF box5 Solid {
   boundingObject USE box_geo5
 }
 DEF sph1 Solid {
-  translation -34.151569808427524 -8.39941640511953 2.832797125554921
+  translation -19.257198265348357 -3.1661159326488217 2.225830049481242
   rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
@@ -408,7 +408,7 @@ DEF sph1 Solid {
         metalness 0
       }
       geometry DEF sph_geo1 Sphere {
-        radius 2.441984523476554
+        radius 1.35574388768385
       }
       castShadows FALSE
     }
@@ -417,7 +417,7 @@ DEF sph1 Solid {
   boundingObject USE sph_geo1
 }
 DEF sph2 Solid {
-  translation -35.244313566036006 -5.669701484639425 2.98237944209821
+  translation 0.2181211849140201 -0.5886797657584887 2.5285623758667715
   rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
@@ -427,7 +427,7 @@ DEF sph2 Solid {
         metalness 0
       }
       geometry DEF sph_geo2 Sphere {
-        radius 2.9612360062179715
+        radius 1.365103979645272
       }
       castShadows FALSE
     }
@@ -436,7 +436,7 @@ DEF sph2 Solid {
   boundingObject USE sph_geo2
 }
 DEF sph3 Solid {
-  translation -45.118047101108615 -7.009574816911507 2.679998597601765
+  translation 0 0 -10
   rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
@@ -455,7 +455,7 @@ DEF sph3 Solid {
   boundingObject USE sph_geo3
 }
 DEF sph4 Solid {
-  translation -35.57358399548293 -3.505564259041 2.013593906239073
+  translation 0 0 -10
   rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
@@ -474,7 +474,7 @@ DEF sph4 Solid {
   boundingObject USE sph_geo4
 }
 DEF sph5 Solid {
-  translation -31.708422025337523 -7.917116623970895 2.104425536420231
+  translation 0 0 -10
   rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
@@ -493,11 +493,11 @@ DEF sph5 Solid {
   boundingObject USE sph_geo5
 }
 DEF wall1 Wall {
-  translation -4 4.504321090318505 -1
+  translation -4 -4.602323054921962 -9
   size 30 0.1 7
 }
 DEF wall2 Wall {
-  translation -4 -4.504321090318505 -1
+  translation -4 4.602323054921962 -9
   name "wall(2)"
   size 30 0.1 7
 }
