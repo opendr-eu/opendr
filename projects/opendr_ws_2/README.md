@@ -76,7 +76,7 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 7. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros2-node)
 8. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
 9. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros2-node)
-10 [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
+10. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
 11. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
 12. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
 13. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
