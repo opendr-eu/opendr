@@ -17,7 +17,7 @@ The [HighResolutionPoseEstimationLearner](/src/opendr/perception/pose_estimation
 
 #### `HighResolutionPoseEstimationLearner` constructor
 ```python
-HighResolutionPoseEstimationLearner(self, device, backbone, temp_path, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, base_height, first_pass_height, second_pass_height, img_resol, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize,  img_mean, img_scale, pad_value, half_precision)
+HighResolutionPoseEstimationLearner(self, device, backbone, temp_path, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, base_height, first_pass_height, second_pass_height, percentage_arround_crop, heatmap_threshold, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize,  img_mean, img_scale, pad_value, half_precision)
 ```
 
 Constructor parameters:
@@ -45,6 +45,10 @@ Constructor parameters:
   Specifies the height that the input image will be resized during the heatmap generation procedure.
 - **second_pass_height**: *int, default=540*\
   Specifies the height of the image on the second inference for pose estimation procedure.
+- **percentage_arround_crop**: *float, default=0.3*\
+  Specifies the percentage of an extra pad arround the cropped image
+- **heatmap_threshold**: *float, default=0.1*\
+  Specifies a threshlod value that the heatmap elements should have
 - **experiment_name**: *str, default='default'*\
   String name to attach to checkpoints.
 - **num_workers**: *int, default=8*\
@@ -217,8 +221,7 @@ Parameters:
   pose_estimator = HighResolutionPoseEstimationLearner(device='cuda', num_refinement_stages=2,
                                                        mobilenet_use_stride=False, half_precision=False,
                                                        first_pass_height=360,
-                                                       second_pass_height=540,
-                                                       img_resolution=1080)
+                                                       second_pass_height=540)
   pose_estimator.download()  # Download the default pretrained mobilenet model in the temp_path
 
   pose_estimator.load("./parent_dir/openpose_default")
