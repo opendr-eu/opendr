@@ -188,7 +188,7 @@ class CoSTGCNLearner(Learner):
         file_name="costgcn_ntu60_xview_joint.ckpt",
     ):
         if path is None:
-            path = self.parent_dir
+            path = self.temp_path
 
         if mode == "pretrained":
             file_url = os.path.join(url, 'pretrained_models', method_name, file_name)
