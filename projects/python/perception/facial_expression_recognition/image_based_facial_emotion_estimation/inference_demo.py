@@ -88,8 +88,8 @@ def _predict(learner, input_face):
     emotion, affect = learner.infer(input_face)
     # Converts from Tensor to ndarray
     affect = np.array([a.cpu().detach().numpy() for a in affect])
-    to_return_affect = affect[0]  # the emotion class with confidence tensor
-    to_return_emotion = emotion[0]  # a numpy array of valence and arousal values
+    to_return_affect = affect[0]  # a numpy array of valence and arousal values
+    to_return_emotion = emotion[0]  # the emotion class with confidence tensor
 
     return to_return_emotion, to_return_affect
 

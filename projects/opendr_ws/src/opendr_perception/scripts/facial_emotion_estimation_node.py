@@ -113,11 +113,15 @@ class FacialEmotionEstimationNode:
             # Recognize facial expression
             emotion, affect = self.facial_emotion_estimator.infer(input_face)
 
+            affect = np.array([a.cpu().detach().numpy() for a in affect])
+            _affect = affect[0]  # a numpy array of valence and arousal values
+            _emotion = emotion[0]  # the emotion class with confidence tensor
+
         if self.hypothesis_publisher is not None:
-            self.hypothesis_publisher.publish(self.bridge.to_ros_category(emotion))
+            self.hypothesis_publisher.publish(self.bridge.to_ros_category(_emotion))
 
         if self.string_publisher is not None:
-            self.string_publisher.publish(self.bridge.to_ros_category_description(emotion))
+            self.string_publisher.publish(self.bridge.to_ros_category_description(_emotion))
 
 
 def detect_face(image):
