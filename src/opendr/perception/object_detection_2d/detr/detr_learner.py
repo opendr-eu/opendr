@@ -46,6 +46,8 @@ import onnxruntime as ort
 import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
 from PIL import Image as im
 
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
+
 
 class DetrLearner(Learner):
     def __init__(
