@@ -87,6 +87,34 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
    For viewing the output, refer to the [notes above.](#notes)
 
+### High Resolution Pose Estimation ROS2 Node
+
+You can find the high resolution pose estimation ROS2 node python script [here](./opendr_perception/hr_pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [high resolution pose estimation tool](../../../../src/opendr/perception/pose_estimation/hr_pose_estimation/high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/high-resolution-pose-estimation.md).
+The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_interface/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_interface/msg/OpenDRPose2DKeypoint.msg).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the high resolution pose detection node:
+    ```shell
+    ros2 run opendr_perception hr_pose_estimation_node.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
+
+3. Default output topics:
+   - Output images: `/opendr/image_pose_annotated`
+   - Detection messages: `/opendr/poses`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
 ### Fall Detection ROS2 Node
 
 You can find the fall detection ROS2 node python script [here](./opendr_perception/fall_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
