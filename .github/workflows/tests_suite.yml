@@ -110,6 +110,10 @@ jobs:
             make ctests
         else
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            pip list
+
+            pip install pipdeptree
+            pipdeptree
             python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
