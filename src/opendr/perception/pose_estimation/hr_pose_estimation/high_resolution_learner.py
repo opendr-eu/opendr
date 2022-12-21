@@ -14,9 +14,7 @@
 
 # General imports
 import torchvision.transforms
-import onnxruntime as ort
 import os
-import ntpath
 import cv2
 import torch
 import json
@@ -26,8 +24,6 @@ from tqdm import tqdm
 from urllib.request import urlretrieve
 
 # OpenDR engine imports
-from opendr.engine.learners import Learner
-from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from opendr.engine.data import Image
 from opendr.engine.target import Pose
 from opendr.engine.constants import OPENDR_SERVER_URL
@@ -35,20 +31,12 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 # OpenDR lightweight_open_pose imports
 from opendr.perception.pose_estimation.lightweight_open_pose.lightweight_open_pose_learner import \
     LightweightOpenPoseLearner
-from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
-    PoseEstimationWithMobileNet
-from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet_v2 import \
-    PoseEstimationWithMobileNetV2
-from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_shufflenet import \
-    PoseEstimationWithShuffleNet
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.load_state import \
     load_state
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.keypoints import \
     extract_keypoints, group_keypoints
-from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.datasets.coco import CocoValDataset
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.val import \
     convert_to_coco_format, run_coco_eval, normalize, pad_width
-from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.scripts import make_val_subset
 
 
 class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
@@ -62,20 +50,22 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                  img_mean=np.array([128, 128, 128], np.float32), img_scale=np.float32(1 / 256), pad_value=(0, 0, 0),
                  half_precision=False):
 
-        super(HighResolutionPoseEstimationLearner, self).__init__(device=device, backbone=backbone,
-                 temp_path=temp_path, mobilenet_use_stride=mobilenet_use_stride, 
-                 mobilenetv2_width=mobilenetv2_width, shufflenet_groups=shufflenet_groups,
-                 num_refinement_stages=num_refinement_stages, batches_per_iter=batches_per_iter, 
-                 base_height=base_height, experiment_name=experiment_name, num_workers=num_workers,
-                 weights_only=weights_only, output_name=output_name, multiscale=multiscale, scales=scales,
-                 visualize=visualize, img_mean=img_mean, img_scale=img_scale, pad_value=pad_value,
-                 half_precision=half_precision)
+        super(HighResolutionPoseEstimationLearner, self).__init__(device=device, backbone=backbone, temp_path=temp_path,
+                                                                  mobilenet_use_stride=mobilenet_use_stride,
+                                                                  mobilenetv2_width=mobilenetv2_width,
+                                                                  shufflenet_groups=shufflenet_groups,
+                                                                  num_refinement_stages=num_refinement_stages,
+                                                                  batches_per_iter=batches_per_iter,
+                                                                  base_height=base_height, experiment_name=experiment_name,
+                                                                  num_workers=num_workers, weights_only=weights_only,
+                                                                  output_name=output_name, multiscale=multiscale,
+                                                                  scales=scales, visualize=visualize, img_mean=img_mean,
+                                                                  img_scale=img_scale, pad_value=pad_value,
+                                                                  half_precision=half_precision)
 
         self.first_pass_height = first_pass_height
         self.second_pass_height = second_pass_height
         self.img_resol = img_resolution  # default value for sample image in OpenDR server
-        self.upsample_ratio = 4
-
 
     def __first_pass(self, net, img):
 
@@ -154,17 +144,16 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def eval(self, dataset,  silent=False, verbose=True, use_subset=True,
-             subset_size=250,
+    def eval(self, dataset,  silent=False, verbose=True, use_subset=True, subset_size=250, upsample_ratio=4,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
 
-        data = super(HighResolutionPoseEstimationLearner, self)._LightweightOpenPoseLearner__prepare_val_dataset(
-                                          dataset, use_subset=use_subset,
-                                          subset_name="val_subset.json",
-                                          subset_size=subset_size,
-                                          images_folder_default_name=images_folder_name,
-                                          annotations_filename=annotations_filename,
-                                          verbose=verbose and not silent)
+        data = super(HighResolutionPoseEstimationLearner,
+                     self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
+                                                                            subset_name="val_subset.json",
+                                                                            subset_size=subset_size,
+                                                                            images_folder_default_name=images_folder_name,
+                                                                            annotations_filename=annotations_filename,
+                                                                            verbose=verbose and not silent)
         # Model initialization if needed
         if self.model is None and self.checkpoint_load_iter != 0:
             # No model loaded, initializing new
@@ -209,7 +198,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
         img_height = data[0]['img'].shape[0]
 
-        if img_height == 1080 or img_height == 1440:
+        if img_height in (1080, 1440):
             offset = 200
         elif img_height == 720:
             offset = 50
@@ -229,7 +218,6 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 pool_img = img
 
             perc = 0.3  # percentage around cropping
-
             threshold = 0.1  # threshold for heatmap
 
             # ------- Heatmap Generation -------
@@ -289,7 +277,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                     HighResolutionPoseEstimationLearner.__second_pass(self,
                                                                       self.model, crop_img,
                                                                       self.second_pass_height, max_width,
-                                                                      self.stride, self.upsample_ratio)
+                                                                      self.stride, upsample_ratio)
                 total_keypoints_num = 0
                 all_keypoints_by_type = []
                 for kpt_idx in range(18):
@@ -299,10 +287,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 pose_entries, all_keypoints = group_keypoints(all_keypoints_by_type, avg_pafs)
 
                 for kpt_id in range(all_keypoints.shape[0]):
-                    all_keypoints[kpt_id, 0] = (all_keypoints[kpt_id, 0] * self.stride / self.upsample_ratio - pad[
-                        1]) / scale
-                    all_keypoints[kpt_id, 1] = (all_keypoints[kpt_id, 1] * self.stride / self.upsample_ratio - pad[
-                        0]) / scale
+                    all_keypoints[kpt_id, 0] = (all_keypoints[kpt_id, 0] * self.stride / upsample_ratio - pad[1]) / scale
+                    all_keypoints[kpt_id, 1] = (all_keypoints[kpt_id, 1] * self.stride / upsample_ratio - pad[0]) / scale
 
                 for i in range(all_keypoints.shape[0]):
                     for j in range(all_keypoints.shape[1]):
@@ -479,7 +465,6 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
         return current_poses
 
-
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/",
                  image_resolution=1080):
@@ -511,8 +496,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             os.makedirs(path)
 
         if mode in ("pretrained", "weights"):
-             super(HighResolutionPoseEstimationLearner, self).download(path=path, mode=mode, verbose=verbose, url=url)
-
+            super(HighResolutionPoseEstimationLearner, self).download(path=path, mode=mode, verbose=verbose, url=url)
         elif mode == "test_data":
             if verbose:
                 print("Downloading test data...")
@@ -534,4 +518,3 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
             if verbose:
                 print("Test data download complete.")
-
