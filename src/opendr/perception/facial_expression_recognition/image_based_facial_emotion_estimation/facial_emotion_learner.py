@@ -786,7 +786,7 @@ class FacialEmotionLearner(Learner):
             if not os.path.exists(demo_path):
                 os.makedirs(demo_path)
 
-            vid_path = os.path.join(demo_path, 'sheldon.mp4')
+            vid_path = os.path.join(demo_path, 'big_bang.mp4')
             if not os.path.exists(vid_path):
                 # Download data
                 file_url = os.path.join(url, 'demo/big_bang.mp4')
