@@ -25,7 +25,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.engine.data import Image
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner
@@ -41,7 +41,7 @@ INPUT_IMAGE_NORMALIZATION_STD = [1.0, 1.0, 1.0]
 class FacialEmotionEstimationNode(Node):
     def __init__(self,
                  face_detector_learner,
-                 input_rgb_image_topic="/usb_cam/image_raw",
+                 input_rgb_image_topic="/image_raw",
                  output_rgb_image_topic="/opendr/image_emotion_estimation_annotated",
                  output_emotions_topic="/opendr/facial_emotion_estimation",
                  output_emotions_description_topic="/opendr/facial_emotion_estimation_description",
@@ -62,6 +62,7 @@ class FacialEmotionEstimationNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
+        super().__init__('opendr_facial_emotion_estimation_node')
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
         self.bridge = ROS2Bridge()
@@ -161,14 +162,16 @@ def _pre_process_input_image(image):
     return image
 
 
-if __name__ == '__main__':
+def main(args=None):
+    rclpy.init(args=args)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input_rgb_image_topic', type=str, help='Topic name for input rgb image',
-                        default='/usb_cam/image_raw')
+                        default='/image_raw')
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/image_emotion_estimation_annotated")
-    parser.add_argument("-o", "--output_emotions_topic", help="Topic name for output emotion",
+    parser.add_argument("-e", "--output_emotions_topic", help="Topic name for output emotion",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/facial_emotion_estimation")
     parser.add_argument('-m', '--output_emotions_description_topic',
@@ -209,3 +212,7 @@ if __name__ == '__main__':
     rclpy.spin(facial_emotion_estimation_node)
     facial_emotion_estimation_node.destroy_node()
     rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
