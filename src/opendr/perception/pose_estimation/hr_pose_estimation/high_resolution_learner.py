@@ -202,7 +202,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
                 :param dataset: object that holds the evaluation dataset.
                 :type dataset: ExternalDataset class object or DatasetIterator class object
-                :param silent: if set to True, disables all printing of evalutaion progress reports and other
+                :param silent: if set to True, disables all printing of evaluation progress reports and other
                     information to STDOUT, defaults to 'False'
                 :type silent: bool, optional
                 :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
@@ -219,7 +219,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
                 :type images_folder_name: str, optional
                 :param annotations_filename: Filename of the annotations json file. This file should be contained in the
-                    dataset path provided, defaults to 'pesron_keypoints_val2017.json'
+                    dataset path provided, defaults to 'person_keypoints_val2017.json'
                 :type annotations_filename: str, optional
 
                 :returns: returns stats regarding evaluation
