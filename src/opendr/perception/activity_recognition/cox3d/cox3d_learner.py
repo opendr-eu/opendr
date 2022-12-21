@@ -71,10 +71,11 @@ class CoX3DLearner(X3DLearner):
             checkpoint_load_iter (int, optional): Unused parameter. Defaults to 0.
             temp_path (str, optional): Path in which to store temporary files. Defaults to "".
             device (str, optional): Name of computational device ("cpu" or "cuda"). Defaults to "cuda".
-            weight_decay ([type], optional): Weight decay used for optimization. Defaults to 1e-5.
+            weight_decay (float, optional): Weight decay used for optimization. Defaults to 1e-5.
             momentum (float, optional): Momentum used for optimization. Defaults to 0.9.
             drop_last (bool, optional): Drop last data point if a batch cannot be filled. Defaults to True.
             pin_memory (bool, optional): Pin memory in dataloader. Defaults to False.
+            loss (str): Name of loss in torch.nn.functional to use. Defaults to "cross_entropy".
             num_workers (int, optional): Number of workers in dataloader. Defaults to 0.
             seed (int, optional): Random seed. Defaults to 123.
             num_classes (int, optional): Number of classes to predict among. Defaults to 400.

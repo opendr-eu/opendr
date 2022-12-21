@@ -18,6 +18,8 @@ import torch.nn.functional as F
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.activation import act_layers
 
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
+
 
 def get_url(width_mult=1.0):
     if width_mult == 1.0:
