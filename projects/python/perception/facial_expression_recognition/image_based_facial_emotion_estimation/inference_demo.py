@@ -20,7 +20,7 @@ import PIL
 import cv2
 
 # OpenDR Modules
-from opendr.perception.facial_expression_recognition import FacialEmotionLearner, ESR, image_processing, datasets
+from opendr.perception.facial_expression_recognition import FacialEmotionLearner, image_processing
 
 INPUT_IMAGE_SIZE = (96, 96)
 INPUT_IMAGE_NORMALIZATION_MEAN = [0.0, 0.0, 0.0]
