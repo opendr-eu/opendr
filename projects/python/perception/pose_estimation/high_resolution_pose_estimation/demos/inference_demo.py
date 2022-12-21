@@ -22,7 +22,6 @@ from os.path import join
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
@@ -31,7 +30,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    onnx, device, accelerate, base_height1, base_height2 = args.onnx, args.device, args.accelerate,\
+    device, accelerate, base_height1, base_height2 = args.device, args.accelerate,\
         args.height1, args.height2
 
     if accelerate:
@@ -56,9 +55,6 @@ if __name__ == '__main__':
     image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
 
     img = Image.open(image_path)
-
-    if onnx:
-        pose_estimator.optimize()
 
     poses = pose_estimator.infer(img)
 

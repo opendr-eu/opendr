@@ -8,12 +8,12 @@ Bases: `engine.learners.Learner`
 The *HighResolutionLightweightOpenPose* class is an implementation for pose estimation in high resolution images.
 This method creates a heatmap of a resized version of the input image.
 Using this heatmap, the input image is cropped keeping the area of interest and then it is used for pose estimation.
-Since the high resolution pose estimation method is based on Lightweight OpenPose algorithm,the models that could be used have to be trained with Lightweight OpenPose tool.
+Since the high resolution pose estimation method is based on the Lightweight OpenPose algorithm, the models that can be used have to be trained with the Lightweight OpenPose tool.
 
 In this method there are two important variables which are responsible for the increase in speed and accuracy in high resolution images.
-These variables are the *first_pass_height* and the *second_pass_height* that the image is resized in this procedure.
+These variables are *first_pass_height* and *second_pass_height* which define how the image is resized in this procedure.
 
-The [HighResolutionPoseEstimationLearner](/src/opendr/perception/pose_estimation/hr_pose_estimation/HighResolutionLearner.py) class has the following public methods:
+The [HighResolutionPoseEstimationLearner](/src/opendr/perception/pose_estimation/hr_pose_estimation/high_resolution_learner.py) class has the following public methods:
 
 #### `HighResolutionPoseEstimationLearner` constructor
 ```python
@@ -134,7 +134,7 @@ Parameters:
 HighResolutionPoseEstimationLearner.__first_pass(self, net, img)
 ```
 
-This method is used for extracting from the input image a heatmap about human locations in the picture.
+This method is used for extracting a heatmap from the input image about human locations in the picture.
 
 Parameters:
 
@@ -148,8 +148,8 @@ Parameters:
 HighResolutionPoseEstimationLearner.__second_pass(self, net, img, net_input_height_size, max_width, stride, upsample_ratio, pad_value, img_mean, img_scale)
 ```
 
-On this method it is carried out the second inference step which estimates the human poses on the image that is inserted.
-Following the steps of the proposed method this image should be the cropped part of the initial high resolution image that came out from taking into account the area of interest of heatmap generation.
+On this method the second inference step is carried out, which estimates the human poses on the image that is provided.
+Following the steps of the proposed method this image should be the cropped part of the initial high resolution image that came out from taking into account the area of interest of the heatmap generated.
 
 Parameters:
 
@@ -253,7 +253,7 @@ The experiments are conducted on a 1080p image.
 |                  OpenDR - Full                   | 2.9                   | 83.1              | 11.2                 | 13.5                |
 
 
-#### Lightweght OpenPoseWithout resizing
+#### Lightweight OpenPoseWithout resizing
 | Method            | CPU i7-9700K (FPS) | RTX 2070  (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) |
 |-------------------|--------------------|-----------------|------------------|-----------------|
 | OpenDR - Baseline | 0.05               | 2.6             | 0.3              | 0.5             |
@@ -270,7 +270,7 @@ The experiments are conducted on a 1080p image.
 | HRPoseEstim - H+S      | 8.2                | 25.9           | 3.6              | 5.5             |
 | HRPoseEstim - Full     | 10.9               | 31.7           | 4.8              | 6.9             |
 
-As it is shown in the previous Table, OpenDR Lightweight OpenPose achieves higher FPS when it is resing the input image into 256 pixels.
+As it is shown in the previous tables, OpenDR Lightweight OpenPose achieves higher FPS when it is resizing the input image into 256 pixels.
 It is easier to process that image, but as it is shown in the next tables the method falls apart when it comes to accuracy and there are no detections.
 
 We have evaluated the effect of using different inference settings, namely:
@@ -282,7 +282,7 @@ We have evaluated the effect of using different inference settings, namely:
 - *HRPoseEstim - Full*, which refers to combining all three available optimization.
 was used as input to the models.
 
-The average precision and average recall on the COCO evaluation split is also reported in the Table below:
+The average precision and average recall on the COCO evaluation split is also reported in the tables below:
 
 
 #### Lightweight OpenPose with resizing

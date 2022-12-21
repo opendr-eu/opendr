@@ -159,7 +159,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
         return heatmaps, pafs, scale, pad
 
-    def __pooling(self, img, kernel):  # Pooling on input image for dimension reduction
+    @staticmethod
+    def __pooling(img, kernel):  # Pooling on input image for dimension reduction
         """This method applies a pooling filter on an input image in order to resize it in a fixed shape
 
          :param img: input image for resizing
@@ -173,12 +174,15 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         pool_img = pool_img.squeeze(0).permute(1, 2, 0).cpu().float().numpy()
         return pool_img
 
-    def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
+    def fit(self, dataset, val_dataset=None, logging_path='', logging_flush_secs=30,
+            silent=False, verbose=True, epochs=None, use_val_subset=True, val_subset_size=250,
+            images_folder_name="train2017", annotations_filename="person_keypoints_train2017.json",
+            val_images_folder_name="val2017", val_annotations_filename="person_keypoints_val2017.json"):
         """This method is not used in this implementation."""
 
         raise NotImplementedError
 
-    def optimize(self, target_device):
+    def optimize(self, do_constant_folding=False):
         """This method is not used in this implementation."""
 
         raise NotImplementedError
@@ -187,11 +191,11 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def save(self, path):
+    def save(self, path, verbose=False):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def eval(self, dataset,  silent=False, verbose=True, use_subset=True, subset_size=250, upsample_ratio=4,
+    def eval(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250, upsample_ratio=4,
              images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
         """
                 This method is used to evaluate a trained model on an evaluation dataset.
@@ -222,7 +226,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 :rtype: dict
                 """
 
-        data = super(HighResolutionPoseEstimationLearner,
+        data = super(HighResolutionPoseEstimationLearner,  # NOQA
                      self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
                                                                             subset_name="val_subset.json",
                                                                             subset_size=subset_size,
@@ -287,13 +291,13 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             max_width = w
             kernel = int(h / self.first_pass_height)
             if kernel > 0:
-                pool_img = HighResolutionPoseEstimationLearner.__pooling(self, img, kernel)
+                pool_img = self.__pooling(img, kernel)
 
             else:
                 pool_img = img
 
             # ------- Heatmap Generation -------
-            avg_pafs = HighResolutionPoseEstimationLearner.__first_pass(self, self.model, pool_img)
+            avg_pafs = self.__first_pass(self.model, pool_img)
             avg_pafs = avg_pafs.astype(np.float32)
 
             pafs_map = cv2.blur(avg_pafs, (5, 5))
@@ -345,11 +349,9 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 h, w, _ = crop_img.shape
 
                 # ------- Second pass of the image, inference for pose estimation -------
-                avg_heatmaps, avg_pafs, scale, pad = \
-                    HighResolutionPoseEstimationLearner.__second_pass(self,
-                                                                      self.model, crop_img,
-                                                                      self.second_pass_height, max_width,
-                                                                      self.stride, upsample_ratio)
+                avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(self.model, crop_img,
+                                                                        self.second_pass_height, max_width,
+                                                                        self.stride, upsample_ratio)
                 total_keypoints_num = 0
                 all_keypoints_by_type = []
                 for kpt_idx in range(18):
@@ -396,7 +398,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             if self.visualize:
                 for keypoints in coco_keypoints:
                     for idx in range(len(keypoints) // 3):
-                        cv2.circle(img, (int(keypoints[idx * 3]+offset), int(keypoints[idx * 3 + 1])+offset),
+                        cv2.circle(img, (int(keypoints[idx * 3] + offset), int(keypoints[idx * 3 + 1]) + offset),
                                    3, (255, 0, 255), -1)
                 cv2.imshow('keypoints', img)
                 key = cv2.waitKey()
@@ -461,12 +463,12 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
         kernel = int(h / self.first_pass_height)
         if kernel > 0:
-            pool_img = HighResolutionPoseEstimationLearner.__pooling(self, img, kernel)
+            pool_img = self.__pooling(img, kernel)
         else:
             pool_img = img
 
         # ------- Heatmap Generation -------
-        avg_pafs = HighResolutionPoseEstimationLearner.__first_pass(self, self.model, pool_img)
+        avg_pafs = self.__first_pass(self.model, pool_img)
         avg_pafs = avg_pafs.astype(np.float32)
         pafs_map = cv2.blur(avg_pafs, (5, 5))
 
@@ -517,10 +519,9 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             h, w, _ = crop_img.shape
 
             # ------- Second pass of the image, inference for pose estimation -------
-            avg_heatmaps, avg_pafs, scale, pad = \
-                HighResolutionPoseEstimationLearner.__second_pass(self, self.model, crop_img,
-                                                                  self.second_pass_height,
-                                                                  max_width, stride, upsample_ratio)
+            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(self.model, crop_img,
+                                                                    self.second_pass_height,
+                                                                    max_width, stride, upsample_ratio)
 
             total_keypoints_num = 0
             all_keypoints_by_type = []

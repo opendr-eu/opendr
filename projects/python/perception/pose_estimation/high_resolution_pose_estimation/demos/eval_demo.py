@@ -21,7 +21,6 @@ import time
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--onnx", help="Use ONNX", default=False, action="store_true")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
@@ -30,7 +29,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    onnx, device, accelerate, base_height1, base_height2 = args.onnx, args.device, args.accelerate,\
+    device, accelerate, base_height1, base_height2 = args.device, args.accelerate,\
         args.height1, args.height2
 
     if accelerate:
@@ -49,9 +48,6 @@ if __name__ == '__main__':
                                                          second_pass_height=int(base_height2))
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
-
-    if onnx:
-        pose_estimator.optimize()
 
     # Download a sample dataset
     pose_estimator.download(path=".", mode="test_data")
