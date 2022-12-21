@@ -17,7 +17,6 @@ import shutil
 import os
 import torch
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner
-from opendr.engine.data import Image
 from opendr.perception.facial_expression_recognition import datasets
 from os import path, makedirs
 from torch.utils.data import DataLoader
