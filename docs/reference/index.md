@@ -32,7 +32,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [lightweight_open_pose Module](lightweight-open-pose.md)
         - activity recognition:
             - [skeleton-based action recognition](skeleton-based-action-recognition.md)
-            - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#Class-CoSTGCNLearner)
+            - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#class-costgcnlearner)
             - [x3d Module](activity-recognition.md#class-x3dlearner)
             - [continual x3d Module](activity-recognition.md#class-cox3dlearner)
             - [continual transformer encoder Module](continual-transformer-encoder.md)
