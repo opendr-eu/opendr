@@ -3,18 +3,19 @@
 The *skeleton_based_action_recognition* module contains the *SpatioTemporalGCNLearner* and *ProgressiveSpatioTemporalGCNLearner* classes, which inherits from the abstract class *Learner*.
 
 #### Data preparation
-  Download the NTU-RGB+D skeleton data from [here](https://github.com/shahroudy/NTURGB-D) and the kinetics-skeleton dataset from [here](https://drive.google.com/drive/folders/1SPQ6FmFsjGg3f59uCWfdUWI-5HJM_YhZ).
-  Then run the following function to preprocess the NTU-RGB+D and Kinetics skeleton data for ST-GCN methods:
+Download the NTU-RGB+D skeleton data from [here](https://github.com/shahroudy/NTURGB-D) and the kinetics-skeleton dataset from [here](https://drive.google.com/drive/folders/1SPQ6FmFsjGg3f59uCWfdUWI-5HJM_YhZ).
+Then run the following function to preprocess the NTU-RGB+D and Kinetics skeleton data for ST-GCN methods:
 
-  ```python
-  from opendr.perception.skeleton_based_action_recognition.algorithm.datasets import ntu_gendata
-  from opendr.perception.skeleton_based_action_recognition.algorithm.datasets import kinetics_gendata
-  python3 ntu_gendata.py --data_path ./data/nturgbd_raw_skeletons --ignored_sample_path ./algorithm/datasets/ntu_samples_with_missing_skeletons.txt --out_folder ./data/preprocessed_nturgbd
-  python3 kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons
-  ```
-  You need to specify the path of the downloaded data as `--data_path` and the path of the processed data as `--out_folder`.
-  ntu_samples_with_missing_skeletons.txt provides the NTU-RGB+D sample indices which don't contain any skeleton.
-  You need to specify the path of this file with --ignored_sample_path.
+```bash
+cd src/opendr/perception/skeleton_based_action_recognition/algorithm/datasets
+
+python3 ntu_gendata.py --data_path ./data/nturgbd_raw_skeletons --ignored_sample_path ./algorithm/datasets/ntu_samples_with_missing_skeletons.txt --out_folder ./data/preprocessed_nturgbd
+
+python3 kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons
+```
+You need to specify the path of the downloaded data as `--data_path` and the path of the processed data as `--out_folder`.
+ntu_samples_with_missing_skeletons.txt provides the NTU-RGB+D sample indices which don't contain any skeleton.
+You need to specify the path of this file with --ignored_sample_path.
 
 ### Class SpatioTemporalGCNLearner
 Bases: `engine.learners.Learner`
