@@ -117,11 +117,6 @@ def recognize_facial_expression(learner, image, display):
 
         # display
         if display:
-            '''# draw detected face
-            color = tuple([int(x) for x in (0, 255, 0)])
-            image = cv2.rectangle(image, start_point=(face_coordinates[0][0], face_coordinates[0][1]), 
-                                  end_point=(face_coordinates[1][0], face_coordinates[1][1]), 
-                                  color=color, thickness=2)'''
             image = cv2.putText(image, "Valence: %.2f" % affect[0], (10, 40 + 0 * 30), cv2.FONT_HERSHEY_SIMPLEX,
                                 1, (0, 255, 255), 2, )
             image = cv2.putText(image, "Arousal: %.2f" % affect[1], (10, 40 + 1 * 30), cv2.FONT_HERSHEY_SIMPLEX,

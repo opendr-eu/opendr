@@ -95,8 +95,9 @@ class FacialEmotionEstimationNode:
         if image is None:
             return
 
+        greyscale_image = image_processing.convert_bgr_to_grey(image)
         # Detect face
-        face_coordinates = detect_face(image)
+        face_coordinates = detect_face(greyscale_image)
 
         if face_coordinates is None:
             return
