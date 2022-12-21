@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'pose_estimation = opendr_perception.pose_estimation_node:main',
+            'hr_pose_estimation = opendr_perception.hr_pose_estimation_node:main',
             'object_detection_2d_centernet = opendr_perception.object_detection_2d_centernet_node:main',
             'object_detection_2d_detr = opendr_perception.object_detection_2d_detr_node:main',
             'object_detection_2d_yolov3 = opendr_perception.object_detection_2d_yolov3_node:main',
