@@ -172,9 +172,8 @@ def image(learner, input_image_path, display):
     img = image_processing.read(input_image_path)
     img = recognize_facial_expression(learner, img, display)
     if display:
-        while cv2.waitKey(1) != 27 or cv2.waitKey(1) != ord('q'):
-            cv2.imshow('Result', img)
-        cv2.destroyAllWindows()
+        cv2.imshow('Result', img)
+        cv2.waitKey(0)
 
 
 def video(learner, input_video_path, display, frames):
@@ -200,9 +199,8 @@ def video(learner, input_video_path, display, frames):
             else:  # Process frame
                 img = None if (img is None) else recognize_facial_expression(learner, img, display)
                 if display and img is not None:
-                    while cv2.waitKey(1) != 27 or cv2.waitKey(1) != ord('q'):
-                        cv2.imshow('Result', img)
-                    cv2.destroyAllWindows()
+                    cv2.imshow('Result', img)
+                    cv2.waitKey(33)
 
     except Exception as e:
         print("Error raised during video mode.")
