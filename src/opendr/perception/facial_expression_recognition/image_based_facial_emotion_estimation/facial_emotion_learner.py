@@ -38,7 +38,6 @@ from urllib.request import urlretrieve
 
 # OpenDR engine imports
 from opendr.engine.learners import Learner
-from opendr.engine.data import Image
 from opendr.engine.target import Category
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
@@ -616,19 +615,18 @@ class FacialEmotionLearner(Learner):
         np.save(path.join(base_path_his, "Loss_Val_Branch_{}".format(branch_idx)), np.array(his_val_loss))
         np.save(path.join(base_path_his, "Acc_Val_Branch_{}".format(branch_idx)), np.array(his_val_acc))
 
-    def infer(self, input_batch: Union[Image, List[Image], torch.Tensor]):
+    def infer(self, input_batch):
         """
-        This method is used to perform inference on an image or a batch of images.
+        This method is used to perform inference on a batch of images
 
         :param input_batch: a batch of images
         :return: dimensional and categorical emotion results.
         """
-        if not isinstance(input_batch, (Image, list)):
-            input_batch = Image(input_batch)
-        if type(input_batch) is Image:
-            input_batch = [input_batch]
+
         if type(input_batch) is list:
             input_batch = torch.stack([torch.tensor(v.data) for v in input_batch])
+        else:
+            input_batch = torch.tensor(input_batch)
         cpu_device = torch.device('cpu')
 
         input_batch = input_batch.to(device=self.device, dtype=torch.float)
@@ -643,7 +641,7 @@ class FacialEmotionLearner(Learner):
             _, preds_indices = torch.max(outputs_per_branch_eval, 1)
             for v_i, v_p in enumerate(preds_indices, 0):
                 overall_emotion_preds[v_i, v_p] += 1
-        ensemble_emotion_results = [Category(prediction=int(o.argmax(dim=0)), confidence=softmax_(o),
+        ensemble_emotion_results = [Category(prediction=int(o.argmax(dim=0)), confidence=max(softmax_(o)),
                                     description=datasets.AffectNetCategorical.get_class(int(o.argmax(dim=0))))
                                     for o in overall_emotion_preds]
         # dimension result

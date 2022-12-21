@@ -114,48 +114,6 @@ class ConvolutionalBranch(nn.Module):
         # Returns activations of the discrete emotion output layer and arousal and valence levels
         return discrete_emotion, continuous_affect
 
-    def forward_to_last_conv_layer(self, x_shared_representations):
-        """
-        Propagates activations to the last convolutional layer of the architecture.
-        This method is used to generate saliency maps with the Grad-CAM algorithm (Selvaraju et al., 2017).
-
-        Reference:
-            Selvaraju, R.R., Cogswell, M., Das, A., Vedantam, R., Parikh, D. and Batra, D., 2017.
-            Grad-cam: Visual explanations from deep networks via gradient-based localization.
-            In Proceedings of the IEEE international conference on computer vision (pp. 618-626).
-
-        :param x_shared_representations: (ndarray) feature maps from shared layers
-        :return: feature maps of the last convolutional layer
-        """
-
-        # Convolutional, batch-normalization and pooling layers
-        x_to_last_conv_layer = F.relu(self.bn1(self.conv1(x_shared_representations)))
-        x_to_last_conv_layer = self.pool(F.relu(self.bn2(self.conv2(x_to_last_conv_layer))))
-        x_to_last_conv_layer = F.relu(self.bn3(self.conv3(x_to_last_conv_layer)))
-        x_to_last_conv_layer = F.relu(self.bn4(self.conv4(x_to_last_conv_layer)))
-
-        # Feature maps of the last convolutional layer
-        return x_to_last_conv_layer
-
-    def forward_from_last_conv_layer_to_output_layer(self, x_from_last_conv_layer):
-        """
-        Propagates activations to the second last, fully-connected layer (here referred as output layer).
-        This layer represents emotion labels.
-
-        :param x_from_last_conv_layer: (ndarray) feature maps from the last convolutional layer of this branch.
-        :return: (ndarray) activations of the last second, fully-connected layer of the network
-        """
-
-        # Global average polling and reshape
-        x_to_output_layer = self.global_pool(x_from_last_conv_layer)
-        x_to_output_layer = x_to_output_layer.view(-1, 512)
-
-        # Output layer: emotion labels
-        x_to_output_layer = self.fc(x_to_output_layer)
-
-        # Returns activations of the discrete emotion output layer
-        return x_to_output_layer
-
 
 class ESR(nn.Module):
     """

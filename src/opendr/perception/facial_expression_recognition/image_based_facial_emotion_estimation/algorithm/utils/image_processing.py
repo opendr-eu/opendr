@@ -7,9 +7,7 @@ https://github.com/siqueira-hc/Efficient-Facial-Feature-Learning-with-Wide-Ensem
 
 import os
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
-
 
 # Private variables
 _MAX_FPS = 30
@@ -168,91 +166,6 @@ def convert_rgb_to_bgr(image):
     return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
 
-# Drawing methods
-
-def draw_rectangle(image, initial_coordinates, final_coordinates, color=(0, 255, 0), thickness=2):
-    cv2.rectangle(image, initial_coordinates, final_coordinates, color, thickness)
-
-
-def draw_horizontal_bar(image, val, max, initial_coordinates, final_coordinates, thickness, color=(0, 255, 0)):
-    x_length = final_coordinates[0] - initial_coordinates[0]
-    value_coordinates = (int(initial_coordinates[0] + ((x_length * val) / max)), final_coordinates[1])
-
-    cv2.rectangle(image, initial_coordinates, final_coordinates, color, thickness)
-    cv2.rectangle(image, initial_coordinates, value_coordinates, color, cv2.FILLED)
-
-
-def draw_graph(image, x, y, initial_coordinates, samples, text_x, text_y, color_x, color_y, thickness, offset,
-               font_size, grid_color, size):
-    # Params
-    plt.rcParams["figure.figsize"] = size
-    plt.rcParams["font.weight"] = "bold"
-    plt.rcParams.update({"font.size": font_size})
-
-    # Initialization
-    fig = plt.figure()
-
-    # Sampling
-    len_x = np.minimum(len(x), samples)
-    z = np.arange(len_x)
-    x = np.array(x)[-samples:]
-    y = np.array(y)[-samples:]
-
-    # Data
-    plt.plot(z, np.zeros(len_x), color=(0, 0, 0), linewidth=1.5)
-    plt.plot(z, x, label=text_x, color=(np.array(color_x) / 255.), linewidth=thickness)
-    plt.plot(z, y, label=text_y, color=(np.array(color_y) / 255.), linewidth=thickness)
-
-    # Axises
-    plt.ylim([-1.0, 1.0])
-    plt.yticks(np.arange(-1.0, 1.1, 0.25))
-    plt.xlim([0, len_x])
-    plt.xticks(np.arange(0, len_x, 1))
-
-    # Grid
-    ax = plt.gca()
-    ax.grid(color=(np.array(grid_color) / 255.), linestyle="--")
-    ax.spines["top"].set_color((np.array(grid_color) / 255.))
-    ax.spines["top"].set_linestyle("--")
-    ax.spines["bottom"].set_color("#b5b5b5ff")
-    ax.spines["bottom"].set_linestyle("--")
-    ax.spines["right"].set_color("#b5b5b5ff")
-    ax.spines["right"].set_linestyle("--")
-    ax.spines["left"].set_color("#b5b5b5ff")
-    ax.spines["left"].set_linestyle("--")
-    ax.spines["right"].set_visible(False)
-
-    # Legend
-    box = ax.get_position()
-    ax.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.9])
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=5)
-
-    # From plt to ndarray
-    fig.canvas.draw()
-    data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep="")
-    data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-    plt.close()
-
-    # Offset (right)
-    data = data[:, :-offset, :]
-
-    # Draw to image
-    image[initial_coordinates[0]:initial_coordinates[0] + data.shape[0],
-          initial_coordinates[1]:initial_coordinates[1] + data.shape[1], :] = data[:]
-
-
-def draw_text(image, text, initial_coordinates, color=(0, 255, 0), scale=1, thickness=1):
-    cv2.putText(image, text, (int(initial_coordinates[0]), int(initial_coordinates[1])),
-                cv2.FONT_HERSHEY_COMPLEX, fontScale=scale, color=color, thickness=thickness)
-
-
-def draw_image(image, image_to_draw, initial_coordinates):
-    image[int(initial_coordinates[0]):int(initial_coordinates[0]) + image_to_draw.shape[0],
-          int(initial_coordinates[1]):int(initial_coordinates[1]) + image_to_draw.shape[1], :] = image_to_draw
-
-# Drawing methods
-
-
 # Transformation methods
 
 def resize(image, output_size=None, f=None):
@@ -260,23 +173,3 @@ def resize(image, output_size=None, f=None):
         return cv2.resize(image, output_size)
     else:
         return cv2.resize(image, output_size, fx=f, fy=f)
-
-
-def crop_rectangle(image, initial_coordinates, final_coordinates, channels_last=True):
-    if channels_last:
-        return image[initial_coordinates[1]:final_coordinates[1], initial_coordinates[0]:final_coordinates[0], :]
-    else:
-        return image[:, initial_coordinates[1]:final_coordinates[1], initial_coordinates[0]:final_coordinates[0]]
-
-
-# Other methods
-
-def blur(image, kernel_size):
-    return cv2.blur(image, (kernel_size, kernel_size))
-
-
-def superimpose(img_1, img_2, w_1=0.35, w_2=0.65, gamma=0):
-    # Convert tensor to numpy, resize to the input size, cast to uint8, and superimpose img_1 on img_2
-    saliency_map = resize(img_1.cpu().detach().numpy(), output_size=(img_2.shape[1], img_2.shape[0]))
-    saliency_map = cv2.applyColorMap(np.clip(saliency_map * 255, 0, 255).astype(np.uint8), cv2.COLORMAP_JET)
-    return cv2.addWeighted(saliency_map, w_1, img_2, w_2, gamma)

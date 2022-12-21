@@ -106,17 +106,7 @@ class TestFacialEmotionLearner(unittest.TestCase):
         val_loader = DataLoader(val_data, batch_size=32, shuffle=False, num_workers=8)
         batch = next(iter(val_loader))[0]
         # input is Tensor
-        ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch[0])
-        self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
-        self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
-                            msg="overall ensembled dimension results are zero")
-        # Input is Image
-        ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(Image(batch[0]))
-        self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
-        self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
-                            msg="overall ensembled dimension results are zero")
-        # Input is List[Image]
-        ensemble_emotion_results, ensemble_dimension_results = self.learner.infer([Image(v) for v in batch])
+        ensemble_emotion_results, ensemble_dimension_results = self.learner.infer(batch)
         self.assertIsNotNone(ensemble_emotion_results[0].confidence, msg="The predicted confidence score is None")
         self.assertNotEqual((sum(sum(ensemble_dimension_results))).numpy(), 0.0,
                             msg="overall ensembled dimension results are zero")

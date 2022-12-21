@@ -12,29 +12,28 @@ The pretrained models on AffectNet Categorical dataset are provided by [[1]](#1)
 **Please note that the pretrained weights cannot be used for commercial purposes**
 To recognize a facial expression in images, run the following command:
 ```python
-python inference_demo.py image -i ./media/jackie.jpg -d -s 2
+python inference_demo.py image -i ./media/jackie.jpg -d 
 ```  
 
-The argument `image` indicates that the input is an image. The location of the image is specified after `-i` and `-d` sets the display mode to true and `-s 2` sets the window size to 1440 x 900.
+The argument `image` indicates that the input is an image. The location of the image is specified after `-i` and `-d` sets the display mode to true.
 If the location of image file is not specified, the demo automatically downloads a sample image file from the FTP server.
-You can also visualize regions in the image relevant for the classification of facial expression by adding `-g` as arguments:
+
 ```python
-python inference_demo.py image -i 'image_path' -d -s 2 -g
+python inference_demo.py image -i 'image_path' -d 
 ```  
-The argument `-g` generates saliency maps with the Grad-CAM algorithm.
 
 To recognize a facial expression in videos, run the following command:
 ```python
-python inference_demo.py video -i 'video_path' -d -f 5 -s 2
+python inference_demo.py video -i 'video_path' -d -f 5
 ```
-The argument `video` indicates that the input is a video. The location of the video is specified after `-i`. `-d` sets the display mode to true, `-f` defines the number of frames to be processed, and `-s 2` sets the window size to 1440 x 900.
+The argument `video` indicates that the input is a video. The location of the video is specified after `-i`. `-d` sets the display mode to true, `-f` defines the number of frames to be processed.
 If the location of video file is not specified, the demo automatically downloads a sample video file from the FTP server. 
 
 To recognize a facial expression in images captured from a webcam, run the following command:
 ```python
-python inference_demo.py webcam -d -s 2 
+python inference_demo.py webcam -d
 ```
-The argument `webcam` indicates the framework to capture images from a webcam. `-d` sets the display mode to true, `-s 2` sets the window size to 1440 x 900.
+The argument `webcam` indicates the framework to capture images from a webcam. `-d` sets the display mode to true.
 
 #### List of Arguments
 Positional arguments:
@@ -54,31 +53,14 @@ Display a window with the input data on the left and the output data on the righ
 - **-i (--input)**:\
 Define the full path to an image or video.
 
-- **-s (--size)**:\
-Define the size of the window:
-1920 x 1080.
-1440 x 900.
-1024 x 768.
-Input values: {1, 2, 3}.
-
-- **-np (--no_plot)**:\
-Hide the graph of activation and (un)pleasant values.
-
-- **-c (--cuda)**:\
-Run facial expression recognition on GPU.
+- **-c (--device)**:\
+Specifies the device, which can be 'cuda' or 'cpu'.
 
 - **-w (--webcam)**:\
 Define the webcam to be used while the framework is running by 'id' when the webcam mode is selected. The default camera is used, if 'id' is not specified.
 
 - **-f (--frames)**:\
 Set the number of frames to be processed for each 30 frames. The lower is the number, the faster is the process.
-
-- **-o (--output)**:\
-Create and write ESR-9's outputs to a CSV file.
-The file is saved in a folder defined by this argument (ex. '-o ./' saves the file with the same name as the input file in the working directory).
-
-- **-g (--gradcam)**:\
-Run the grad-CAM algorithm and shows the saliency maps with respect to each convolutional branch.
 
 
 ## Acknowledgement
