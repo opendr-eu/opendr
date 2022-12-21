@@ -111,10 +111,7 @@ class FacialEmotionEstimationNode:
             input_face = _pre_process_input_image(face)
 
             # Recognize facial expression
-            emotion, affect = self.facial_emotion_estimator.infer(input_face)
-
-            affect = np.array([a.cpu().detach().numpy() for a in affect])
-            _affect = affect[0]  # a numpy array of valence and arousal values
+            emotion, _ = self.facial_emotion_estimator.infer(input_face)
             _emotion = emotion[0]  # the emotion class with confidence tensor
 
         if self.hypothesis_publisher is not None:
