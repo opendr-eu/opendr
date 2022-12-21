@@ -28,6 +28,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [face_recognition_learner Module](face-recognition.md)
         - facial expression recognition:
             - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
+            - [image_based_facial_emotion_estimation](image_based_facial_emotion_estimation.md)
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
             - [high_resolution_pose_estimation Module](high-resolution-pose-estimation.md)
@@ -109,6 +110,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [face_recognition_Demo](/projects/python/perception/face_recognition)
         - facial expression recognition:
             - [landmark_based_facial_expression_recognition Demo](/projects/python/perception/facial_expression_recognition/landmark_based_facial_expression_recognition)
+            - [image_based_facial_emotion_estimation Demo](/projects/python/perception/facial_expression_recognition/image_based_facial_emotion_estimation)
         - heart anomaly detection:
             - [heart anomaly detection Demo](/projects/python/perception/heart_anomaly_detection)
         - pose estimation:
