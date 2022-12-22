@@ -49,7 +49,6 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         # Now we simply put all sequences available on single lists
         self._create_lists_from_sequences()
 
-
    
     def _create_timestamps(self, timestamps) -> List[int]:
         """
@@ -107,14 +106,14 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :return: the item at the given index
         :rtype: Tuple[Any, None]
         """
-        image = Image.open(str(self.images[idx]))
-        distance, speed = self._load_relative_distance(idx)
-        
-        # Find Image ID from the path
-        image_id = self.images[idx].name.split('.')[0]
-        sequence_id = re.findall("sequence/\d\d", str(self.images[idx]))[0].split('/')[1]
-        image_id = sequence_id + '_' + image_id
-        data = {image_id: (image, distance, speed)}
+        data = {}
+        for i in range(idx-2, idx+1):
+            image = Image.open(str(self.images[i]))
+            distance, speed = self._load_relative_distance(i)
+            image_id = self.images[i].name.split('.')[0]
+            sequence_id = re.findall("sequence/\d\d", str(self.images[i]))[0].split('/')[1]
+            image_id = sequence_id + '_' + image_id
+            data[image_id] = (image, distance, speed)
         return data, None
 
     def __len__(self):
