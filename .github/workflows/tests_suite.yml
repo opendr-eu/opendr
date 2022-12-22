@@ -315,6 +315,7 @@ jobs:
         # install specific package
         if [ "$package" == "utils" ]; then
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
 
