@@ -54,7 +54,7 @@ typedef struct detr_model detr_model_t;
 void load_detr_model(const char *modelPath, detr_model_t *model);
 
 /**
- * This function perform feed forward of detr object detection model
+ * This function performs feed forward of detr object detection model
  * @param model detr object detection model to be used for inference
  * @param inputTensorValues input of the model as OpenCV mat
  * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward

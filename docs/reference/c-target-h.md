@@ -52,11 +52,11 @@ A numerical id of the category to which the input objects belongs to.
 
 #### `float left` field
 
-A numerical value that corresponds to the X value of the top,left point of a detection.
+A numerical value that corresponds to the X value of the top left point of a detection.
 
 #### `float top` field
 
-A numerical value that corresponds to the Y value of the top,left point of a detection.
+A numerical value that corresponds to the Y value of the top left point of a detection.
 
 #### `float width` field
 

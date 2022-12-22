@@ -58,7 +58,7 @@ typedef struct open_pose_model open_pose_model_t;
 void load_open_pose_model(const char *modelPath, open_pose_model_t *model);
 
 /**
- * This function perform feed forward of open pose model
+ * This function performs feed forward of open pose model
  * @param model open pose model to be used for inference
  * @param inputTensorValues OpenDR tensor structure as input of the model
  * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward

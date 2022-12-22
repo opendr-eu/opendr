@@ -48,7 +48,7 @@ typedef struct pst_model pst_model_t;
 void load_pst_model(const char *modelPath, pst_model_t *model);
 
 /**
- * This function perform feed forward of pst skeleton based action recognition model
+ * This function performs feed forward of pst skeleton based action recognition model
  * @param model pst object detection model to be used for inference
  * @param inputTensorValues input of the model as OpenCV mat
  * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward

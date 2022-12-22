@@ -52,7 +52,7 @@ typedef struct deep_sort_model deep_sort_model_t;
 void load_deep_sort_model(const char *modelPath, deep_sort_model_t *model);
 
 /**
- * This function perform feed forward of deep_sort object tracking 2d model
+ * This function performs feed forward of deep_sort object tracking 2d model
  * @param model deep_sort object detection model to be used for inference
  * @param inputTensorValues input of the model as OpenCV mat
  * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward

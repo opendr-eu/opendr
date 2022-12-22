@@ -53,7 +53,7 @@ typedef struct x3d_model x3d_model_t;
 void load_x3d_model(const char *modelPath, char *mode, x3d_model_t *model);
 
 /**
- * This function perform feed forward of x3d activity recognition model
+ * This function performs feed forward of x3d activity recognition model
  * @param model x3d object detection model to be used for inference
  * @param inputTensorValues input of the model as OpenCV mat
  * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward
