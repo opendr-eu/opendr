@@ -20,7 +20,7 @@ import os
 from cv_bridge import CvBridge
 from opendr_bridge import ROSBridge
 from std_msgs.msg import Bool
-from simulation.srv import Mesh_vc
+from opendr_simulation.srv import Mesh_vc
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 

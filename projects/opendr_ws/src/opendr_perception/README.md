@@ -198,17 +198,17 @@ under `/opendr/face_recognition_id`.
 
 ### 2D Object Detection ROS Nodes
 
-For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet and DETR.
+For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet, Nanodet and DETR.
 
 You can find the 2D object detection ROS node python scripts here:
-[SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py),
+[SSD node](./scripts/object_detection_2d_ssd_node.py), [YOLOv3 node](./scripts/object_detection_2d_yolov3_node.py), [YOLOv5 node](./scripts/object_detection_2d_yolov5_node.py), [CenterNet node](./scripts/object_detection_2d_centernet_node.py), [Nanodet node](./scripts/object_detection_2d_nanodet_node.py) and [DETR node](./scripts/object_detection_2d_detr_node.py),
 where you can inspect the code and modify it as you wish to fit your needs.
 The nodes makes use of the toolkit's various 2D object detection tools:
 [SSD tool](../../../../src/opendr/perception/object_detection_2d/ssd/ssd_learner.py), [YOLOv3 tool](../../../../src/opendr/perception/object_detection_2d/yolov3/yolov3_learner.py), [YOLOv5 tool](../../../../src/opendr/perception/object_detection_2d/yolov5/yolov5_learner.py),
-[CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py),
+[CenterNet tool](../../../../src/opendr/perception/object_detection_2d/centernet/centernet_learner.py), [Nanodet tool](../../../../src/opendr/perception/object_detection_2d/nanodet/nanodet_learner.py), [DETR tool](../../../../src/opendr/perception/object_detection_2d/detr/detr_learner.py),
 whose documentation can be found here:
 [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [YOLOv5 docs](../../../../docs/reference/object-detection-2d-yolov5.md),
-[CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [DETR docs](../../../../docs/reference/detr.md).
+[CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [Nanodet docs](../../../../docs/reference/nanodet.md), [DETR docs](../../../../docs/reference/detr.md).
 
 #### Instructions for basic usage:
 
@@ -241,10 +241,17 @@ whose documentation can be found here:
       ```shell
       rosrun opendr_perception object_detection_2d_centernet_node.py
       ```
-      The following optional argument is available for the YOLOv3 node:
+      The following optional argument is available for the CenterNet node:
       - `--backbone BACKBONE`: Backbone network (default=`resnet50_v1b`)
 
-   5. DETR node
+   5. Nanodet node
+      ```shell
+      rosrun opendr_perception object_detection_2d_nanodet_node.py
+      ```
+      The following optional argument is available for the Nanodet node:
+      - `--model Model`: Model that config file will be used (default=`plus_m_1.5x_416`)
+
+   6. DETR node
       ```shell
       rosrun opendr_perception object_detection_2d_detr_node.py
       ```
@@ -261,6 +268,41 @@ whose documentation can be found here:
    - Detection messages: `/opendr/objects`
 
    For viewing the output, refer to the [notes above.](#notes)
+
+### 2D Single Object Tracking ROS Node
+
+You can find the single object tracking 2D ROS node python script [here](./scripts/object_tracking_2d_siamrpn_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [single object tracking 2D SiamRPN tool](../../../../src/opendr/perception/object_tracking_2d/siamrpn/siamrpn_learner.py) whose documentation can be found [here](../../../../docs/reference/object-tracking-2d-siamrpn.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the single object tracking 2D node:
+
+    ```shell
+    rosrun opendr_perception object_tracking_2d_siamrpn_node.py
+    ```
+
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_tracking_annotated`)
+   - `-t or --tracker_topic TRACKER_TOPIC`: topic name for tracker messages, `None` to stop the node from publishing on this topic (default=`/opendr/tracked_object`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/image_tracking_annotated`
+   - Detection messages: `/opendr/tracked_object`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+To initialize this node it is required to provide a bounding box of an object to track.
+This is achieved by initializing one of the toolkit's 2D object detectors (YOLOv3) and running object detection once on the input.
+Afterwards, **the detected bounding box that is closest to the center of the image** is used to initialize the tracker. 
+Feel free to modify the node to initialize it in a different way that matches your use case.
 
 ### 2D Object Tracking ROS Nodes
 
@@ -376,6 +418,41 @@ On the table below you can find the detectable classes and their corresponding I
 | Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
+
+### Image-based Facial Emotion Estimation ROS Node
+
+You can find the image-based facial emotion estimation ROS node python script [here](./scripts/facial_emotion_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's image-based facial emotion estimation tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/facial_emotion_learner.py)
+whose documentation can be found [here](../../../../docs/reference/image_based_facial_emotion_estimation.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the image-based facial emotion estimation node:
+
+    ```shell
+    rosrun opendr_perception facial_emotion_estimation_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_emotion_estimation_annotated`)
+   - `-e or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the facial emotion results, `None` to stop the node from publishing on this topic (default=`"/opendr/facial_emotion_estimation"`)
+   - `-m or --output_emotions_description_topic OUTPUT_EMOTIONS_DESCRIPTION_TOPIC`: topic to which we are publishing the description of the estimated facial emotion, `None` to stop the node from publishing on this topic (default=`/opendr/facial_emotion_estimation_description`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/image_emotion_estimation_annotated`
+   - Detection messages: `/opendr/facial_emotion_estimation`, `/opendr/facial_emotion_estimation_description`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+This node requires the detection of a face first. This is achieved by including of the toolkit's face detector and running face detection on the input.
+Afterwards, the detected bounding box of the face is cropped and fed into the facial emotion estimator. 
+Feel free to modify the node to detect faces in a different way that matches your use case.
 
 ### Landmark-based Facial Expression Recognition ROS Node
 
@@ -768,57 +845,3 @@ The following optional arguments are available:
    - `-f or --fps FPS`: data fps (default=`10`)
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
-
-## SiamRPN Object Tracking 2D ROS Node
-
-The `object_tracking_2d_siamrpn.py` node implements an object tracking node using the SiamRPN
-single object tracker. The node works by providing a tracking service which can be called from
-another node (i.e., a detection node) or from the terminal. A `Detection2D` message is required
-to begin the tracking process, and the tracker is subscribed to a corresponding input image topic.
-Example usage:
-```shell
-# first start a video, e.g. using video_stream_opencv or usb_cam
-roslaunch video_stream_opencv camera.launch video_stream_provider:=/path/to/video.mp4 loop_videofile:=true
-```
-The default topic for this stream publisher is `/camera/image_raw`, which must be given as an
-input argument to the SiamRPN node:
-```shell
-# change the input image topic here to reflect your chosen publisher
-rosrun perception object_tracking_2d_siamrpn.py -i /camera/image_raw
-```
-The tracker node will subscribe to the image topic and start tracking after the tracking service is called.
-The provided service is called `/opendr/siamrpn_tracking_srv` and a `Detection2D` message is expected in
-order to get an initial bounding box. The service can be called from another node, such as an object detection
-node (note: most object detectors publish `Detection2DArray` messages, so the object of interest must be
-specified first), or from the terminal using `rosservice call` as follows:
-```shell
-rosservice call /opendr/siamrpn_tracking_srv "init_box:
-  header:
-    seq: 0
-    stamp:
-      secs: 0
-      nsecs: 0
-    frame_id: ''
-  results:
-  - id: 0
-    score: 0.0
-    pose:
-      pose:
-        position: {x: 0.0, y: 0.0, z: 0.0}
-        orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
-      covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-  bbox:
-    center: {x: 645.5, y: 312.0, theta: 0.0}
-    size_x: 75.0
-    size_y: 200.0
-  source_img:
-    header:
-      seq: 0
-      stamp: {secs: 0, nsecs: 0}
-    data: !!binary """
-```
-The `bbox` parameters must be set to point to the object to be tracked.
-The tracked locations are visualized and published by default to the `/opendr/image_tracking_annotated`
-topic which can be visualized using for example `rqt_image_view`.
