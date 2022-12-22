@@ -236,7 +236,6 @@ jobs:
           curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
           export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
           export ROS_DISTRO=noetic
-          # TODO: this is overkill, should split them
           make install_compilation_dependencies
           make install_runtime_dependencies
           source tests/sources/tools/control/mobile_manipulation/run_ros.sh
@@ -383,7 +382,7 @@ jobs:
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
-    if: ${{ success() }}
+    if: ${{ always() }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
@@ -395,7 +394,7 @@ jobs:
         name: docker-artifact
   delete-wheel-artifacts:
     needs: [build-wheel, test-wheel, test-wheel-separate]
-    if: ${{ success() }}
+    if: ${{ always() }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
