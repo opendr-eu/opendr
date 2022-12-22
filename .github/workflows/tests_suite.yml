@@ -192,6 +192,7 @@ jobs:
           - simulation/human_model_generation
           - control/mobile_manipulation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -235,6 +236,7 @@ jobs:
           curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
           export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
           export ROS_DISTRO=noetic
+          make install_compilation_dependencies
           make install_runtime_dependencies
           source tests/sources/tools/control/mobile_manipulation/run_ros.sh
         fi
