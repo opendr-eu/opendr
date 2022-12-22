@@ -13,20 +13,8 @@ from opendr.perception.facial_expression_recognition. \
 
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.facial_emotion_learner \
     import FacialEmotionLearner
-from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model \
-    import cbam
-# from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.\
-#     diversified_esr import DiversifiedESR
-# from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
-#     import ESR
-# from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils \
-#     import datasets
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils \
     import image_processing
 
-# __all__ = ['ProgressiveSpatioTemporalBLNLearner', 'CK_CLASSES', 'CASIA_CLASSES', 'landmark_extractor',
-#            'gen_muscle_data', 'data_normalization', 'FacialEmotionLearner', 'cbam', 'datasets',
-#            'image_processing', 'ESR', 'DiversifiedESR']
-
 __all__ = ['ProgressiveSpatioTemporalBLNLearner', 'CK_CLASSES', 'CASIA_CLASSES', 'landmark_extractor',
-           'gen_muscle_data', 'data_normalization', 'FacialEmotionLearner', 'cbam', 'image_processing']
+           'gen_muscle_data', 'data_normalization', 'FacialEmotionLearner', 'image_processing']
