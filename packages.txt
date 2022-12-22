@@ -20,5 +20,4 @@ utils/hyperparameter_tuner
 utils/ambiguity_measure
 control/single_demo_grasp
 control/mobile_manipulation
-planning/end_to_end_planning
 opendr
