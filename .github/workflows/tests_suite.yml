@@ -44,8 +44,74 @@ jobs:
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
         export OPENDR_DEVICE=cpu
-        python3 -m pip install -r tests/requirements.txt
-        python3 -m unittest discover -s tests
+        pip install -r tests/requirements.txt
+        python -m unittest discover -s tests
+  test-tools:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        package:
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition
+          - perception/semantic_segmentation
+          - perception/object_tracking_2d
+          # - perception/object_tracking_3d
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
+          - perception/object_detection_3d
+          - perception/facial_expression_recognition
+          - simulation/human_model_generation
+          - control/mobile_manipulation
+          - control/single_demo_grasp
+          - planning/end_to_end_planning
+        include:
+          - os: ubuntu-20.04
+            DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
+            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Test Tools
+      run: |
+        ${{ matrix.DEPENDENCIES_INSTALLATION }}
+        export OPENDR_HOME=$PWD
+        export OPENDR_DEVICE=cpu
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        export DISABLE_BCOLZ_AVX2=true
+        export ROS_DISTRO=noetic
+        make install_compilation_dependencies
+        make install_runtime_dependencies
+        python3 -m pip install -r tests/sources/requirements.txt
+        if [ ${{ matrix.package }} = "ctests" ]; then
+            make ctests
+        else
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        fi
   build-wheel:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
@@ -111,13 +177,14 @@ jobs:
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          - perception/object_tracking_3d
+          # - perception/object_tracking_3d
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
           - perception/object_detection_3d
@@ -125,6 +192,7 @@ jobs:
           - simulation/human_model_generation
           - control/mobile_manipulation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -197,13 +265,14 @@ jobs:
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          - perception/object_tracking_3d
+          # - perception/object_tracking_3d
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
           - perception/object_detection_3d
@@ -211,6 +280,7 @@ jobs:
           - simulation/human_model_generation
           - control/mobile_manipulation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -284,13 +354,14 @@ jobs:
           - perception/skeleton_based_action_recognition
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          - perception/object_tracking_3d
+          # - perception/object_tracking_3d
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
           - perception/object_detection_3d
@@ -298,6 +369,7 @@ jobs:
           - simulation/human_model_generation
           - control/mobile_manipulation
           - control/single_demo_grasp
+          - planning/end_to_end_planning
     runs-on: ubuntu-20.04
     steps:
     - name: Download artifact
