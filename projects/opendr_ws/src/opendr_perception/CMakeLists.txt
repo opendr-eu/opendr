@@ -37,5 +37,6 @@ catkin_install_python(PROGRAMS
    scripts/object_detection_2d_gem_node.py
    scripts/semantic_segmentation_bisenet_node.py
    scripts/object_tracking_2d_siamrpn_node.py
+   scripts/facial_emotion_estimation_node.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
