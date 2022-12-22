@@ -47,8 +47,8 @@ def get_cuda_path():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
-    parser.add_argument("--opendr_device", help="OpenDR variable to install dependencies during installation",
-                        type=str, default="gpu")
+    parser.add_argument("--opendr_device", help="Target device for installation",
+                        type=str, choices=["gpu", "cpu"], default="gpu")
     parser.add_argument("--torch_version", help="Version of Libtorch to be installed", type=str, default="1.9.0")
     args = parser.parse_args()
 
@@ -88,7 +88,7 @@ if __name__ == '__main__':
                 CUDA_VERSION = CUDA_VERSION.replace(".", "")
                 CUDA_VERSION = CUDA_VERSION[:3]
             else:
-                warnings.warn("\033[93m Not cuda version file found. Please sent an Issue in our github")
+                warnings.warn("\033[93m Not cuda version file found. Please open an Issue in our github.")
             DEVICE = f"cu{CUDA_VERSION}"
         except:
             warnings.warn("\033[93m No cuda found.\n"
@@ -106,8 +106,8 @@ if __name__ == '__main__':
         urlretrieve(file_url_libtorch, DOWNLOAD_DIRECTORY)
 
     except:
-        warnings.warn("\033[93m Not Libtorch found with your specific device and torch version.\n"
-                      "Please choose another version of torch or install different CUDA.\n"
+        warnings.warn("\033[93m No Libtorch found for your specific device and torch version.\n"
+                      "Please choose another version of torch or install a different version of CUDA.\n"
                       "Please reference https://download.pytorch.org/whl/torch_stable.html")
         exit()
     # Download Vision
@@ -117,6 +117,6 @@ if __name__ == '__main__':
         DOWNLOAD_DIRECTORY = "vision.tar.gz"
         urlretrieve(file_url_vision, DOWNLOAD_DIRECTORY)
     except:
-        warnings.warn("\033[93m Not torchvision found with your specific torch version.\n"
+        warnings.warn("\033[93m No torchvision found for your specific torch version.\n"
                       "Please see the torchvision GitHub repository for more information.")
-                      
+

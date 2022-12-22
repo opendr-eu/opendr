@@ -76,7 +76,7 @@ Parameters:
 
 #### `NanodetLearner.eval`
 ```python
-NanodetLearner.eval(self, dataset, verbose, 
+NanodetLearner.eval(self, dataset, verbose,
 )
 ```
 
@@ -103,7 +103,7 @@ its width and height, or returns an empty list if no detections were made of the
 
 Parameters:
 - **input** : *Image*\
-  Image type object to perform inference on it. 
+  Image type object to perform inference on it.
   - **threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
@@ -121,8 +121,8 @@ If a model is already present, it will load it instead.
 Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* for Jit models or *"nanodet_{model_name}.onnx"* for ONNX and a metadata file *"nanodet_{model_name}.json"*.
 
 Note: In Onnx optimization, the output model executes the original model's feed forward.
-The user must create his or her own pre- and post-processes in order to use the Onnx model in the C API.
-On the other side, in Jit optimization the output model does the feed forward and post-processing.
+The user must create his or her own pre and post-processes in order to use the Onnx model in the C API.
+In Jit optimization the output model does the feed forward and post-processing.
 For C API it is recommended the Jit optimization and the example that is provided in our [c_api](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
 
 Parameters:
@@ -130,11 +130,12 @@ Parameters:
 - **export_path**: *str*\
   Path to save or load the optimized model.
 - **initial_img**: *Image*\
-  If optimize is called for the first time is needed a dummy input of opendr Image.
+  If optimize is called for the first time a dummy OpenDR image is needed as input.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 - **optimization**: *str, default="Jit"*\
-  It can be Jit or Onnx. It determines what kind of optimization is used.
+  It can be Jit or Onnx.
+  It determines what kind of optimization is used.
 
 #### `NanodetLearner.save`
 ```python
@@ -201,25 +202,25 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
 #### Examples
 
-* **Training example using an `ExternalDataset`.**
+* **Training example using an `ExternalDataset`**
 
   To train properly, the architecture weights must be downloaded in a predefined directory before fit is called, in this case the directory name is "predefined_examples".
   Default architecture is *'m'*.
   The training and evaluation dataset root should be present in the path provided, along with the annotation files.
   The default COCO 2017 training data can be found [here](https://cocodataset.org/#download) (train, val, annotations).
-  All training parameters (optimizer, lr schedule, losses, model parameters etc.) can be changed in the model config file 
-  in [config directori](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config). 
+  All training parameters (optimizer, lr schedule, losses, model parameters etc.) can be changed in the model config file
+  in [config directori](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config).
   You can find more informations in [config file detail](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config/config_file_detail.md).
   For easier use, with NanodetLearner parameters user can overwrite the following parameters:
   (iters, lr, batch_size, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, weight_decay, warmup_steps,
   warmup_ratio, lr_schedule_T_max, lr_schedule_eta_min, grad_clip)
-  
+
   **Note**
-  
+
   The Nanodet tool can be used with any PASCAL VOC or COCO like dataset. The only thing is needed is to provide the correct root and dataset type.
-  
+
   If *'voc'* is choosed for *dataset* the directory must look like this:
-  
+
   - root folder
     - train
       - Annotations
@@ -241,7 +242,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
         - ...
 
   On the other hand if *'coco'* is choosed for *dataset* the directory must look like this:
-  
+
   - root folder
     - train2017
       - image1.jpg
@@ -252,9 +253,9 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
       - image2.jpg
       - ...
     - annotations
-      - instances_train2017.json 
+      - instances_train2017.json
       - instances_val2017.json
-   
+
   You can change the default annotation and image directories in [dataset](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/nanodet/data/dataset/__init__.py)
 
   ```python
@@ -262,8 +263,8 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
   from opendr.engine.datasets import ExternalDataset
   from opendr.perception.object_detection_2d import NanodetLearner
-  
-  
+
+
   if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
@@ -293,12 +294,12 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
     nanodet.save()
 
   ```
-  
-* **Inference and result drawing example on a test image.**
+
+* **Inference and result drawing example on a test image**
 
   This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
-  In this example first is downloaded a pre-trained model as in training example and then an image to be inference.
-  With the *path* parameter you can define the image file to be used in inference.
+  In this example, a pre-trained model is downloaded and inference performed on an image that can be specified with the *path* parameter.
+
   ```python
   import argparse
   from opendr.perception.object_detection_2d import NanodetLearner
@@ -309,7 +310,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
-    parser.add_argument("--path", help="Path to the image that will be used for inference", type=str, 
+    parser.add_argument("--path", help="Path to the image that will be used for inference", type=str,
                         default="./predefined_examples/000000000036.jpg")
     args = parser.parse_args()
 
@@ -322,8 +323,8 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
   ```
-  
-* **Optimization framework with Inference and result drawing example on a test image.**
+
+* **Optimization framework with Inference and result drawing example on a test image**
 
   This example shows how to perform optimization on a pretrained model, inference and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
   In this example first a pretrained model is loaded and then an image is used to perform the optimization, in this example we use onnx optimization but Jit can also be used by passing `--optimization=jit`.
@@ -333,14 +334,14 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   import argparse
   from opendr.engine.data import Image
   from opendr.perception.object_detection_2d import NanodetLearner, draw_bounding_boxes
-  
-  
+
+
   if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
     parser.add_argument("--optimization", help="Optimization framework to be used", type=str, default='onnx', choices=['jit', 'onnx'])
-    parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str, 
+    parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str,
                         default="./predefined_examples/000000000036.jpg")
     args = parser.parse_args()
 
