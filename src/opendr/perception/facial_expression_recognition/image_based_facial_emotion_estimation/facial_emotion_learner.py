@@ -39,8 +39,10 @@ from urllib.request import urlretrieve
 from opendr.engine.learners import Learner
 from opendr.engine.target import Category
 from opendr.engine.constants import OPENDR_SERVER_URL
-from opendr.perception.facial_expression_recognition import ESR
-from opendr.perception.facial_expression_recognition import DiversifiedESR
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.esr_9 \
+    import ESR
+from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.model.\
+    diversified_esr import DiversifiedESR
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils \
     import datasets, plotting
 from opendr.perception.facial_expression_recognition.image_based_facial_emotion_estimation.algorithm.utils.diversity \
