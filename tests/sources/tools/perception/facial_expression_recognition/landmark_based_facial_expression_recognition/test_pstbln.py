@@ -75,6 +75,9 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         rmdir(os.path.join(cls.temp_dir))
 
     def test_network_builder(self):
+        print(
+            "\n\n**********************************\nTEST network_builder function \n*****"
+            "*****************************")
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="CASIA")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="CASIA")
         self.pstbln_facial_expression_classifier.topology = []
@@ -92,6 +95,9 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
                             msg="Model topology did not change after running network_builder.")
 
     def test_fit(self):
+        print(
+            "\n\n**********************************\nTEST fit function \n*****"
+            "*****************************")
         training_dataset = ExternalDataset(path=self.Train_DATASET_PATH, dataset_type="CASIA")
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="CASIA")
         self.pstbln_facial_expression_classifier.topology = [1]
@@ -108,6 +114,9 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
                          msg="Model parameters did not change after running fit.")
 
     def test_eval(self):
+        print(
+            "\n\n**********************************\nTEST eval function \n*****"
+            "*****************************")
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.init_model()
         validation_dataset = ExternalDataset(path=self.Val_DATASET_PATH, dataset_type="CASIA")
@@ -120,6 +129,9 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         self.assertNotEqual(len(eval_results["score"]), 0, msg="Eval results contains empty list.")
 
     def test_infer(self):
+        print(
+            "\n\n**********************************\nTEST infer function \n*****"
+            "*****************************")
         test_data = np.load(self.Test_DATASET_PATH)[0:1]
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.init_model()
@@ -127,20 +139,26 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
         self.assertIsNotNone(category.confidence, msg="The predicted confidence score is None")
 
     def test_save_load(self):
+        print(
+            "\n\n**********************************\nTEST save_load function \n*****"
+            "*****************************")
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.ort_session = None
         self.pstbln_facial_expression_classifier.init_model()
         self.pstbln_facial_expression_classifier.save(path=os.path.join(self.temp_dir, self.experiment_name),
-                                                      model_name='test_pstgcn')
+                                                      model_name='test_pstbln')
         self.pstbln_facial_expression_classifier.model = None
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.load(path=os.path.join(self.temp_dir, self.experiment_name),
-                                                      model_name='test_pstgcn')
+                                                      model_name='test_pstbln')
         self.assertIsNotNone(self.pstbln_facial_expression_classifier.model, "model is None after loading pt model.")
         # Cleanup
         rmdir(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_optimize(self):
+        print(
+            "\n\n**********************************\nTEST optimize function \n*****"
+            "*****************************")
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.ort_session = None
         self.pstbln_facial_expression_classifier.init_model()
@@ -149,9 +167,11 @@ class TestLandmarkBasedFacialExpressionRecognition(unittest.TestCase):
                              "ort_session is None after optimizing the pretrained model.")
         # Cleanup
         self.pstbln_facial_expression_classifier.ort_session = None
-        rmfile(os.path.join(self.temp_dir, self.experiment_name))
 
     def test_save_load_onnx(self):
+        print(
+            "\n\n**********************************\nTEST save_load_onnx function \n*****"
+            "*****************************")
         self.pstbln_facial_expression_classifier.topology = [1]
         self.pstbln_facial_expression_classifier.ort_session = None
         self.pstbln_facial_expression_classifier.init_model()

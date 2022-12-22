@@ -26,3 +26,9 @@ CoX3D
 ```bash
 ./benchmark_cox3d.py
 ```
+
+CoTransEnc
+```bash
+./benchmark_cotransenc.py
+```
+NB: The CoTransEnc module benchmarks various configurations of the Continual Transformer Encoder modules only. This doesn't include any feature-extraction that you might want to use beforehand.
