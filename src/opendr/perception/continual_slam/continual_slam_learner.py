@@ -20,16 +20,13 @@ from opendr.engine.learners import Learner
 from opendr.engine.target import Heatmap
 
 
-from opendr.perception.continual_slam.algorithm.datasets import Config as DatasetConfig
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction import DepthPosePrediction
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config import DepthPosePrediction as Config
+from opendr.perception.continual_slam.algorithm.depth_pose_prediction.networks import ResnetEncoder, DepthDecoder, PoseDecoder
+from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config import Config
+
 
 class ContinualSLAMLearner(Learner):
     def __init__(self,
                  config_file: Config,
-                 dataset_config: DatasetConfig,
-                 checkpoint_file = None,
-                 type : str = 'publisher',
                  ):
         """
         This is the ContinualSLAMLearner class, which implements the continual SLAM algorithm.
@@ -38,35 +35,14 @@ class ContinualSLAMLearner(Learner):
         :param checkpoint_file: Path to the checkpoint file.
         """
         super(ContinualSLAMLearner, self).__init__(lr=config_file.learning_rate)
-        self.config_file = config_file
-        self.dataset_config = dataset_config
-        self.checkpoint_file = checkpoint_file
-        
-        if type == 'publisher':
-            self.type = False
-        elif type == 'learner':
-            self.type = True
-        else:
-            raise ValueError('type should be either publisher or learner')
-        
-        if self.type:
-            self.model = DepthPosePrediction(config_file, dataset_config, use_online=True)
-            self.model.load_model(load_optimizer=True)
-            self.model.load_online_model(load_optimizer=True)
-        else: 
-            self.model = DepthPosePrediction(config_file, dataset_config, use_online=False)
-            self.model.load_model(load_optimizer=True)
-        
-    def inference(self):
-        pass
 
-    def adapt(self, inputs):
-        if not self.type:
-            raise ValueError('adapt() is only available for learner')
-        
-        self.model.adapt(inputs)
-
-    def update(self):
-        pass
-    
+        self.models = {}
+        self.models['depth_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained)
+        self.models['depth_decoder'] = DepthDecoder(self.models['depth_encoder'].num_ch_encoder,
+                                                    self.scales)
+        self.models['pose_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained,
+                                                    self.num_pose_frames)
+        self.models['pose_decoder'] = PoseDecoder(self.models['pose_encoder'].num_ch_encoder,
+                                                  num_input_features=1,
+                                                  num_frames_to_predict_for=2)
 

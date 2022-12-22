@@ -102,6 +102,8 @@ class ContinualSlamDatasetNode:
             self.output_distance_publisher.publish(message)
 
             rospy.loginfo("Published image {}".format(image_ids[2]))
+            rospy.loginfo("Published velocity {}".format([velocity_t0, velocity_t1, velocity_t2]))
+            rospy.loginfo("Published distance {}".format([distance_t0, distance_t1, distance_t2]))
             i += 1
             time.sleep(self.delay)
 
