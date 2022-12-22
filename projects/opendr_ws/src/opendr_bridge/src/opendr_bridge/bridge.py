@@ -663,3 +663,30 @@ class ROSBridge:
             box.results[0].score = boxes_3d[i].confidence
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
+
+    def to_ros_channel_float32(self, name: str, values: list):
+        """
+        Converts an OpenDR ChannelFloat32 object into a ROS ChannelFloat32 message.
+        :param name: The name of the channel.
+        :type name: str
+        :param values: The values of the channel.
+        :type values: list
+        :return: ROS message with the channel
+        :rtype: sensor_msgs.msg.ChannelFloat32
+        """
+        ros_channel = ChannelFloat32Msg()
+        ros_channel.name = name
+        ros_channel.values = values
+        return ros_channel
+
+    def from_ros_channel_float32(self, ros_channel: ChannelFloat32Msg):
+        """
+        Converts a ROS ChannelFloat32 message into an OpenDR ChannelFloat32 object.
+        :param ros_channel: The ROS channel to be converted.
+        :type ros_channel: sensor_msgs.msg.ChannelFloat32
+        :return: An OpenDR ChannelFloat32 object.
+        :rtype: engine.data.ChannelFloat32
+        """
+        name = ros_channel.name
+        values = ros_channel.values
+        return name, values
