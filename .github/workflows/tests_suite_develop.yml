@@ -152,7 +152,7 @@ jobs:
       uses: tj-actions/branch-names@v5.1
     - name: Build image
       run: |
-        docker build --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --build-arg ros_distro=noetic --file Dockerfile .
+        docker build --no-cache --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --build-arg ros_distro=noetic --file Dockerfile .
         docker save opendr/opendr-toolkit:cpu_test > cpu_test.zip
     - name: Upload image artifact
       uses: actions/upload-artifact@v2
@@ -325,7 +325,7 @@ jobs:
         else
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
 
-          if [ "$package" != "mobile-manipulation" ] || [ "$package" != "simple-demo-grasp" ]; then
+          if [ "$package" == "mobile-manipulation" ] || [ "$package" == "simple-demo-grasp" ] || [ "$package" == "end-to-end-planning" ]; then
             sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
             curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
             export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
