@@ -102,7 +102,7 @@ Parameters:
 ### Simulation environment setup
 
 The environment is provided with a [world](../../src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
-that needs to be opened with Webots version 2021a in order to demonstrate the end-to-end planner.
+that needs to be opened with Webots version 2022b in order to demonstrate the end-to-end planner.
 
 The environment includes an optional Ardupilot controlled quadrotor for simulating dynamics. 
 For the installation of Ardupilot instructions are available [here](https://github.com/ArduPilot/ardupilot).

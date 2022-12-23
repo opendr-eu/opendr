@@ -7,7 +7,7 @@ This method uses reinforcement learning to train an agent that is able to genera
 
 The end-to-end planning agent is interacting with gym environment which communicates with Webots.
 The environment is provided with the [webots world](../../../../src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
-that needs to be opened with Webots version 2021a in order to demonstrate the end-to-end planner.
+that needs to be opened with Webots version 2022b in order to demonstrate the end-to-end planner.
 
 ### Using Ardupilot simulation environment
 
