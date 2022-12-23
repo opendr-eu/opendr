@@ -19,7 +19,7 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
 
 3. _(Optional for nodes with [audio input](#audio-input) or [audiovisual input](#rgb--audio-input))_
     
-    For basic usage and testing, the toolkit's ROS2 that use audio as input are set up to expect input from a basic audio device using the default package `audio_common`  which is installed with OpenDR. You can run the audio node in a new terminal:
+    For basic usage and testing, the toolkit's ROS2 nodes that use audio as input are set up to expect input from a basic audio device using the default package `audio_common`  which is installed with OpenDR. You can run the audio node in a new terminal:
     ```shell
     ros2 run audio_capture audio_capture_node
     ```
