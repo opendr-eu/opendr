@@ -48,7 +48,7 @@ fi
 # Install additional ROS2 packages
 if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   echo "Installing ROS2 dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2
+  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2 python3-colcon-common-extensions ros-$ROS_DISTRO-vision-msgs
   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/$ROS_DISTRO/lib/controller
 fi
 
