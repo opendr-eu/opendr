@@ -153,7 +153,7 @@ class EfficientPsNode(Node):
             if self._visualization_publisher is not None and self._visualization_publisher.get_subscription_count() > 0:
                 panoptic_image = EfficientPsLearner.visualize(image, prediction, show_figure=False,
                                                               detailed=self.detailed_visualization)
-                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image, encoder="rgb8"))
+                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image, encoding="rgb8"))
 
             if self._instance_heatmap_publisher is not None and self._instance_heatmap_publisher.get_subscription_count() > 0:
                 self._instance_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[0]))
