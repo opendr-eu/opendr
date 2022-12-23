@@ -17,6 +17,15 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
     By default, the USB cam node publishes images on `/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. 
     As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
 
+3. _(Optional for nodes with [audio input](#audio-input) or [audiovisual input](#rgb--audio-input))_
+    
+    For basic usage and testing, the toolkit's ROS2 that use audio as input are set up to expect input from a basic audio device using the default package `audio_common`  which is installed with OpenDR. You can run the audio node in a new terminal:
+    ```shell
+    ros2 run audio_capture audio_capture_node
+    ```
+    By default, the audio capture node publishes audio data on `/audio` and the audio input nodes subscribe to this topic if not provided with an input topic argument. 
+    As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing audio, **make sure to change the input topic accordingly.**
+
 ---
 
 ## Notes
@@ -666,7 +675,7 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
-2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
+2. Start the node responsible for publishing audio. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
 3. You are then ready to start the audiovisual emotion recognition node
 
     ```shell
@@ -675,7 +684,7 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
    - `-iv or --input_video_topic INPUT_VIDEO_TOPIC`: topic name for input video, expects detected face of size 224x224 (default=`/image_raw`)
-   - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio`)
    - `-o or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the predicted emotion (default=`/opendr/audiovisual_emotion`)
    - `--buffer_size BUFFER_SIZE`: length of audio and video in seconds, (default=`3.6`)
    - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
@@ -700,7 +709,7 @@ whose documentation can be found here:
 
 #### Instructions for basic usage:
 
-1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
+1. Start the node responsible for publishing audio. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
 
 2. You are then ready to start the speech command recognition node
 
@@ -709,7 +718,7 @@ whose documentation can be found here:
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
-   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio`)
    - `-o or --output_speech_command_topic OUTPUT_SPEECH_COMMAND_TOPIC`: topic name for speech command output (default=`/opendr/speech_recognition`)
    - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds (default=`1.5`)
    - `--model MODEL`: the model to use, choices are `matchboxnet`, `edgespeechnets` or `quad_selfonn` (default=`matchboxnet`)
