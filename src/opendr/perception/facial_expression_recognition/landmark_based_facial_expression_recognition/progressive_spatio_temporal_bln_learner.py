@@ -315,7 +315,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
         :type val_data_filename: str, optional
         :param val_labels_filename: the file name of val labels which is placed in the dataset path.
         :type val_labels_filename: str, optional
-        :param save_score: if set to True, it saves the classification score of all samples in differenc classes
+        :param save_score: if set to True, it saves the classification score of all samples in different classes
         in a log file. Default to False.
         :type save_score: bool, optional
         :param wrong_file: if set to True, it saves the results of wrongly classified samples. Default to False.

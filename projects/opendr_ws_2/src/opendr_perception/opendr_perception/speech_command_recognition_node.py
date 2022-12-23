@@ -17,10 +17,14 @@
 import argparse
 import torch
 import numpy as np
+import os
 
 import rclpy
 from rclpy.node import Node
-from audio_common_msgs.msg import AudioData
+if os.environ.get('ROS_DISTRO').lower() in ['foxy', 'humble']:
+  from opendr_interface.msg import AudioData
+else:
+  from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 
 from opendr_bridge import ROS2Bridge

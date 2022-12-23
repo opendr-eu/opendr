@@ -31,6 +31,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/OpenDRPose2DKeypoint.msg"
   "msg/OpenDRPose3D.msg"
   "msg/OpenDRPose3DKeypoint.msg"
+  "msg/AudioData.msg"
+  "msg/AudioInfo.msg"
   "srv/OpenDRSingleObjectTracking.srv"
   "srv/ImgToMesh.srv"
   DEPENDENCIES std_msgs shape_msgs sensor_msgs vision_msgs
