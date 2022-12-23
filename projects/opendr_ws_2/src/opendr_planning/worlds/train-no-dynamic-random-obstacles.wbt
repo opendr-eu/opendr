@@ -1,0 +1,503 @@
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Grass.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "../protos/box.proto"
+
+WorldInfo {
+  gravity 9.80665
+  basicTimeStep 1
+  FPS 15
+  optimalThreadCount 4
+  randomSeed 52
+}
+Viewpoint {
+  orientation 0.2493542513111129 -0.0015806740935321666 -0.9684110484822468 3.0320770615235597
+  position 31.77129355822201 3.9289180767659815 21.40152949153122
+  followType "Mounted Shot"
+}
+DEF DEF_VEHICLE Robot {
+  translation -3.20133 -0.667551 2.5
+  rotation 0.5387460067434838 -0.5957150074565648 -0.5957150074565648 2.15327
+  children [
+    Lidar {
+      translation 0 0.07 0
+      rotation 3.4621799999783786e-06 -0.999999999993755 -7.095049999955691e-07 3.14159
+      horizontalResolution 32
+      fieldOfView 1.57
+      verticalFieldOfView 0.1
+      numberOfLayers 1
+      minRange 0.3
+      maxRange 5
+    }
+    RangeFinder {
+      translation 0 0.1 0
+      rotation -0.5773502691896258 -0.5773502691896258 -0.5773502691896258 2.0943951023931957
+      maxRange 15
+    }
+    TouchSensor {
+      translation 0 0.03 0
+      rotation 0 1 0 1.5708
+      name "touch sensor-collision"
+      boundingObject box {
+      }
+    }
+    TouchSensor {
+      translation 0 0.03 0.5
+      rotation 0 1 0 1.5708
+      name "touch sensor-safety1"
+      boundingObject box {
+        radius 1
+        subdivision 12
+      }
+    }
+    TouchSensor {
+      translation 0 0.03 1
+      rotation 0 1 0 1.5708
+      name "touch sensor-safety2"
+      boundingObject box {
+        radius 1.5
+        subdivision 16
+      }
+    }
+    Receiver {
+      name "receiver_main"
+      type "serial"
+      channel 1
+      bufferSize 32
+    }
+    Emitter {
+      name "emitter_plugin"
+      description "commuicates with physics plugin"
+    }
+    Shape {
+      appearance Appearance {
+        material Material {
+        }
+      }
+      geometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+    Camera {
+      translation 0 0.12 0
+      rotation 0.1294279597735375 0.9831056944488314 0.1294279597735375 -1.58783
+      name "camera1"
+      width 128
+      height 128
+    }
+    Compass {
+      name "compass1"
+    }
+    GPS {
+      name "gps"
+    }
+    Accelerometer {
+      name "accelerometer1"
+    }
+    InertialUnit {
+      rotation 0 1 0 1.5707947122222805
+      name "inertial_unit"
+    }
+    Gyro {
+      name "gyro1"
+    }
+    Transform {
+      translation 0 0 0.1
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry DEF DEF_ARM Cylinder {
+            height 0.1
+            radius 0.01
+          }
+        }
+      ]
+    }
+    Transform {
+      translation -0.09999999999999999 0 0
+      rotation -0.7071067811865476 0 0.7071067811865476 -3.1415923071795864
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+            }
+          }
+          geometry USE DEF_ARM
+        }
+      ]
+    }
+    Transform {
+      translation 0.09999999999999999 0 0
+      rotation 0 -1 0 -1.5707963071795863
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 1 0.09999999999999999 0
+            }
+          }
+          geometry USE DEF_ARM
+        }
+      ]
+    }
+    Transform {
+      translation 0 0 -0.1
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0.7999999999999999 0.7999999999999999 0.7999999999999999
+            }
+          }
+          geometry USE DEF_ARM
+        }
+      ]
+    }
+  ]
+  name "quad_plus_sitl"
+  boundingObject Box {
+    size 0.1 0.1 0.1
+  }
+  rotationStep 0.261799
+  controller "<extern>"
+  customData "1"
+  supervisor TRUE
+}
+Background {
+  skyColor [
+    0.15 0.5 1
+  ]
+}
+DirectionalLight {
+}
+Floor {
+  translation 0 0 -1
+  rotation 0 0 1 1.5707963267948966
+  size 500 750
+  appearance Grass {
+  }
+}
+Floor {
+  translation -4 0 -0.96
+  rotation 0 0 1 1.5707963267948966
+  name "floor(13)"
+  size 0.5 30
+  appearance Parquetry {
+    type "dark strip"
+  }
+}
+Floor {
+  translation -8 -14 -0.98
+  rotation 0 0 1 1.5707963267948966
+  name "floor(5)"
+  size 100 50
+  appearance PBRAppearance {
+    baseColor 0.6 0.8 0.6
+    roughness 1
+  }
+}
+DEF cyl1 Solid {
+  translation -13.30571834554473 -1.447574483178714 2.7665126217916747
+  rotation 0.7046199859242116 -0.2718054272768975 -0.6554635650735948 1.3264162624880482
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF cyl_geo1 Cylinder {
+        height 1.6358972201698152
+        radius 0.8305567381873773
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(6)"
+  boundingObject USE cyl_geo1
+}
+DEF cyl2 Solid {
+  translation -11.573784058504305 -0.5709706439613236 2.7898036661292727
+  rotation 0.80041453284557 -0.23379069518091386 -0.5519768894224041 3.004019614452083
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF cyl_geo2 Cylinder {
+        height 1.5666220746502095
+        radius 1.4073464879682038
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(16)"
+  boundingObject USE cyl_geo2
+}
+DEF cyl3 Solid {
+  translation 6.495757807871515 -1.6144414097525925 2.055833951531991
+  rotation 0.9501520694787192 0.1803287878394691 -0.254347347424059 1.1144016628344635
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF cyl_geo3 Cylinder {
+        height 2.9932008423005847
+        radius 1.3817552987759123
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(17)"
+  boundingObject USE cyl_geo3
+}
+DEF cyl4 Solid {
+  translation 0 0 -10
+  rotation 0.8826129905240483 -0.436261871860521 0.17512820480707927 -3.0124718491193443
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF cyl_geo4 Cylinder {
+        height 2.040387292247227
+        radius 1.7321406926258653
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(18)"
+  boundingObject USE cyl_geo4
+}
+DEF cyl5 Solid {
+  translation 0 0 -10
+  rotation -0.3917242543263733 0.07876246896092191 -0.9167052863683216 0.9303512269603899
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF cyl_geo5 Cylinder {
+        height 2.4768414116000366
+        radius 0.5824817005442169
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(19)"
+  boundingObject USE cyl_geo5
+}
+DEF box1 Solid {
+  translation 4.4381089093275685 0.5548170365208641 2.05131692563986
+  rotation 0.2448556165007751 0.9367176515026089 0.2502114474428831 -2.914945226248721
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF box_geo1 Box {
+        size 0.8334023756695101 0.6127140086440774 2.1756103342302913
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(20)"
+  boundingObject USE box_geo1
+}
+DEF box2 Solid {
+  translation 0 0 -10
+  rotation -0.7163183367896099 0.6204835974021974 0.31919922577254956 2.929261604379051
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF box_geo2 Box {
+        size 1.6555731912544518 0.8528384366701209 1.5923867066800264
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(21)"
+  boundingObject USE box_geo2
+}
+DEF box3 Solid {
+  translation 0 0 -10
+  rotation 0.492702975086357 0.008495842259129496 0.8701560773823055 -3.124774550627343
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF box_geo3 Box {
+        size 1.114861834585034 1.9899789593315744 1.665194050916234
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(22)"
+  boundingObject USE box_geo3
+}
+DEF box4 Solid {
+  translation 0 0 -10
+  rotation -0.47381905460959706 -0.5794103506313973 0.6631584645241805 -2.2430503148315895
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF box_geo4 Box {
+        size 1.6228519285122363 1.1501776483206156 2.2316284316140305
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(23)"
+  boundingObject USE box_geo4
+}
+DEF box5 Solid {
+  translation 0 0 -10
+  rotation 0.1849655628048051 0.930668272300889 0.3156648658130647 3.098971634530017
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF box_geo5 Box {
+        size 2.198602344698272 0.9299983006419481 1.8591651370902504
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(24)"
+  boundingObject USE box_geo5
+}
+DEF sph1 Solid {
+  translation -19.257198265348357 -3.1661159326488217 2.225830049481242
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF sph_geo1 Sphere {
+        radius 1.35574388768385
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(25)"
+  boundingObject USE sph_geo1
+}
+DEF sph2 Solid {
+  translation 0.2181211849140201 -0.5886797657584887 2.5285623758667715
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF sph_geo2 Sphere {
+        radius 1.365103979645272
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(26)"
+  boundingObject USE sph_geo2
+}
+DEF sph3 Solid {
+  translation 0 0 -10
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF sph_geo3 Sphere {
+        radius 1.5576301083903183
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(27)"
+  boundingObject USE sph_geo3
+}
+DEF sph4 Solid {
+  translation 0 0 -10
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF sph_geo4 Sphere {
+        radius 1.8204413448018755
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(28)"
+  boundingObject USE sph_geo4
+}
+DEF sph5 Solid {
+  translation 0 0 -10
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.3 0.0235294
+        roughness 1
+        metalness 0
+      }
+      geometry DEF sph_geo5 Sphere {
+        radius 2.2713871330568587
+      }
+      castShadows FALSE
+    }
+  ]
+  name "solid(29)"
+  boundingObject USE sph_geo5
+}
+DEF wall1 Wall {
+  translation -4 -4.602323054921962 -9
+  size 30 0.1 7
+}
+DEF wall2 Wall {
+  translation -4 4.602323054921962 -9
+  name "wall(2)"
+  size 30 0.1 7
+}

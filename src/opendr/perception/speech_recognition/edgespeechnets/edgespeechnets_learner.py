@@ -26,7 +26,7 @@ from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
 from opendr.engine.target import Category
 from opendr.perception.speech_recognition.edgespeechnets.algorithm.audioutils import get_mfcc
-import opendr.perception.speech_recognition.edgespeechnets.algorithm.models as models
+from opendr.perception.speech_recognition.edgespeechnets.algorithm import models as models
 
 
 class EdgeSpeechNetsLearner(Learner):
