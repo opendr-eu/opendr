@@ -456,7 +456,9 @@ Feel free to modify the node to detect faces in a different way that matches you
 
 ### Landmark-based Facial Expression Recognition ROS Node
 
-A ROS node for performing landmark-based facial expression recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
+A ROS node for performing landmark-based facial expression recognition using a trained model on AFEW, CK+ or Oulu-CASIA datasets.
+OpenDR does not include a pretrained model, so one should be provided by the user.
+An alternative would be to use the [image-based facial expression estimation node](#image-based-facial-emotion-estimation-ros-node) provided by the toolkit.
 
 You can find the landmark-based facial expression recognition ROS node python script [here](./scripts/landmark_based_facial_expression_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's landmark-based facial expression recognition tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py)
