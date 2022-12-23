@@ -89,6 +89,7 @@ class ObjectTrackingSiamRPNNode(Node):
             # Run object detector to initialize the tracker
             image = self.bridge.from_ros_image(data, encoding='bgr8')
             boxes = self.object_detector.infer(image)
+            self.get_logger().info("Image shape:" + str(image.data.shape))
 
             img_center = [int(image.data.shape[2] // 2), int(image.data.shape[1] // 2)]  # width, height
             # Find the box that is closest to the center of the image
@@ -96,7 +97,7 @@ class ObjectTrackingSiamRPNNode(Node):
             min_distance = dist([center_box.left, center_box.top], img_center)
             for box in boxes:
                 new_distance = dist([int(box.left + box.width // 2), int(box.top + box.height // 2)], img_center)
-                if new_distance < min_distance:
+                if new_distance < min_distance and box.width > 32 and box.height > 32:  # Ignore very small boxes
                     center_box = box
                     min_distance = dist([center_box.left, center_box.top], img_center)
 
