@@ -640,10 +640,10 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
-3. You are then ready to start the face detection node
+3. You are then ready to start the audiovisual emotion recognition node
 
     ```shell
-    rosrun opendr_perception speech_command_recognition_node.py
+    rosrun opendr_perception audiovisual_emotion_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -675,7 +675,7 @@ whose documentation can be found here:
 
 1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
 
-2. You are then ready to start the face detection node
+2. You are then ready to start the speech command recognition node
 
     ```shell
     rosrun opendr_perception speech_command_recognition_node.py
