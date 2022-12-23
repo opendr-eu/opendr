@@ -12,18 +12,18 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
 
   if [[ "$OPENDR_DEVICE" == "gpu" ]]
   then
-    echo "Downloading and installing libtorch and torchvision (gpu support) ..."
+    echo "Downloading and installing LibTorch and torchvision (gpu support) ..."
     GPU="on"
     DEVICE="cu"${CUDA_VERSION}
     CUDA_COMPILER="/usr/local/cuda/bin/nvcc"
   else
-    echo "Downloading and installing libtorch and torchvsion (cpu-only) ..."
+    echo "Downloading and installing LibTorch and torchvision (cpu-only) ..."
     GPU="off"
     DEVICE="cpu"
   fi
 
   # Find CUDA version and download torch and vision
-  echo "Downloading Libtorch and torchvision ..."
+  echo "Downloading LibTorch and torchvision ..."
   # Make sure that we can download files
   if [[ -z "$CUDA_PATH" ]];
   then
@@ -31,7 +31,7 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   else
       python3 ./download_torch.py --opendr_device "$OPENDR_DEVICE" --torch_version "$TORCH_VERSION" --cuda_path "$CUDA_PATH"
   fi
-  echo "Downloading Libtorch and torchvision ... done."
+  echo "Downloading Libtorch and torchvision done."
 
   # TORCH INSTALLATION
   unzip -qq libtorch.zip

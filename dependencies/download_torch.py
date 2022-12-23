@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
     parser.add_argument("--opendr_device", help="Target device for installation",
                         type=str, choices=["gpu", "cpu"], default="gpu")
-    parser.add_argument("--torch_version", help="Version of Libtorch to be installed", type=str, default="1.9.0")
+    parser.add_argument("--torch_version", help="Specifies torch version to be used for LibTorch installation", type=str, default="1.9.0")
     args = parser.parse_args()
 
     COMPATIBILITY_VERSIONS = {
@@ -88,11 +88,11 @@ if __name__ == '__main__':
                 CUDA_VERSION = CUDA_VERSION.replace(".", "")
                 CUDA_VERSION = CUDA_VERSION[:3]
             else:
-                warnings.warn("\033[93m Not cuda version file found. Please open an Issue in our github.")
+                warnings.warn("\033[93m Not CUDA version file found.")
             DEVICE = f"cu{CUDA_VERSION}"
         except:
-            warnings.warn("\033[93m No cuda found.\n"
-                          "Please install cuda or specify cuda path with export CUDA_PATH=/path/to/your/cuda.")
+            warnings.warn("\033[93m No CUDA installation found.\n"
+                          "Please install CUDA or specify CUDA path with export CUDA_PATH=/path/to/your/cuda.")
     else:
         DEVICE = "cpu"
 
@@ -106,9 +106,9 @@ if __name__ == '__main__':
         urlretrieve(file_url_libtorch, DOWNLOAD_DIRECTORY)
 
     except:
-        warnings.warn("\033[93m No Libtorch found for your specific device and torch version.\n"
+        warnings.warn("\033[93m No LibTorch found for your specific device and torch version.\n"
                       "Please choose another version of torch or install a different version of CUDA.\n"
-                      "Please reference https://download.pytorch.org/whl/torch_stable.html")
+                      "Please refer to https://download.pytorch.org/whl/torch_stable.html")
         exit()
     # Download Vision
     try:
@@ -118,5 +118,5 @@ if __name__ == '__main__':
         urlretrieve(file_url_vision, DOWNLOAD_DIRECTORY)
     except:
         warnings.warn("\033[93m No torchvision found for your specific torch version.\n"
-                      "Please see the torchvision GitHub repository for more information.")
+                      "Please refer to https://github.com/pytorch/vision for more information.")
 

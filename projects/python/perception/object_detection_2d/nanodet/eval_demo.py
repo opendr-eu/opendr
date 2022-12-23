@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="Dataset to evaluate on", type=str, default="coco", choices=["voc", "coco"])
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default="m")
+    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
 
     args = parser.parse_args()
