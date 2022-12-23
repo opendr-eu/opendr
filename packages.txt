@@ -24,6 +24,3 @@ utils/ambiguity_measure
 control/single_demo_grasp
 control/mobile_manipulation
 opendr
-
-
-
