@@ -1,7 +1,7 @@
 # OpenDR C API Nanodet Demo
 
 C API implementation of nanodet models for inference.
-To use the demo, the downloaded model from installation can be used or it can be exported with the optimization Jit from our python implementation, see [Nanodet opimization](../../../../docs/reference/nanodet.md#nanodetlearneroptimize).
+To run the demo, the downloaded model can be used or it can be exported with JIT optimization from the python implementation, see [Nanodet optimization](../../../../../docs/reference/object-detection-2d-nanodet.md#nanodetlearneroptimize).
 
 After installation, the demo can be run from projects/c_api directory with:
 ```sh

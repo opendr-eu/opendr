@@ -16,7 +16,7 @@ typedef struct opendr_category_target opendr_category_target_t;
 The *opendr_category_target_t* structure provides a data structure for storing inference outputs of classification models.
 Every function in the C API that outputs a classification decision is expected to use this structure.
 
-The *opendr_category_target_t* structure has the following field:
+The *opendr_category_target_t* structure has the following fields:
 
 #### `int data` field
 

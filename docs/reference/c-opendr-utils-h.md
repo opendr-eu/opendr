@@ -7,16 +7,39 @@ The *opendr_utils.h* header provides function definitions of OpenDR helpers (e.g
 ```C
 const char* json_get_key_string(const char *json, const char *key);
 ```
-The *json_get_key_string()* function reads a json file and returns the value of a key.
-A pointer (*json*) that have the json string and a pointer (*key*) with the wanted value is needed.
+The *json_get_key_string()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*).
 
-##
+### Function *json_get_key_string()*
+```C
+const char* json_get_key_string(const char *json, const char *key, const int index);
+```
+The *json_get_key_string()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*) as string.
+If the value is an array it will return only the (*index*) value of the array.
+If fails returns (*""*).
+
+### Function *json_get_key_float()*
+```C
+float json_get_key_float(const char *json, const char *key, const int index);
+```
+The *json_get_key_float()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*) as float.
+If the value is an array it will return only the (*index*) value of the array.
+If fails returns (*0.0f*).
+
+### Function *json_get_key_from_inference_params()*
+```C
+float json_get_key_from_inference_params(const char *json, const char *key, const int index);
+```
+The *json_get_key_from_inference_params()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*) in inference_params section as float.
+If the value is an array it will return only the (*index*) value of the array.
+If fails returns (*0.0f*).
+
+---
 
 ### Function *load_image()*
 ```C
 void load_image(const char *path, opendr_image_t *image);
 ```
-The *load_image()* function loads an images from the local file system (*path*) into an OpenDR image data type.
+The *load_image()* function loads an image from the local file system (*path*) into an OpenDR image data type.
 A pointer (*image*) to an OpenDR *opendr_image_t* should be provided.
 This function allocates memory during each function call, so be sure to use the *free_image()* function to release the allocated resources, when the corresponding image is no longer needed.
 
@@ -26,6 +49,8 @@ void free_image(opendr_image_t *image);
 ```
 The *free_image()* function releases the memory allocated for an OpenDR image structure (*image*).
 A pointer (*image*) to an OpenDR *opendr_image_t* should be provided.
+
+---
 
 ### Function *init_detections_vector()*
 ```C

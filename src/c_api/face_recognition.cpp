@@ -98,18 +98,16 @@ void load_face_recognition_model(const char *model_path, face_recognition_model_
   std::string basepath = model_json_path.substr(0, split_pos);
   split_pos = basepath.find_last_of("/");
   split_pos = split_pos > 0 ? split_pos + 1 : 0;
-  basepath.resize(split_pos);
+  if (split_pos < basepath.size())
+    basepath.resize(split_pos);
 
   // Parse JSON
-  std::string onnx_model_path = basepath + json_get_key_string(json, "model_paths");
-  std::string model_format = json_get_key_string(json, "format");
+  std::string onnx_model_path = basepath + json_get_key_string(json, "model_paths", 0);
+  std::string model_format = json_get_key_string(json, "format", 0);
 
   // Parse inference params
-  std::string threshold = json_get_key_string(json, "threshold");
-
-  if (!threshold.empty()) {
-    model->threshold = std::stof(threshold);
-  }
+  float threshold = json_get_key_from_inference_params(json, "threshold", 0);
+  model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
   if (model_format != "onnx") {

@@ -52,7 +52,7 @@ Constructor parameters:
 
 #### `NanodetLearner.fit`
 ```python
-NanodetLearner.fit(self, dataset, val_dataset, logging_path, verbose, seed, local_rank)
+NanodetLearner.fit(self, dataset, val_dataset, logging_path, verbose, logging, seed, local_rank)
 ```
 
 This method is used for training the algorithm on a train dataset and validating on a val dataset.
@@ -68,6 +68,8 @@ Parameters:
 - **logging_path** : *str, default=''*\
   Subdirectory in temp_path to save log files and TensorBoard.
 - **verbose** : *bool, default=True*\
+  Enables verbosity.
+- **logging** : *bool, default=True*\
   Enables the maximum verbosity and the logger.
 - **seed** : *int, default=123*\
   Seed for repeatability.
@@ -76,8 +78,7 @@ Parameters:
 
 #### `NanodetLearner.eval`
 ```python
-NanodetLearner.eval(self, dataset, verbose,
-)
+NanodetLearner.eval(self, dataset, verbose, logging, local_rank)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -88,13 +89,15 @@ Parameters:
 - **dataset** : *ExternalDataset*\
   Object that holds the evaluation dataset.
 - **verbose**: *bool, default=True*\
+  Enables verbosity.
+- **logging**: *bool, default=False*\
   Enables the maximum verbosity and logger.
 - **local_rank** : *int, default=1*\
   Needed if evaluating on multiple machines.
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, input, thershold, verbose)
+NanodetLearner.infer(self, input, thershold)
 ```
 
 This method is used to perform object detection on an image.
@@ -104,38 +107,35 @@ its width and height, or returns an empty list if no detections were made of the
 Parameters:
 - **input** : *Image*\
   Image type object to perform inference on it.
-  - **threshold**: *float, default=0.35*\
+- **threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
-- **verbose**: *bool, default=True*\
-  Enables the maximum verbosity and logger.
 
 #### `NanodetLearner.optimize`
 ```python
-NanodetLearner.optimize(self, export_path, initial_img=None, verbose=True, optimization="jit")
+NanodetLearner.optimize(self, export_path, initial_img, verbose, optimization)
 ```
 
-This method is used to perform Jit or Onnx optimizations and save a trained model with its metadata.
-If a model is not present in the location specified by "export_path", the optimizer will save it there.
+This method is used to perform JIT or ONNX optimizations and save a trained model with its metadata.
+If a model is not present in the location specified by *export_path*, the optimizer will save it there.
 If a model is already present, it will load it instead.
-Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* for Jit models or *"nanodet_{model_name}.onnx"* for ONNX and a metadata file *"nanodet_{model_name}.json"*.
+Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models or *nanodet_{model_name}.onnx* for ONNX and a metadata file *nanodet_{model_name}.json*.
 
-Note: In Onnx optimization, the output model executes the original model's feed forward.
-The user must create his or her own pre and post-processes in order to use the Onnx model in the C API.
-In Jit optimization the output model does the feed forward and post-processing.
-For C API it is recommended the Jit optimization and the example that is provided in our [c_api](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
+Note: In ONNX optimization, the output model executes the original model's feed forward method.
+The user must create their own pre- and post-processes in order to use the ONNX model in the C API.
+In JIT optimization the output model performs the feed forward pass and post-processing.
+To use the C API, it is recommended to use JIT optimization as shown in the [example of OpenDR's C API](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
 
 Parameters:
 
 - **export_path**: *str*\
   Path to save or load the optimized model.
-- **initial_img**: *Image*\
+- **initial_img**: *Image*, default=None\
   If optimize is called for the first time a dummy OpenDR image is needed as input.
 - **verbose**: *bool, default=True*\
-  Enables the maximum verbosity and logger.
-- **optimization**: *str, default="Jit"*\
-  It can be Jit or Onnx.
-  It determines what kind of optimization is used.
+  Enables the maximum verbosity.
+- **optimization**: *str, default="jit"*\
+  It determines what kind of optimization is used, possible values are *jit* or *onnx*.
 
 #### `NanodetLearner.save`
 ```python
@@ -143,9 +143,9 @@ NanodetLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model with its metadata.
-Provided with the path, it creates the "path" directory, if it does not already exist.
-Inside this folder, the model is saved as *"nanodet_{model_name}.pth"* and a metadata file *"nanodet_{model_name}.json"*.
-If the directory already exists, the *"nanodet_{model_name}.pth"* and *"nanodet_{model_name}.json"* files are overwritten.
+Provided with the path, it creates the *path* directory, if it does not already exist.
+Inside this folder, the model is saved as *nanodet_{model_name}.pth* and a metadata file *nanodet_{model_name}.json*.
+If the directory already exists, the *nanodet_{model_name}.pth* and *nanodet_{model_name}.json* files are overwritten.
 If optimization is performed, the optimized model is saved instead.
 
 Parameters:
@@ -169,7 +169,7 @@ Parameters:
 - **path**: *str, default=None*\
   Path of the model to be loaded.
 - **verbose**: *bool, default=True*\
-  Enables the maximum verbosity and logger.
+  Enables the maximum verbosity.
 
 #### `NanodetLearner.download`
 ```python
@@ -186,7 +186,7 @@ Parameters:
   If *'pretrained'*, downloads a pretrained detector model from the *model_to_use* architecture which was chosen at learner initialization.
   If *'images'*, downloads an image to perform inference on. If *'test_data'* downloads a dummy dataset for testing purposes.
 - **verbose**: *bool, default=False*\
-  Enables the maximum verbosity and logger.
+  Enables the maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
 
@@ -209,17 +209,17 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   The training and evaluation dataset root should be present in the path provided, along with the annotation files.
   The default COCO 2017 training data can be found [here](https://cocodataset.org/#download) (train, val, annotations).
   All training parameters (optimizer, lr schedule, losses, model parameters etc.) can be changed in the model config file
-  in [config directori](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config).
-  You can find more informations in [config file detail](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config/config_file_detail.md).
-  For easier use, with NanodetLearner parameters user can overwrite the following parameters:
+  in [config directory](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config).
+  You can find more information in [corresponding documentation](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config/config_file_detail.md).
+  For easier usage of the NanodetLearner, the user can overwrite the following parameters:
   (iters, lr, batch_size, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, weight_decay, warmup_steps,
   warmup_ratio, lr_schedule_T_max, lr_schedule_eta_min, grad_clip)
 
   **Note**
 
-  The Nanodet tool can be used with any PASCAL VOC or COCO like dataset. The only thing is needed is to provide the correct root and dataset type.
+  The Nanodet tool can be used with any PASCAL VOC- or COCO-like dataset, by providing the correct root and dataset type.
 
-  If *'voc'* is choosed for *dataset* the directory must look like this:
+  If *'voc'* is chosen for *dataset*, the directory must look like this:
 
   - root folder
     - train
@@ -241,7 +241,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
         - image2.jpg
         - ...
 
-  On the other hand if *'coco'* is choosed for *dataset* the directory must look like this:
+  On the other hand, if *'coco'* is chosen for *dataset*, the directory must look like this:
 
   - root folder
     - train2017
@@ -256,40 +256,23 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
       - instances_train2017.json
       - instances_val2017.json
 
-  You can change the default annotation and image directories in [dataset](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/nanodet/data/dataset/__init__.py)
-
+  You can change the default annotation and image directories in [the *build_dataset* function](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/nanodet/data/dataset/__init__.py).
+  This example assumes the data has been downloaded and placed in the directory referenced by `data_root`.
   ```python
-  import argparse
-
   from opendr.engine.datasets import ExternalDataset
   from opendr.perception.object_detection_2d import NanodetLearner
 
 
   if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
-    parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default="m")
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
-    parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
-    parser.add_argument("--checkpoint-freq", help="Frequency in-between checkpoint saving and evaluations",
-                        type=int, default=50)
-    parser.add_argument("--n-epochs", help="Number of total epochs", type=int, default=300)
-    parser.add_argument("--resume-from", help="Epoch to load checkpoint file and resume training from",
-                        type=int, default=0)
+    dataset = ExternalDataset(data_root, 'voc')
+    val_dataset = ExternalDataset(data_root, 'voc')
 
-    args = parser.parse_args()
-
-    dataset = ExternalDataset(args.data_root, args.dataset)
-    val_dataset = ExternalDataset(args.data_root, args.dataset)
-
-    nanodet = NanodetLearner(model_to_use=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
-                             checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
-                             device=args.device)
+    nanodet = NanodetLearner(model_to_use='m', iters=300, lr=5e-4, batch_size=8,
+                             checkpoint_after_iter=50, checkpoint_load_iter=0,
+                             device="cpu")
 
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet_m", verbose=True)
     nanodet.fit(dataset, val_dataset)
     nanodet.save()
 
@@ -298,27 +281,19 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 * **Inference and result drawing example on a test image**
 
   This example shows how to perform inference on an image and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
-  In this example, a pre-trained model is downloaded and inference performed on an image that can be specified with the *path* parameter.
+  In this example, a pre-trained model is downloaded and inference is performed on an image that can be specified with the *path* parameter.
 
   ```python
-  import argparse
   from opendr.perception.object_detection_2d import NanodetLearner
   from opendr.engine.data import Image
   from opendr.perception.object_detection_2d import draw_bounding_boxes
 
   if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
-    parser.add_argument("--path", help="Path to the image that will be used for inference", type=str,
-                        default="./predefined_examples/000000000036.jpg")
-    args = parser.parse_args()
-
-    nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
+    nanodet = NanodetLearner(model_to_use='m', device="cpu")
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet_m", verbose=True)
     nanodet.download("./predefined_examples", mode="images")
-    img = Image.open(args.path)
+    img = Image.open("./predefined_examples/000000000036.jpg")
     boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
@@ -326,33 +301,113 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
 * **Optimization framework with Inference and result drawing example on a test image**
 
-  This example shows how to perform optimization on a pretrained model, inference and draw the resulting bounding boxes using a nanodet model that is pretrained on the COCO dataset.
-  In this example first a pretrained model is loaded and then an image is used to perform the optimization, in this example we use onnx optimization but Jit can also be used by passing `--optimization=jit`.
+  This example shows how to perform optimization on a pretrained model, then run inference on an image and finally draw the resulting bounding boxes, using a nanodet model that is pretrained on the COCO dataset.
+  In this example we use ONNX optimization, but JIT can also be used by changing *optimization* to *jit*.
   With the *path* parameter you can define the image file to be used as dummy input for the optimization and inference.
   The optimized model will be saved in the `./optimization_models` folder
   ```python
-  import argparse
   from opendr.engine.data import Image
   from opendr.perception.object_detection_2d import NanodetLearner, draw_bounding_boxes
 
 
   if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
-    parser.add_argument("--optimization", help="Optimization framework to be used", type=str, default='onnx', choices=['jit', 'onnx'])
-    parser.add_argument("--path", help="Path to the dummy image that will be used for optimization and inference", type=str,
-                        default="./predefined_examples/000000000036.jpg")
-    args = parser.parse_args()
+    nanodet = NanodetLearner(model_to_use='m', device="cpu")
+    nanodet.load("./predefined_examples/nanodet_m", verbose=True)
 
-    nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
-    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
-
-    # First read an openDR image from your dataset and run the optimizer:
-    img = Image.open(args.path)
-    nanodet.optimize("./{}/nanodet_{}/".format(args.optimization, args.model), img, optimization=args.optimization)
+    # First read an OpenDR image from your dataset and run the optimizer:
+    img = Image.open("./predefined_examples/000000000036.jpg")
+    nanodet.optimize("./onnx/nanodet_m/", img, optimization="onnx")
 
     boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)
   ```
+
+
+#### Performance Evaluation
+
+In terms of speed, the performance of Nanodet is summarized in the table below (in FPS).
+The speed is measured from the start of the forward pass until the end of post-processing.
+
+For PyTorch inference.
+
+| Method              {intput} | RTX 2070 | TX2   | NX    |
+|------------------------------|----------|-------|-------|
+| Efficient Lite0     {320}    | 48.63    | 9.38  | 14.48 |
+| Efficient Lite1     {416}    | 43.88    | 7.93  | 11.07 |
+| Efficient Lite2     {512}    | 40.51    | 6.44  | 8.84  |
+| RepVGG A0           {416}    | 33.4     | 9.21  | 12.3  |
+| Nanodet-g           {416}    | 51.32    | 9.57  | 15.75 |
+| Nanodet-m           {320}    | 48.36    | 8.56  | 14.08 |
+| Nanodet-m 0.5x      {320}    | 46.94    | 7.97  | 12.84 |
+| Nanodet-m 1.5x      {320}    | 47.41    | 8.8   | 13.98 |
+| Nanodet-m           {416}    | 47.3     | 8.34  | 13.15 |
+| Nanodet-m 1.5x      {416}    | 45.62    | 8.43  | 13.2  |
+| Nanodet-plue m      {320}    | 41.9     | 7.45  | 12.01 |
+| Nanodet-plue m 1.5x {320}    | 39.63    | 7.66  | 12.21 |
+| Nanodet-plue m      {416}    | 40.16    | 7.24  | 11.58 |
+| Nanodet-plue m 1.5x {416}    | 38.94    | 7.37  | 11.52 |
+
+For JIT optimization inference.
+
+| Method              {intput} | RTX 2070 | TX2   | NX    |
+|------------------------------|----------|-------|-------|
+| Efficient Lite0     {320}    | 69.06    | 12.94 | 17.78 |
+| Efficient Lite1     {416}    | 62.94    | 9.27  | 12.94 |
+| Efficient Lite2     {512}    | 65.46    | 7.46  | 10.32 |
+| RepVGG A0           {416}    | 41.44    | 11.16 | 14.89 |
+| Nanodet-g           {416}    | 76.3     | 12.94 | 20.52 |
+| Nanodet-m           {320}    | 75.66    | 12.22 | 20.67 |
+| Nanodet-m 0.5x      {320}    | 65.71    | 11.31 | 17.68 |
+| Nanodet-m 1.5x      {320}    | 66.23    | 12.46 | 19.99 |
+| Nanodet-m           {416}    | 79.91    | 12.08 | 19.28 |
+| Nanodet-m 1.5x      {416}    | 69.44    | 12.3  | 18.6  |
+| Nanodet-plue m      {320}    | 67.82    | 11.19 | 18.85 |
+| Nanodet-plue m 1.5x {320}    | 64.12    | 11.57 | 18.26 |
+| Nanodet-plue m      {416}    | 64.74    | 11.22 | 17.57 |
+| Nanodet-plue m 1.5x {416}    | 56.77    | 10.39 | 14.81 |
+
+For ONNX optimization inference.
+
+In this case, the forward pass is performed in ONNX.
+The pre-processing steps were implemented in PyTorch.
+Results show that the performance on ONNX varies significantly among different architectures, with some achieving good performance while others performing poorly.
+Additionally, it was observed that the performance of ONNX on a TX2 device was generally good, although it was observed to have occasional spikes of long run times that made it difficult to accurately measure.
+Overall, the TX2 device demonstrated good performance with ONNX.
+
+| Method              {intput} | RTX 2070  | TX2 | NX     |
+|------------------------------|-----------|-----|--------|
+| Efficient Lite0     {320}    | 33.12     |     | 34.03  |
+| Efficient Lite1     {416}    | 16.78     |     | 17.35  |
+| Efficient Lite2     {512}    | 10.35     |     | 12.14  |
+| RepVGG A0           {416}    | 27.89     |     | 51.74  |
+| Nanodet-g           {416}    | 103.22    |     | 87.40  |
+| Nanodet-m           {320}    | 98.73     |     | 122.26 |
+| Nanodet-m 0.5x      {320}    | 144.46    |     | 208.19 |
+| Nanodet-m 1.5x      {320}    | 75.82     |     | 75.40  |
+| Nanodet-m           {416}    | 73.09     |     | 72.78  |
+| Nanodet-m 1.5x      {416}    | 51.30     |     | 51.78  |
+| Nanodet-plue m      {320}    | 51.39     |     | 50.67  |
+| Nanodet-plue m 1.5x {320}    | 39.65     |     | 40.62  |
+| Nanodet-plue m      {416}    | 39.17     |     | 36.98  |
+| Nanodet-plue m 1.5x {416}    | 28.55     |     | 27.20  |
+
+Finally, we measure the performance on the COCO dataset, using the corresponding metrics.
+
+| Method              {intput} | coco2017 mAP |
+|------------------------------|--------------|
+| Efficient Lite0     {320}    | 24.4         |
+| Efficient Lite1     {416}    | 29.2         |
+| Efficient Lite2     {512}    | 32.4         |
+| RepVGG A0           {416}    | 25.5         |
+| Nanodet-g           {416}    | 22.7         |
+| Nanodet-m           {320}    | 20.2         |
+| Nanodet-m 0.5x      {320}    | 13.1         |
+| Nanodet-m 1.5x      {320}    | 23.1         |
+| Nanodet-m           {416}    | 23.5         |
+| Nanodet-m 1.5x      {416}    | 26.6         |
+| Nanodet-plue m      {320}    | 27.0         |
+| Nanodet-plue m 1.5x {320}    | 29.9         |
+| Nanodet-plue m      {416}    | 30.3         |
+| Nanodet-plue m 1.5x {416}    | 34.1         |
+ 

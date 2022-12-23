@@ -10,5 +10,5 @@ Make sure that you have downloaded the necessary resources before running the de
 ## Supported tools
 Currently, the following tools are exposing a C API:
 1. Face recognition
-2. Object detection (Nanodet)
+2. Object detection 2D Nanodet
 

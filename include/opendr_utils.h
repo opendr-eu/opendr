@@ -25,14 +25,34 @@ extern "C" {
 #endif
 
 /**
- * Json parser for OpenDR model files.
- * @param json a string of json file.
- * @param key the value to extract from json file.
+ * JSON parser for OpenDR model files.
+ * @param json a string of json file
+ * @param key the value to extract from json file
+ * @param index the index to choose the value if it is an array, otherwise it is not used
+ * @return string with the value of key
  */
-const char *json_get_key_string(const char *json, const char *key);
+const char *json_get_key_string(const char *json, const char *key, const int index);
 
 /**
- * Reads an image from path and saves it into OpenDR an image structure
+ * JSON parser for OpenDR model files.
+ * @param json a string of json file
+ * @param key the value to extract from json file
+ * @param index the index to choose the value if it is an array, otherwise it is not used
+ * @return float with the value of key
+ */
+float json_get_key_float(const char *json, const char *key, const int index);
+
+/**
+ * JSON parser for OpenDR model files from inference_params key.
+ * @param json a string of json file
+ * @param key the value to extract from inference_params
+ * @param index the index to choose the value if it is an array, otherwise it is not used
+ * @return float with the value of key
+ */
+float json_get_key_from_inference_params(const char *json, const char *key, const int index);
+
+/**
+ * Reads an image from path and saves it into OpenDR image structure.
  * @param path path from which the image will be read
  * @param image OpenDR image data structure to store the image
  */
@@ -45,13 +65,13 @@ void load_image(const char *path, opendr_image_t *image);
 void free_image(opendr_image_t *image);
 
 /**
- * Initialize an empty detection list to be used in C API
+ * Initialize an empty detection list.
  * @param detection_vector OpenDR detection_target_list structure to be initialized
  */
 void init_detections_vector(opendr_detection_vector_target_t *detection_vector);
 
 /**
- * Loads an OpenDR detection target list to be used in C API
+ * Loads an OpenDR detection target list.
  * @param detection_vector OpenDR detection_target_list structure to be loaded
  * @param detection the pointer of the first OpenDR detection target in a vector
  * @param vector_size the size of the vector

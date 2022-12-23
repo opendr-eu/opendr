@@ -40,7 +40,6 @@ START_TEST(inference_creation_test) {
   nanodet_model_t model;
 
   // Load a pretrained model
-  printf("6\n");
   load_nanodet_model("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
 
   // Load an image and performance inference

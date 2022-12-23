@@ -57,14 +57,14 @@ struct face_recognition_model {
 typedef struct face_recognition_model face_recognition_model_t;
 
 /**
- * Loads a face recognition model saved in OpenDR format
+ * Loads a face recognition model saved in OpenDR format.
  * @param model_path path to the OpenDR face recongition model (as exported using OpenDR library)
  * @param model the loaded model
  */
 void load_face_recognition_model(const char *model_path, face_recognition_model_t *model);
 
 /**
- * This function perform inference using a face recognition model and an input image
+ * This function perform inference using a face recognition model and an input image.
  * @param model face recognition model to be used for inference
  * @param image OpenDR image
  * @return OpenDR classification target containing the id of the recognized person
@@ -90,7 +90,7 @@ void build_database_face_recognition(const char *database_folder, const char *ou
 void load_database_face_recognition(const char *database_path, face_recognition_model_t *model);
 
 /**
- * Returns the name of a recognition person by decoding the category id into a string
+ * Returns the name of a recognition person by decoding the category id into a string.
  * @param model the face recognition model to be used for inference
  * @param category the predicted category
  * @param person_name buffer to store the person name
@@ -98,7 +98,7 @@ void load_database_face_recognition(const char *database_path, face_recognition_
 void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category, char *person_name);
 
 /**
- * Releases the memory allocated for a face recognition model
+ * Releases the memory allocated for a face recognition model.
  * @param model model to be de-allocated
  */
 void free_face_recognition_model(face_recognition_model_t *model);

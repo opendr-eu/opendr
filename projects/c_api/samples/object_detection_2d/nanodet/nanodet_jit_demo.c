@@ -37,10 +37,8 @@ int main(int argc, char **argv) {
   load_nanodet_model(argv[1], argv[2], height, width, 0.35, &model);
   printf("success\n");
 
-  // Initialize opendr image
   opendr_image_t image;
 
-  // Load opendr image
   load_image(argv[3], &image);
   if (!image.data) {
     printf("Image not found!");
@@ -51,10 +49,8 @@ int main(int argc, char **argv) {
   opendr_detection_vector_target_t results;
   init_detections_vector(&results);
 
-  // Infer nanodet model
   results = infer_nanodet(&model, &image);
 
-  // Draw the results
   draw_bboxes(&image, &model, &results);
 
   // Free the memory
