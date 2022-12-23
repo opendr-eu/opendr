@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,6 @@
 import argparse
 import os
 import torch
-from opendr.engine.learners import Learner
 import rospy
 from vision_msgs.msg import Detection3DArray
 from std_msgs.msg import Int32MultiArray
@@ -29,7 +28,7 @@ from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 class ObjectTracking3DAb3dmotNode:
     def __init__(
         self,
-        detector: Learner,
+        detector=None,
         input_point_cloud_topic="/opendr/dataset_point_cloud",
         output_detection3d_topic="/opendr/detection3d",
         output_tracking3d_id_topic="/opendr/tracking3d_id",
@@ -121,7 +120,7 @@ def main():
     parser.add_argument(
         "-dc", "--detector_model_config_path", help="Path to a model .proto config",
         type=str, default=os.path.join(
-            "..", "..", "src", "opendr", "perception", "object_detection_3d",
+            "$OPENDR_HOME", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "tanet",
             "car", "xyres_16.proto"
         )
