@@ -11,7 +11,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 2. Start roscore by running `roscore &`, if you haven't already done so.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_
 
-    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam`, which is included in the OpenDR ROS workspace.
+    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam`, which is installed with the toolkit.
     You can run the webcam node in the terminal with the workspace sourced using:
     ```shell
     rosrun usb_cam usb_cam_node &
@@ -640,10 +640,10 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
-3. You are then ready to start the face detection node
+3. You are then ready to start the audiovisual emotion recognition node
 
     ```shell
-    rosrun opendr_perception speech_command_recognition_node.py
+    rosrun opendr_perception audiovisual_emotion_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -675,7 +675,7 @@ whose documentation can be found here:
 
 1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
 
-2. You are then ready to start the face detection node
+2. You are then ready to start the speech command recognition node
 
     ```shell
     rosrun opendr_perception speech_command_recognition_node.py

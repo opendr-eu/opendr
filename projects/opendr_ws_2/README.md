@@ -16,15 +16,7 @@ For the initial setup you can follow the instructions below:
     source /opt/ros/foxy/setup.bash
     ```
    _For convenience, you can add this line to your `.bashrc` so you don't have to source the tools each time you open a  terminal window._
-<!-- Add these to install.sh
-3. Install some dependencies:
-    ```shell
-    # Install colcon https://docs.ros.org/en/foxy/Tutorials/Colcon-Tutorial.html
-    sudo apt install python3-colcon-common-extensions
-    # Install vision messages
-    sudo apt-get install ros-foxy-vision-msgs
-    ```
--->
+
 <!--4. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace. TODO is this needed?-->
 
 2. Navigate to your OpenDR home directory (`~/opendr`) and activate the OpenDR environment using:
