@@ -231,7 +231,7 @@ jobs:
           fi
         done < packages.txt
 
-        if [ "$package" == "mobile-manipulation" ] || [ "$package" == "simple-demo-grasp" ] || [ "$package" == "end-to-end-planning" ]; then
+        if [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
           sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
           curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
           export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
@@ -319,7 +319,7 @@ jobs:
         else
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
 
-          if [ "$package" == "mobile-manipulation" ] || [ "$package" == "simple-demo-grasp" ] || [ "$package" == "end-to-end-planning" ]; then
+          if [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
             sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
             curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
             export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
