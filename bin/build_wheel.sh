@@ -17,5 +17,7 @@ while read p; do
   python3 setup.py sdist
 done < packages.txt
 
+# Cleanup
+rm -rf src/*.egg-info
 rm setup.py
 rm MANIFEST.in
