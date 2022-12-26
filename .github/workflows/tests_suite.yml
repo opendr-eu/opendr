@@ -239,12 +239,13 @@ jobs:
           fi
         done < packages.txt
 
-        if [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
+        # post install instructions cannot be installed automatically
+        if [ {{ matrix.package }} == "control/single_demo_grasp" ]; then
           echo "HERE!"
-          if [ {{ matrix.package }} == "control/single_demo_grasp" ]; then
-            # post install instructions cannot be installed automatically
-            python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
-          fi
+          python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
+        fi
+
+        if [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
           sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
           curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
           export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
@@ -323,15 +324,17 @@ jobs:
         source venv/bin/activate
         python3 -m pip install -U pip
         python3 -m pip install wheel
+
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         package=(${package//// })
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+
         # all packages require the engine
         python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
-        # install specific package
 
-        if [ ${{ matrix.package }} == "utils"  ]; then
+        # install specific package
+        if [ ${{ matrix.package }} == "utils" ]; then
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
@@ -343,7 +346,6 @@ jobs:
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           elif [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
-            echo "HERE!!"
             sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
             curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
             export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
@@ -353,13 +355,14 @@ jobs:
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           fi
 
+          # install the package itself
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+
           if [ {{ matrix.package }} == "control/single_demo_grasp" ]; then
+            echo "HERE!!"
             # post install instructions cannot be installed automatically
             python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
           fi
-
-          # install the package itself
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
 
         # run the test
