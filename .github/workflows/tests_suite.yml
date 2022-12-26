@@ -341,8 +341,11 @@ jobs:
           # install required dependencies for derived tools
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
-          elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ] || [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
+          elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+          elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           elif [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ ${{ matrix.package }} == "control/single_demo_grasp" ] || [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
