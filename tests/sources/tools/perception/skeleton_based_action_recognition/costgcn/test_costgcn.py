@@ -19,7 +19,7 @@ import shutil
 
 from opendr.perception.skeleton_based_action_recognition import CoSTGCNLearner
 from opendr.engine.datasets import ExternalDataset
-from opendr.engine.target import Category
+# from opendr.engine.target import Category
 from pathlib import Path
 from logging import getLogger
 
