@@ -73,7 +73,6 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         try:
-            del cls
             # Clean up downloaded files
             rmdir(os.path.join(cls.temp_dir))
         except Exception:
