@@ -63,7 +63,11 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
           # - perception/object_tracking_3d
@@ -174,7 +178,11 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
           # - perception/object_tracking_3d
@@ -265,7 +273,11 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
           # - perception/object_tracking_3d
@@ -368,7 +380,11 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
           # - perception/object_tracking_3d
