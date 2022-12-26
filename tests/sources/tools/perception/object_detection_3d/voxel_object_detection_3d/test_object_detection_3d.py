@@ -17,6 +17,7 @@ import unittest
 import shutil
 import os
 import torch
+import traceback
 from opendr.engine.datasets import PointCloudsDatasetIterator
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
@@ -71,8 +72,15 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # Clean up downloaded files
-        rmdir(os.path.join(cls.temp_dir))
+        try:
+            del cls
+            # Clean up downloaded files
+            rmdir(os.path.join(cls.temp_dir))
+        except Exception:
+            print("Exception in user code:")
+            print("-" * 60)
+            traceback.print_exc(file=sys.stdout)
+            print("-" * 60)
 
     def test_fit(self):
         def test_model(name, config):
@@ -98,7 +106,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             print("Fit", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
-            test_model(name, config)
+            try:
+                test_model(name, config)
+            except Exception:
+                print("Exception in user code:")
+                print("-" * 60)
+                traceback.print_exc(file=sys.stdout)
+                print("-" * 60)
 
     def test_fit_iterator(self):
         def test_model(name, config):
@@ -134,7 +148,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             print("Fit iterator", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
-            test_model(name, config)
+            try:
+                test_model(name, config)
+            except Exception:
+                print("Exception in user code:")
+                print("-" * 60)
+                traceback.print_exc(file=sys.stdout)
+                print("-" * 60)
 
     def test_save(self):
         def test_model(name, config):
@@ -161,7 +181,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             print("Save", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
-            test_model(name, config)
+            try:
+                test_model(name, config)
+            except Exception:
+                print("Exception in user code:")
+                print("-" * 60)
+                traceback.print_exc(file=sys.stdout)
+                print("-" * 60)
 
     def test_optimize(self):
         def test_model(name, config):
@@ -193,7 +219,13 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
             print("Optimize", name, "ok", file=sys.stderr)
 
         for name, config in self.car_configs.items():
-            test_model(name, config)
+            try:
+                test_model(name, config)
+            except Exception:
+                print("Exception in user code:")
+                print("-" * 60)
+                traceback.print_exc(file=sys.stdout)
+                print("-" * 60)
 
 
 if __name__ == "__main__":
