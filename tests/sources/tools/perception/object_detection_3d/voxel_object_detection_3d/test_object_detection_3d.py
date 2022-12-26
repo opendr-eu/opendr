@@ -137,32 +137,32 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         for name, config in self.car_configs.items():
             test_model(name, config)
 
-    def test_save(self):
-        def test_model(name, config):
-            print("Save", name, "start", file=sys.stderr)
-            model_path = os.path.join(self.temp_dir, "test_save_" + name)
-            save_path = os.path.join(model_path, "save")
-
-            learner = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
-            )
-            learner.save(save_path, True)
-            starting_param_1 = list(learner.model.parameters())[0].clone()
-
-            learner2 = VoxelObjectDetection3DLearner(
-                model_config_path=config, device=DEVICE
-            )
-            starting_param_2 = list(learner2.model.parameters())[0].clone()
-            learner2.load(save_path)
-
-            new_param = list(learner2.model.parameters())[0].clone()
-            self.assertFalse(torch.equal(starting_param_1, starting_param_2))
-            self.assertTrue(torch.equal(starting_param_1, new_param))
-
-            print("Save", name, "ok", file=sys.stderr)
-
-        for name, config in self.car_configs.items():
-            test_model(name, config)
+    # def test_save(self):
+    #     def test_model(name, config):
+    #         print("Save", name, "start", file=sys.stderr)
+    #         model_path = os.path.join(self.temp_dir, "test_save_" + name)
+    #         save_path = os.path.join(model_path, "save")
+    #
+    #         learner = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE
+    #         )
+    #         learner.save(save_path, True)
+    #         starting_param_1 = list(learner.model.parameters())[0].clone()
+    #
+    #         learner2 = VoxelObjectDetection3DLearner(
+    #             model_config_path=config, device=DEVICE
+    #         )
+    #         starting_param_2 = list(learner2.model.parameters())[0].clone()
+    #         learner2.load(save_path)
+    #
+    #         new_param = list(learner2.model.parameters())[0].clone()
+    #         self.assertFalse(torch.equal(starting_param_1, starting_param_2))
+    #         self.assertTrue(torch.equal(starting_param_1, new_param))
+    #
+    #         print("Save", name, "ok", file=sys.stderr)
+    #
+    #     for name, config in self.car_configs.items():
+    #         test_model(name, config)
 
     def test_optimize(self):
         def test_model(name, config):
@@ -198,10 +198,4 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    try:
-        unittest.main()
-    except Exception:
-        print("Exception in user code:")
-        print("-" * 60)
-        traceback.print_exc(file=sys.stdout)
-        print("-" * 60)
+    unittest.main()
