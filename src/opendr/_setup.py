@@ -110,10 +110,7 @@ def get_dependencies(current_module):
                 # print('CHECKING PATH', join("src/opendr", current_module, path, 'dependencies.ini'))
                 try:
                     cur_deps = parser.get("runtime", "python").split('\n')
-                except Exception:
-                    cur_deps = []
-                try:
-                    cur_deps = parser.get("compilation", "python").split('\n')
+                    cur_deps.extend(parser.get("compilation", "python").split('\n'))
                 except Exception:
                     cur_deps = []
                 try:
