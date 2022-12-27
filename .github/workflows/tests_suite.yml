@@ -250,13 +250,9 @@ jobs:
           export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
           export ROS_DISTRO=noetic
 
-          if [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
-            make install_mobile_manipulation
-          elif [ ${{ matrix.package }} == "control/single_demo_grasp" ]; then
-            make install_single_demo_grasp
-          elif [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
-            make install_end_to_end_planning
-          fi
+          make install_mobile_manipulation
+          make install_single_demo_grasp
+          make install_end_to_end_planning
 
           source tests/sources/tools/control/mobile_manipulation/run_ros.sh
         fi
@@ -344,7 +340,7 @@ jobs:
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
-          # install required dependencies for derived tools
+          # install tools needed by other tools (to ensure the locally built wheel is installed rather than from pypi)
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
@@ -360,7 +356,7 @@ jobs:
             export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
             export ROS_DISTRO=noetic
 
-            # install package-specific dependencies
+            # install only package-specific dependencies
             if [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
               make install_mobile_manipulation
             elif [ ${{ matrix.package }} == "control/single_demo_grasp" ]; then
