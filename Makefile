@@ -55,8 +55,7 @@ install_end_to_end_planning:
 
 install_dependencies: install_mobile_manipulation install_single_demo_grasp install_end_to_end_planning
 	@+echo "#"; echo "# * Install Dependencies *"; echo "#"
-	@+cd dependencies; ./install.sh compilation
-	@+cd dependencies; ./install.sh runtime
+	@+cd dependencies; ./install.sh
 	@+cd src/opendr/perception/object_detection_2d/retinaface; make
 
 styletest:
