@@ -43,7 +43,7 @@ from opendr.engine.target import CocoBoundingBox, BoundingBoxList
 import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
-import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
+from opendr.perception.object_detection_2d.detr.algorithm.util import misc as utils
 from PIL import Image as im
 
 torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug

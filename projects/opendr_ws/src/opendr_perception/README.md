@@ -11,7 +11,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 2. Start roscore by running `roscore &`, if you haven't already done so.
 3. _(Optional for nodes with [RGB input](#rgb-input-nodes))_
 
-    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam`.
+    For basic usage and testing, all the toolkit's ROS nodes that use RGB images are set up to expect input from a basic webcam using the default package `usb_cam`, which is installed with the toolkit.
     You can run the webcam node in the terminal with the workspace sourced using:
     ```shell
     rosrun usb_cam usb_cam_node &
@@ -51,7 +51,7 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
     - On the left, the `usb_cam` node can be seen, which is using a system camera to publish images on the `/usb_cam/image_raw` topic.
     - In the middle, OpenDR's pose estimation node is running taking as input the published image. By default, the node has its input topic set to `/usb_cam/image_raw`.
     - To the right the two output topics of the pose estimation node can be seen.
-    The bottom topic `opendr/image_pose_annotated` is the annotated image which can be easily viewed with `rqt_image_view` as explained earlier.
+    The bottom topic `/opendr/image_pose_annotated` is the annotated image which can be easily viewed with `rqt_image_view` as explained earlier.
     The other topic `/opendr/poses` is the detection message which contains the detected poses' detailed information.
     This message can be easily viewed by running `rostopic echo /opendr/poses` in a terminal with the OpenDR ROS workspace sourced.
 
@@ -456,7 +456,9 @@ Feel free to modify the node to detect faces in a different way that matches you
 
 ### Landmark-based Facial Expression Recognition ROS Node
 
-A ROS node for performing landmark-based facial expression recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
+A ROS node for performing landmark-based facial expression recognition using a trained model on AFEW, CK+ or Oulu-CASIA datasets.
+OpenDR does not include a pretrained model, so one should be provided by the user.
+An alternative would be to use the [image-based facial expression estimation node](#image-based-facial-emotion-estimation-ros-node) provided by the toolkit.
 
 You can find the landmark-based facial expression recognition ROS node python script [here](./scripts/landmark_based_facial_expression_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's landmark-based facial expression recognition tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py)
@@ -640,10 +642,10 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
-3. You are then ready to start the face detection node
+3. You are then ready to start the audiovisual emotion recognition node
 
     ```shell
-    rosrun opendr_perception speech_command_recognition_node.py
+    rosrun opendr_perception audiovisual_emotion_recognition_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -675,7 +677,7 @@ whose documentation can be found here:
 
 1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
 
-2. You are then ready to start the face detection node
+2. You are then ready to start the speech command recognition node
 
     ```shell
     rosrun opendr_perception speech_command_recognition_node.py
