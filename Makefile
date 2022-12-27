@@ -53,11 +53,14 @@ install_end_to_end_planning:
 	@+echo "#"; echo "# * Install Dependencies for End-to-End Planning *"; echo "#"
 	./src/opendr/planning/end_to_end_planning/install_end_to_end_planning.sh
 
-install_dependencies: install_mobile_manipulation install_single_demo_grasp install_end_to_end_planning
+install_dependencies:
 	@+echo "#"; echo "# * Install Dependencies *"; echo "#"
 	@+cd dependencies; ./install.sh compilation
 	@+cd dependencies; ./install.sh runtime
 	@+cd src/opendr/perception/object_detection_2d/retinaface; make
+	$(MAKE) install_mobile_manipulation
+	$(MAKE) install_single_demo_grasp
+	$(MAKE) install_end_to_end_planning
 
 styletest:
 	@+echo "Testing file licences and code-style"

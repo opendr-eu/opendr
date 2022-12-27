@@ -86,10 +86,6 @@ jobs:
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
-        include:
-          - os: ubuntu-20.04
-            DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
-            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -101,7 +97,6 @@ jobs:
         python-version: 3.8
     - name: Test Tools
       run: |
-        ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
         export OPENDR_DEVICE=cpu
         export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
