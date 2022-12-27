@@ -70,7 +70,7 @@ jobs:
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -80,7 +80,7 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           - control/mobile_manipulation
@@ -185,7 +185,7 @@ jobs:
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -195,7 +195,7 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           - control/mobile_manipulation
@@ -282,7 +282,7 @@ jobs:
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -292,7 +292,7 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           - control/mobile_manipulation
@@ -395,7 +395,7 @@ jobs:
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -405,7 +405,7 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           - control/mobile_manipulation
