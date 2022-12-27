@@ -19,8 +19,7 @@ $ export WEBOTS_HOME=/usr/local/webots
 The workspace will be setup by installing compilation and runtime dependencies when setting up the OpenDR toolkit. From the OpenDR folder, run:
 
 ```
-$ make install_compilation_dependencies
-$ make install_runtime_dependencies
+$ make release
 ```
 
 After installing dependencies, the user must source the workspace in the shell in order to detect the packages:

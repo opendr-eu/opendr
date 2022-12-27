@@ -106,8 +106,7 @@ $ export WEBOTS_HOME=/usr/local/webots
 From the OpenDR folder, the workspace can be setup by installing the compilation and runtime dependencies:
 
 ```
-$ make install_compilation_dependencies
-$ make install_runtime_dependencies
+$ make install_single_demo_grasp
 ```
 
 after installing dependencies, the user must source the workspace in the shell in order to detect the packages:
@@ -165,11 +164,11 @@ simply run:
 
 TABLE-1: OpenDR Single Demonstration Grasping platform inference speeds.
 | Platform              | Inference speed (FPS)  |
-| --------------------- | ---------------------- | 
+| --------------------- | ---------------------- |
 | Nvidia GTX 1080 ti    | 20                     |
-| Nvidia Geforce 940mx  | 2.5                    | 
-| Jetson Xavier NX      | 4                      | 
-| CPU                   | 0.4                    | 
+| Nvidia Geforce 940mx  | 2.5                    |
+| Jetson Xavier NX      | 4                      |
+| CPU                   | 0.4                    |
 
 
 
@@ -178,20 +177,20 @@ It is worth mentioning that the inference on the first iteration requires more e
 
 TABLE-2: OpenDR Single Demonstration Grasping energy consumptions and memory usage.
 | Stage                       | Energy (Joules)  |
-| --------------------------- | ---------------- | 
+| --------------------------- | ---------------- |
 | First step (initialization) | 12               |
-| Normal                      | 3.4              | 
+| Normal                      | 3.4              |
 
 
 TABLE-3: OpenDR Single Demonstration Grasping training.
-|   Model        | Dataset size                      | Training Time <br> (hr:min:sec) | Model size (MB)               | 
+|   Model        | Dataset size                      | Training Time <br> (hr:min:sec) | Model size (MB)               |
 |--------------- |---------------------------------- |-------------------------------- |------------------------------ |
-| A              | Faster R-CNN: 1500 <br> CNN: 5000 | 00:14:00 <br> 00:02:00          | Faster R-CNN: 300 <br> CNN: 8 |              
-| B              | 1500                              | 00:07:30                        | 450                           |                              
-| C (simulation) | 1500                              | 00:07:00                        | 450                           | 
+| A              | Faster R-CNN: 1500 <br> CNN: 5000 | 00:14:00 <br> 00:02:00          | Faster R-CNN: 300 <br> CNN: 8 |
+| B              | 1500                              | 00:07:30                        | 450                           |
+| C (simulation) | 1500                              | 00:07:00                        | 450                           |
 
 
-TABLE-4: OpenDR Single Demonstration Grasping inferences success evaluation. 
+TABLE-4: OpenDR Single Demonstration Grasping inferences success evaluation.
 |   Model        | Success rate  |
 |--------------- |-------------- |
 | A              | 0.913         |
@@ -200,16 +199,16 @@ TABLE-4: OpenDR Single Demonstration Grasping inferences success evaluation.
 
 
 Finally, we evaluated the ability of the provided tool to run on different platforms.
-The tool has been verified to run correctly on the platforms reported in Table TABLE-5. 
+The tool has been verified to run correctly on the platforms reported in Table TABLE-5.
 
 TABLE-5: OpenDR Single Demonstration Grasping platform compatibility evaluation.
 | Platform                                     | Test results           |
-| -------------------------------------------- | ---------------------- | 
+| -------------------------------------------- | ---------------------- |
 | x86 - Ubuntu 20.04 (bare installation - CPU) | Pass                   |
-| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass                   | 
-| x86 - Ubuntu 20.04 (pip installation)        | Not supported          | 
-| x86 - Ubuntu 20.04 (CPU docker)              | Pass*                  |  
-| x86 - Ubuntu 20.04 (GPU docker)              | Pass*                  | 
+| x86 - Ubuntu 20.04 (bare installation - GPU) | Pass                   |
+| x86 - Ubuntu 20.04 (pip installation)        | Not supported          |
+| x86 - Ubuntu 20.04 (CPU docker)              | Pass*                  |
+| x86 - Ubuntu 20.04 (GPU docker)              | Pass*                  |
 | NVIDIA Jetson TX2                            | Not tested             |
 | NVIDIA Jetson Xavier AGX                     | Not tested             |
 | NVIDIA Jetson Xavier NX                      | Pass**                 |

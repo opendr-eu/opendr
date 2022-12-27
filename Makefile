@@ -24,22 +24,39 @@ ifeq ($(MAKECMDGOALS),)
 MAKECMDGOALS = release
 endif
 
-.PHONY: release install_compilation_dependencies install_runtime_dependencies
+.PHONY: release install_dependencies install_mobile_manipulation install_single_demo_grasp install_end_to_end_planning
 
-release: install_compilation_dependencies
+release: install_dependencies
 
-install_runtime_dependencies:
-	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
-	@+cd dependencies; ./install.sh runtime
+# install_runtime_dependencies:
+# 	@+echo "#"; echo "# * Install Runtime Dependencies *"; echo "#"
+# 	@+cd dependencies; ./install.sh runtime
+# 	@+cd src/opendr/perception/object_detection_2d/retinaface; make
+#
+# install_compilation_dependencies:
+# 	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
+# 	@+cd dependencies; ./install.sh compilation
+# 	@+cd dependencies; ./install_onnx.sh
+# 	@+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
+# 	@+make --silent -C src/opendr/control/single_demo_grasp $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
+# 	@+make --silent -C src/opendr/planning/end_to_end_planning $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
+
+install_mobile_manipulation:
+	@+echo "#"; echo "# * Install Dependencies for Mobile Manipulation *"; echo "#"
+	./src/opendr/control/mobile_manipulation/install_mobile_manipulation.sh
+
+install_single_demo_grasp:
+	@+echo "#"; echo "# * Install Dependencies for Single Demo Grasp *"; echo "#"
+	./src/opendr/control/single_demo_grasp/install_single_demo_grasp.sh
+
+install_end_to_end_planning:
+	@+echo "#"; echo "# * Install Dependencies for End-to-End Planning *"; echo "#"
+	./src/opendr/planning/end_to_end_planning/install_end_to_end_planning.sh
+
+install_dependencies: install_mobile_manipulation install_single_demo_grasp install_end_to_end_planning
+	@+echo "#"; echo "# * Install Dependencies *"; echo "#"
+	@+cd dependencies; ./install.sh
 	@+cd src/opendr/perception/object_detection_2d/retinaface; make
-
-install_compilation_dependencies:
-	@+echo "#"; echo "# * Install Compilation Dependencies *"; echo "#"
-	@+cd dependencies; ./install.sh compilation
-	@+cd dependencies; ./install_onnx.sh
-	@+make --silent -C src/opendr/control/mobile_manipulation $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
-	@+make --silent -C src/opendr/control/single_demo_grasp $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
-	@+make --silent -C src/opendr/planning/end_to_end_planning $(TARGET) OPENDR_HOME="$(OPENDR_HOME)";
 
 styletest:
 	@+echo "Testing file licences and code-style"
@@ -58,7 +75,6 @@ ctests: libopendr
 	@$(MAKE) -C tests runtests
 	@$(MAKE) -C tests clean
 
-
 clean:
 	@$(MAKE) -C src/c_api clean
 	@$(MAKE) -C tests clean
@@ -68,7 +84,9 @@ help:
 	@+echo -e "\033[32;1mOpenDR Makefile targets:\033[0m"
 	@+echo
 	@+echo -e "\033[33;1mmake -j$(THREADS) release\033[0m\t# install dependencies and compile (default)"
-	@+echo -e "\033[33;1mmake -j$(THREADS) dependencies\033[0m\t# install toolkit dependencies"
+	@+echo -e "\033[33;1mmake -j$(THREADS) install_mobile_manipulation\033[0m\t# install mobile manipulation dependencies"
+	@+echo -e "\033[33;1mmake -j$(THREADS) install_single_demo_grasp\033[0m\t# install single demonstration grasp dependencies"
+	@+echo -e "\033[33;1mmake -j$(THREADS) install_end_to_end_planning\033[0m\t# install end-to-end planning dependencies"
 	@+echo -e "\033[33;1mmake help\033[0m\t\t# display this message and exit"
 	@+echo -e "\033[33;1mmake styletest\033[0m\t# run tests for style and licences"
 	@+echo -e "\033[33;1mmake unittest\033[0m\t# run unit tests"
