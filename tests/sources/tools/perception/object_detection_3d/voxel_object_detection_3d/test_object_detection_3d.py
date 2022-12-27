@@ -100,7 +100,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
         for name, config in self.car_configs.items():
             test_model(name, config)
-
+    '''
     def test_fit_iterator(self):
         def test_model(name, config):
             print("Fit iterator", name, "start", file=sys.stderr)
@@ -136,7 +136,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
         for name, config in self.car_configs.items():
             test_model(name, config)
-
+    '''
     # def test_save(self):
     #     def test_model(name, config):
     #         print("Save", name, "start", file=sys.stderr)
