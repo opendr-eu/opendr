@@ -19,8 +19,8 @@ import os
 import torch
 import traceback
 from opendr.engine.datasets import PointCloudsDatasetIterator
-from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
-from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
+# from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
+# from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
 
 DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
