@@ -74,7 +74,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     def tearDownClass(cls):
         # Clean up downloaded files
         rmdir(os.path.join(cls.temp_dir))
-
+    '''
     def test_fit(self):
         def test_model(name, config):
             print("Fit", name, "start", file=sys.stderr)
@@ -100,7 +100,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
         for name, config in self.car_configs.items():
             test_model(name, config)
-    '''
+    
     def test_fit_iterator(self):
         def test_model(name, config):
             print("Fit iterator", name, "start", file=sys.stderr)
