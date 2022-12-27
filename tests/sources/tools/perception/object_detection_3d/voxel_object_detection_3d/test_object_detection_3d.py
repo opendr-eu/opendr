@@ -43,7 +43,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
                                     "perception", "object_detection_3d",
                                     "voxel_object_detection_3d",
                                     "voxel_object_detection_3d_temp")
-
+        '''
         cls.config_tanet_car = os.path.join(".", "src", "opendr", "perception",
                                             "object_detection_3d",
                                             "voxel_object_detection_3d",
@@ -67,7 +67,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
         cls.dataset_path = KittiDataset.download_nano_kitti(
             cls.temp_dir, True, cls.subsets_path
         ).path
-
+        '''
         print("Dataset downloaded", file=sys.stderr)
 
     @classmethod
@@ -100,7 +100,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
 
         for name, config in self.car_configs.items():
             test_model(name, config)
-    
+
     def test_fit_iterator(self):
         def test_model(name, config):
             print("Fit iterator", name, "start", file=sys.stderr)
@@ -190,7 +190,7 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     #         learner2.load(model_path, True)
     #
     #         self.assertTrue(learner2.model.rpn_ort_session is not None)
-    # 
+    #
     #         print("Optimize", name, "ok", file=sys.stderr)
     #
     #     for name, config in self.car_configs.items():
