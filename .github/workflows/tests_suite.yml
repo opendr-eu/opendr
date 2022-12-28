@@ -98,6 +98,7 @@ jobs:
     - name: Test Tools
       run: |
         export ROS_DISTRO=noetic
+        export OPENDR_HOME=$PWD
         ./bin/install.sh
         python3 -m pip install -r tests/sources/requirements.txt
         if [ ${{ matrix.package }} = "ctests" ]; then
