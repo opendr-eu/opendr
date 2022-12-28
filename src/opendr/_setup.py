@@ -90,7 +90,6 @@ def get_description(module=None):
 
 
 def get_dependencies(current_module):
-    # print('GET DEPS OF MODULE: ', current_module)
     dependencies = []
     skipped_dependencies = []
     post_install = []
@@ -107,7 +106,6 @@ def get_dependencies(current_module):
             try:
                 parser = ConfigParser()
                 parser.read(join("src/opendr", current_module, path, 'dependencies.ini'))
-                # print('CHECKING PATH', join("src/opendr", current_module, path, 'dependencies.ini'))
                 try:
                     runtime_deps = parser.get("runtime", "python").split('\n')
                 except Exception:
@@ -131,7 +129,6 @@ def get_dependencies(current_module):
                 pass
 
             deps = [x for x in list(set(runtime_deps + compilation_deps)) if x != '']
-            # print('DEPENDENCIES', runtime_deps, compilation_deps, deps)
             # Add dependencies found (filter git-based ones and local ones)
             for x in deps:
                 if 'git' in x or '${OPENDR_HOME}' in x:
@@ -196,10 +193,8 @@ def build_package(module):
             # Install potential git and local repos during post installation
             for package in skipped_dependencies:
                 if 'git' in package:
-                    print('WILL RUN POST:', [sys.executable, '-m', 'pip', 'install', package])
                     subprocess.call([sys.executable, '-m', 'pip', 'install', package])
                 if '${OPENDR_HOME}' in package:
-                    print('WILL RUN POST2:', [sys.executable, '-m', 'pip', 'install', package.replace('${OPENDR_HOME}', '.')])
                     subprocess.call([sys.executable, '-m', 'pip', 'install', package.replace('${OPENDR_HOME}', '.')])
 
             if post_install:
