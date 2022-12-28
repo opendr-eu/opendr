@@ -17,7 +17,6 @@ import unittest
 import shutil
 import os
 import torch
-import traceback
 from opendr.engine.datasets import PointCloudsDatasetIterator
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
