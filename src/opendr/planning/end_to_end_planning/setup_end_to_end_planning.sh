@@ -20,6 +20,7 @@ WS_PATH=${OPENDR_HOME}/projects/opendr_ws/
 
 # ROS
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
+  echo "HERE"
   sudo apt-get update && sudo apt-get install -y \
     ros-${ROS_DISTRO}-webots-ros \
     ros-${ROS_DISTRO}-ros-numpy \
