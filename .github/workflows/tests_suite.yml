@@ -228,7 +228,7 @@ jobs:
           if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
           if [ "$package" != "opendr" ]; then
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
 
@@ -246,6 +246,8 @@ jobs:
         elif [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
           ./src/opendr/planning/end_to_end_planning/setup_end_to_end_planning.sh
         fi
+
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -331,19 +333,19 @@ jobs:
 
         # install specific package
         if [ ${{ matrix.package }} == "utils" ]; then
-          python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-          python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
           # install required dependencies for derived tools
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           elif [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
             ./src/opendr/control/mobile_manipulation/setup_mobile_manipulation.sh
             source bin/run_ros.sh ${{ matrix.package }}
@@ -356,8 +358,10 @@ jobs:
           fi
 
           # install the package itself
-            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
+
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
