@@ -1,8 +1,8 @@
 from builtins import range
 import numpy as np
 
-import pyximport
-pyximport.install()
+#import pyximport
+#pyximport.install()
 
 from opendr.perception.object_detection_2d.retinaface.algorithm.cython.anchors import anchors_cython
 

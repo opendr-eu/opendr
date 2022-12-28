@@ -215,8 +215,6 @@ jobs:
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
-        sudo apt -y install gcc python3-devel build-essentials # TMP
-
 
         python3 -m venv venv
         source venv/bin/activate
@@ -230,7 +228,7 @@ jobs:
           if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
           if [ "$package" != "opendr" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
 
@@ -317,7 +315,6 @@ jobs:
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
-        sudo apt -y install gcc python3-devel build-essentials # TMP
 
         python3 -m venv venv
         source venv/bin/activate
@@ -334,19 +331,19 @@ jobs:
 
         # install specific package
         if [ ${{ matrix.package }} == "utils" ]; then
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
+          python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+          python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
           # install required dependencies for derived tools
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           elif [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
             ./src/opendr/control/mobile_manipulation/setup_mobile_manipulation.sh
             source bin/run_ros.sh ${{ matrix.package }}
@@ -359,7 +356,7 @@ jobs:
           fi
 
           # install the package itself
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            python3 -m pip install -e ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
 
         # run the test
