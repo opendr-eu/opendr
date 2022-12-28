@@ -4,12 +4,14 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
-import torch.nn as nn
-import torch.optim as optim
+from torch import nn, optim, Tensor
 
-from depth_pose_prediction.networks import ResnetEncoder, DepthDecoder, PoseDecoder
-from depth_pose_prediction.config import Config
-from depth_pose_prediction.dataset_config import DatasetConfig
+from opendr.perception.continual_slam.algorithm.depth_pose_prediction.networks import ResnetEncoder, DepthDecoder, PoseDecoder
+from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config import Config
+from opendr.perception.continual_slam.algorithm.depth_pose_prediction.dataset_config import DatasetConfig
+from opendr.perception.continual_slam.algorithm.depth_pose_prediction.utils import *
+
+from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 
 
 class DepthPosePredictor:
@@ -27,6 +29,8 @@ class DepthPosePredictor:
         self.learning_rate = config.learning_rate
         self.scheduler_step_size = config.scheduler_step_size
         self.load_weights_folder = config.load_weights_folder
+        self.min_depth = config.min_depth
+        self.max_depth = config.max_depth
 
         self.device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = torch.device(self.device_type)
@@ -62,7 +66,55 @@ class DepthPosePredictor:
         self.optimizer = optim.Adam(self.parameters_to_train, self.learning_rate)
         self.lr_scheduler = optim.lr_scheduler.StepLR(self.optimizer, self.scheduler_step_size, 0.1)
         self.epoch = 0
+        self.online_optimizer = None
         # =================================================
+
+        # Construct dataset loaders =======================
+        self.train_loader, self.val_loader = None, None
+        # =================================================
+
+    def predict(self, batch) -> Dict[Tensor, Any]:
+
+        self._set.eval()
+        with torch.no_grad():
+            outputs = self._make_prediction(batch)
+        return outputs
+
+    def _make_prediction(self, batch) -> Dict[Tensor, Any]:
+
+        pass
+
+    def _make_predict_one_image(self, image):
+        with torch.no_grad():
+            image = image.to(self.device)
+            features = self.models['depth_encoder'](image)
+            disp  = self.models['depth_decoder'](features)[('disp', 0)]
+
+            depth = disp_to_depth(disp, self.min_depth, self.max_depth)
+        return depth
+
+    def _make_predict_two_images(self, image0, image1):
+
+        if len(image0.shape) == 3:
+            image0 = image0.unsqueeze(dim=0)
+        if len(image1.shape) == 3:
+            image1 = image1.unsqueeze(dim=0)
+
+        with torch.no_grad():
+            image0 = image0.to(self.device)
+            image1 = image1.to(self.device)
+            features_0 = self.models['depth_encoder'](image0)
+            disp_0 = self.models['depth_decoder'](features_0)[('disp', 0)]
+            features_1 = self.models['depth_encoder'](image1)
+            disp_1 = self.models['depth_decoder'](features_1)[('disp', 0)]
+            depth_0 = disp_to_depth(disp_0, self.min_depth, self.max_depth)
+            depth_1 = disp_to_depth(disp_1, self.min_depth, self.max_depth)
+
+            pose_inputs = torch.cat((image0, image1), 1)
+            pose_features = self.models['pose_encoder'](pose_inputs)
+            
+            pose_inputs = torch.cat(image1)
+
 
 
     def load_model(self, load_optimizer: bool = True) -> None:
@@ -110,3 +162,13 @@ class DepthPosePredictor:
             except:  # pylint: disable=bare-except
                 print('Cannot find matching optimizer weights, so the optimizer is randomly '
                       'initialized.')
+
+if __name__ == '__main__':
+    # Set local path
+    local_path = Path(__file__).parent.parent.parent / 'configs'
+    config = ConfigParser(local_path / 'singlegpu_kitti.yaml')
+
+    # Set up model
+    x = DepthPosePredictor(config.depth_pose, config.dataset)
+    x.load_model()
+    
