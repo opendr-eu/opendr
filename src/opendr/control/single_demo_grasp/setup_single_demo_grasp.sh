@@ -24,6 +24,8 @@ if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
     ros-${ROS_DISTRO}-libfranka \
     python3-empy python3-catkin-tools || exit;
 
+  git clone --branch $ROS_DISTRO https://github.com/ros-perception/vision_opencv $WS_PATH/src/vision_opencv
+
   source /opt/ros/${ROS_DISTRO}/setup.bash
 
   # build the catkin workspace

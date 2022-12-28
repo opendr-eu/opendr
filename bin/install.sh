@@ -42,13 +42,13 @@ make install_runtime_dependencies
 # General purpose ROS packages
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
   echo "Installing ROS dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-vision-opencv
+  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam #ros-$ROS_DISTRO-vision-opencv
 fi
 
 # General purpose ROS2 packages
 if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   echo "Installing ROS2 dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam python3-colcon-common-extensions ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-vision-opencv
+  sudo apt-get -y install python3-lark ros-$ROS_DISTRO-usb-cam python3-colcon-common-extensions ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-rqt-image-view #ros-$ROS_DISTRO-vision-opencv
   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/$ROS_DISTRO/lib/controller
   cd $OPENDR_HOME/projects/opendr_ws_2/
   git clone --depth 1 --branch ros2 https://github.com/ros-drivers/audio_common src/audio_common
