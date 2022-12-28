@@ -7,7 +7,7 @@ if [ "$#" -ge 1 ]; then
   TOOL=$1
 fi
 
-if [ $TOOL == "control/mobile_manipulation" ]
+if [ $TOOL == "control/mobile_manipulation" ]; then
   cd projects/opendr_ws
   roslaunch mobile_manipulation_rl pr2_analytical.launch &
   cd ../..
