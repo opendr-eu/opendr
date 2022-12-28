@@ -232,12 +232,7 @@ jobs:
           fi
         done < packages.txt
 
-        # post install instructions cannot be installed automatically
-        #if [ ${{ matrix.package }} == "control/single_demo_grasp" ]; then
-        #  python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
-        #fi
-
-        #cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -326,7 +321,7 @@ jobs:
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
-          # install required dependencies for derived tools
+          # install required dependencies for derived tools, we do so manually to ensure the local one is used
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
@@ -340,20 +335,9 @@ jobs:
 
           # install the package itself
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
-
-          # for tools requiring ROS, setup the environment
-          #if [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
-          #  ./src/opendr/control/mobile_manipulation/setup_mobile_manipulation.sh
-          #  source bin/run_ros.sh ${{ matrix.package }}
-          #elif [ ${{ matrix.package }} == "control/single_demo_grasp" ]; then
-          #  ./src/opendr/control/single_demo_grasp/setup_single_demo_grasp.sh
-          #  source bin/run_ros.sh ${{ matrix.package }}
-          #elif [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
-          #  ./src/opendr/planning/end_to_end_planning/setup_end_to_end_planning.sh
-          #fi
         fi
 
-        #cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
