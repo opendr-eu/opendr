@@ -97,6 +97,7 @@ jobs:
         python-version: 3.8
     - name: Test Tools
       run: |
+        export ROS_DISTRO=noetic
         ./bin/install.sh
         python3 -m pip install -r tests/sources/requirements.txt
         if [ ${{ matrix.package }} = "ctests" ]; then

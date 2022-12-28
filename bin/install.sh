@@ -48,7 +48,7 @@ fi
 # ROS2 package dependencies
 if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   echo "Installing ROS2 dependencies"
-  sudo apt-get -y install python3-lark ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2 python3-colcon-common-extensions
+  sudo apt-get -y install python3-lark ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2 python3-colcon-common-extensions ros-$ROS_DISTRO-vision-msgs
   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/$ROS_DISTRO/lib/controller
   cd $OPENDR_HOME/projects/opendr_ws_2/
   git clone --depth 1 --branch ros2 https://github.com/ros-drivers/audio_common src/audio_common
