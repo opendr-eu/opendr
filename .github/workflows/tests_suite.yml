@@ -215,7 +215,7 @@ jobs:
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
-        sudo apt -y install gcc python3-devel build-essentials # TMP
+        sudo apt -y install gcc python3-dev build-essential # TMP
 
 
         python3 -m venv venv
@@ -317,7 +317,7 @@ jobs:
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
-        sudo apt -y install gcc python3-devel build-essentials # TMP
+        sudo apt -y install gcc python3-dev build-essential # TMP
 
         python3 -m venv venv
         source venv/bin/activate
