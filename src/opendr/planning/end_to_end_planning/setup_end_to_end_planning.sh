@@ -1,9 +1,16 @@
 #!/bin/bash
 
+if [[ -z "$OPENDR_HOME" ]]; then
+       echo "OPENDR_HOME is not defined"
+       exit 1
+fi
+
 if [[ -z "$ROS_DISTRO" ]]; then
   echo "ROS_DISTRO is not defined"
   exit 1
 fi
+
+echo "Setup End-to-end Planning"
 
 sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
 curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
@@ -15,6 +22,8 @@ if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
     #ros-${ROS_DISTRO}-vision-opencv \
     ros-${ROS_DISTRO}-ros-numpy \
     python3-rosdep python3-empy || exit;
+
+    git clone --branch $ROS_DISTRO https://github.com/ros-perception/vision_opencv $WS_PATH/src/vision_opencv
 fi
 
 # ROS2
