@@ -31,13 +31,13 @@ source venv/bin/activate
 python3 -m pip install -U pip
 python3 -m pip install setuptools configparser
 
-# Add repositories for ROS
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
-            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
+
+./src/opendr/control/mobile_manipulation/setup_mobile_manipulation.sh
+./src/opendr/control/single_demo_grasp/setup_single_demo_grasp.sh
+./src/opendr/planning/end_to_end_planning/setup_end_to_end_planning.sh
 
 # General purpose ROS packages
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
