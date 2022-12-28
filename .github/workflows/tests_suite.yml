@@ -332,9 +332,6 @@ jobs:
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
-          # install the package itself
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
-
           # install required dependencies for derived tools
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
@@ -355,6 +352,9 @@ jobs:
           elif [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
             ./src/opendr/planning/end_to_end_planning/setup_end_to_end_planning.sh
           fi
+
+          # install the package itself
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
 
         # run the test
