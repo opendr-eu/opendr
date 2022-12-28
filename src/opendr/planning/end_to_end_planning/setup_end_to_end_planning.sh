@@ -20,13 +20,13 @@ WS_PATH=${OPENDR_HOME}/projects/opendr_ws/
 
 # ROS
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
-  echo "HERE"
   sudo apt-get update && sudo apt-get install -y \
     ros-${ROS_DISTRO}-webots-ros \
     ros-${ROS_DISTRO}-ros-numpy \
     ros-${ROS_DISTRO}-vision-opencv \
+    ros-${ROS_DISTRO}-cv-bridge \
     python3-rosdep python3-empy || exit;
-
+    echo "HERE"
     source /opt/ros/${ROS_DISTRO}/setup.bash
 
     #git clone --branch $ROS_DISTRO https://github.com/ros-perception/vision_opencv $WS_PATH/src/vision_opencv
