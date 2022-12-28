@@ -174,7 +174,8 @@ def build_package(module):
         module = None
 
     if module == 'perception/object_detection_2d':
-        from Cython.Build import cythonize
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
+        from Cython import cythonize
         import numpy
         extra_params = {
             'ext_modules':

@@ -7,7 +7,7 @@ git submodule update --init --recursive
 rm dist/*
 rm src/*egg-info -rf
 
-pip install cython numpy<=1.23.5
+python3 -m pip install cython numpy
 
 # Build OpenDR packages
 while read p; do
@@ -18,6 +18,6 @@ while read p; do
 done < packages.txt
 
 # Cleanup
-rm -rf src/*.egg-info
+rm src/*egg-info -rf
 rm setup.py
 rm MANIFEST.in
