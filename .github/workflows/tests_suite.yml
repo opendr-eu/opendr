@@ -346,19 +346,21 @@ jobs:
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
-          elif [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
+          fi
+
+          # install the package itself
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+
+          # for tools requiring ROS, setup the environment
+          if [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
             ./src/opendr/control/mobile_manipulation/setup_mobile_manipulation.sh
             source bin/run_ros.sh ${{ matrix.package }}
           elif [ ${{ matrix.package }} == "control/single_demo_grasp" ]; then
             ./src/opendr/control/single_demo_grasp/setup_single_demo_grasp.sh
-            python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
             source bin/run_ros.sh ${{ matrix.package }}
           elif [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
             ./src/opendr/planning/end_to_end_planning/setup_end_to_end_planning.sh
           fi
-
-          # install the package itself
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
 
         cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME

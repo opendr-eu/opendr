@@ -25,6 +25,7 @@ if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
     ros-${ROS_DISTRO}-ros-numpy \
     ros-${ROS_DISTRO}-vision-opencv \
     ros-${ROS_DISTRO}-cv-bridge \
+    ros-${ROS_DISTRO}-sensor-msgs \
     python3-rosdep python3-empy || exit;
     echo "HERE"
     source /opt/ros/${ROS_DISTRO}/setup.bash
