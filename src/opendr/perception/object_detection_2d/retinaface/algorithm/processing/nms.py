@@ -1,8 +1,5 @@
 import numpy as np
 
-#import pyximport
-#pyximport.install()
-
 from opendr.perception.object_detection_2d.retinaface.algorithm.cython.cpu_nms import cpu_nms
 
 try:
