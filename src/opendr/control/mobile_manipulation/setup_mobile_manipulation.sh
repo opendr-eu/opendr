@@ -17,18 +17,20 @@ MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation
 WS_PATH=${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws
 
 ## ROS
-sudo apt-get update && sudo apt-get install -y \
-  ros-${ROS_DISTRO}-ros-base \
-  ros-${ROS_DISTRO}-pybind11-catkin \
-  ros-${ROS_DISTRO}-moveit \
-  ros-${ROS_DISTRO}-tf-conversions \
-  ros-${ROS_DISTRO}-eigen-conversions \
-  ros-${ROS_DISTRO}-pr2-controllers-msgs \
-  ros-${ROS_DISTRO}-pr2-mechanism-msgs \
-  ros-${ROS_DISTRO}-pr2-description \
-  ros-${ROS_DISTRO}-gazebo-msgs \
-  python3-rosdep || exit;
-source /opt/ros/${ROS_DISTRO}/setup.bash
+if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
+  sudo apt-get update && sudo apt-get install -y \
+    ros-${ROS_DISTRO}-ros-base \
+    ros-${ROS_DISTRO}-pybind11-catkin \
+    ros-${ROS_DISTRO}-moveit \
+    ros-${ROS_DISTRO}-tf-conversions \
+    ros-${ROS_DISTRO}-eigen-conversions \
+    ros-${ROS_DISTRO}-pr2-controllers-msgs \
+    ros-${ROS_DISTRO}-pr2-mechanism-msgs \
+    ros-${ROS_DISTRO}-pr2-description \
+    ros-${ROS_DISTRO}-gazebo-msgs \
+    python3-rosdep || exit;
+  source /opt/ros/${ROS_DISTRO}/setup.bash
+fi
 
 ## packages to install from source
 if [ ! -f ${WS_PATH}/mobile_manipulation_pr2.rosinstall ]; then

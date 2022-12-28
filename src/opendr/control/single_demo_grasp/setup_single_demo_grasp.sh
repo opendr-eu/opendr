@@ -19,7 +19,8 @@ BRIDGE_PATH=${OPENDR_HOME}/projects/opendr_ws/src/ros_bridge
 
 
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
-  sudo apt install ros-${ROS_DISTRO}-moveit ros-${ROS_DISTRO}-libfranka
+  sudo apt-get update && sudo apt-get install -y \
+    ros-${ROS_DISTRO}-ros-base ros-${ROS_DISTRO}-moveit ros-${ROS_DISTRO}-libfranka python3-catkin-tools
 fi
 
 # build the catkin workspace
