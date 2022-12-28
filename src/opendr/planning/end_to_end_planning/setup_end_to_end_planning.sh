@@ -23,17 +23,20 @@ if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
   sudo apt-get update && sudo apt-get install -y \
     ros-${ROS_DISTRO}-webots-ros \
     ros-${ROS_DISTRO}-ros-numpy \
+    ros-${ROS_DISTRO}-vision-opencv \
     python3-rosdep python3-empy || exit;
 
-    git clone --branch $ROS_DISTRO https://github.com/ros-perception/vision_opencv $WS_PATH/src/vision_opencv
-
     source /opt/ros/${ROS_DISTRO}/setup.bash
 
-    # build the catkin workspace
-    cd ${WS_PATH} || exit
-    source /opt/ros/${ROS_DISTRO}/setup.bash
-    catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
-    source devel/setup.bash
+    #git clone --branch $ROS_DISTRO https://github.com/ros-perception/vision_opencv $WS_PATH/src/vision_opencv
+    #
+    #source /opt/ros/${ROS_DISTRO}/setup.bash
+    #
+    ## build the catkin workspace
+    #cd ${WS_PATH} || exit
+    #source /opt/ros/${ROS_DISTRO}/setup.bash
+    #catkin_make -DPYTHON_EXECUTABLE=/usr/bin/python3
+    #source devel/setup.bash
 fi
 
 # ROS2
