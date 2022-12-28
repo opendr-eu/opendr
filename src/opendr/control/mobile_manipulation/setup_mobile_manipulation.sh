@@ -28,7 +28,7 @@ if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
     ros-${ROS_DISTRO}-pr2-mechanism-msgs \
     ros-${ROS_DISTRO}-pr2-description \
     ros-${ROS_DISTRO}-gazebo-msgs \
-    python3-rosdep || exit;
+    python3-rosdep python3-catkin-tools || exit;
   source /opt/ros/${ROS_DISTRO}/setup.bash
 fi
 

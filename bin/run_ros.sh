@@ -8,7 +8,6 @@ if [ "$#" -ge 1 ]; then
 fi
 
 if [ $TOOL == "control/mobile_manipulation" ]; then
-  cd projects/opendr_ws
+  source ${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
   roslaunch mobile_manipulation_rl pr2_analytical.launch &
-  cd ../..
 fi
