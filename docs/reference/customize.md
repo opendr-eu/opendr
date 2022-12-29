@@ -50,16 +50,46 @@ cd opendr
 sudo docker build -t opendr/opendr-toolkit:cuda -f Dockerfile-cuda .
 ```
 
+### Building the Embedded Devices image
+The provided Dockerfile-embedded is tested on fresh flashed Nvidia-nx, Nvidia-Tx2 and Nvidia-Agx using jetpack 4.6.
+
+To build the embedded devices images yourself, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+```
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+```
+
+Restart docker afterwards:
+```
+sudo systemctl restart docker.service
+```
+
+Then run:
+```
+sudo docker build --build-arg device=nx -t opendr/opendr-toolkit:nx -f Dockerfile-embedded .
+```
+You can build the image on nx/tx2/agx by changing the build-arg accordingly.
+
 ### Running the custom images
 In order to run them, the commands are respectively:
 ```bash
 sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu
 ```
-and
+or:
 ```
 sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
 ```
-
+or:
+```
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:nx
+```
 ## Customizing existing docker images
 Building docker images from scratch can take a lot of time, especially for embedded systems without cross-compilation support.
 If you need to modify a docker image without rebuilding it (e.g., for changing some source files inside it or adding support for custom pipelines), then you can simply start with the image that you are interesting in, make the changes and use the [docker commit](https://docs.docker.com/engine/reference/commandline/commit/) command. In this way, the changes that have been made will be saved in a new image.
