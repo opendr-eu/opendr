@@ -24,17 +24,74 @@
 #include <stringbuffer.h>
 #include <writer.h>
 
-const char *json_get_key_string(const char *json, const char *key) {
+float json_get_key_from_inference_params(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {
+    return 0.0f;
+  }
+  const rapidjson::Value &inference_params = doc["inference_params"];
+  if ((!inference_params.IsObject()) || (!inference_params.HasMember(key))) {
+    return 0.0f;
+  }
+  const rapidjson::Value &value = inference_params[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return 0.0f;
+    }
+    if (!value[index].IsFloat()) {
+      return 0.0f;
+    }
+    return value[index].GetFloat();
+  }
+  if (!value.IsFloat()) {
+    return 0.0f;
+  }
+  return value.GetFloat();
+}
+
+const char *json_get_key_string(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
   if ((!doc.IsObject()) || (!doc.HasMember(key))) {
     return "";
   }
   const rapidjson::Value &value = doc[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return "";
+    }
+    if (!value[index].IsString()) {
+      return "";
+    }
+    return value[index].GetString();
+  }
   if (!value.IsString()) {
     return "";
   }
   return value.GetString();
+}
+
+float json_get_key_float(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember(key))) {
+    return 0.0f;
+  }
+  const rapidjson::Value &value = doc[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return 0.0f;
+    }
+    if (!value[index].IsFloat()) {
+      return 0.0f;
+    }
+    return value[index].IsFloat();
+  }
+  if (!value.IsFloat()) {
+    return 0.0f;
+  }
+  return value.GetFloat();
 }
 
 void load_image(const char *path, opendr_image_t *image) {
