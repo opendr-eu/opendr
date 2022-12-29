@@ -97,8 +97,7 @@ OpenDR distributes the following packages that can be installed:
 - *opendr-toolkit-object-detection-3d*
 - *opendr-toolkit-object-tracking-3d*
 - *opendr-toolkit-ambiguity-measure*
-- *opendr-toolkit-mobile-manipulation* (requires a functional ROS installation)
-- *opendr-toolkit-single-demo-grasp* (requires a functional ROS installation)
+- *opendr-toolkit-fall-detection*
 
 Note that `opendr-toolkit` is actually just a metapackage that includes all the aformentioned packages.
 
