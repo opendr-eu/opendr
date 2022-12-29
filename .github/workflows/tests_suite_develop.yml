@@ -64,10 +64,14 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -77,16 +81,12 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
-        include:
-          - os: ubuntu-20.04
-            DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
-            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -"
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -99,20 +99,16 @@ jobs:
         python-version: 3.8
     - name: Test Tools
       run: |
-        ${{ matrix.DEPENDENCIES_INSTALLATION }}
-        export OPENDR_HOME=$PWD
-        export OPENDR_DEVICE=cpu
-        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-        export DISABLE_BCOLZ_AVX2=true
         export ROS_DISTRO=noetic
-        make install_compilation_dependencies
-        make install_runtime_dependencies
+        export OPENDR_HOME=$PWD
+        ./bin/install.sh
+        source bin/activate.sh
         python3 -m pip install -r tests/sources/requirements.txt
         if [ ${{ matrix.package }} = "ctests" ]; then
-            make ctests
+          make ctests
         else
-            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-            python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
@@ -128,7 +124,7 @@ jobs:
         python-version: 3.8
     - name: Install prerequisites
       run: |
-        python3 -m pip install -U pip
+        python3 -m pip install --upgrade pip
         python3 -m pip install setuptools wheel twine
     - name: Build Wheel
       run:
@@ -178,10 +174,14 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -191,12 +191,12 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
-          - control/single_demo_grasp
-          - planning/end_to_end_planning
+          #- control/mobile_manipulation
+          #- control/single_demo_grasp
+          #- planning/end_to_end_planning
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -219,10 +219,14 @@ jobs:
         export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        export ROS_DISTRO=noetic
+
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
+
         python3 -m venv venv
         source venv/bin/activate
-        python3 -m pip install -U pip
+        python3 -m pip install --upgrade pip
         python3 -m pip install wheel
 
         # install all tools one at a time
@@ -236,15 +240,7 @@ jobs:
           fi
         done < packages.txt
 
-        if [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
-          sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
-          curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-          export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-          export ROS_DISTRO=noetic
-          make install_compilation_dependencies
-          make install_runtime_dependencies
-          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        fi
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -266,10 +262,14 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -279,12 +279,12 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
-          - control/single_demo_grasp
-          - planning/end_to_end_planning
+          #- control/mobile_manipulation
+          #- control/single_demo_grasp
+          #- planning/end_to_end_planning
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -302,39 +302,51 @@ jobs:
     - name: Get branch name
       id: branch-name
       uses: tj-actions/branch-names@v5.1
-    - name: Test Wheel
+    - name: Test Wheel Separate
       run: |
         export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
+        export ROS_DISTRO=noetic
+
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
+
         python3 -m venv venv
         source venv/bin/activate
-        python3 -m pip install -U pip
+        python3 -m pip install --upgrade pip
         python3 -m pip install wheel
+
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
         package=(${package//// })
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+
         # all packages require the engine
         python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
+
         # install specific package
-        if [ "$package" == "utils" ]; then
+        if [ ${{ matrix.package }} == "utils" ]; then
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
-
-          if [ ${{ matrix.package }} == "control/mobile_manipulation" ] || [ {{ matrix.package }} == "control/single_demo_grasp" ] || [ {{ matrix.package }} == "planning/end_to_end_planning" ]; then
-            sudo sh -c 'echo deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main > /etc/apt/sources.list.d/ros-latest.list'
-            curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-            export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
-            export ROS_DISTRO=noetic
-            make install_compilation_dependencies
-            make install_runtime_dependencies
-            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          # install required dependencies for derived tools, we do so manually to ensure the local one is used
+          if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
+          elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+          elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+          elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
+            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           fi
+
+          # install the package itself
+          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
+
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -356,10 +368,14 @@ jobs:
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
           - perception/object_tracking_2d
-          # - perception/object_tracking_3d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -369,7 +385,7 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
-          - perception/object_detection_3d
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           - control/mobile_manipulation
@@ -386,7 +402,7 @@ jobs:
         docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
-        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
     if: ${{ always() }}
