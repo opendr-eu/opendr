@@ -214,7 +214,6 @@ jobs:
         export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
-        # export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
@@ -234,8 +233,6 @@ jobs:
             python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
-
-        # cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -301,7 +298,6 @@ jobs:
         export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
-        # export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
@@ -339,8 +335,6 @@ jobs:
           # install the package itself
           python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
-
-        # cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
