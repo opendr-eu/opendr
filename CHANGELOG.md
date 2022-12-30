@@ -1,7 +1,7 @@
 # OpenDR Toolkit Change Log
 
 ## Version 2.0.0
-Released on December, XX, 2022.
+Released on December, 31st, 2022.
 
   - New Features:
     - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
