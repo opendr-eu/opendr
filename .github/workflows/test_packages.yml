@@ -72,7 +72,6 @@ jobs:
         python3 -m pip install --upgrade pip
         python3 -m pip install wheel
         python3 -m pip install opendr-toolkit
-        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
