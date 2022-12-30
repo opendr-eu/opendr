@@ -296,9 +296,13 @@ class Pose(Target):
             raise ValueError("Pose expects either NumPy arrays or lists as data")
 
     def __str__(self):
-        """Matches kpt_names and keypoints x,y to get the best human-readable format for pose."""
+        """
+        Returns pose in a human-readable format, that contains the pose ID, detection confidence and
+        the matched kpt_names and keypoints x,y position.
+        """
 
-        out_string = ""
+        out_string = "Pose ID: " + str(self.id)
+        out_string += "\nDetection confidence: " + str(self.confidence) + "\nKeypoints name-position:\n"
         # noinspection PyUnresolvedReferences
         for name, kpt in zip(Pose.kpt_names, self.data.tolist()):
             out_string += name + ": " + str(kpt) + "\n"
@@ -357,7 +361,7 @@ class BoundingBox(Target):
             ], dtype=np.float32)
         else:
             result = np.array([
-                self.frame,
+                frame,
                 self.left,
                 self.top,
                 self.width,
@@ -433,11 +437,13 @@ class BoundingBoxList(Target):
     """
     def __init__(
         self,
-        boxes,
+        boxes=None,
+        image_id=-1,
     ):
         super().__init__()
-        self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.data = [] if boxes is None else boxes
+        self.image_id = image_id
+        self.__compute_confidence()
 
     @staticmethod
     def from_coco(boxes_coco, image_id=0):
@@ -447,6 +453,8 @@ class BoundingBoxList(Target):
         for i in range(count):
             if 'segmentation' in boxes_coco[i]:
                 segmentation = boxes_coco[i]['segmentation']
+            else:
+                segmentation = []
             if 'iscrowd' in boxes_coco[i]:
                 iscrowd = boxes_coco[i]['iscrowd']
             else:
@@ -477,9 +485,16 @@ class BoundingBoxList(Target):
 
         return result
 
+    def add_box(self, box: BoundingBox):
+        self.data.append(box)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -574,11 +589,11 @@ class TrackingAnnotationList(Target):
     """
     def __init__(
         self,
-        boxes,
+        annotations=None,
     ):
         super().__init__()
-        self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.data = [] if annotations is None else annotations
+        self.__compute_confidence()
 
     @staticmethod
     def from_mot(data):
@@ -599,9 +614,16 @@ class TrackingAnnotationList(Target):
     def bounding_box_list(self):
         return BoundingBoxList([box.bounding_box() for box in self.data])
 
+    def add_annotation(self, annotation: TrackingAnnotation):
+        self.data.append(annotation)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -719,12 +741,12 @@ class BoundingBox3DList(Target):
     """
 
     def __init__(
-            self,
-            bounding_boxes_3d
+        self,
+        bounding_boxes_3d=None
     ):
         super().__init__()
-        self.data = bounding_boxes_3d
-        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
+        self.data = [] if bounding_boxes_3d is None else bounding_boxes_3d
+        self.__compute_confidence()
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -799,9 +821,16 @@ class BoundingBox3DList(Target):
 
         return result
 
+    def add_box(self, box: BoundingBox3D):
+        self.data.append(box)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -906,11 +935,11 @@ class TrackingAnnotation3DList(Target):
     """
     def __init__(
         self,
-        tracking_bounding_boxes_3d
+        annotations_3d=None
     ):
         super().__init__()
-        self.data = tracking_bounding_boxes_3d
-        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
+        self.data = [] if annotations_3d is None else annotations_3d
+        self.__compute_confidence()
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):
@@ -1000,8 +1029,15 @@ class TrackingAnnotation3DList(Target):
     def boxes(self):
         return self.data
 
+    def add_annotation(self, annotation: TrackingAnnotation3D):
+        self.data.append(annotation)
+        self.__compute_confidence()
+
     def bounding_box_3d_list(self):
         return BoundingBox3DList([box.bounding_box_3d() for box in self.data])
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -1067,6 +1103,14 @@ class Heatmap(Target):
         """
         # Since this class stores the data as NumPy arrays, we can directly return the data.
         return self.data
+
+    def opencv(self):
+        """
+        Required to support the ros bridge for images.
+        :return: a NumPy-compatible representation of data
+        :rtype: numpy.ndarray
+        """
+        return self.numpy()
 
     def shape(self) -> Tuple[int, ...]:
         """

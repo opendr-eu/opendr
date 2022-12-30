@@ -17,8 +17,6 @@ import cv2
 from abc import ABC, abstractmethod
 from opendr.engine.target import BoundingBoxList
 import numpy as np
-import torch
-from typing import Union
 
 
 class Data(ABC):
@@ -428,7 +426,7 @@ class Video(Data):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data: Union[torch.Tensor, np.ndarray]=None):
+    def __init__(self, data=None):
         """Construct a new Video
 
         Args:

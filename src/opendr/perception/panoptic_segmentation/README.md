@@ -36,7 +36,7 @@ Please note that the original repository is heavily based on
 
 ## Example Usage
 
-More code snippets can be found in [example_usage.py](../../../../projects/perception/panoptic_segmentation/efficient_ps/example_usage.py) with the corresponding [readme](../../../../projects/perception/panoptic_segmentation/efficient_ps/README.md).
+More code snippets can be found in [example_usage.py](../../../../projects/python/perception/panoptic_segmentation/efficient_ps/example_usage.py) with the corresponding [readme](../../../../projects/python/perception/panoptic_segmentation/efficient_ps/README.md).
 
 **Prepare the downloaded Cityscapes dataset** (see the [datasets' readme](./datasets/README.md) as well)
 ```python

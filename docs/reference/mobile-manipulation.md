@@ -130,7 +130,7 @@ The dependencies for this module automatically set up and compile a catkin works
 To start required ROS nodes, please run the following before using the `MobileRLLearner` class:
 
 ```sh
-source ${OPENDR_HOME}/projects/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
+source ${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
 roslaunch mobile_manipulation_rl [pr2,tiago]_analytical.launch
 ````
 
@@ -265,7 +265,7 @@ As this achieves very high control frequencies, we do not expect any benefits th
 TABLE-1: Control frequency in Hertz.
 
 | Model    | AMD Ryzen 9 5900X (Hz) |
-| -------- | ---------------------- | 
+| -------- | ---------------------- |
 | MobileRL | 2200                   |
 
 
@@ -294,7 +294,7 @@ TABLE-3: Platform compatibility evaluation.
 #### Notes
 
 ##### HSR
-The HSR environment relies on packages that are part of the proprietory HSR simulator.
+The HSR environment relies on packages that are part of the proprietary HSR simulator.
 If you have an HSR account with Toyota, please follow these steps to use the environment.
 Otherwise ignore this section to use the other environments we provide.
 
@@ -307,7 +307,7 @@ Otherwise ignore this section to use the other environments we provide.
 
   and add them to `pybind_add_module()` and `target_link_libraries()` two lines below that.
 - Comment in the hsr parts in `src/pybindings` and the import of HSREnv in `mobileRL/envs/robotenv.py` to create the python bindings
-- Some HSR launchfiles are not opensource either and might need some small adjustments
+- Some HSR launchfiles are not open source either and might need some small adjustments
 
 #### References
 <a name="kinematic-feasibility" href="https://arxiv.org/abs/2101.05325">[1]</a> Learning Kinematic Feasibility for Mobile Manipulation through Deep Reinforcement Learning,
