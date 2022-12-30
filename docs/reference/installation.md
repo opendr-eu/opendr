@@ -106,14 +106,14 @@ Note that `opendr-toolkit` is actually just a metapackage that includes all the 
 ## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run the OpenDR image as:
 ```bash
-sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v2.0.0
 ```
 The docker automatically runs a Jupyter notebook server that listens at port 8888.
 When launched, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running:
 ```bash
-sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
+sudo docker run -it opendr/opendr-toolkit:cpu_v2.0.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
