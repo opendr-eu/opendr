@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
 from torch import nn, optim, Tensor
+import torch.nn.functional as F
 
 from opendr.perception.continual_slam.algorithm.depth_pose_prediction.networks import ResnetEncoder, DepthDecoder, PoseDecoder
 from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config import Config
@@ -13,6 +14,7 @@ from opendr.perception.continual_slam.algorithm.depth_pose_prediction.utils impo
 
 from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 
+from opendr.perception.continual_slam.datasets import KittiDataset
 
 class DepthPosePredictor:
     def __init__(self, config: Config, dataset_config: DatasetConfig) -> None:
@@ -75,14 +77,87 @@ class DepthPosePredictor:
 
     def predict(self, batch) -> Dict[Tensor, Any]:
 
-        self._set.eval()
+        if self.val_loader is None:
+            self._create_dataset_loaders()
+        self._set_eval()
         with torch.no_grad():
-            outputs = self._make_prediction(batch)
+            outputs = self._make_prediction(batch[0])
         return outputs
 
     def _make_prediction(self, batch) -> Dict[Tensor, Any]:
 
-        pass
+        for key, ipt in batch.items():
+            data = ipt[0].data
+            batch[key] = torch.Tensor(data).to(self.device)
+        
+        # Compute predictions
+        outputs = {}
+        outputs.update(self._predict_disparity(batch))
+        outputs.update(self._predict_poses(batch))
+
+        return outputs
+    
+    def _predict_disparity(self, 
+                           inputs: Dict[Any, Tensor],
+                           frame: int = 0,
+                           scale: int = 0) -> Dict[Any, Tensor]:
+        features = self.models['depth_encoder'](list(inputs.values())[1].unsqueeze(0))
+        outputs = self.models['depth_decoder'](features)
+
+        return outputs
+
+    def _predict_poses(self,
+                       inputs: Dict[Any, Tensor]) -> Dict[Any, Tensor]:
+
+        """Predict poses for the current frame and the previous one. 0 -> - 1 and 0 -> 1"""
+
+        outputs = {}
+        pose_inputs_dict = {}
+        input_list = list(inputs.values())
+        for i, frame_id in enumerate([-1, 0 ,1]):
+            pose_inputs_dict[frame_id] = input_list[i].unsqueeze(0)
+        for frame_id in [-1, 1]:
+            if frame_id == -1:
+                pose_inputs = [pose_inputs_dict[frame_id], pose_inputs_dict[0]]
+            else:
+                pose_inputs = [pose_inputs_dict[0], pose_inputs_dict[frame_id]]
+            pose_inputs = torch.cat(pose_inputs, 1)
+
+            pose_features = [self.models['pose_encoder'](pose_inputs)]
+            axis_angle, translation = self.models['pose_decoder'](pose_features)
+
+            axis_angle, translation = axis_angle[:, 0], translation[:, 0]
+            outputs[('axis_angle', frame_id)] = axis_angle
+            outputs[('translation', frame_id)] = translation
+
+            outputs[('cam_T_cam', frame_id, 0)] = transformation_from_parameters(axis_angle, 
+                                                                                 translation,
+                                                                                 invert=(frame_id == -1))
+        return outputs
+
+    # def _reconstruct_images(self, 
+    #                         inputs: Dict[Any, Tensor],
+    #                         outputs: Dict[Any, Tensor]) -> Dict[Any, Tensor]:
+
+    #     """Reconstruct the image from the predicted disparity and pose"""
+
+    #     batch_size = outputs['disp', self.scales[0]].shape[0]
+
+    #     for scale in self.scales:
+    #         disp  = outputs[('disp', scale)]
+    #         disp = F.interpolate(disp, [self.height, self.width], mode='bilinear', align_corners=False)
+    #         source_scale = 0
+
+    #         depth = disp_to_depth(disp, self.min_depth, self.max_depth)
+    #         outputs[('depth', scale)] = depth
+            
+    #         for i, frame_id in enumerate([-1, 1]):
+    #             T = outputs [('cam_T_cam', 0, frame_id)]
+
+    #             if batch_size == 1:
+    #                 cam_points = self.backprojected_depth_single[source_scale]
+
+        return outputs
 
     def _make_predict_one_image(self, image):
         with torch.no_grad():
@@ -112,10 +187,20 @@ class DepthPosePredictor:
 
             pose_inputs = torch.cat((image0, image1), 1)
             pose_features = self.models['pose_encoder'](pose_inputs)
+            axis_angle, translation = self.models['pose_decoder'](pose_features)
+            pose = transformation_from_parameters(axis_angle[:, 0], translation[:, 0], invert=True)
             
-            pose_inputs = torch.cat(image1)
+            return depth_0, depth_1, pose
 
-
+    def _create_dataset_loaders(self, training: bool = True, validation: bool = True) -> None:
+        if self.dataset_type.lower() != 'kitti':
+            raise ValueError(f'Unknown dataset type: {self.dataset_type}')
+        if training:
+            # self.train_loader = KittiDataset(self.dataset_path)
+            raise NotImplementedError
+        if validation:
+            print('Loading validation dataset...')
+            self.val_loader = KittiDataset(str(self.dataset_path))
 
     def load_model(self, load_optimizer: bool = True) -> None:
         """Load model(s) from disk
@@ -163,6 +248,13 @@ class DepthPosePredictor:
                 print('Cannot find matching optimizer weights, so the optimizer is randomly '
                       'initialized.')
 
+    def _set_eval(self) -> None:
+        """Set the model to evaluation mode
+        """
+        for model in self.models.values():
+            if model is not None:
+                model.eval()
+
 if __name__ == '__main__':
     # Set local path
     local_path = Path(__file__).parent.parent.parent / 'configs'
@@ -171,4 +263,8 @@ if __name__ == '__main__':
     # Set up model
     x = DepthPosePredictor(config.depth_pose, config.dataset)
     x.load_model()
+    x._create_dataset_loaders(training=False, validation=True)
+    for batch in x.val_loader:
+        x.predict(batch)
+
     

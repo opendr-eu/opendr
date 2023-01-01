@@ -1,6 +1,6 @@
 Dataset:
   dataset: Kitti
-  dataset_path: canakcia/data/kitti
+  dataset_path: /home/canakcia/Desktop
   scales: [ 0, 1, 2, 3 ] # Provided by dataloader
   height: 192
   width: 640
