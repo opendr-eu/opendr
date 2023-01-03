@@ -234,8 +234,8 @@ jobs:
         #  fi
         #done < packages.txt
 
-        python3 -m pip install --no-index ./artifact/wheel-artifact/opendr-toolkit-engine-?.?.?.tar.gz --find-links ./artifact/wheel-artifact/
-        python3 -m pip install --no-index ./artifact/wheel-artifact/opendr-toolkit-?.?.?.tar.gz --find-links ./artifact/wheel-artifact/
+        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-?.?.?.tar.gz --find-links ./artifact/wheel-artifact/
+        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-?.?.?.tar.gz --find-links ./artifact/wheel-artifact/
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
