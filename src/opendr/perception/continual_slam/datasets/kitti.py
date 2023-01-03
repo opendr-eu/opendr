@@ -107,7 +107,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple[Any, None]
         """
         data = {}
-        for i in range(idx-2, idx+1):
+        for i in range(idx, idx+3):
             image = Image.open(str(self.images[i]))
             distance, speed = self._load_relative_distance(i)
             image_id = self.images[i].name.split('.')[0]

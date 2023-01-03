@@ -1,6 +1,3 @@
-import shutil
-import warnings
-from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
@@ -12,7 +9,7 @@ from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config imp
 from opendr.perception.continual_slam.algorithm.depth_pose_prediction.dataset_config import DatasetConfig
 from opendr.perception.continual_slam.algorithm.depth_pose_prediction.utils import *
 
-from opendr.perception.continual_slam.configs.config_parser import ConfigParser
+
 
 from opendr.perception.continual_slam.datasets import KittiDataset
 
@@ -77,18 +74,26 @@ class DepthPosePredictor:
 
     def predict(self, batch) -> Dict[Tensor, Any]:
 
-        if self.val_loader is None:
-            self._create_dataset_loaders()
+        # if self.val_loader is None:
+        #     self._create_dataset_loaders()
         self._set_eval()
         with torch.no_grad():
-            outputs = self._make_prediction(batch[0])
+            outputs = self._make_prediction(batch)
         return outputs
 
     def _make_prediction(self, batch) -> Dict[Tensor, Any]:
 
-        for key, ipt in batch.items():
-            data = ipt[0].data
-            batch[key] = torch.Tensor(data).to(self.device)
+        if len(batch) != 3:
+            raise ValueError(f'Expected 3 images, but got {len(batch)}')
+
+        for key, data in batch.items():
+            if len(data.shape) == 3:
+                data = data.unsqueeze(0)
+
+            if type(data) != torch.Tensor:
+                batch[key] = torch.from_numpy(data).to(self.device)
+            else:
+                batch[key] = data.to(self.device)
         
         # Compute predictions
         outputs = {}
@@ -99,23 +104,31 @@ class DepthPosePredictor:
     
     def _predict_disparity(self, 
                            inputs: Dict[Any, Tensor],
-                           frame: int = 0,
-                           scale: int = 0) -> Dict[Any, Tensor]:
-        features = self.models['depth_encoder'](list(inputs.values())[1].unsqueeze(0))
+                           frame_id: int = 0) -> Dict[Any, Tensor]:
+        """Predict disparity for the current frame.
+        @param inputs: dictionary containing the input images. The format is: {0: img_t1, -1: img_t2, 1: img_t0}
+        @param frame_id: the frame id for which the disparity is predicted. Default is 0.
+        @return: dictionary containing the disparity maps. The format is: {('disp', scale, frame_id): disp0, ...}        
+        """
+
+        features = self.models['depth_encoder'](inputs[frame_id])
         outputs = self.models['depth_decoder'](features)
 
-        return outputs
+        output = {}
+        for scale in self.scales:
+            output['disp', scale, frame_id] = outputs[("disp", scale)]
+        return output
 
     def _predict_poses(self,
                        inputs: Dict[Any, Tensor]) -> Dict[Any, Tensor]:
 
-        """Predict poses for the current frame and the previous one. 0 -> - 1 and 0 -> 1"""
+        """Predict poses for the current frame and the previous one. 0 -> - 1 and 0 -> 1
+        @param inputs: dictionary containing the input images. The format is: {0: img_t1, -1: img_t2, 1: img_t0}
+        """
 
         outputs = {}
-        pose_inputs_dict = {}
-        input_list = list(inputs.values())
-        for i, frame_id in enumerate([-1, 0 ,1]):
-            pose_inputs_dict[frame_id] = input_list[i].unsqueeze(0)
+        pose_inputs_dict = inputs
+
         for frame_id in [-1, 1]:
             if frame_id == -1:
                 pose_inputs = [pose_inputs_dict[frame_id], pose_inputs_dict[0]]
@@ -127,70 +140,13 @@ class DepthPosePredictor:
             axis_angle, translation = self.models['pose_decoder'](pose_features)
 
             axis_angle, translation = axis_angle[:, 0], translation[:, 0]
-            outputs[('axis_angle', frame_id)] = axis_angle
-            outputs[('translation', frame_id)] = translation
+            outputs[('axis_angle', 0, frame_id)] = axis_angle
+            outputs[('translation', 0, frame_id)] = translation
 
-            outputs[('cam_T_cam', frame_id, 0)] = transformation_from_parameters(axis_angle, 
-                                                                                 translation,
-                                                                                 invert=(frame_id == -1))
+            outputs[('cam_T_cam', 0, frame_id)] = transformation_from_parameters(axis_angle, 
+                                                                              translation,
+                                                                              invert=(frame_id == -1))
         return outputs
-
-    # def _reconstruct_images(self, 
-    #                         inputs: Dict[Any, Tensor],
-    #                         outputs: Dict[Any, Tensor]) -> Dict[Any, Tensor]:
-
-    #     """Reconstruct the image from the predicted disparity and pose"""
-
-    #     batch_size = outputs['disp', self.scales[0]].shape[0]
-
-    #     for scale in self.scales:
-    #         disp  = outputs[('disp', scale)]
-    #         disp = F.interpolate(disp, [self.height, self.width], mode='bilinear', align_corners=False)
-    #         source_scale = 0
-
-    #         depth = disp_to_depth(disp, self.min_depth, self.max_depth)
-    #         outputs[('depth', scale)] = depth
-            
-    #         for i, frame_id in enumerate([-1, 1]):
-    #             T = outputs [('cam_T_cam', 0, frame_id)]
-
-    #             if batch_size == 1:
-    #                 cam_points = self.backprojected_depth_single[source_scale]
-
-        return outputs
-
-    def _make_predict_one_image(self, image):
-        with torch.no_grad():
-            image = image.to(self.device)
-            features = self.models['depth_encoder'](image)
-            disp  = self.models['depth_decoder'](features)[('disp', 0)]
-
-            depth = disp_to_depth(disp, self.min_depth, self.max_depth)
-        return depth
-
-    def _make_predict_two_images(self, image0, image1):
-
-        if len(image0.shape) == 3:
-            image0 = image0.unsqueeze(dim=0)
-        if len(image1.shape) == 3:
-            image1 = image1.unsqueeze(dim=0)
-
-        with torch.no_grad():
-            image0 = image0.to(self.device)
-            image1 = image1.to(self.device)
-            features_0 = self.models['depth_encoder'](image0)
-            disp_0 = self.models['depth_decoder'](features_0)[('disp', 0)]
-            features_1 = self.models['depth_encoder'](image1)
-            disp_1 = self.models['depth_decoder'](features_1)[('disp', 0)]
-            depth_0 = disp_to_depth(disp_0, self.min_depth, self.max_depth)
-            depth_1 = disp_to_depth(disp_1, self.min_depth, self.max_depth)
-
-            pose_inputs = torch.cat((image0, image1), 1)
-            pose_features = self.models['pose_encoder'](pose_inputs)
-            axis_angle, translation = self.models['pose_decoder'](pose_features)
-            pose = transformation_from_parameters(axis_angle[:, 0], translation[:, 0], invert=True)
-            
-            return depth_0, depth_1, pose
 
     def _create_dataset_loaders(self, training: bool = True, validation: bool = True) -> None:
         if self.dataset_type.lower() != 'kitti':
@@ -237,7 +193,7 @@ class DepthPosePredictor:
             try:
                 optimizer_dict = torch.load(optimizer_load_path, map_location=self.device)
                 if 'optimizer' in optimizer_dict:
-                    self.optimizer.load_state_dict(optimizer_dict['optimizer'])
+                    self.optimizer.load_state_dict(optimizer_dict['optimizer']['param_groups'])
                     self.lr_scheduler.load_state_dict(optimizer_dict['scheduler'])
                     self.epoch = self.lr_scheduler.last_epoch
                     print(f'Restored optimizer and LR scheduler (resume from epoch {self.epoch}).')
@@ -255,16 +211,24 @@ class DepthPosePredictor:
             if model is not None:
                 model.eval()
 
-if __name__ == '__main__':
-    # Set local path
-    local_path = Path(__file__).parent.parent.parent / 'configs'
-    config = ConfigParser(local_path / 'singlegpu_kitti.yaml')
 
-    # Set up model
-    x = DepthPosePredictor(config.depth_pose, config.dataset)
-    x.load_model()
-    x._create_dataset_loaders(training=False, validation=True)
-    for batch in x.val_loader:
-        x.predict(batch)
+
+# if __name__ == '__main__':
+#     # Set local path
+#     local_path = Path(__file__).parent.parent.parent / 'configs'
+#     config = ConfigParser(local_path / 'singlegpu_kitti.yaml')
+
+#     # Set up model
+#     x = DepthPosePredictor(config.depth_pose, config.dataset)
+#     x.load_model()
+#     x._create_dataset_loaders(training=False, validation=True)
+#     for batch in x.val_loader:
+#         # This part should be removed afterwards, because the arriving input id's will be already 
+#         # in the correct order and named as [-1, 0, 1], because ros node reciever will do that
+#         # TODO: Remove this part
+#         # ==================================================
+#         inputs = prediction_input_formatter(batch)
+#         # ==================================================
+#         x.predict(inputs)
 
     
