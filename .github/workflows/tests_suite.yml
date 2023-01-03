@@ -223,16 +223,19 @@ jobs:
         python3 -m pip install --upgrade pip
         python3 -m pip install wheel
 
-        # install all tools one at a time
-        while read f; do
-          package=$(sed "s/_/-/g" <<< $f)
-          package=(${package//// })
-          if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+        ## install all tools one at a time
+        #while read f; do
+        #  package=$(sed "s/_/-/g" <<< $f)
+        #  package=(${package//// })
+        #  if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
+        #
+        #  if [ "$package" != "opendr" ]; then
+        #    python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+        #  fi
+        #done < packages.txt
 
-          if [ "$package" != "opendr" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
-          fi
-        done < packages.txt
+        python3 -m pip install --no-index ./artifact/wheel-artifact/opendr-toolkit-engine-?.?.?.tar.gz --find-links ./artifact/wheel-artifact/
+        python3 -m pip install --no-index ./artifact/wheel-artifact/opendr-toolkit-?.?.?.tar.gz --find-links ./artifact/wheel-artifact/
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
