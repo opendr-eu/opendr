@@ -92,21 +92,24 @@ class ContinualSLAMLearner(Learner):
         """
         # Convert the prediction to opendr format
         for item in prediction:
-            if item[0] == 'disp':
+            if item[0] == 'depth':
                 if item[1] == 0:
-                    disp = self._colorize_depth(prediction[item].cpu().detach().numpy())
+                    self._colorize_depth(prediction[item].squeeze().cpu().detach().numpy())
             if item[0] == 'cam_T_cam':
                 if item[2] == 1:
                     odometry = prediction[item].cpu().detach().numpy()
-        return disp, odometry
+        return depth, odometry
 
-    def _colorize_depth(self, disp):
-        vmax = np.percentile(disp, 95)
-        normalizer = mpl.colors.Normalize(vmin=disp.min(), vmax=vmax)
-        mapper = plt.cm.ScalarMappable(norm=normalizer, cmap="magma")
-        colormapped_img = (mapper.to_rgba(disp.squeeze())[:, :, :3] * 255).astype(np.uint8)
-
-        return Image(colormapped_img)
+    def _colorize_depth(self, depth):
+        vmax = np.percentile(depth, 95)
+        # normalizer = mpl.colors.Normalize(vmin=depth.min(), vmax=vmax)
+        # mapper = plt.cm.ScalarMappable(norm=normalizer, cmap="magma_r")
+        #   colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3] * 255).astype(np.uint8)
+        fig = plt.figure(figsize=(12.8, 9.6))
+        plt.imshow(depth, cmap='magma_r', vmax=vmax)
+        # return Image(colormapped_img)
+        # return colormapped_img
+        return None
 
     def eval(self, dataset, *args, **kwargs):
         raise NotImplementedError
@@ -132,7 +135,10 @@ if __name__ == "__main__":
     dataset_config_file = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset.dataset_path
     dataset = KittiDataset(str(dataset_config_file))
 
+    from PIL import Image as imgg 
+    import time
+
     for batch in dataset:
-        prediction = learner.infer(batch)
-        print(prediction)
-        break
+        depth, odometry = learner.infer(batch)
+        # imgg.fromarray(depth).show()
+        time.sleep(1)

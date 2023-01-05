@@ -78,8 +78,6 @@ class ContinualSlamPredictor:
         batch = self._convert_cache_into_batch()
 
         depth, odometry = self.predictor.infer(batch)
-        
-
 
     def _cache_arriving_data(self, image, velocity, distance, frame_id):
         # Cache the arriving last 3 data
