@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
     parser.add_argument("--opendr_device", help="Target device for installation",
                         type=str, choices=["gpu", "cpu"], default="gpu")
-    parser.add_argument("--torch_version", help="Specifies torch version to be used for LibTorch installation", type=str, default="1.9.0")
+    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.9.0")
     args = parser.parse_args()
 
     COMPATIBILITY_VERSIONS = {
@@ -62,6 +62,8 @@ if __name__ == '__main__':
         "1.9.1": "0.10.1",
         "1.9.0": "0.10.0",
     }
+
+    warnings.simplefilter("error")
 
     TORCH_VERSION = args.torch_version
     VISION_VERSION = COMPATIBILITY_VERSIONS[TORCH_VERSION]
@@ -93,6 +95,7 @@ if __name__ == '__main__':
         except:
             warnings.warn("\033[93m No CUDA installation found.\n"
                           "Please install CUDA or specify CUDA path with export CUDA_PATH=/path/to/your/cuda.")
+            exit()
     else:
         DEVICE = "cpu"
 
@@ -119,4 +122,5 @@ if __name__ == '__main__':
     except:
         warnings.warn("\033[93m No torchvision found for your specific torch version.\n"
                       "Please refer to https://github.com/pytorch/vision for more information.")
+        exit()
 
