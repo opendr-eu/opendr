@@ -29,26 +29,26 @@ git submodule update
 python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -U pip
-pip3 install setuptools configparser
+python3 -m pip install setuptools configparser
 
 # Add repositories for ROS
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
-            && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+  && curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
 
 # Build OpenDR
 make install_compilation_dependencies
 make install_runtime_dependencies
 
-# Install additional ROS packages
+# ROS package dependencies
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
   echo "Installing ROS dependencies"
   sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros
 fi
 
-# Install additional ROS2 packages
+# ROS2 package dependencies
 if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   echo "Installing ROS2 dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2 python3-colcon-common-extensions ros-$ROS_DISTRO-vision-msgs
+  sudo apt-get -y install python3-lark ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros2 python3-colcon-common-extensions ros-$ROS_DISTRO-vision-msgs
   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/ros/$ROS_DISTRO/lib/controller
   cd $OPENDR_HOME/projects/opendr_ws_2/
   git clone --depth 1 --branch ros2 https://github.com/ros-drivers/audio_common src/audio_common
@@ -58,14 +58,14 @@ fi
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
-  pip3 uninstall -y mxnet
-  pip3 uninstall -y torch
+  python3 -m pip uninstall -y mxnet
+  python3 -m pip uninstall -y torch
   echo "[INFO] Replacing  mxnet-cu112==1.8.0post0 to enable CUDA acceleration."
-  pip3 install mxnet-cu112==1.8.0post0
+  python3 -m pip install mxnet-cu112==1.8.0post0
   echo "[INFO] Replacing torch==1.9.0+cu111 to enable CUDA acceleration."
-  pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+  python3 -m pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
   echo "[INFO] Reinstalling detectronv2."
-  pip3 install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
+  python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
 fi
 
 make libopendr

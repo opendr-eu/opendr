@@ -1,7 +1,0 @@
-numpy==1.17.5
-Cython
-torch==1.9.0
-wheel
-git+https://github.com/cidl-auth/cocoapi@03ee5a19844e253b8365dbbf35c1e5d8ca2e7281#subdirectory=PythonAPI
-git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
-git+https://github.com/MatthewHowe/DCNv2@194f5733c667cf13e5bd478a8c5bf27573ffa98c
