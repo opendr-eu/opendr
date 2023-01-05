@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import cv2
+import argparse
 import time
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw
-import argparse
 
 
 class VideoReader(object):

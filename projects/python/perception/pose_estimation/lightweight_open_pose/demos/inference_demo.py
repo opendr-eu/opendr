@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import cv2
-from opendr.perception.pose_estimation import LightweightOpenPoseLearner
-from opendr.perception.pose_estimation import draw
-from opendr.engine.data import Image
 import argparse
 from os.path import join
+from opendr.engine.data import Image
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+from opendr.perception.pose_estimation import draw
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

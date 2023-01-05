@@ -14,11 +14,11 @@
 
 import cv2
 import time
-from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 import argparse
 from os.path import join
-from tqdm import tqdm
 import numpy as np
+from tqdm import tqdm
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
