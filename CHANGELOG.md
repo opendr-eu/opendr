@@ -1,5 +1,8 @@
 # OpenDR Toolkit Change Log
 
+## Version 2.1.0
+Released on XX, XX, 2023.
+
 ## Version 2.0.0
 Released on December, 31st, 2022.
 
