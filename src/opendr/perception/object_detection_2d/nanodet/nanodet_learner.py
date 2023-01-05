@@ -356,8 +356,6 @@ class NanodetLearner(Learner):
         return NotImplementedError
 
     def _save_onnx(self, onnx_path, img=None, do_constant_folding=False, verbose=True):
-        if self.jit_model:
-            warnings.warn("Warning: A JIT model was already initialized, inference will run in ONNX mode by default.")
         if not self.predictor:
             self.predictor = Predictor(self.cfg, self.model, device=self.device)
 
@@ -422,8 +420,6 @@ class NanodetLearner(Learner):
         self.ort_session = ort.InferenceSession(onnx_path)
 
     def _save_jit(self, jit_path, img=None, verbose=True):
-        if self.ort_session:
-            warnings.warn("Warning: An ONNX model was already initialized, inference will run in ONNX mode by default.")
         if not self.predictor:
             self.predictor = Predictor(self.cfg, self.model, device=self.device)
 
@@ -678,6 +674,10 @@ class NanodetLearner(Learner):
 
         (_input, _height, _width, _warp_matrix) = self.predictor.preprocessing(_input)
         if self.ort_session:
+            if self.jit_model:
+                warnings.warn(
+                    "Warning: Both JIT and ONNX models are initialized, inference will run in ONNX mode by default.\n"
+                    "To run in JIT please delete the self.ort_session like: detector.ort_session = None.")
             res = self.ort_session.run(['output'], {'data': _input.cpu().detach().numpy()})
             res = self.predictor.postprocessing(torch.from_numpy(res[0]), _input, _height, _width, _warp_matrix)
         elif self.jit_model:
