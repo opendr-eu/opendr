@@ -99,9 +99,20 @@ class DepthPosePredictor:
         outputs = {}
         outputs.update(self._predict_disparity(batch))
         outputs.update(self._predict_poses(batch))
+        outputs.update(self._reconstruct_depth(outputs))
 
         return outputs
-    
+
+    def _reconstruct_depth(self,
+                           outputs: Dict[Any, Tensor]) -> Dict[Any, Tensor]:
+        """Reconstruct depth maps from disparity maps. """
+        for scale in self.scales:
+            disp = outputs[('disp', scale, 0)]
+            disp = F.interpolate(disp, [self.height, self.width], mode='bilinear', align_corners=False)
+            depth = disp_to_depth(disp, self.min_depth, self.max_depth)
+            outputs[('depth', scale, 0)] = depth
+        return outputs
+
     def _predict_disparity(self, 
                            inputs: Dict[Any, Tensor],
                            frame_id: int = 0) -> Dict[Any, Tensor]:
