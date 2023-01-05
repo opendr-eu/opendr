@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-struct nanodet_model {
+struct NanodetModel {
   // Jit cpp class holder
   void *network;
 
@@ -32,15 +32,15 @@ struct nanodet_model {
   char *device;
 
   // Recognition threshold
-  float score_threshold;
+  float scoreThreshold;
 
   // Model input size
-  int input_size[2];
+  int inputSizes[2];
 
   // Keep ratio flag
-  int keep_ratio;
+  int keepRatio;
 };
-typedef struct nanodet_model nanodet_model_t;
+typedef struct NanodetModel NanodetModelT;
 
 /**
  * Loads a nanodet object detection model saved in libtorch format.
@@ -51,7 +51,7 @@ typedef struct nanodet_model nanodet_model_t;
  * @param scoreThreshold confidence threshold
  * @param model the model to be loaded
  */
-void load_nanodet_model(char *modelPath, char *device, int height, int width, float scoreThreshold, nanodet_model_t *model);
+void loadNanodetModel(char *modelPath, char *device, int height, int width, float scoreThreshold, NanodetModelT *model);
 
 /**
  * This function performs inference using a nanodet object detection model and an input image.
@@ -59,13 +59,13 @@ void load_nanodet_model(char *modelPath, char *device, int height, int width, fl
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_image_t *image);
+OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
 
 /**
  * Releases the memory allocated for a nanodet object detection model.
  * @param model model to be de-allocated
  */
-void free_nanodet_model(nanodet_model_t *model);
+void freeNanodetModel(NanodetModelT *model);
 
 /**
  * Draw the bounding boxes from detections in the given image.
@@ -73,7 +73,7 @@ void free_nanodet_model(nanodet_model_t *model);
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
  */
-void draw_bboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_vector_target_t *detectionsVector);
+void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
 
 #ifdef __cplusplus
 }

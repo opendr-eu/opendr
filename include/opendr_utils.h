@@ -31,7 +31,7 @@ extern "C" {
  * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return string with the value of key
  */
-const char *json_get_key_string(const char *json, const char *key, const int index);
+const char *jsonGetKeyString(const char *json, const char *key, const int index);
 
 /**
  * JSON parser for OpenDR model files.
@@ -40,7 +40,7 @@ const char *json_get_key_string(const char *json, const char *key, const int ind
  * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return float with the value of key
  */
-float json_get_key_float(const char *json, const char *key, const int index);
+float jsonGetKeyFloat(const char *json, const char *key, const int index);
 
 /**
  * JSON parser for OpenDR model files from inference_params key.
@@ -49,41 +49,41 @@ float json_get_key_float(const char *json, const char *key, const int index);
  * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return float with the value of key
  */
-float json_get_key_from_inference_params(const char *json, const char *key, const int index);
+float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index);
 
 /**
  * Reads an image from path and saves it into OpenDR image structure.
  * @param path path from which the image will be read
  * @param image OpenDR image data structure to store the image
  */
-void load_image(const char *path, opendr_image_t *image);
+void loadImage(const char *path, OpendrImageT *image);
 
 /**
  * Releases the memory allocated for an OpenDR image structure
  * @param image OpenDR image structure to release
  */
-void free_image(opendr_image_t *image);
+void freeImage(OpendrImageT *image);
 
 /**
  * Initialize an empty detection list.
- * @param detection_vector OpenDR detection_target_list structure to be initialized
+ * @param detectionVector OpenDR OpendrDetectionVectorTarget structure to be initialized
  */
-void init_detections_vector(opendr_detection_vector_target_t *detection_vector);
+void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector);
 
 /**
  * Loads an OpenDR detection target list.
- * @param detection_vector OpenDR detection_target_list structure to be loaded
+ * @param detectionVector OpenDR OpendrDetectionVectorTarget structure to be loaded
  * @param detection the pointer of the first OpenDR detection target in a vector
- * @param vector_size the size of the vector
+ * @param vectorSize the size of the vector
  */
-void load_detections_vector(opendr_detection_vector_target_t *detection_vector, opendr_detection_target_t *detection,
-                            int vector_size);
+void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection,
+                            int vectorSize);
 
 /**
  * Releases the memory allocated for a detection list structure
- * @param detection_vector OpenDR detection vector target structure to release
+ * @param detectionVector OpenDR detection vector target structure to release
  */
-void free_detections_vector(opendr_detection_vector_target_t *detection_vector);
+void freeDetectionsVector(OpendrDetectionVectorTargetT *detectionVector);
 
 #ifdef __cplusplus
 }

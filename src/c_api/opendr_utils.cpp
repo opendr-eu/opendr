@@ -24,17 +24,17 @@
 #include <stringbuffer.h>
 #include <writer.h>
 
-float json_get_key_from_inference_params(const char *json, const char *key, const int index) {
+float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
   if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {
     return 0.0f;
   }
-  const rapidjson::Value &inference_params = doc["inference_params"];
-  if ((!inference_params.IsObject()) || (!inference_params.HasMember(key))) {
+  const rapidjson::Value &inferenceParams = doc["inference_params"];
+  if ((!inferenceParams.IsObject()) || (!inferenceParams.HasMember(key))) {
     return 0.0f;
   }
-  const rapidjson::Value &value = inference_params[key];
+  const rapidjson::Value &value = inferenceParams[key];
   if (value.IsArray()) {
     if (value.Size() <= index) {
       return 0.0f;
@@ -50,7 +50,7 @@ float json_get_key_from_inference_params(const char *json, const char *key, cons
   return value.GetFloat();
 }
 
-const char *json_get_key_string(const char *json, const char *key, const int index) {
+const char *jsonGetKeyString(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
   if ((!doc.IsObject()) || (!doc.HasMember(key))) {
@@ -72,7 +72,7 @@ const char *json_get_key_string(const char *json, const char *key, const int ind
   return value.GetString();
 }
 
-float json_get_key_float(const char *json, const char *key, const int index) {
+float jsonGetKeyFloat(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
   if ((!doc.IsObject()) || (!doc.HasMember(key))) {
@@ -94,27 +94,27 @@ float json_get_key_float(const char *json, const char *key, const int index) {
   return value.GetFloat();
 }
 
-void load_image(const char *path, opendr_image_t *image) {
-  cv::Mat opencv_image = cv::imread(path, cv::IMREAD_COLOR);
-  if (opencv_image.empty()) {
+void loadImage(const char *path, OpendrImageT *image) {
+  cv::Mat opencvImage = cv::imread(path, cv::IMREAD_COLOR);
+  if (opencvImage.empty()) {
     image->data = NULL;
   } else {
-    image->data = new cv::Mat(opencv_image);
+    image->data = new cv::Mat(opencvImage);
   }
 }
 
-void free_image(opendr_image_t *image) {
+void freeImage(OpendrImageT *image) {
   if (image->data) {
-    cv::Mat *opencv_image = static_cast<cv::Mat *>(image->data);
-    delete opencv_image;
+    cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+    delete opencvImage;
   }
 }
 
-void init_detections_vector(opendr_detection_vector_target_t *detection_vector) {
-  detection_vector->starting_pointer = NULL;
+void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector) {
+  detectionVector->startingPointer = NULL;
 
-  std::vector<opendr_detection_target> detections;
-  opendr_detection_target_t detection;
+  std::vector<OpendrDetectionTarget> detections;
+  OpendrDetectionTargetT detection;
 
   detection.name = -1;
   detection.left = 0.0;
@@ -125,20 +125,20 @@ void init_detections_vector(opendr_detection_vector_target_t *detection_vector) 
 
   detections.push_back(detection);
 
-  load_detections_vector(detection_vector, detections.data(), static_cast<int>(detections.size()));
+  loadDetectionsVector(detectionVector, detections.data(), static_cast<int>(detections.size()));
 }
 
-void load_detections_vector(opendr_detection_vector_target_t *detection_vector, opendr_detection_target_t *detection,
-                            int vector_size) {
-  free_detections_vector(detection_vector);
+void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection,
+                            int vectorSize) {
+  freeDetectionsVector(detectionVector);
 
-  detection_vector->size = vector_size;
-  int size_of_output = (vector_size) * sizeof(opendr_detection_target_t);
-  detection_vector->starting_pointer = static_cast<opendr_detection_target_t *>(malloc(size_of_output));
-  std::memcpy(detection_vector->starting_pointer, detection, size_of_output);
+  detectionVector->size = vectorSize;
+  int sizeOfOutput = (vectorSize) * sizeof(OpendrDetectionTargetT);
+  detectionVector->startingPointer = static_cast<OpendrDetectionTargetT *>(malloc(sizeOfOutput));
+  std::memcpy(detectionVector->startingPointer, detection, sizeOfOutput);
 }
 
-void free_detections_vector(opendr_detection_vector_target_t *detection_vector) {
-  if (detection_vector->starting_pointer != NULL)
-    free(detection_vector->starting_pointer);
+void freeDetectionsVector(OpendrDetectionVectorTargetT *detectionVector) {
+  if (detectionVector->startingPointer != NULL)
+    free(detectionVector->startingPointer);
 }

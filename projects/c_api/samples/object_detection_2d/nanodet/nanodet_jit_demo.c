@@ -29,34 +29,34 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  nanodet_model_t model;
+  NanodetModelT model;
 
   int height = atoi(argv[4]);
   int width = atoi(argv[5]);
   printf("start init model\n");
-  load_nanodet_model(argv[1], argv[2], height, width, 0.35, &model);
+  loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
   printf("success\n");
 
-  opendr_image_t image;
+  OpendrImageT image;
 
-  load_image(argv[3], &image);
+  loadImage(argv[3], &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
   }
 
   // Initialize opendr detection target list;
-  opendr_detection_vector_target_t results;
-  init_detections_vector(&results);
+  OpendrDetectionVectorTargetT results;
+  initDetectionsVector(&results);
 
-  results = infer_nanodet(&model, &image);
+  results = inferNanodet(&model, &image);
 
-  draw_bboxes(&image, &model, &results);
+  drawBboxes(&image, &model, &results);
 
   // Free the memory
-  free_detections_vector(&results);
-  free_image(&image);
-  free_nanodet_model(&model);
+  freeDetectionsVector(&results);
+  freeImage(&image);
+  freeNanodetModel(&model);
 
   return 0;
 }

@@ -124,7 +124,7 @@ Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT mod
 Note: In ONNX optimization, the output model executes the original model's feed forward method.
 The user must create their own pre- and post-processes in order to use the ONNX model in the C API.
 In JIT optimization the output model performs the feed forward pass and post-processing.
-To use the C API, it is recommended to use JIT optimization as shown in the [example of OpenDR's C API](../../projects/c_api/samples/nanodet/nanodet_jit_demo.c)
+To use the C API, it is recommended to use JIT optimization as shown in the [example of OpenDR's C API](../../projects/c_api/samples/object_detection/nanodet/nanodet_jit_demo.c).
 
 Parameters:
 
