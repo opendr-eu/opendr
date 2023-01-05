@@ -6,7 +6,7 @@
 #               AP_m = 0.214
 #               AP_l = 0.364
 
-save_dir: ./workspace/nanodet_t
+save_dir: ./temp/nanodet_t
 check_point_name: t
 model:
   arch:
