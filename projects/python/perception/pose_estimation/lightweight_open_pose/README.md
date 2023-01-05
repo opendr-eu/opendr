@@ -9,6 +9,7 @@ More specifically, the following applications are provided:
 3. demos/eval_demo.py: A tool that demonstrates how to perform evaluation using OpenPose
 4. demos/inference_demo.py: A tool that demonstrates how to perform inference on a single image and then draw the detected poses
 5. demos/webcame_demo.py: A simple tools that performs live pose estimation using a webcam
-6. jetbot: A demo developed on Webots to demonstrate how OpenDR functionality can be used to provide a naive fall detector. This demo can be also directly used on an NVIDIA JetBot.
+6. demos/wave_detection_demo.py: A rule-based method for wave detection using a webcam
+7. jetbot: A demo developed on Webots to demonstrate how OpenDR functionality can be used to provide a naive fall detector. This demo can be also directly used on an NVIDIA JetBot.
 
 Please use the `--device cpu` flag for the demos if you are running them on a machine without a CUDA-enabled GPU. The JetBot demo autodetects whether a GPU is available.
