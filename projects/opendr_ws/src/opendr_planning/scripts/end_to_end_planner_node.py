@@ -17,7 +17,7 @@
 import rospy
 import numpy as np
 import webots_ros.srv
-import ros_numpy
+from cv_bridge import CvBridge
 from std_msgs.msg import String
 from sensor_msgs.msg import Imu, Image
 from geometry_msgs.msg import PoseStamped, PointStamped
@@ -33,6 +33,7 @@ class EndToEndPlannerNode:
         Creates a ROS Node for end-to-end planner
         """
         self.node_name = "opendr_end_to_end_planner"
+        self.bridge = CvBridge()
         self.model_name = ""
         self.current_pose = PoseStamped()
         self.target_pose = PoseStamped()
@@ -41,22 +42,28 @@ class EndToEndPlannerNode:
         rospy.init_node(self.node_name, anonymous=True)
         self.r = rospy.Rate(25)
         rospy.Subscriber("/model_name", String, self.model_name_callback)
+        counter = 0
         while self.model_name == "":
             self.r.sleep()
-            print("Waiting for webots model to start!")
-        self.input_depth_image_topic = "/" + self.model_name + "/range_finder/range_image"
-        self.position_topic = "/" + self.model_name + "/gps1/values"
-        self.orientation_topic = "/" + self.model_name + "/inertial_unit/quaternion"
+            counter += 1
+            if counter > 25:
+                break
+        if self.model_name == "":
+            rospy.loginfo("Webots model is not started!")
+            return
+        self.input_depth_image_topic = "/range_finder/range_image"
+        self.position_topic = "/gps/values"
+        self.orientation_topic = "/inertial_unit/quaternion"
         self.ros_srv_range_sensor_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/range_finder/enable", webots_ros.srv.set_int)
-        self.ros_srv_gps1_sensor_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/gps1/enable", webots_ros.srv.set_int)
+            "/range_finder/enable", webots_ros.srv.set_int)
+        self.ros_srv_gps_sensor_enable = rospy.ServiceProxy(
+            "/gps/enable", webots_ros.srv.set_int)
         self.ros_srv_inertial_unit_enable = rospy.ServiceProxy(
-            "/" + self.model_name + "/inertial_unit/enable", webots_ros.srv.set_int)
+            "/inertial_unit/enable", webots_ros.srv.set_int)
         self.end_to_end_planner = EndToEndPlanningRLLearner(env=None)
 
         try:
-            self.ros_srv_gps1_sensor_enable(1)
+            self.ros_srv_gps_sensor_enable(1)
             self.ros_srv_inertial_unit_enable(1)
             self.ros_srv_range_sensor_enable(1)
         except rospy.ServiceException as exc:
@@ -74,7 +81,7 @@ class EndToEndPlannerNode:
         rospy.spin()
 
     def range_callback(self, data):
-        image_arr = ros_numpy.numpify(data)
+        image_arr = self.bridge.imgmsg_to_cv2(data)
         self.range_image = ((np.clip(image_arr.reshape((64, 64, 1)), 0, 15) / 15.) * 255).astype(np.uint8)
         observation = {'depth_cam': np.copy(self.range_image), 'moving_target': np.array([5, 0, 0])}
         action = self.end_to_end_planner.infer(observation, deterministic=True)[0]
@@ -82,13 +89,13 @@ class EndToEndPlannerNode:
 
     def gps_callback(self, data):  # for no dynamics
         self.current_pose.header.stamp = rospy.Time.now()
-        self.current_pose.pose.position.x = data.point.z
-        self.current_pose.pose.position.y = data.point.x
-        self.current_pose.pose.position.z = data.point.y
+        self.current_pose.pose.position.x = -data.point.x
+        self.current_pose.pose.position.y = -data.point.y
+        self.current_pose.pose.position.z = data.point.z
 
     def imu_callback(self, data):  # for no dynamics
         self.current_orientation = data.orientation
-        self.current_yaw = euler_from_quaternion(data.orientation)["roll"]
+        self.current_yaw = euler_from_quaternion(data.orientation)["yaw"]
         self.current_pose.pose.orientation = euler_to_quaternion(0, 0, yaw=self.current_yaw)
 
     def model_name_callback(self, data):

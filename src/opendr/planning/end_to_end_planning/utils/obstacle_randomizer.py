@@ -22,15 +22,15 @@ class ObstacleRandomizer():
     def __init__(self, model_name):
         self.number_of_obstacles = 10
         self.model_name = model_name
-        self.ros_srv_get_from_def = rospy.ServiceProxy("/" + self.model_name + "/supervisor/get_from_def",
+        self.ros_srv_get_from_def = rospy.ServiceProxy("/supervisor/get_from_def",
                                                        webots_ros.srv.supervisor_get_from_def)
-        self.ros_srv_get_field = rospy.ServiceProxy("/" + self.model_name + "/supervisor/node/get_field",
+        self.ros_srv_get_field = rospy.ServiceProxy("/supervisor/node/get_field",
                                                     webots_ros.srv.node_get_field)
-        self.ros_srv_field_set_v3 = rospy.ServiceProxy("/" + self.model_name + "/supervisor/field/set_vec3f",
+        self.ros_srv_field_set_v3 = rospy.ServiceProxy("/supervisor/field/set_vec3f",
                                                        webots_ros.srv.field_set_vec3f)
-        self.ros_srv_field_set_rotation = rospy.ServiceProxy("/" + self.model_name + "/supervisor/field/set_rotation",
+        self.ros_srv_field_set_rotation = rospy.ServiceProxy("/supervisor/field/set_rotation",
                                                              webots_ros.srv.field_set_rotation)
-        self.ros_srv_field_set_float = rospy.ServiceProxy("/" + self.model_name + "/supervisor/field/set_float",
+        self.ros_srv_field_set_float = rospy.ServiceProxy("/supervisor/field/set_float",
                                                           webots_ros.srv.field_set_float)
         try:
             self.cyl_solid_nodes = [self.ros_srv_get_from_def(name="cyl" + str(i)).node for i in range(1, 6)]
@@ -97,9 +97,9 @@ class ObstacleRandomizer():
         for i in range(num):
             t_field = self.cyl_solid_translation_fields[i]
             p = Point()
-            p.x = np.random.normal(0, 2.5)
-            p.z = np.random.uniform(-7, 20)
-            p.y = np.random.uniform(2, 3)
+            p.y = np.random.normal(0, 2.5)
+            p.x = -np.random.uniform(-7, 20)
+            p.z = np.random.uniform(2, 3)
             self.ros_srv_field_set_v3(t_field, 0, p)
             rot_field = self.cyl_solid_rotation_fields[i]
             q = Quaternion()
@@ -118,16 +118,16 @@ class ObstacleRandomizer():
         for i in range(num, 5):
             t_field = self.cyl_solid_translation_fields[i]
             p = Point()
-            p.y = -10
+            p.z = -10
             self.ros_srv_field_set_v3(t_field, 0, p)
 
     def randomize_boxs(self, num=5, lower_size=0.5, higher_size=2.5):
         for i in range(num):
             t_field = self.box_solid_translation_fields[i]
             p = Point()
-            p.x = np.random.normal(0, 2.5)
-            p.z = np.random.uniform(-7, 20)
-            p.y = np.random.uniform(2, 3)
+            p.y = np.random.normal(0, 2.5)
+            p.x = -np.random.uniform(-7, 20)
+            p.z = np.random.uniform(2, 3)
             self.ros_srv_field_set_v3(t_field, 0, p)
             rot_field = self.box_solid_rotation_fields[i]
             q = Quaternion()
@@ -145,16 +145,16 @@ class ObstacleRandomizer():
         for i in range(num, 5):
             t_field = self.box_solid_translation_fields[i]
             p = Point()
-            p.y = -10
+            p.z = -10
             self.ros_srv_field_set_v3(t_field, 0, p)
 
     def randomize_spheres(self, num=5, lower_radius=0.5, higher_radius=1.5):
         for i in range(num):
             t_field = self.sph_solid_translation_fields[i]
             p = Point()
-            p.x = np.random.normal(0, 2.5)
-            p.z = np.random.uniform(-7, 20)
-            p.y = np.random.uniform(2, 3)
+            p.y = np.random.normal(0, 2.5)
+            p.x = -np.random.uniform(-7, 20)
+            p.z = np.random.uniform(2, 3)
             self.ros_srv_field_set_v3(t_field, 0, p)
             rad_field = self.sph_geometry_radius_fields[i]
             rad = np.random.uniform(lower_radius, higher_radius)
@@ -164,7 +164,7 @@ class ObstacleRandomizer():
         for i in range(num, 5):
             t_field = self.sph_solid_translation_fields[i]
             p = Point()
-            p.y = -10
+            p.z = -10
             self.ros_srv_field_set_v3(t_field, 0, p)
 
     def randomize_walls(self, with_walls=True, lower_width=4, higher_width=10):
@@ -173,13 +173,13 @@ class ObstacleRandomizer():
         width = np.random.uniform(lower_width, higher_width)
         self.keep_configuration["wall_width"] = width
         if with_walls:
-            p.y = -1
+            p.z = -1
         else:
-            p.y = -9
-        p.x = -width / 2
-        p.z = 4
+            p.z = -9
+        p.y = -width / 2
+        p.x = -4
         self.ros_srv_field_set_v3(field, 0, p)
-        p.x = width / 2
+        p.y = width / 2
         field = self.wall_translation_fields[1]
         self.ros_srv_field_set_v3(field, 0, p)
 

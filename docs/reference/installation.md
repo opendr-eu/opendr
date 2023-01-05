@@ -97,8 +97,7 @@ OpenDR distributes the following packages that can be installed:
 - *opendr-toolkit-object-detection-3d*
 - *opendr-toolkit-object-tracking-3d*
 - *opendr-toolkit-ambiguity-measure*
-- *opendr-toolkit-mobile-manipulation* (requires a functional ROS installation)
-- *opendr-toolkit-single-demo-grasp* (requires a functional ROS installation)
+- *opendr-toolkit-fall-detection*
 
 Note that `opendr-toolkit` is actually just a metapackage that includes all the aformentioned packages.
 
@@ -123,18 +122,18 @@ source bin/activate.sh
 If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
 ```bash
 xhost +local:root
-sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v1.1.1 /bin/bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v2.0.0 /bin/bash
 ```
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v1.1.1
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v2.0.0
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1.1.1 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v2.0.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
@@ -196,3 +195,58 @@ If you plan to use GPU-enabled functionalities, then you are advised to install 
 **HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
 If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
 
+
+## Nvidia embedded devices docker
+You can also run the corresponding docker image on an Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
+
+Note that the embedded device should be flashed with Jetpack 4.6.
+
+To enable GPU usage on the embedded device within docker, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+```
+{
+    "runtimes": {
+        "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+        }
+    },
+    "default-runtime": "nvidia"
+}
+```
+
+Restart docker afterwards:
+```
+sudo systemctl restart docker.service
+```
+
+
+You can directly run the corresponding docker image by running one of the below:
+```bash
+sudo docker run -it opendr/opendr-toolkit:tx2_v2 /bin/bash
+sudo docker run -it opendr/opendr-toolkit:nx_v2 /bin/bash
+sudo docker run -it opendr/opendr-toolkit:agx_v2 /bin/bash
+```
+This will give you access to a bash terminal within the docker.
+
+After that you should enable the environment variables inside the docker with:
+```bash
+cd opendr
+source bin/activate_nvidia.sh
+source /opt/ros/noetic/setup.bash
+source projects/opendr_ws/devel/setup.bash
+```
+
+The embedded devices docker comes preinstalled with the OpenDR toolkit.
+It supports all tools under perception package, as well as all corresponding ROS nodes.
+
+You can enable a USB camera, given it is mounted as `/dev/video0`,  by running the container with the following arguments:
+```
+xhost +local:root
+sudo docker run -it --privileged -v /dev/video0:/dev/video0 opendr/opendr-toolkit:nx_v2 /bin/bash
+```
+
+To use the docker on an embedded device with a monitor and a usb camera attached, as well as network access through the hosts network settings you can run:
+```
+xhost +local:root
+sudo docker run -it --privileged --network host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DSIPLAY -v /dev/video0:/dev/video0 opendr/opendr-toolkit:nx_v2 /bin/bash
+```

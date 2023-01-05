@@ -28,10 +28,13 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [face_recognition_learner Module](face-recognition.md)
         - facial expression recognition:
             - [landmark_based_facial_expression_recognition](landmark-based-facial-expression-recognition.md)
+            - [image_based_facial_emotion_estimation](image_based_facial_emotion_estimation.md)
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
+            - [high_resolution_pose_estimation Module](high-resolution-pose-estimation.md)
         - activity recognition:
-            - [skeleton_based_action_recognition](skeleton-based-action-recognition.md)
+            - [skeleton-based action recognition](skeleton-based-action-recognition.md)
+            - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#class-costgcnlearner)
             - [x3d Module](activity-recognition.md#class-x3dlearner)
             - [continual x3d Module](activity-recognition.md#class-cox3dlearner)
             - [continual transformer encoder Module](continual-transformer-encoder.md)
@@ -108,10 +111,12 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [face_recognition_Demo](/projects/python/perception/face_recognition)
         - facial expression recognition:
             - [landmark_based_facial_expression_recognition Demo](/projects/python/perception/facial_expression_recognition/landmark_based_facial_expression_recognition)
+            - [image_based_facial_emotion_estimation Demo](/projects/python/perception/facial_expression_recognition/image_based_facial_emotion_estimation)
         - heart anomaly detection:
             - [heart anomaly detection Demo](/projects/python/perception/heart_anomaly_detection)
         - pose estimation:
-            - [lightweight_open_pose Demo](/projects/python/perception/lightweight_open_pose)
+            - [lightweight_open_pose Demo](/projects/python/perception/pose_estimation/lightweight_open_pose)
+            - [high_resolution_pose_estimation Demo](/projects/python/perception/pose_estimation/high_resolution_pose_estimation)
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Demo](/projects/python/perception/multimodal_human_centric/rgbd_hand_gesture_recognition)
             - [audiovisual_emotion_recognition Demo](/projects/python/perception/multimodal_human_centric/audiovisual_emotion_recognition)

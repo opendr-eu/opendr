@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import argparse
-import mxnet as mx
+import torch
 
 import rospy
 from vision_msgs.msg import Detection2DArray
@@ -93,7 +93,7 @@ class ObjectDetectionYOLONode:
             # Get an OpenCV image back
             image = image.opencv()
             # Annotate image with object detection boxes
-            image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes)
+            image = draw_bounding_boxes(image, boxes, class_names=self.object_detector.classes, line_thickness=3)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
@@ -116,7 +116,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        if args.device == "cuda" and mx.context.num_gpus() > 0:
+        if args.device == "cuda" and torch.cuda.is_available():
             device = "cuda"
         elif args.device == "cuda":
             print("GPU not found. Using CPU instead.")

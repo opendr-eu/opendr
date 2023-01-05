@@ -34,6 +34,7 @@ skippedDirectories = [
     'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
     'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
     'projects/python/control/eagerx',
+    'projects/opendr_ws_2/src/vision_opencv',
     'projects/opendr_ws/devel',
     'venv',
     'build',

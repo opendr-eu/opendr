@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@ from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Int32MultiArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
-from opendr.engine.learners import Learner
 from opendr.perception.object_tracking_2d import (
     ObjectTracking2DDeepSortLearner,
     ObjectTracking2DFairMotLearner
@@ -34,7 +33,7 @@ from opendr.engine.data import Image, ImageWithDetections
 class ObjectTracking2DDeepSortNode:
     def __init__(
         self,
-        detector: Learner,
+        detector=None,
         input_rgb_image_topic="/usb_cam/image_raw",
         output_detection_topic="/opendr/objects",
         output_tracking_id_topic="/opendr/objects_tracking_id",
