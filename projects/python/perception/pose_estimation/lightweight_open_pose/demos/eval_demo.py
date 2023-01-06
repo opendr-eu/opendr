@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 import argparse
 from os.path import join
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.engine.datasets import ExternalDataset
 
 if __name__ == '__main__':
