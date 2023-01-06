@@ -28,6 +28,7 @@ from std_msgs.msg import ColorRGBA, String, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 import rospy
 from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
+from visualization_msgs.msg import Marker as MarkerMsg, MarkerArray as MarkerArrayMsg
 from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 
 
@@ -690,3 +691,56 @@ class ROSBridge:
         name = ros_channel.name
         values = ros_channel.values
         return name, values
+
+    def to_ros_marker(self, frame_id: str, position: list) -> MarkerMsg:
+        """
+        Creates ROS Marker message given positions x,y,z and frame_id
+        :param frame_id: The frame_id of the marker.
+        :type frame_id: str
+        :param position: The position of the marker.
+        :type position: list
+        :return: ROS message with the marker
+        :rtype: visualization_msgs.msg.Marker
+        """
+        marker = MarkerMsg()
+        marker.header.frame_id = frame_id
+        marker.header.stamp = rospy.Time.now()
+        marker.type = marker.SPHERE
+        marker.id = 0
+        marker.action = marker.ADD
+        marker.pose.position.x = position[0]
+        marker.pose.position.y = position[1]
+        marker.pose.position.z = position[2]
+        marker.pose.orientation.x = 0.0
+        marker.pose.orientation.y = 0.0
+        marker.pose.orientation.z = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 0.1
+        marker.scale.y = 0.1
+        marker.scale.z = 0.1
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        return marker
+    
+    def from_ros_marker(self):
+        raise NotImplementedError
+
+    def to_ros_marker_array(self, position_list: list, frame_id_list: list) -> MarkerArrayMsg:
+        """
+        Creates ROS MarkerArray message given positions x,y,z and frame_id
+        :param position_list: The list of positions of the markers.
+        :type position_list: list
+        :param frame_id_list: The list of frame_ids of the markers.
+        :type frame_id_list: list
+        :return: ROS message with the marker array
+        :rtype: visualization_msgs.msg.MarkerArray
+        """
+        marker_array = MarkerArrayMsg()
+        for i in range(len(position_list)):
+            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i]))
+        return marker_array
+
+    def from_ros_marker_array(self):
+        raise NotImplementedError

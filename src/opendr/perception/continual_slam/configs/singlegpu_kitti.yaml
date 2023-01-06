@@ -28,5 +28,5 @@ DepthPosePrediction:
   save_val_depth_batches: 1
   multiple_gpus: true
   gpu_ids: [ 0 ]
-  load_weights_folder: 'model_weights'
+  load_weights_folder: '/home/canakcia/opendr/model_weights_2'
   use_wandb: false

@@ -24,7 +24,8 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.scales = [0, 1, 2, 3]
         self.height = 192
         self.width = 640
-        # self.sequences = ['00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10']
+        # self.valid_sequences = ['00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10']
+        self.valid_sequences = ['10']
         self.sequences = os.listdir(self._path)
 
         if self.sequences is None:
@@ -35,6 +36,10 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self._velocities = {}
         self._timestamps = {}
         for sequence in self.sequences:
+            # Check if the sequence is valid
+            if sequence not in self.valid_sequences:
+                print(f'Sequence {sequence} is not valid. Skipping...')
+                continue
             self._image_folder = self._path / sequence /'image_2'
             self._velocity_folder = self._path / sequence /'oxts/data'
             self._timestamps_file = self._path / sequence /'oxts/timestamps.txt'
@@ -93,6 +98,10 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.timestamps = []
 
         for sequence in self.sequences:
+            # Check if the sequence is valid
+            if sequence not in self.valid_sequences:
+                print(f'Sequence {sequence} is not valid. Skipping...')
+                continue
             self.images.extend(self._images[sequence])
             self.velocities.extend(self._velocities[sequence])
             self.timestamps.extend(self._timestamps[sequence])

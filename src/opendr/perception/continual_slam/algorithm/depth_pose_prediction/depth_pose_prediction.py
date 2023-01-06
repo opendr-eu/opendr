@@ -93,6 +93,7 @@ class DepthPosePredictor:
             if type(data) != torch.Tensor:
                 batch[key] = torch.from_numpy(data).to(self.device)
             else:
+                data = data/255.0
                 batch[key] = data.to(self.device)
         
         # Compute predictions
