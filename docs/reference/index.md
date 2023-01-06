@@ -1,11 +1,11 @@
 # OpenDR Toolkit Reference Manual
 
-*Release 1.1*
+*Release 2.0.0*
 <div align="center">
   <img src="images/opendr_logo.png" />
 </div>
 
-Copyright &copy; 2020-2022 OpenDR Project.
+Copyright &copy; 2020-2023 OpenDR Project.
 OpenDR is funded from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 871449.
 
 Permission to use, copy and distribute this documentation for any purpose and without fee is hereby granted in perpetuity, provided that no modifications are made to this documentation.

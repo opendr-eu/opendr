@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package_name = 'opendr_data_generation'
 
 setup(
     name=package_name,
-    version='1.0.0',
+    version='2.1.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
