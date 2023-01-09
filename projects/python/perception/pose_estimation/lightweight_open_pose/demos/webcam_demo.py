@@ -48,9 +48,6 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
 
-    onnx, device = args.onnx, args.device
-    accelerate = args.accelerate
-
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
     if accelerate:
         stride = True
