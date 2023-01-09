@@ -13,7 +13,7 @@ following public methods:
 
 #### `LightweightOpenPoseLearner` constructor
 ```python
-LightweightOpenPoseLearner(self, lr, epochs, batch_size, device, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, img_mean, img_scale, pad_value)
+LightweightOpenPoseLearner(self, lr, epochs, batch_size, device, backbone, lr_schedule, temp_path, checkpoint_after_iter, checkpoint_load_iter, val_after, log_after, mobilenet_use_stride, mobilenetv2_width, shufflenet_groups, num_refinement_stages, batches_per_iter, experiment_name, num_workers, weights_only, output_name, multiscale, scales, visualize, base_height, img_mean, img_scale, pad_value, half_precision)
 ```
 
 Constructor parameters:
@@ -31,7 +31,8 @@ Constructor parameters:
 - **lr_schedule**: *str, default=' '*\
   Specifies the learning rate scheduler. Please provide a function that expects to receive as a sole argument the used optimizer.
 - **temp_path**: *str, default='temp'*\
-  Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. Moreover the JSON file that contains the evaluation detections is saved here.
+  Specifies a path where the algorithm looks for pretrained backbone weights, the checkpoints are saved along with the logging files. 
+  Moreover, the JSON file that contains the evaluation detections is saved here.
 - **checkpoint_after_iter**: *int, default=5000*\
   Specifies per how many training iterations a checkpoint should be saved. If it is set to 0 no checkpoints will be saved.
 - **checkpoint_load_iter**: *int, default=0*\
@@ -41,9 +42,9 @@ Constructor parameters:
 - **log_after**: *int, default=100*\
   Specifies per how many training iterations the log files will be updated.
 - **mobilenet_use_stride**: *bool, default=True*\
-  Whether to add an additional stride value in the mobilenet model, which reduces accuracy but increases inference speed.
+  Whether to add a stride value in the mobilenet model, which reduces accuracy but increases inference speed.
 - **mobilenetv2_width**: *[0.0 - 1.0], default=1.0*\
-  If the mobilenetv2 backbone is used, this parameter specified its size.
+  If the mobilenetv2 backbone is used, this parameter specifies its size.
 - **shufflenet_groups**: *int, default=3*\
   If the shufflenet backbone is used, it specifies the number of groups to be used in grouped 1x1 convolutions in each ShuffleUnit.
 - **num_refinement_stages**: *int, default=2*\
@@ -57,11 +58,13 @@ Constructor parameters:
 - **weights_only**: *bool, default=True*\
   If True, only the model weights will be loaded; it won't load optimizer, scheduler, num_iter, current_epoch information.
 - **output_name**: *str, default='detections.json'*\
-  The name of the json files where the evaluation detections are stored, inside the temp_path.
+  The name of the json file where the evaluation detections are stored, inside the temp_path.
 - **multiscale**: *bool, default=False*\
-  Specifies whether evaluation will run in the predefined multiple scales setup or not. It overwrites self.scales to [0.5, 1.0, 1.5, 2.0].
+  Specifies whether evaluation will run in the predefined multiple scales setup or not. 
+  It overwrites self.scales to [0.5, 1.0, 1.5, 2.0].
 - **scales**: *list, default=None*\
-  A list of integer scales that define the multiscale evaluation setup. Used to manually set the scales instead of going for the predefined multiscale setup.
+  A list of integer scales that define the multiscale evaluation setup. 
+  Used to manually set the scales instead of going for the predefined multiscale setup.
 - **visualize**: *bool, default=False*\
   Specifies whether the images along with the poses will be shown, one by one during evaluation.
 - **base_height**: *int, default=256*\
@@ -74,7 +77,6 @@ Constructor parameters:
   Specifies the pad value based on which the images' width is padded.
 - **half_precision**: *bool, default=False*\
   Enables inference using half (fp16) precision instead of single (fp32) precision. Valid only for GPU-based inference.
-
 
 #### `LightweightOpenPoseLearner.fit`
 ```python
@@ -127,7 +129,7 @@ LightweightOpenPoseLearner.eval(self, dataset, silent, verbose, use_subset, subs
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
-Returns a dictionary containing stats regarding evaluation.
+Returns a dictionary containing statistics regarding evaluation.
 
 Parameters:
 
@@ -138,7 +140,7 @@ Parameters:
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*\
   If set to True, enables the maximum verbosity.
-- **val_subset**: *bool, default=True*\
+- **use_subset**: *bool, default=True*\
   If set to True, a subset of the validation dataset is created and used in evaluation.
 - **subset_size**: *int, default=250*\
   Controls the size of the validation subset.
@@ -152,11 +154,11 @@ Parameters:
 
 #### `LightweightOpenPoseLearner.infer`
 ```python
-LightweightOpenPoseLearner.infer(img, upsample_ratio, track, smooth)
+LightweightOpenPoseLearner.infer(self, img, upsample_ratio, track, smooth)
 ```
 
 This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.
+Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detections were made.
 
 Parameters:
 
@@ -215,7 +217,7 @@ This method is used to optimize a trained model to ONNX format which can be then
 Parameters:
 - **do_constant_folding**: *bool, default=False*
   ONNX format optimization.
-  If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs, with pre-computed constant nodes.
+  If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs with pre-computed constant nodes.
 
 #### `LightweightOpenPoseLearner.download`
 ```python
@@ -223,10 +225,10 @@ LightweightOpenPoseLearner.download(self, path, mode, verbose, url)
 ```
 
 Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
-saves them in the path provided. It supports downloading:
-1. the default mobilenet pretrained model
-2. mobilenet, mobilenetv2 and shufflenet weights needed for training
-3. a test dataset with a single COCO image and its annotation
+saves them in the path provided. It supports the following modes:
+1. "pretrained": the default mobilenet pretrained model
+2. "weights": mobilenet, mobilenetv2 and shufflenet weights needed for training
+3. "test_data": a test dataset with a single COCO image and its annotation
 
 Parameters:
 
