@@ -54,13 +54,12 @@ def wave_detector(frame_list_):
                     l_wri_x_positions.append(frame[pose_id_]["l_wri"][0])
             except KeyError:  # Couldn't find this pose_id_ in previous frames
                 pose_waves_[pose_id_] = -1
+                continue
         r_wri_avg_pos = [r_wri_avg_pos[0] / len(frame_list_), r_wri_avg_pos[1] / len(frame_list_)]
         l_wri_avg_pos = [l_wri_avg_pos[0] / len(frame_list_), l_wri_avg_pos[1] / len(frame_list_)]
+        r_wri_x_positions = [r_wri_x_positions[i] - r_wri_avg_pos[0] for i in range(len(r_wri_x_positions))]
+        l_wri_x_positions = [l_wri_x_positions[i] - l_wri_avg_pos[0] for i in range(len(l_wri_x_positions))]
 
-        # First make sure either wrist is between neck and nose in terms of height
-        r_wrist_height_detected = False
-        l_wrist_height_detected = False
-        # Height = 0 means top of the frame
         pose_ = None  # NOQA
         if len(frame_list_) > 0:
             pose_ = frame_list_[-1][pose_id_]
@@ -73,11 +72,15 @@ def wave_detector(frame_list_):
         if nose_height == -1 or neck_height == -1:
             # Can't detect upper pose_ (neck-nose), can't assume waving
             pose_waves_[pose_id_] = -1
+            continue
         if r_wri_height == 0 and l_wri_height == 0:
             # Can't detect wrists, can't assume waving
             pose_waves_[pose_id_] = -1
+            continue
 
         # Calculate the standard deviation threshold based on the distance between neck and nose to get proportions
+        # The farther away the pose is the smaller the threshold, as the standard deviation would be smaller due to
+        # the smaller pose
         distance = neck_height - nose_height
         std_threshold = 5 + ((distance - 50) / (200 - 50))*10
 
