@@ -128,8 +128,7 @@ void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector) {
   loadDetectionsVector(detectionVector, detections.data(), static_cast<int>(detections.size()));
 }
 
-void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection,
-                            int vectorSize) {
+void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection, int vectorSize) {
   freeDetectionsVector(detectionVector);
 
   detectionVector->size = vectorSize;

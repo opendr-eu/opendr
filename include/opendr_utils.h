@@ -76,8 +76,7 @@ void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector);
  * @param detection the pointer of the first OpenDR detection target in a vector
  * @param vectorSize the size of the vector
  */
-void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection,
-                            int vectorSize);
+void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection, int vectorSize);
 
 /**
  * Releases the memory allocated for a detection list structure

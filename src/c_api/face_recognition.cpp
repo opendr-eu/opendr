@@ -45,7 +45,7 @@
  * @param stdValue value used for scaling the input image
  */
 void preprocessFaceRecognition(cv::Mat *image, std::vector<float> &data, int resizeTarget = 128, int modelInputSize = 112,
-                                 float meanValue = 0.5, float stdValue = 0.5) {
+                               float meanValue = 0.5, float stdValue = 0.5) {
   // Convert to RGB
   cv::Mat img;
   cv::cvtColor(*image, img, cv::COLOR_BGR2RGB);
@@ -185,7 +185,7 @@ void ffFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image, cv::Ma
   }
 
   preprocessFaceRecognition(opencvImage, inputTensorValues, model->resizeSize, model->modelSize, model->meanValue,
-                              model->stdValue);
+                            model->stdValue);
 
   // Setup input/output names
   Ort::AllocatorWithDefaultOptions allocator;
