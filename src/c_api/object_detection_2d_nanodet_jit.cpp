@@ -349,6 +349,72 @@ void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVector
   cv::waitKey(0);
 }
 
+void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
+  const int colorList[80][3] = {
+    //{255 ,255 ,255}, //bg
+    {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},
+    {153, 153, 153}, {255, 0, 0},     {255, 127, 0},   {190, 190, 0},   {0, 255, 0},     {0, 0, 255},     {170, 0, 255},
+    {84, 84, 0},     {84, 170, 0},    {84, 255, 0},    {170, 84, 0},    {170, 170, 0},   {170, 255, 0},   {255, 84, 0},
+    {255, 170, 0},   {255, 255, 0},   {0, 84, 127},    {0, 170, 127},   {0, 255, 127},   {84, 0, 127},    {84, 84, 127},
+    {84, 170, 127},  {84, 255, 127},  {170, 0, 127},   {170, 84, 127},  {170, 170, 127}, {170, 255, 127}, {255, 0, 127},
+    {255, 84, 127},  {255, 170, 127}, {255, 255, 127}, {0, 84, 255},    {0, 170, 255},   {0, 255, 255},   {84, 0, 255},
+    {84, 84, 255},   {84, 170, 255},  {84, 255, 255},  {170, 0, 255},   {170, 84, 255},  {170, 170, 255}, {170, 255, 255},
+    {255, 0, 255},   {255, 84, 255},  {255, 170, 255}, {42, 0, 0},      {84, 0, 0},      {127, 0, 0},     {170, 0, 0},
+    {212, 0, 0},     {255, 0, 0},     {0, 42, 0},      {0, 84, 0},      {0, 127, 0},     {0, 170, 0},     {0, 212, 0},
+    {0, 255, 0},     {0, 0, 42},      {0, 0, 84},      {0, 0, 127},     {0, 0, 170},     {0, 0, 212},     {0, 0, 255},
+    {0, 0, 0},       {36, 36, 36},    {72, 72, 72},    {109, 109, 109}, {145, 145, 145}, {182, 182, 182}, {218, 218, 218},
+    {0, 113, 188},   {80, 182, 188},  {127, 127, 0},
+  };
+
+  std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
+
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+  if (!opencvImage) {
+    std::cerr << "Cannot load image for inference." << std::endl;
+    return;
+  }
+
+  cv::Mat imageWithDetections = (*opencvImage).clone();
+  for (size_t i = 0; i < detectionsVector->size; i++) {
+    const OpendrDetectionTarget bbox = (detectionsVector->startingPointer)[i];
+    float score = bbox.score > 1 ? 1 : bbox.score;
+    if (score > model->scoreThreshold) {
+      cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
+      cv::rectangle(imageWithDetections,
+                    cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))),
+                    color);
+
+      char text[256];
+
+      sprintf(text, "%s %.1f%%", (classNames)[bbox.name].c_str(), score * 100);
+
+      int baseLine = 0;
+      cv::Size labelSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
+
+      int x = (int)bbox.left;
+      int y = (int)bbox.top;
+      if (y < 0)
+        y = 0;
+      if (x + labelSize.width > imageWithDetections.cols)
+        x = imageWithDetections.cols - labelSize.width;
+
+      cv::rectangle(imageWithDetections, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)),
+                    color, -1);
+      cv::putText(imageWithDetections, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
+                  cv::Scalar(255, 255, 255));
+
+      // Put fps counter
+      char fpsText[20];
+      sprintf(fpsText, "FPS: %.2f", fps);
+      cv::putText(imageWithDetections, fpsText, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1,
+                  cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
+    }
+  }
+
+  cv::imshow("image", imageWithDetections);
+  cv::waitKey(0);
+}
+
 void freeNanodetModel(NanodetModelT *model) {
   if (model->network) {
     NanoDet *networkPTR = static_cast<NanoDet *>(model->network);

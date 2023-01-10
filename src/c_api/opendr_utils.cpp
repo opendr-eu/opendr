@@ -19,6 +19,8 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 #include <document.h>
 #include <stringbuffer.h>
@@ -96,6 +98,15 @@ float jsonGetKeyFloat(const char *json, const char *key, const int index) {
 
 void loadImage(const char *path, OpendrImageT *image) {
   cv::Mat opencvImage = cv::imread(path, cv::IMREAD_COLOR);
+  if (opencvImage.empty()) {
+    image->data = NULL;
+  } else {
+    image->data = new cv::Mat(opencvImage);
+  }
+}
+
+void loadImageFromCapture(CvCapture *capture, OpendrImageT *image) {
+  cv::Mat opencvImage = cvQueryFrame(capture);
   if (opencvImage.empty()) {
     image->data = NULL;
   } else {
