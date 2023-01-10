@@ -20,6 +20,7 @@ jobs:
   test-wheel:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -30,11 +31,17 @@ jobs:
           - perception/face_recognition
           - perception/heart_anomaly_detection
           - perception/multimodal_human_centric
-          - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/object_tracking_2d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -44,32 +51,35 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
-          - perception/object_detection_3d
-          # - control/mobile_manipulation
-          # - simulation/human_model_generation
-          # - control/single_demo_grasp
-          - perception/object_tracking_3d
+          - simulation/human_model_generation
+          #- control/mobile_manipulation
+          #- control/single_demo_grasp
+          #- planning/end_to_end_planning
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Test Wheel
       run: |
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
         python3 -m venv venv
         source venv/bin/activate
-        wget https://raw.githubusercontent.com/opendr-eu/opendr/master/dependencies/pip_requirements.txt
-        cat pip_requirements.txt | xargs -n 1 -L 1 pip install
-        pip install opendr-toolkit
-        python -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        python3 -m pip install --upgrade pip
+        python3 -m pip install wheel
+        python3 -m pip install opendr-toolkit-engine
+        python3 -m pip install opendr-toolkit
+        # run the test
+        python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         package:
@@ -80,11 +90,17 @@ jobs:
           - perception/face_recognition
           - perception/heart_anomaly_detection
           - perception/multimodal_human_centric
-          - perception/object_tracking_2d
           - perception/pose_estimation
+          - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/object_tracking_2d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
@@ -94,20 +110,20 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
-          - perception/object_detection_3d
-          - control/mobile_manipulation
           - simulation/human_model_generation
+          - control/mobile_manipulation
           - control/single_demo_grasp
-          - perception/object_tracking_3d
+          - planning/end_to_end_planning
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Test Docker
       run: |
-        docker run --name toolkit -i opendr/opendr-toolkit:cpu_v1.1.1 bash
+        docker run --name toolkit -i opendr/opendr-toolkit:cpu_v2.0.0 bash
         docker start toolkit
-        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"

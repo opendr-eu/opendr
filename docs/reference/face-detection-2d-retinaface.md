@@ -167,17 +167,17 @@ Parameters:
   If True, maximum verbosity if enabled.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-  
+
 #### Examples
 
 * **Training example**.
-  To train properly, the backbone weights are downloaded automatically in the `temp_path`. 
+  To train properly, the backbone weights are downloaded automatically in the `temp_path`.
   The WIDER Face detection dataset is supported for training, implemented as a `DetectionDataset` subclass. This example assumes the data has been downloaded and placed in the directory referenced by `data_root`.
 
   ```python
   from opendr.perception.object_detection_2d import RetinaFaceLearner, WiderFaceDataset
   from opendr.engine.datasets import ExternalDataset
-  
+
   dataset = WiderFaceDataset(root=data_root, splits=['train'])
 
   face_learner = RetinaFaceLearner(backbone='resnet', prefix='retinaface_resnet50',
@@ -189,7 +189,7 @@ Parameters:
   face_learner.fit(dataset, val_dataset=dataset, verbose=True)
   face_learner.save('./trained_models/retinaface_resnet50')
   ```
-  
+
   Custom datasets are supported by inheriting the `DetectionDataset` class.
 
 * **Inference and result drawing example on a test .jpg image using OpenCV.**
@@ -208,7 +208,7 @@ Parameters:
 
   img = draw_bounding_boxes(img.opencv(), bounding_boxes, learner.classes, show=True)
   ```
-  
+
 #### Performance Evaluation
 
 In terms of speed, the performance of RetinaFace is summarized in the table below (in FPS).
@@ -223,12 +223,12 @@ The measurement was made on a Jetson TX2 module.
 
 | Variant  | Memory (MB) | Energy (Joules)  - Total per inference  |
 |-------------------|---------|-------|
-| RetinaFace | 4443 | 21.83  | 
+| RetinaFace | 4443 | 21.83  |
 | RetinaFace-MobileNet     | 4262 | 8.73  |
 
 Finally, we measure the recall on the WIDER face validation subset at 87.83%.
 Note that RetinaFace can make use of image pyramids and horizontal flipping to achieve even better recall at the cost of additional computations.
-For the MobileNet version, recall drops to 77.81%.  
+For the MobileNet version, recall drops to 77.81%.
 
 The platform compatibility evaluation is also reported below:
 
@@ -242,8 +242,8 @@ The platform compatibility evaluation is also reported below:
 | NVIDIA Jetson TX2                             | :heavy_check_mark:   |
 | NVIDIA Jetson Xavier AGX                      | :heavy_check_mark:   |
 | NVIDIA Jetson Xavier NX                       | :heavy_check_mark:   |
-  
+
 #### References
 <a name="retinaface-1" href="https://arxiv.org/abs/1905.00641">[1]</a> RetinaFace: Single-stage Dense Face Localisation in the Wild,
 [arXiv](https://arxiv.org/abs/1905.00641).
- 
+

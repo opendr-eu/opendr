@@ -1,1 +1,1 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project

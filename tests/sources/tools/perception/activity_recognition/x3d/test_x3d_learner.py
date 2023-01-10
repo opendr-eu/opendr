@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -119,23 +119,6 @@ class TestX3DLearner(unittest.TestCase):
             r1.data == r3.data and torch.allclose(r1.confidence, r3.confidence, atol=1e-6)
             for (r1, r3) in zip(results1, results3)
         ])
-
-    # Redundant test: Same code is executed internally in `test_optimize`
-    # def test_save_load_onnx(self):
-    #     self.learner.load(self.temp_dir / "weights" / f"x3d_{_BACKBONE}.pyth")
-    #     path = self.temp_dir / f"x3d_{_BACKBONE}.pyth"
-    #     # Save
-    #     if path.exists():
-    #         path.unlink()
-    #     assert not path.exists()
-    #     self.learner._save_onnx(path)
-    #     assert path.exists()
-    #     # Load
-    #     assert getattr(self.learner, "_ort_session", None) == None
-    #     self.learner._load_onnx(path)
-    #     assert getattr(self.learner, "_ort_session", None) != None
-    #     # Clean up
-    #     self.learner._ort_session = None
 
     def test_optimize(self):
         self.learner._ort_session = None

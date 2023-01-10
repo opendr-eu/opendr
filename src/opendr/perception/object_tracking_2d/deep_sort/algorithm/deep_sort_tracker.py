@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class DeepSortTracker(object):
         if frame_id is not None:
             self.frame = frame_id
 
-        image = imageWithDetections.numpy().transpose(2, 1, 0)
+        image = imageWithDetections.numpy().transpose(1, 2, 0)
         detections = imageWithDetections.boundingBoxList
 
         bbox_xywh = []
@@ -73,7 +73,7 @@ class DeepSortTracker(object):
             cls_conf.append(detection.confidence)
             cls_ids.append(detection.name)
 
-        bbox_xywh = np.array(bbox_xywh)
+        bbox_xywh = np.array(bbox_xywh).reshape(-1, 4)
         cls_conf = np.array(cls_conf)
         cls_ids = np.array(cls_ids)
 

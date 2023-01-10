@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<robot name="End-to-end planning uav robot">
+    <webots>
+        <device reference="gps" type="GPS">
+            <ros>
+                <enabled>true</enabled>
+                <alwaysOn>true</alwaysOn>
+            </ros>
+        </device>
+
+        <device reference="inertial_unit" type="InertialUnit">
+            <ros>
+                <enabled>true</enabled>
+                <alwaysOn>true</alwaysOn>
+            </ros>
+        </device>
+
+        <device reference="range-finder" type="RangeFinder">
+            <ros>
+                <enabled>true</enabled>
+                <alwaysOn>true</alwaysOn>
+            </ros>
+        </device>
+
+        <plugin type="webots_ros2_driver::Ros2IMU">
+            <enabled>true</enabled>
+            <topicName>/imu</topicName>
+            <alwaysOn>true</alwaysOn>
+            <inertialUnitName>inertial_unit</inertialUnitName>
+        </plugin>
+
+        <plugin type="opendr_planning.end_to_end_planning_robot_driver.EndToEndPlanningUAVRobotDriver" />
+    </webots>
+</robot>

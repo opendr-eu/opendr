@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ from opendr.engine.target import BoundingBox, BoundingBoxList
 
 # yolov5 imports
 import torch
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
 
 
 class YOLOv5DetectorLearner(Learner):

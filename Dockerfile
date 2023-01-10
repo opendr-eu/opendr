@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG branch=master
+ARG branch=develop
 ARG ros_distro=noetic
 
 # Install dependencies
@@ -18,9 +18,7 @@ ENTRYPOINT ["/tini", "--"]
 RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b $branch
 WORKDIR "/opendr"
 ENV ROS_DISTRO=$ros_distro
-RUN ./bin/install.sh && \
-    rm -rf /root/.cache/* && \
-    apt-get clean
+RUN chmod +x ./bin/install.sh && ./bin/install.sh && rm -rf /root/.cache/* && apt-get clean
 
 # Create script for starting Jupyter Notebook
 RUN /bin/bash -c "source ./bin/activate.sh; pip3 install jupyter" && \

@@ -16,7 +16,7 @@
 import json
 import os
 
-import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
+from opendr.perception.object_detection_2d.detr.algorithm.util import misc as utils
 
 try:
     from panopticapi.evaluation import pq_compute

@@ -29,6 +29,7 @@ include_directories(
 
 catkin_install_python(PROGRAMS
    scripts/pose_estimation_node.py
+   scripts/hr_pose_estimation_node.py
    scripts/fall_detection_node.py
    scripts/object_detection_2d_nanodet_node.py
    scripts/object_detection_2d_yolov5_node.py
@@ -36,6 +37,7 @@ catkin_install_python(PROGRAMS
    scripts/object_detection_2d_gem_node.py
    scripts/semantic_segmentation_bisenet_node.py
    scripts/continual_slam_dataset_node.py
-   scripts/continual_slam_predictor.py
+   scripts/continual_slam_predictor_node.py
+   scripts/facial_emotion_estimation_node.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
