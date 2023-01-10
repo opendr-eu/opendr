@@ -14,6 +14,7 @@
 
 
 import argparse
+import numpy as np
 import time
 from pathlib import Path
 import message_filters
@@ -22,7 +23,8 @@ import rospy
 from opendr_bridge import ROSBridge
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 
-from sensor_msgs.msg import Image as ROS_Image, ChannelFloat32 as ROS_ChannelFloat32
+from sensor_msgs.msg import Image as ROS_Image
+from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from visualization_msgs.msg import Marker as ROS_Marker, MarkerArray as ROS_MarkerArray
 from opendr_bridge import ROSBridge
 
@@ -30,7 +32,6 @@ class ContinualSlamPredictor:
     def __init__(self,
                  path: Path,
                  input_image_topic : str,
-                 input_velocity_topic : str,
                  input_distance_topic : str,
                  output_depth_topic : str,
                  output_pose_topic : str,
@@ -41,7 +42,6 @@ class ContinualSlamPredictor:
         self.delay = 1.0 / fps
 
         self.input_image_topic = input_image_topic
-        self.input_velocity_topic = input_velocity_topic
         self.input_distance_topic = input_distance_topic
         self.output_depth_topic = output_depth_topic
         self.output_pose_topic = output_pose_topic
@@ -51,56 +51,73 @@ class ContinualSlamPredictor:
 
         # Create caches
         self._image_cache = []
-        self._velocity_cache = []
         self._distance_cache = []
         self._id_cache = []
         self._marker_position_cache = []
         self._marker_frame_id_cache = []
+        self.odometry = None
 
     def _init_subscribers(self):
+        """
+        Initializing subscribers. Here we also do synchronization between two ROS topics.
+        """
         self.input_image_subscriber = message_filters.Subscriber(
             self.input_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        self.input_velocity_subscriber = message_filters.Subscriber(
-            self.input_velocity_topic, ROS_ChannelFloat32, queue_size=1, buff_size=10000000)
         self.input_distance_subscriber = message_filters.Subscriber(
-            self.input_distance_topic, ROS_ChannelFloat32, queue_size=1, buff_size=10000000)
-        self.ts = message_filters.ApproximateTimeSynchronizer([self.input_image_subscriber, 
-                                               self.input_velocity_subscriber, 
-                                               self.input_distance_subscriber], 1, 1, allow_headerless=True)
-    
+            self.input_distance_topic, ROS_Vector3Stamped, queue_size=1, buff_size=10000000)
+        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber, self.input_distance_subscriber], 1)
+        self.ts.registerCallback(self.callback)
+
     def _init_publisher(self):
+        """
+        Initializing publishers.
+        """
         self.output_depth_publisher = rospy.Publisher(
             self.output_depth_topic, ROS_Image, queue_size=10)
         self.output_pose_publisher = rospy.Publisher(
             self.output_pose_topic, ROS_MarkerArray, queue_size=10)
 
     def _init_predictor(self):
+        """
+        Creating a ContinualSLAMLearner instance with predictor and ros mode
+        """
         try:
-            self.predictor = ContinualSLAMLearner(self.path)
+            self.predictor = ContinualSLAMLearner(self.path, mode="predictor", ros=True)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
             rospy.logerr(e)
             return False
 
-    def callback(self, image: ROS_Image, velocity: ROS_ChannelFloat32, distance: ROS_ChannelFloat32):
-        print("I reached here 3")
-        print(type(image))
+    def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
+        """
+        Callback method of predictor node.
+        :param image: Input image as a ROS message
+        :type ROS_Image
+        :param distance: Distance to the object as a ROS message
+        :type ROS_Vector3Stamped
+        """
         image = self.bridge.from_ros_image(image)
-        _, velocity = self.bridge.from_ros_channel_float32(velocity)
-        frame_id, distance = self.bridge.from_ros_channel_float32(distance)
+        frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
+        distance = distance[0]
 
-        self._cache_arriving_data(image, velocity, distance, frame_id)
+        self._cache_arriving_data(image, distance, frame_id)
         batch = self._convert_cache_into_batch()
-
-        depth, odometry = self.predictor.infer(batch)
-        translation = odometry[0]
-        x = translation[:, -1][1]
-        y = translation[:, -1][2]
-        z = translation[:, -1][0]
-
+        if len(batch) < 3:
+            return
+        depth, new_odometry = self.predictor.infer(batch)
+        if self.odometry is None:
+            self.odometry = new_odometry
+        else:
+            self.odometry = self.odometry @ new_odometry
+        translation = self.odometry[0]
+        x = -translation[:, -1][1]
+        y = -translation[:, -1][0]
+        z = -translation[:, -1][2]
         position = [x, y, z]
-        frame_id = self._id_cache[1]
+
+        # frame_id = self._id_cache[1]
+        frame_id = "map"
         self._marker_position_cache.append(position)
         self._marker_frame_id_cache.append(frame_id)
 
@@ -122,46 +139,38 @@ class ContinualSlamPredictor:
         if self._init_predictor():
             self._init_publisher()
             self._init_subscribers()
-            print("I reached here")
-            self.ts.registerCallback(self.callback)
-            print("I reached here 2")
             rospy.spin()
 
-    def _cache_arriving_data(self, image, velocity, distance, frame_id):
+    def _cache_arriving_data(self, image, distance, frame_id):
         # Cache the arriving last 3 data
-        self.image_cache.append(image)
-        self.velocity_cache.append(velocity)
-        self.distance_cache.append(distance)
-        self.id_cache.append(frame_id)
+        self._image_cache.append(image)
+        self._distance_cache.append(distance)
+        self._id_cache.append(frame_id)
 
-        if len(self.image_cache) > 3:
-            self.image_cache.pop(0)
-            self.velocity_cache.pop(0)
-            self.distance_cache.pop(0)
-            self.id_cache.pop(0)
+        if len(self._image_cache) > 3:
+            self._image_cache.pop(0)
+            self._distance_cache.pop(0)
+            self._id_cache.pop(0)
 
     def _convert_cache_into_batch(self):
         batch = {}
-        for i in range(3):
-            batch[self._id_cache[i]] = (self._image_cache[i], self._velocity_cache[i], self._distance_cache[i])
+        for i in range(len(self._image_cache)):
+            batch[self._id_cache[i]] = (self._image_cache[i], self._distance_cache[i])
         return batch
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_image_topic', type=str, default='/opendr/dataset/image')
-    parser.add_argument('--input_velocity_topic', type=str, default='/opendr/velocity')
-    parser.add_argument('--input_distance_topic', type=str, default='/opendr/distance')
+    parser.add_argument('--input_image_topic', type=str, default='/cl_slam/image')
+    parser.add_argument('--input_distance_topic', type=str, default='/cl_slam/distance')
     parser.add_argument('--output_depth_topic', type=str, default='/opendr/predicted/image')
     parser.add_argument('--output_pose_topic', type=str, default='/opendr/predicted/pose')
     args = parser.parse_args()
 
     local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
-    print(local_path)
     path = local_path / 'singlegpu_kitti.yaml'
 
     node = ContinualSlamPredictor(path, 
-                                  args.input_image_topic, 
-                                  args.input_velocity_topic, 
+                                  args.input_image_topic,
                                   args.input_distance_topic, 
                                   args.output_depth_topic, 
                                   args.output_pose_topic)

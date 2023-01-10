@@ -30,7 +30,8 @@ from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 class ContinualSLAMLearner(Learner):
     def __init__(self,
                  config_file: Path,
-                 mode: str = 'predictor'
+                 mode: str = 'predictor',
+                 ros: bool = False
                  ):
         self.config_file = ConfigParser(config_file)
         self.dataset_config = self.config_file.dataset
@@ -43,7 +44,8 @@ class ContinualSLAMLearner(Learner):
             # Create the predictor object
             self.predictor = DepthPosePredictor(self.model_config, self.dataset_config)
             self.predictor.load_model()
-            self.predictor._create_dataset_loaders(training=False, validation=True)
+            if not ros:
+                self.predictor._create_dataset_loaders(training=False, validation=True)
         else:
             raise NotImplementedError
         
@@ -52,7 +54,7 @@ class ContinualSLAMLearner(Learner):
 
     def infer(self, batch: Tuple[Dict, None]):
         """
-        @param batch: tuple of (input, target)
+        :param batch: tuple of (input, target)
         """
         if self.mode == 'predictor':
             return self._predict(batch)
@@ -61,7 +63,7 @@ class ContinualSLAMLearner(Learner):
 
     def _predict(self, batch: Tuple[Dict, None]):
         """
-        @param batch: tuple of (input, target)
+        :param batch: tuple of (input, target)
         """
         input_dict = self._prediction_input_formatter(batch)
         # Get the prediction
@@ -72,10 +74,13 @@ class ContinualSLAMLearner(Learner):
     def _prediction_input_formatter(self, batch: Tuple[Dict, None]):
         """
         Format the input for the prediction
-        @param batch: tuple of (input, target)
+        :param batch: tuple of (input, target)
         """
-        inputs = batch[0]
-        
+        if type(batch) == dict:
+            inputs = batch
+        else:
+            inputs = batch[0]
+
         # Create a dictionary with frame ids as [-1, 0, 1]
         input_dict = {}
         for frame_id, id in zip([-1, 0 ,1], inputs.keys()):
@@ -85,7 +90,7 @@ class ContinualSLAMLearner(Learner):
     def _prediction_output_formatter(self, prediction: Dict):
         """
         Format the output of the prediction
-        @param prediction: dictionary of predictions which has items of:
+        :param prediction: dictionary of predictions which has items of:
         frame_id -> (depth, pose)
         depth -> Tensors of shape (1, 1, H, W). The number of tensors is equal to scales
         pose -> 6 Tensors, which we will only use cam_T_cam for 0->1 since it is the odometry
@@ -107,8 +112,8 @@ class ContinualSLAMLearner(Learner):
         colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3] * 255).astype(np.uint8)
         # fig = plt.figure(figsize=(12.8, 9.6))
         # plt.imshow(depth, cmap='magma_r', vmax=vmax)
-        # return Image(colormapped_img)
-        return colormapped_img
+        return Image(colormapped_img)
+        # return colormapped_img
         # return None
 
     def eval(self, dataset, *args, **kwargs):
