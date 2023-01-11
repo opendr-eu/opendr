@@ -211,7 +211,7 @@ pip3 install networkx==2.5.1
 pip3 install numpy==1.19.4
 pip3 install oauthlib==3.1.1
 pip3 install onnx==1.10.2
-pip3 install onnxruntime==1.3.0
+pip3 install onnxruntime==1.7.0
 pip3 install opencv-python==4.5.4.60
 pip3 install opencv-contrib-python==4.5.4.60
 pip3 cache purge
