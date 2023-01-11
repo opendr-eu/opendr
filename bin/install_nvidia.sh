@@ -24,7 +24,7 @@ sudo apt-get install -y gfortran build-essential git python3-pip python-numpy li
 
 pip3 install --upgrade pip
 pip3 install setuptools==59.5.0
-pip3 install numpy==1.19.4
+pip3 install numpy==1.22.1
 
 git clone --recursive -b v1.8.x https://github.com/apache/incubator-mxnet.git mxnet
 
@@ -276,6 +276,7 @@ pip3 install tqdm==4.54.0
 pip3 install trimesh==3.5.23
 pip3 install Twisted==21.7.0
 pip3 install txaio==21.2.1
+pip3 install typing
 pip3 install typing_extensions==4.0.1
 pip3 install urllib3==1.26.7
 pip3 install vcstool==0.3.0
