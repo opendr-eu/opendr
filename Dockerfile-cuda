@@ -1,6 +1,7 @@
 FROM nvidia/cuda:11.2.0-cudnn8-devel-ubuntu20.04
 
 ARG branch=develop
+ARG ros_distro=noetic
 
 # Fix NVIDIA CUDA Linux repository key rotation
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
@@ -20,16 +21,15 @@ ENTRYPOINT ["/tini", "--"]
 RUN sudo apt-get --yes install build-essential
 
 # Clone the repo and install the toolkit
-ENV OPENDR_DEVICE gpu
+ENV OPENDR_DEVICE=gpu
+ENV ROS_DISTRO=$ros_distro
 RUN git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr -b $branch
 WORKDIR "/opendr"
-RUN ./bin/install.sh && \
-    rm -rf /root/.cache/* && \
-    apt-get clean
+RUN chmod +x ./bin/install.sh && ./bin/install.sh && rm -rf /root/.cache/* && apt-get clean
 
 # Create script for starting Jupyter Notebook
 RUN /bin/bash -c "source ./bin/activate.sh; pip3 install jupyter" && \
-    echo "#!/bin/bash\n source ./bin/activate.sh\n ./venv/bin/jupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh && \ 
+    echo "#!/bin/bash\n source ./bin/activate.sh\n ./venv/bin/jupyter notebook --port=8888 --no-browser --ip 0.0.0.0 --allow-root" > start.sh && \
     chmod +x start.sh
 
 # Start Jupyter Notebook inside OpenDR

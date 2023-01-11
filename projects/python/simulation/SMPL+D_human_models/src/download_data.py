@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,8 +49,24 @@ def download_data(raw_data_only):
     start_time = 0
     last_print = 0
     urlretrieve(human_data_url, downloaded_human_data_path, reporthook=reporthook)
+
+    def is_within_directory(directory, target):
+        abs_directory = os.path.abspath(directory)
+        abs_target = os.path.abspath(target)
+        prefix = os.path.commonprefix([abs_directory, abs_target])
+
+        return prefix == abs_directory
+
+    def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        for member in tar.getmembers():
+            member_path = os.path.join(path, member.name)
+            if not is_within_directory(path, member_path):
+                raise Exception("Attempted Path Traversal in Tar File")
+
+        tar.extractall(path, members, numeric_owner=numeric_owner)
+
     with tarfile.open(downloaded_human_data_path) as tar:
-        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/python/simulation/SMPL+D_human_models'))
+        safe_extract(tar, path=os.path.join(OPENDR_HOME, 'projects/python/simulation/SMPL+D_human_models'))
     tar.close()
     os.remove(downloaded_human_data_path)
 
@@ -64,9 +80,10 @@ def download_data(raw_data_only):
     last_print = 0
     urlretrieve(model_url, downloaded_model_path, reporthook=reporthook)
     with tarfile.open(downloaded_model_path) as tar:
-        tar.extractall(path=os.path.join(OPENDR_HOME, 'projects/python/simulation/SMPL+D_human_models'))
+        safe_extract(tar, path=os.path.join(OPENDR_HOME, 'projects/python/simulation/SMPL+D_human_models'))
     tar.close()
     os.remove(downloaded_model_path)
+
 
 if __name__ == "__main__":
     raw_data = False

@@ -7,7 +7,7 @@ This page includes known issues, compatibility issues as well as possible workar
 
 You should make sure that queue size is set to 1 and the buffer size is large enough to hold the input message.
 Even though we have set the appropriate default values for topics in order to avoid this issue, this also depends on your system configuration (e.g., size messages published in input topics).
-Be sure to check the discussion and explanatation of this behavior in [#275](https://github.com/opendr-eu/opendr/issues/275).
+Be sure to check the discussion and explanation of this behavior in [#275](https://github.com/opendr-eu/opendr/issues/275).
 Essentially, due to the way ROS handles message a latency of at least 2 frames is expected.
 
 

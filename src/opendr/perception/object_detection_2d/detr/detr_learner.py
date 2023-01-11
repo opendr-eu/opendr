@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,8 +43,10 @@ from opendr.engine.target import CocoBoundingBox, BoundingBoxList
 import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
-import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
+from opendr.perception.object_detection_2d.detr.algorithm.util import misc as utils
 from PIL import Image as im
+
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
 
 
 class DetrLearner(Learner):

@@ -1,24 +1,30 @@
-#VRML_SIM R2021a utf8
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Grass.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "../protos/box.proto"
+
 WorldInfo {
   gravity 9.80665
   basicTimeStep 1
   FPS 15
   optimalThreadCount 4
-  coordinateSystem "NUE"
   randomSeed 52
 }
 Viewpoint {
-  orientation 0.0017367083261278448 -0.9261534688347032 -0.3771428588872342 3.069692752730281
-  position -0.14937970282282664 34.32912524388594 -29.04411809573074
+  orientation 0.23912921076912644 -0.010500223692226803 -0.9709309789368902 3.1000770696059305
+  position 16.599575477443874 0.11479760710878642 11.449782726362042
   followType "Mounted Shot"
 }
 DEF DEF_VEHICLE Robot {
-  translation 0.173907 2.57 -2.01714
-  rotation 0 1 0 0.14106945956065933
+  translation 2.01714 -0.173907 2.57
+  rotation 0.5773502691896257 -0.5773502691896257 -0.5773502691896257 2.0943951023931957
   children [
     Lidar {
       translation 0 0.07 0
-      rotation 0 1 0 3.141592653589793
+      rotation 3.4621799999783786e-06 -0.999999999993755 -7.095049999955691e-07 3.14159
       horizontalResolution 32
       fieldOfView 1.57
       verticalFieldOfView 0.1
@@ -28,19 +34,19 @@ DEF DEF_VEHICLE Robot {
     }
     RangeFinder {
       translation 0 0.1 0
-      rotation 0 -1 0 3.141592653589793
+      rotation -0.5773502691896258 -0.5773502691896258 -0.5773502691896258 2.0943951023931957
       maxRange 15
     }
     TouchSensor {
       translation 0 0.03 0
-      rotation 0 1 0 1.57
+      rotation 0 1 0 1.5708
       name "touch sensor-collision"
       boundingObject box {
       }
     }
     TouchSensor {
       translation 0 0.03 0.5
-      rotation 0 1 0 1.57
+      rotation 0 1 0 1.5708
       name "touch sensor-safety1"
       boundingObject box {
         radius 1
@@ -49,7 +55,7 @@ DEF DEF_VEHICLE Robot {
     }
     TouchSensor {
       translation 0 0.03 1
-      rotation 0 1 0 1.57
+      rotation 0 1 0 1.5708
       name "touch sensor-safety2"
       boundingObject box {
         radius 1.5
@@ -77,7 +83,7 @@ DEF DEF_VEHICLE Robot {
     }
     Camera {
       translation 0 0.12 0
-      rotation 0.12942795977353752 0.9831056944488316 0.12942795977353752 -1.5878343071795866
+      rotation 0.1294279597735375 0.9831056944488314 0.1294279597735375 -1.58783
       name "camera1"
       width 128
       height 128
@@ -86,7 +92,7 @@ DEF DEF_VEHICLE Robot {
       name "compass1"
     }
     GPS {
-      name "gps1"
+      name "gps"
     }
     Accelerometer {
       name "accelerometer1"
@@ -95,12 +101,11 @@ DEF DEF_VEHICLE Robot {
       name "gyro1"
     }
     InertialUnit {
-      rotation 0 -1 0 1.5707963267948968
+      rotation 0 1 0 1.5707947122222805
       name "inertial_unit"
     }
     Transform {
-      translation -0.09999999999999999 0 0
-      rotation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.094395
+      translation 0 0 0.1
       children [
         Shape {
           appearance Appearance {
@@ -115,8 +120,8 @@ DEF DEF_VEHICLE Robot {
       ]
     }
     Transform {
-      translation 0 0 0.09999999999999999
-      rotation 0 0.7071067811865476 0.7071067811865476 -3.1415923071795864
+      translation -0.09999999999999999 0 0
+      rotation -0.7071067811865476 0 0.7071067811865476 -3.1415923071795864
       children [
         Shape {
           appearance Appearance {
@@ -129,7 +134,7 @@ DEF DEF_VEHICLE Robot {
     }
     Transform {
       translation 0.09999999999999999 0 0
-      rotation 0.5773502691896258 0.5773502691896258 0.5773502691896258 -2.094395307179586
+      rotation 0 -1 0 -1.5707963071795863
       children [
         Shape {
           appearance Appearance {
@@ -142,8 +147,7 @@ DEF DEF_VEHICLE Robot {
       ]
     }
     Transform {
-      translation 0 0 -0.09999999999999999
-      rotation 1 0 0 -1.5707963071795863
+      translation 0 0 -0.1
       children [
         Shape {
           appearance Appearance {
@@ -171,16 +175,17 @@ Background {
   ]
 }
 DirectionalLight {
-  direction 0 -1 0
 }
 Floor {
-  translation 0 -1 0
+  translation 0 0 -1
+  rotation 0 0 1 1.5707963267948966
   size 500 750
   appearance Grass {
   }
 }
 Floor {
-  translation 0 -0.96 4
+  translation -4 0 -0.96
+  rotation 0 0 1 1.5707963267948966
   name "floor(13)"
   size 0.5 30
   appearance Parquetry {
@@ -188,7 +193,8 @@ Floor {
   }
 }
 Floor {
-  translation 14 -0.98 8
+  translation -8 -14 -0.98
+  rotation 0 0 1 1.5707963267948966
   name "floor(5)"
   size 100 50
   appearance PBRAppearance {
@@ -197,8 +203,8 @@ Floor {
   }
 }
 DEF cyl1 Solid {
-  translation -19.604630321122315 2.324472693591628 33.571763188537474
-  rotation 0.008454983970179998 0.5745628144430251 -0.8184168164849583 2.855354311428324
+  translation -33.571763188537474 19.604630321122315 2.324472693591628
+  rotation 0.8184168164849583 -0.008454983970179998 0.5745628144430251 2.855354311428324
   children [
     Shape {
       appearance PBRAppearance {
@@ -217,8 +223,8 @@ DEF cyl1 Solid {
   boundingObject USE cyl_geo1
 }
 DEF cyl2 Solid {
-  translation -13.747862151581423 2.2037661733607323 20.440751891815367
-  rotation -0.046082095001687674 0.2841215809381919 0.9576802011973716 2.291645054624233
+  translation -20.440751891815367 13.747862151581423 2.2037661733607323
+  rotation -0.9576802011973716 0.046082095001687674 0.2841215809381919 2.291645054624233
   children [
     Shape {
       appearance PBRAppearance {
@@ -237,8 +243,8 @@ DEF cyl2 Solid {
   boundingObject USE cyl_geo2
 }
 DEF cyl3 Solid {
-  translation -14.389081419732586 2.865288247046378 26.698438622531555
-  rotation 0.037805321362627146 -0.9972687076596976 -0.06344984160283776 -2.2281994020336473
+  translation -26.698438622531555 14.389081419732586 2.865288247046378
+  rotation 0.06344984160283776 -0.037805321362627146 -0.9972687076596976 -2.2281994020336473
   children [
     Shape {
       appearance PBRAppearance {
@@ -257,8 +263,8 @@ DEF cyl3 Solid {
   boundingObject USE cyl_geo3
 }
 DEF cyl4 Solid {
-  translation -18.478910598526205 2.975906443581888 30.029891046849826
-  rotation 0.436261871860521 0.17512820480707927 -0.8826129905240483 -3.0124718491193443
+  translation -30.029891046849826 18.478910598526205 2.975906443581888
+  rotation 0.8826129905240483 -0.436261871860521 0.17512820480707927 -3.0124718491193443
   children [
     Shape {
       appearance PBRAppearance {
@@ -277,8 +283,8 @@ DEF cyl4 Solid {
   boundingObject USE cyl_geo4
 }
 DEF cyl5 Solid {
-  translation -16.57710468047925 2.4982480911172904 24.09970968828449
-  rotation -0.07876246896092191 -0.9167052863683216 0.3917242543263733 0.9303512269603899
+  translation -24.09970968828449 16.57710468047925 2.4982480911172904
+  rotation -0.3917242543263733 0.07876246896092191 -0.9167052863683216 0.9303512269603899
   children [
     Shape {
       appearance PBRAppearance {
@@ -297,8 +303,8 @@ DEF cyl5 Solid {
   boundingObject USE cyl_geo5
 }
 DEF box1 Solid {
-  translation -0.26435729418541554 2.44667080338155 21.633230654472253
-  rotation 0.2846212101353512 0.1247924621830743 0.9504828289471485 -2.5557071516379524
+  translation -21.633230654472253 0.26435729418541554 2.44667080338155
+  rotation -0.9504828289471485 -0.2846212101353512 0.1247924621830743 -2.5557071516379524
   children [
     Shape {
       appearance PBRAppearance {
@@ -307,7 +313,7 @@ DEF box1 Solid {
         metalness 0
       }
       geometry DEF box_geo1 Box {
-        size 1.144210412169449 0.606098167324667 0.6703828008453012
+        size 0.6703828008453012 1.144210412169449 0.606098167324667
       }
       castShadows FALSE
     }
@@ -316,8 +322,8 @@ DEF box1 Solid {
   boundingObject USE box_geo1
 }
 DEF box2 Solid {
-  translation -1.6898234337915463 2.2675614976470575 49.944469797724835
-  rotation -0.6204835974021974 0.31919922577254956 0.7163183367896099 2.929261604379051
+  translation -49.944469797724835 1.6898234337915463 2.2675614976470575
+  rotation -0.7163183367896099 0.6204835974021974 0.31919922577254956 2.929261604379051
   children [
     Shape {
       appearance PBRAppearance {
@@ -326,7 +332,7 @@ DEF box2 Solid {
         metalness 0
       }
       geometry DEF box_geo2 Box {
-        size 0.8528384366701209 1.5923867066800264 1.6555731912544518
+        size 1.6555731912544518 0.8528384366701209 1.5923867066800264
       }
       castShadows FALSE
     }
@@ -335,8 +341,8 @@ DEF box2 Solid {
   boundingObject USE box_geo2
 }
 DEF box3 Solid {
-  translation -8.238761971490536 2.6721509445938736 20.292422865902708
-  rotation -0.008495842259129496 0.8701560773823055 -0.492702975086357 -3.124774550627343
+  translation -20.292422865902708 8.238761971490536 2.6721509445938736
+  rotation 0.492702975086357 0.008495842259129496 0.8701560773823055 -3.124774550627343
   children [
     Shape {
       appearance PBRAppearance {
@@ -345,7 +351,7 @@ DEF box3 Solid {
         metalness 0
       }
       geometry DEF box_geo3 Box {
-        size 1.9899789593315744 1.665194050916234 1.114861834585034
+        size 1.114861834585034 1.9899789593315744 1.665194050916234
       }
       castShadows FALSE
     }
@@ -354,8 +360,8 @@ DEF box3 Solid {
   boundingObject USE box_geo3
 }
 DEF box4 Solid {
-  translation -8.527463770969087 2.641006035191632 44.90744150542008
-  rotation 0.5794103506313973 0.6631584645241805 0.47381905460959706 -2.2430503148315895
+  translation -44.90744150542008 8.527463770969087 2.641006035191632
+  rotation -0.47381905460959706 -0.5794103506313973 0.6631584645241805 -2.2430503148315895
   children [
     Shape {
       appearance PBRAppearance {
@@ -364,7 +370,7 @@ DEF box4 Solid {
         metalness 0
       }
       geometry DEF box_geo4 Box {
-        size 1.1501776483206156 2.2316284316140305 1.6228519285122363
+        size 1.6228519285122363 1.1501776483206156 2.2316284316140305
       }
       castShadows FALSE
     }
@@ -373,8 +379,8 @@ DEF box4 Solid {
   boundingObject USE box_geo4
 }
 DEF box5 Solid {
-  translation -6.8392747579709265 2.2856439867583433 38.86442228484968
-  rotation -0.930668272300889 0.3156648658130647 -0.1849655628048051 3.098971634530017
+  translation -38.86442228484968 6.8392747579709265 2.2856439867583433
+  rotation 0.1849655628048051 0.930668272300889 0.3156648658130647 3.098971634530017
   children [
     Shape {
       appearance PBRAppearance {
@@ -383,7 +389,7 @@ DEF box5 Solid {
         metalness 0
       }
       geometry DEF box_geo5 Box {
-        size 0.9299983006419481 1.8591651370902504 2.198602344698272
+        size 2.198602344698272 0.9299983006419481 1.8591651370902504
       }
       castShadows FALSE
     }
@@ -392,8 +398,8 @@ DEF box5 Solid {
   boundingObject USE box_geo5
 }
 DEF sph1 Solid {
-  translation 8.39941640511953 2.832797125554921 34.151569808427524
-  rotation -0.2604920627631049 0.8436140650017107 -0.46953082387497425 -2.2344190120762484
+  translation -34.151569808427524 -8.39941640511953 2.832797125554921
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
       appearance PBRAppearance {
@@ -411,8 +417,8 @@ DEF sph1 Solid {
   boundingObject USE sph_geo1
 }
 DEF sph2 Solid {
-  translation 5.669701484639425 2.98237944209821 35.244313566036006
-  rotation -0.2604920627631049 0.8436140650017107 -0.46953082387497425 -2.2344190120762484
+  translation -35.244313566036006 -5.669701484639425 2.98237944209821
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
       appearance PBRAppearance {
@@ -430,8 +436,8 @@ DEF sph2 Solid {
   boundingObject USE sph_geo2
 }
 DEF sph3 Solid {
-  translation 7.009574816911507 2.679998597601765 45.118047101108615
-  rotation -0.2604920627631049 0.8436140650017107 -0.46953082387497425 -2.2344190120762484
+  translation -45.118047101108615 -7.009574816911507 2.679998597601765
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
       appearance PBRAppearance {
@@ -449,8 +455,8 @@ DEF sph3 Solid {
   boundingObject USE sph_geo3
 }
 DEF sph4 Solid {
-  translation 3.505564259041 2.013593906239073 35.57358399548293
-  rotation -0.2604920627631049 0.8436140650017107 -0.46953082387497425 -2.2344190120762484
+  translation -35.57358399548293 -3.505564259041 2.013593906239073
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
       appearance PBRAppearance {
@@ -468,8 +474,8 @@ DEF sph4 Solid {
   boundingObject USE sph_geo4
 }
 DEF sph5 Solid {
-  translation 7.917116623970895 2.104425536420231 31.708422025337523
-  rotation -0.2604920627631049 0.8436140650017107 -0.46953082387497425 -2.2344190120762484
+  translation -31.708422025337523 -7.917116623970895 2.104425536420231
+  rotation 0.46953082387497425 0.2604920627631049 0.8436140650017107 -2.2344190120762484
   children [
     Shape {
       appearance PBRAppearance {
@@ -487,11 +493,11 @@ DEF sph5 Solid {
   boundingObject USE sph_geo5
 }
 DEF wall1 Wall {
-  translation -4.504321090318505 -1 4
-  size 0.1 7 30
+  translation -4 4.504321090318505 -1
+  size 30 0.1 7
 }
 DEF wall2 Wall {
-  translation 4.504321090318505 -1 4
+  translation -4 -4.504321090318505 -1
   name "wall(2)"
-  size 0.1 7 30
+  size 30 0.1 7
 }
