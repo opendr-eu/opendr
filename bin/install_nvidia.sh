@@ -200,7 +200,7 @@ pip3 install lxml==4.6.3
 pip3 install Mako==1.1.6
 pip3 install Markdown==3.3.6
 pip3 install MarkupSafe==2.0.1
-pip3 install matplotlib==2.2.2
+pip3 install matplotlib==2.2.3
 pip3 install mccabe==0.6.1
 pip3 install mmcv==0.5.9
 pip3 install motmetrics==1.2.0
