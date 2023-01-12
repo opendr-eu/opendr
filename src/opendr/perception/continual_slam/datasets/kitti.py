@@ -86,7 +86,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         current_speed = np.linalg.norm(np.loadtxt(str(self.velocities[index]))[8:11])
         speed = (previous_speed + current_speed) / 2  # m/s
         distance = speed * delta_timestamp
-        return distance, speed
+        return distance
 
     def _create_lists_from_sequences(self):
         """
@@ -118,11 +118,11 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         data = {}
         for i in range(idx, idx+3):
             image = Image.open(str(self.images[i]))
-            distance, speed = self._load_relative_distance(i)
+            distance = self._load_relative_distance(i)
             image_id = self.images[i].name.split('.')[0]
             sequence_id = re.findall("sequence/\d\d", str(self.images[i]))[0].split('/')[1]
             image_id = sequence_id + '_' + image_id
-            data[image_id] = (image, distance, speed)
+            data[image_id] = (image, distance)
         return data, None
 
     def __len__(self):

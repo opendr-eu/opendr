@@ -2,8 +2,8 @@ Dataset:
   dataset: Kitti
   dataset_path: /home/canakcia/Desktop
   scales: [ 0, 1, 2, 3 ] # Provided by dataloader
-  height: 192
-  width: 640
+  height: 370
+  width: 1226
   frame_ids: [ 0, -1, 1 ]
 
 DepthPosePrediction:

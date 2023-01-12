@@ -111,10 +111,12 @@ class ContinualSlamPredictor:
         else:
             self.odometry = self.odometry @ new_odometry
         translation = self.odometry[0]
-        x = -translation[:, -1][1]
-        y = -translation[:, -1][0]
-        z = -translation[:, -1][2]
+        x = translation[:, -1][0]
+        #y = translation[:, -1][1]
+        y = 0
+        z = translation[:, -1][2]
         position = [x, y, z]
+        print(x, y, z)
 
         # frame_id = self._id_cache[1]
         frame_id = "map"

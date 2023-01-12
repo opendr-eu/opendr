@@ -46,11 +46,23 @@ class ContinualSLAMLearner(Learner):
             self.predictor.load_model()
             if not ros:
                 self.predictor._create_dataset_loaders(training=False, validation=True)
+        elif self.mode == 'learner':
+            self.learner = DepthPosePredictor(self.model_config, self.dataset_config, use_online=True)
+            self.learner.load_model()
+            if not ros:
+                self.learner._create_dataset_loaders(training=False, validation=True)
         else:
-            raise NotImplementedError
-        
-    def fit(self, dataset, *args, **kwargs):
-        raise NotImplementedError
+            raise ValueError('Mode should be either predictor or learner')
+
+    def fit(self, batch: Tuple[Dict, None]):
+        """
+        In the context of CL-SLAM, we implemented fit method as adapt method, which updates the weights of learner
+        based on coming input
+        """
+        if self.mode == 'learner':
+            return self._fit(batch)
+        else:
+            raise ValueError('Fit is only available in learner mode')
 
     def infer(self, batch: Tuple[Dict, None]):
         """
@@ -59,19 +71,29 @@ class ContinualSLAMLearner(Learner):
         if self.mode == 'predictor':
             return self._predict(batch)
         else:
-            raise NotImplementedError
+            raise ValueError('Inference is only available in predictor mode')
+
+    def _fit(self, batch: Tuple[Dict, None]):
+        """
+        :param batch: tuple of (input, target)
+        """
+        input_dict = self._input_formatter(batch)
+        # Adapt
+        prediction, losses = self.learner.adapt(input_dict)
+        # Convert the prediction to opendr format
+        return self._output_formatter(prediction)
 
     def _predict(self, batch: Tuple[Dict, None]):
         """
         :param batch: tuple of (input, target)
         """
-        input_dict = self._prediction_input_formatter(batch)
+        input_dict = self._input_formatter(batch)
         # Get the prediction
         prediction = self.predictor.predict(input_dict)
         # Convert the prediction to opendr format
-        return self._prediction_output_formatter(prediction)
+        return self._output_formatter(prediction)
     
-    def _prediction_input_formatter(self, batch: Tuple[Dict, None]):
+    def _input_formatter(self, batch: Tuple[Dict, None]):
         """
         Format the input for the prediction
         :param batch: tuple of (input, target)
@@ -84,10 +106,11 @@ class ContinualSLAMLearner(Learner):
         # Create a dictionary with frame ids as [-1, 0, 1]
         input_dict = {}
         for frame_id, id in zip([-1, 0 ,1], inputs.keys()):
-            input_dict[frame_id] = torch.Tensor(inputs[id][0].data)
+            input_dict[(frame_id, 'image')] = torch.Tensor(inputs[id][0].data)
+            input_dict[(frame_id, 'distance')] = torch.Tensor([inputs[id][1]])
         return input_dict
 
-    def _prediction_output_formatter(self, prediction: Dict):
+    def _output_formatter(self, prediction: Dict):
         """
         Format the output of the prediction
         :param prediction: dictionary of predictions which has items of:
@@ -133,7 +156,7 @@ class ContinualSLAMLearner(Learner):
 
 if __name__ == "__main__":
     local_path = Path(__file__).parent / 'configs'
-    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml')
+    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner')
 
     # Test the learner
     from opendr.perception.continual_slam.datasets.kitti import KittiDataset
@@ -144,10 +167,10 @@ if __name__ == "__main__":
     import time
 
     for i, batch in enumerate(dataset):
-        depth, odometry = learner.infer(batch)
-        if i%100 == 0:
-            print(i)
-            original_image = list(batch[0].values())[1][0].numpy().transpose(1, 2, 0)
-            x = np.vstack((original_image, depth))
-            imgg.fromarray(x).show()
-            time.sleep(0.5)
+        depth, odometry = learner.fit(batch)
+        # if i%100 == 0:
+        #     print(i)
+        #     original_image = list(batch[0].values())[1][0].numpy().transpose(1, 2, 0)
+        #     x = np.vstack((original_image, depth))
+        #     imgg.fromarray(x).show()
+        #     time.sleep(0.5)
