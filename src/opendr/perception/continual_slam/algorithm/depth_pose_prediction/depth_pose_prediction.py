@@ -99,12 +99,14 @@ class DepthPosePredictor:
             for model_name, m in self.models.items():
                 if m is not None:
                     self.models[model_name] = nn.DataParallel(m, device_ids=self.gpu_ids)
+
+        self.parameters_to_train = []
+        for model_name, m in self.models.items():
+            if m is not None:
+                m.to(self.device)
+                self.parameters_to_train += list(m.parameters())
+
         if self.use_online:
-            self.parameters_to_train = []
-            for model_name, m in self.models.items():
-                if m is not None:
-                    m.to(self.device)
-                    self.parameters_to_train += list(m.parameters())
             self.online_parameters_to_train = []
             for m in self.online_models.values():
                 m.to(self.device)
@@ -179,7 +181,7 @@ class DepthPosePredictor:
         #     self._create_dataset_loaders()
         self._set_eval()
         with torch.no_grad():
-            outputs = self._process_batch(batch)
+            outputs, losses = self._process_batch(batch)
         return outputs
 
     def _process_batch(self, 
@@ -211,7 +213,10 @@ class DepthPosePredictor:
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))
         outputs.update(self._reconstruct_images(inputs, outputs))
-        losses = self._compute_loss(inputs, outputs, distances, sample_weights=loss_sample_weights)
+        if self.use_online:
+            losses = self._compute_loss(inputs, outputs, distances, sample_weights=loss_sample_weights)
+        else:
+            losses = None
         return outputs, losses
 
     def _compute_loss(self,
@@ -305,35 +310,35 @@ class DepthPosePredictor:
 
             depth = disp_to_depth(disp, self.min_depth, self.max_depth)
             outputs[('depth', scale, 0)] = depth
+            if self.use_online:
+                camera_matrix = self.camera_matrix.copy()
+                original_image_shape = inputs[0].shape
+                camera_matrix[0, :] *= original_image_shape[-2]
+                camera_matrix[1, :] *= original_image_shape[-1]
+                inv_camera_matrix = np.linalg.pinv(camera_matrix)
+                camera_matrix = torch.Tensor(camera_matrix).to(self.device)
+                inv_camera_matrix = torch.Tensor(inv_camera_matrix).to(self.device)
+                camera_matrix = camera_matrix.unsqueeze(0)
+                inv_camera_matrix = inv_camera_matrix.unsqueeze(0)
 
-            camera_matrix = self.camera_matrix.copy()
-            original_image_shape = inputs[0].shape
-            camera_matrix[0, :] *= original_image_shape[-2]
-            camera_matrix[1, :] *= original_image_shape[-1]
-            inv_camera_matrix = np.linalg.pinv(camera_matrix)
-            camera_matrix = torch.Tensor(camera_matrix).to(self.device)
-            inv_camera_matrix = torch.Tensor(inv_camera_matrix).to(self.device)
-            camera_matrix = camera_matrix.unsqueeze(0)
-            inv_camera_matrix = inv_camera_matrix.unsqueeze(0)
+                for i, frame_id in enumerate([-1, 1]):
+                    T = outputs[('cam_T_cam', 0, frame_id)]
 
-            for i, frame_id in enumerate([-1, 1]):
-                T = outputs[('cam_T_cam', 0, frame_id)]
-
-                if batch_size == 1:
-                    cam_points = self.backproject_depth_single[source_scale](
-                        depth, inv_camera_matrix)
-                    pixel_coordinates = self.project_3d_single[source_scale](
-                        cam_points, camera_matrix, T)
-                else:
-                    cam_points = self.backproject_depth[source_scale](depth,
-                                                                      inv_camera_matrix)
-                    pixel_coordinates = self.project_3d[source_scale](cam_points,
-                                                                      camera_matrix, T)
-                # Save the warped image
-                outputs[('rgb', frame_id, scale)] = F.grid_sample(inputs[frame_id],
-                                                                  pixel_coordinates,
-                                                                  padding_mode='border',
-                                                                  align_corners=True)
+                    if batch_size == 1:
+                        cam_points = self.backproject_depth_single[source_scale](
+                            depth, inv_camera_matrix)
+                        pixel_coordinates = self.project_3d_single[source_scale](
+                            cam_points, camera_matrix, T)
+                    else:
+                        cam_points = self.backproject_depth[source_scale](depth,
+                                                                        inv_camera_matrix)
+                        pixel_coordinates = self.project_3d[source_scale](cam_points,
+                                                                        camera_matrix, T)
+                    # Save the warped image
+                    outputs[('rgb', frame_id, scale)] = F.grid_sample(inputs[frame_id],
+                                                                    pixel_coordinates,
+                                                                    padding_mode='border',
+                                                                    align_corners=True)
         return outputs
 
     def _predict_disparity(self, 

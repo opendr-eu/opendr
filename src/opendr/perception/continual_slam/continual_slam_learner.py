@@ -42,7 +42,7 @@ class ContinualSLAMLearner(Learner):
 
         if self.mode == 'predictor':
             # Create the predictor object
-            self.predictor = DepthPosePredictor(self.model_config, self.dataset_config)
+            self.predictor = DepthPosePredictor(self.model_config, self.dataset_config, use_online=False)
             self.predictor.load_model()
             if not ros:
                 self.predictor._create_dataset_loaders(training=False, validation=True)

@@ -72,7 +72,7 @@ class ContinualSlamDatasetNode:
             # Get the image_id's
             image_ids = list(data.keys())
             # Get the image, velocity and distance
-            image_t0, _, distance_t0 = data[image_ids[0]]
+            image_t0, distance_t0 = data[image_ids[0]]
 
             stamp = rospy.Time.now()
             # Convert image to ROS Image
