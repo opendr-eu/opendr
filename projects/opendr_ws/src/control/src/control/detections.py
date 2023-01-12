@@ -14,15 +14,14 @@
 
 
 from math import sqrt
-
 import rospy
-from geometry_msgs.msg import Pose
+
 
 class Detections:
 
     def __init__(self):
         self.objects = dict()
-        self._distance_threshold = 0.01 # in m
+        self._distance_threshold = 0.01  # in m
         self._category_database = " "
 
     def process_detection(self, msg):
@@ -45,8 +44,8 @@ class Detections:
         '''
         if rospy.has_param(self._category_database):
             for key, item in rospy.get_param(self._category_database).items():
-                 if item == category_name:
-                     return int(key)
+                if item == category_name:
+                    return int(key)
 
     def get_object_pose(self, object_id):
         '''
@@ -62,7 +61,7 @@ class Detections:
         return result
 
     def __calculate_distance(self, pose1, pose2):
-        return sqrt( (pose2.position.x - pose1.position.x)**2 + (pose2.position.y - pose1.position.y)**2 )
+        return sqrt((pose2.position.x - pose1.position.x)**2 + (pose2.position.y - pose1.position.y)**2)
 
     def object_already_stored(self, pred_class, pose1):
         result = False
@@ -71,3 +70,4 @@ class Detections:
                 result = True
                 break
         return result
+        

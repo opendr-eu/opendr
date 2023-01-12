@@ -32,3 +32,4 @@ if __name__ == '__main__':
     detectron2.load(temp + "detectron2_default", verbose=True)
 
     detectron2.eval()
+    

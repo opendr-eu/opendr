@@ -37,5 +37,5 @@ if __name__ == '__main__':
 
     preds = detectron2.infer(img)
     print(preds)
-    boxes = BoundingBoxList([box for kp,box in preds])
+    boxes = BoundingBoxList([box for kp, box in preds])
     draw_bounding_boxes(img.opencv(), boxes, class_names=detectron2.classes, show=True)

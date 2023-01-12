@@ -15,21 +15,22 @@
 import rospy
 import actionlib
 import franka_gripper.msg
-from control_msgs.msg import GripperCommandActionGoal, GripperCommandGoal, GripperCommand
+from control_msgs.msg import GripperCommandActionGoal, GripperCommandGoal
 from controller_manager_msgs.srv import SwitchController, SwitchControllerRequest
+
 
 class Gripper():
 
     def __init__(self):
-        self.move_client   = actionlib.SimpleActionClient('/franka_gripper/move', franka_gripper.msg.MoveAction)
-        self.stop_client   = actionlib.SimpleActionClient('/franka_gripper/homing', franka_gripper.msg.StopAction)
-        self.grasp_client  = actionlib.SimpleActionClient('/franka_gripper/grasp', franka_gripper.msg.GraspAction)
+        self.move_client = actionlib.SimpleActionClient('/franka_gripper/move', franka_gripper.msg.MoveAction)
+        self.stop_client = actionlib.SimpleActionClient('/franka_gripper/homing', franka_gripper.msg.StopAction)
+        self.grasp_client = actionlib.SimpleActionClient('/franka_gripper/grasp', franka_gripper.msg.GraspAction)
         self.homing_client = actionlib.SimpleActionClient('/franka_gripper/homing', franka_gripper.msg.HomingAction)
 
         self.controller_switcher = rospy.ServiceProxy('/controller_manager/switch_controller', SwitchController)
 
-        self.generic_grasp_client =  rospy.Publisher('/franka_gripper/gripper_action/goal', GripperCommandActionGoal, queue_size=10)
-
+        self.generic_grasp_client = rospy.Publisher('/franka_gripper/gripper_action/goal', 
+                                                    GripperCommandActionGoal, queue_size=10)
         self.move_client.wait_for_server()
         rospy.loginfo("Move gripper client connected")
         self.stop_client.wait_for_server()
@@ -45,7 +46,7 @@ class Gripper():
         # switch_msg.start_controllers = ["cartesian_pose_controller"]
         # switch_msg.start_controllers = ["position_joint_trajectory_controller"]
         switch_msg.stop_controllers = ["cartesian_impedance_controller"]
-        switch =  self.controller_switcher(switch_msg)
+        switch = self.controller_switcher(switch_msg)
         print(switch.ok)
         return switch.ok
 
@@ -99,8 +100,5 @@ class Gripper():
         self.generic_grasp_client.publish(grasp_msg)
 
     def grasp_triggered(self, msg):
-        #self.grasp(50.0, 0.035)
+        # self.grasp(50.0, 0.035)
         self.switchToArmNavigationControl()
-
-
-

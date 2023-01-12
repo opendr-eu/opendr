@@ -32,7 +32,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     detectron2 = Detectron2Learner(device=args.device, batch_size=args.batch_size, lr=args.lr, val_after=args.val_after,
-                                 epochs=args.n_epochs, backbone=args.backbone)
+                                   epochs=args.n_epochs, backbone=args.backbone)
 
     detectron2.fit(args.json_file, args.image_root, args.dataset)
     detectron2.save("./detectron2_saved_model")
+    

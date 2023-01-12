@@ -21,6 +21,7 @@ from geometry_msgs.msg import Pose
 from control.msg import PickGoal
 from vision_msgs.msg import ObjectHypothesisWithPose, VisionInfo
 
+
 if __name__ == '__main__':
     rospy.init_node('opendr_grasp_example', anonymous=True)
 
@@ -49,17 +50,15 @@ if __name__ == '__main__':
     grasp_msg.width = 0.008
     grasp_msg.force = 20.0
     # Send pick goal to server
-    #pick_and_place_client.pick(grasp_msg)
+    # pick_and_place_client.pick(grasp_msg)
 
     # Create place goal
     place_msg = Pose()
     pushrod_hole_id = detections.find_object_by_category("bolt holes")
     pushrod_hole_pose = detections.get_object_pose(pushrod_hole_id)
     # Send place goal to server
-    #pick_and_place_client.place(pushrod_hole_pose)
+    # pick_and_place_client.place(pushrod_hole_pose)
 
     # Send pick and place goals to server
     pick_and_place_client.pick_and_place(grasp_msg, pushrod_hole_pose)
-
-
     rospy.spin()

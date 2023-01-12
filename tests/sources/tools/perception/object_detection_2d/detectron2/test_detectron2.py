@@ -1,4 +1,4 @@
-# Copyright 2020-2023 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ from detectron2 import model_zoo
 # OpenDR dependencies
 from opendr.perception.object_detection_2d import Detectron2Learner
 from opendr.engine.data import Image
+from opendr.engine.target import BoundingBoxList
 import os
 
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
@@ -102,7 +103,7 @@ class TestDetectron2Learner(unittest.TestCase):
         self.learner.load(os.path.join(self.learner.output_dir, "pretrained.pth"))
 
         detections = self.learner.infer(sample_image)
-        bboxes = BoundingBoxList([box for kp,box in detections])
+        bboxes = BoundingBoxList([box for kp, box in detections])
         self.assertIsNotNone(bboxes,
                              msg="Returned empty BoundingBoxList.")
 
