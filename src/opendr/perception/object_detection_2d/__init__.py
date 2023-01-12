@@ -19,5 +19,5 @@ from opendr.perception.object_detection_2d.nms.soft_nms.soft_nms import SoftNMS
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
 
 __all__ = ['CenterNetDetectorLearner', 'DetrLearner', 'GemLearner', 'RetinaFaceLearner', 'SingleShotDetectorLearner',
-           'YOLOv3DetectorLearner', 'Detectron2Learner', 'NanodetLearner', 'WiderPersonDataset', 'WiderFaceDataset', 
+           'YOLOv3DetectorLearner', 'Detectron2Learner', 'NanodetLearner', 'WiderPersonDataset', 'WiderFaceDataset',
            'transforms', 'draw_bounding_boxes', 'ClusterNMS', 'FastNMS', 'SoftNMS', 'Seq2SeqNMSLearner']

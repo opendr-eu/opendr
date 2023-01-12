@@ -428,7 +428,7 @@ class CocoBoundingBox(BoundingBox):
 
     def __str__(self):
         return str(self.coco())
-    
+
 
 class BoundingBoxList(Target):
     """
