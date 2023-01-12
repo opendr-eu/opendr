@@ -36,4 +36,3 @@ if __name__ == '__main__':
 
     detectron2.fit(args.json_file, args.image_root, args.dataset)
     detectron2.save("./detectron2_saved_model")
-    

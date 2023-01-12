@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rospy 
-from control.srv import MoveGripper, MoveGripperResponse, Grasp, GraspResponse  
+import rospy
+from control.srv import MoveGripper, MoveGripperResponse, Grasp, GraspResponse
 from control.gripper_controller import Gripper
 
 
@@ -53,4 +53,3 @@ if __name__ == '__main__':
     rospy.loginfo("Gripper control node started!")
 
     rospy.spin()
-    

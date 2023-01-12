@@ -15,7 +15,7 @@
 import os
 import numpy as np
 
-# fiftyone imports 
+# fiftyone imports
 # import fiftyone as fo
 import fiftyone.utils.random as four
 
@@ -40,10 +40,10 @@ from opendr.engine.target import BoundingBox
 class Detectron2Learner(Learner):
 
     def __init__(self, lr=0.00025, batch_size=200, img_per_step=2, weight_decay=0.00008,
-                 momentum=0.98, gamma=0.0005, norm="GN", num_workers=2, num_keypoints=25, 
+                 momentum=0.98, gamma=0.0005, norm="GN", num_workers=2, num_keypoints=25,
                  iters=4000, threshold=0.8, loss_weight=1.0, device='cuda', temp_path="temp"):
-        super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold, 
-                                                batch_size=batch_size, device=device, 
+        super(Detectron2Learner, self).__init__(lr=lr, threshold=threshold,
+                                                batch_size=batch_size, device=device,
                                                 iters=iters, temp_path=temp_path)
         self.cfg = get_cfg()
         self.cfg.merge_from_file(model_zoo.get_config_file("COCO-Keypoints/keypoint_rcnn_R_50_FPN_3x.yaml"))
@@ -51,7 +51,7 @@ class Detectron2Learner(Learner):
         self.cfg.MODEL.MASK_ON = True
         self.cfg.MODEL.KEYPOINT_ON = True
         self.cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = threshold
-        self.cfg.DATASETS.TEST = ()  
+        self.cfg.DATASETS.TEST = ()
         self.cfg.DATALOADER.NUM_WORKERS = num_workers
         self.cfg.SOLVER.IMS_PER_BATCH = img_per_step
         self.cfg.SOLVER.BASE_LR = lr
@@ -60,7 +60,7 @@ class Detectron2Learner(Learner):
         self.cfg.SOLVER.MOMENTUM = momentum
         self.cfg.SOLVER.MAX_ITER = iters
         self.cfg.MODEL.DEVICE = device
-        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size   
+        self.cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = batch_size
         self.cfg.MODEL.SEM_SEG_HEAD.NORM = "GN"
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.NORMALIZE_LOSS_BY_VISIBLE_KEYPOINTS = False
         self.cfg.MODEL.ROI_KEYPOINT_HEAD.LOSS_WEIGHT = loss_weight
@@ -74,10 +74,10 @@ class Detectron2Learner(Learner):
         self.cfg.OUTPUT_DIR = temp_path
         if not os.path.exists(temp_path):
             os.makedirs(temp_path, exist_ok=True)
-        
+
     def fit(self, dataset, val_dataset=None, verbose=True):
         self.__prepare_dataset(dataset)
-        trainer = DefaultTrainer(self.cfg) 
+        trainer = DefaultTrainer(self.cfg)
         trainer.resume_or_load(resume=False)
         trainer.train()
         # return training_dict
@@ -136,16 +136,16 @@ class Detectron2Learner(Learner):
         masks = seg_masks.astype('uint8')*255
         result = []
         for pred_class, bbox, seg_mask in zip(pred_classes, bounding_boxes, masks):
-            result.append((BoundingBox(name=pred_class, left=bbox[0], top=bbox[1], width=bbox[2]-bbox[0], 
+            result.append((BoundingBox(name=pred_class, left=bbox[0], top=bbox[1], width=bbox[2]-bbox[0],
                           height=bbox[3]-bbox[1]), seg_mask))
         return result
 
     def load(self, model, verbose=True):
         assert os.path.isfile(model), "Checkpoint {} not found!".format(model)
 
-        self.cfg.MODEL.WEIGHTS = str(model)      
+        self.cfg.MODEL.WEIGHTS = str(model)
         self.cfg.MODEL.ROI_HEADS.NUM_CLASSES = len(self.classes)
-        self.cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = len(self.classes)      
+        self.cfg.MODEL.SEM_SEG_HEAD.NUM_CLASSES = len(self.classes)
         self.predictor = DefaultPredictor(self.cfg)
         print("Model loaded!")
 
@@ -157,7 +157,7 @@ class Detectron2Learner(Learner):
         """ TODO """
         pass
 
-    def download(self, path=None, mode="pretrained", verbose=False, 
+    def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "/perception/object_detection_2d/detectron2/"):
         """ TODO """
         pass

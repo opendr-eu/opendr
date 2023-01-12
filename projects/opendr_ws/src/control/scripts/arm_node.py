@@ -17,12 +17,12 @@
 import sys
 import moveit_commander
 
-import rospy 
+import rospy
 from std_srvs.srv import Trigger, TriggerResponse
 
 from control.arm_controller import RobotController
 from control.srv import (SetJointStateResponse, SetPoseTargetResponse, SetPoseTarget2DResponse,
-                         SetPoseTarget1DResponse, RotateEEResponse, RotateEE, SetJointState, SetPoseTarget, 
+                         SetPoseTarget1DResponse, RotateEEResponse, RotateEE, SetJointState, SetPoseTarget,
                          SetPoseTarget2D, SetPoseTarget1D)
 
 
@@ -37,7 +37,7 @@ def handle_move_to_target(req, robot_arm):
 
 def handle_move_to_cartesian_target(req, robot_arm):
     success = True
-    try:        
+    try:
         robot_arm.move_to_cartesian_target(req.pose)
     except Exception:
         success = False
@@ -110,14 +110,13 @@ if __name__ == '__main__':
     stop_action_service = rospy.Service('/opendr/stop_action', Trigger, lambda msg: handle_stop(msg, robot_arm))
     resume_action_service = rospy.Service('/opendr/resume_action', Trigger, lambda msg: handle_resume(msg, robot_arm))
     action_service = rospy.Service('/opendr/set_joint_state', SetJointState, lambda msg: handle_move_to_target(msg, robot_arm))
-    cartesian_action_service = rospy.Service('/opendr/set_pose_target', SetPoseTarget, 
+    cartesian_action_service = rospy.Service('/opendr/set_pose_target', SetPoseTarget,
                                              lambda msg: handle_move_to_cartesian_target(msg, robot_arm))
-    cartesian_action_service_2d = rospy.Service('/opendr/set_pose_target_2D', SetPoseTarget2D, 
+    cartesian_action_service_2d = rospy.Service('/opendr/set_pose_target_2D', SetPoseTarget2D,
                                                 lambda msg: handle_move_to_2D_cartesian_target(msg, robot_arm))
-    cartesian_action_service_1d = rospy.Service('/opendr/set_pose_target_1D', SetPoseTarget1D, 
+    cartesian_action_service_1d = rospy.Service('/opendr/set_pose_target_1D', SetPoseTarget1D,
                                                 lambda msg: handle_move_to_1D_cartesian_target(msg, robot_arm))
 
     rospy.loginfo("Arm control node started!")
 
     rospy.spin()
-    

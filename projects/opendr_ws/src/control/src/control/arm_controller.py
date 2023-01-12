@@ -138,10 +138,10 @@ class RobotController:
     def stop(self, pause=False):
         if pause:
             self._resumed = False
-            self._paused = True  
+            self._paused = True
         self.group.stop()
         self.group.clear_pose_targets()
-        
+
     def resume(self):
         self._paused = False
         if isinstance(self._last_goal[0], Pose):
@@ -149,4 +149,4 @@ class RobotController:
         else:
             self.move_to_joint_target(self._last_goal)
         self._last_goal = [self.group.get_current_pose().pose, False]
-        self._resumed = True        
+        self._resumed = True

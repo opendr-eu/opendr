@@ -27,7 +27,7 @@ def build_srv_name(namespace, body):
 def start_pick_and_place():
     rospy.init_node('opendr_pick_and_place_server', anonymous=False)  # initialize ros node
 
-    arm_srvs = ['rotate_ee', 'stop_action', 'resume_action', 'set_joint_state', 
+    arm_srvs = ['rotate_ee', 'stop_action', 'resume_action', 'set_joint_state',
                 'set_pose_target', 'set_pose_target_1D', 'set_pose_target_2D']
     gripper_srvs = ['grasp', 'move_gripper']
 

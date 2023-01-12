@@ -29,7 +29,7 @@ class Gripper():
 
         self.controller_switcher = rospy.ServiceProxy('/controller_manager/switch_controller', SwitchController)
 
-        self.generic_grasp_client = rospy.Publisher('/franka_gripper/gripper_action/goal', 
+        self.generic_grasp_client = rospy.Publisher('/franka_gripper/gripper_action/goal',
                                                     GripperCommandActionGoal, queue_size=10)
         self.move_client.wait_for_server()
         rospy.loginfo("Move gripper client connected")

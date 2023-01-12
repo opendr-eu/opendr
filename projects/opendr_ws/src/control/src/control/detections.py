@@ -70,4 +70,3 @@ class Detections:
                 result = True
                 break
         return result
-        

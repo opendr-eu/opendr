@@ -19,9 +19,9 @@ from control.msg import PickAction, PlaceAction, PlaceGoal, PickActionResult
 
 class PickAndPlaceClient(object):
     def __init__(self):
-        self.pick_client = actionlib.SimpleActionClient('/opendr/pick', 
+        self.pick_client = actionlib.SimpleActionClient('/opendr/pick',
                                                         PickAction)
-        self.place_client = actionlib.SimpleActionClient('/opendr/place', 
+        self.place_client = actionlib.SimpleActionClient('/opendr/place',
                                                          PlaceAction)
 
     def start(self):
@@ -82,7 +82,7 @@ class PickAndPlaceClient(object):
 
     def pick_and_place(self, pick_goal, place_goal):
         self.pick(pick_goal)
-        pick_result = rospy.wait_for_message("/opendr/pick/result", 
+        pick_result = rospy.wait_for_message("/opendr/pick/result",
                                              PickActionResult)
         if pick_result.result.success:
             self.place(place_goal)
@@ -91,5 +91,5 @@ class PickAndPlaceClient(object):
     @staticmethod
     def _loginfo(message):
         # type: (str) -> None
-        rospy.loginfo('PickAndPlaceClient ({}) {}'.format('opendr_example', 
+        rospy.loginfo('PickAndPlaceClient ({}) {}'.format('opendr_example',
                                                           message))
