@@ -26,7 +26,7 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
      Detection3DArray, Detection3D, BoundingBox3D as BoundingBox3DMsg, ObjectHypothesis, Classification2D
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
-from std_msgs.msg import ColorRGBA, String, Header
+from std_msgs.msg import ColorRGBA, String, Header, String
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
 from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg, Vector3Stamped as Vector3StampedMsg
 from visualization_msgs.msg import Marker as MarkerMsg, MarkerArray as MarkerArrayMsg
@@ -767,3 +767,28 @@ class ROSBridge:
         frame_id = message.header.frame_id
 
         return frame_id, [x, y, z]
+
+    def to_ros_string(self, data: str) -> String:
+        """
+        Creates a String message given data.
+        :param data: The data to be converted.
+        :type data: str
+        :return: ROS message with the data.
+        :rtype: std_msgs.msg.String
+        """
+
+        message = String()
+        message.data = data
+
+        return message
+    
+    def from_ros_string(self, message: String):
+        """
+        Creates a String message given data.
+        :param message: The ROS message to be converted.
+        :type message: std_msgs.msg.String
+        :return: The data.
+        :rtype: str
+        """
+
+        return message.data

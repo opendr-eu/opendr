@@ -13,9 +13,10 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List, Optional
 
 import torch
+import pickle
 import numpy as np
 import matplotlib as mpl
 from matplotlib import pyplot as plt
@@ -36,18 +37,19 @@ class ContinualSLAMLearner(Learner):
         self.config_file = ConfigParser(config_file)
         self.dataset_config = self.config_file.dataset
         self.model_config = self.config_file.depth_pose
+        self.is_ros = ros
         super(ContinualSLAMLearner, self).__init__(lr=self.model_config.learning_rate)
 
         self.mode = mode
 
         if self.mode == 'predictor':
             # Create the predictor object
-            self.predictor = DepthPosePredictor(self.model_config, self.dataset_config, use_online=False)
+            self.predictor = DepthPosePredictor(self.model_config, self.dataset_config, use_online=False, mode=mode)
             self.predictor.load_model()
             if not ros:
                 self.predictor._create_dataset_loaders(training=False, validation=True)
         elif self.mode == 'learner':
-            self.learner = DepthPosePredictor(self.model_config, self.dataset_config, use_online=True)
+            self.learner = DepthPosePredictor(self.model_config, self.dataset_config, use_online=True, mode=mode)
             self.learner.load_model()
             if not ros:
                 self.learner._create_dataset_loaders(training=False, validation=True)
@@ -133,20 +135,37 @@ class ContinualSLAMLearner(Learner):
         normalizer = mpl.colors.Normalize(vmin=depth.min(), vmax=vmax)
         mapper = plt.cm.ScalarMappable(norm=normalizer, cmap="magma_r")
         colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3] * 255).astype(np.uint8)
-        # fig = plt.figure(figsize=(12.8, 9.6))
-        # plt.imshow(depth, cmap='magma_r', vmax=vmax)
         return Image(colormapped_img)
-        # return colormapped_img
-        # return None
 
     def eval(self, dataset, *args, **kwargs):
         raise NotImplementedError
     
-    def save(self, path: str, verbose: bool = True):
-        raise NotImplementedError
+    def save(self) -> str:
+        if self.is_ros:
+            save_dict = {}
+            for model_name, model in self.learner.models.items():
+                if model is None:
+                    continue
+                if isinstance(model, torch.nn.DataParallel):
+                    model = model.module
+                to_save = model.state_dict()
+                save_dict[model_name] = to_save
+            save_dict = pickle.dumps(save_dict).decode('latin1')
+            return save_dict
+        else:
+            raise NotImplementedError
     
-    def load(self, path: str, verbose: bool = True):
-        raise NotImplementedError
+    def load(self, message: str = None, load_optimizer: bool = True) -> None:
+        if self.is_ros:
+            load_dict = pickle.loads(bytes(message, encoding = 'latin1'))
+            for model_name, model in self.predictor.models.items():
+                if model is None:
+                    continue
+                if isinstance(model, torch.nn.DataParallel):
+                    model = model.module
+                model.load_state_dict(load_dict[model_name])
+        else:
+            self.learner.load_model(load_optimizer=load_optimizer)
 
     def optimize(self, target_device):
         raise NotImplementedError
@@ -154,9 +173,10 @@ class ContinualSLAMLearner(Learner):
     def reset(self):
         raise NotImplementedError
 
+# TODO: Delete this later since it is just for debugging and testing
 if __name__ == "__main__":
     local_path = Path(__file__).parent / 'configs'
-    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner')
+    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=True)
 
     # Test the learner
     from opendr.perception.continual_slam.datasets.kitti import KittiDataset
@@ -168,9 +188,5 @@ if __name__ == "__main__":
 
     for i, batch in enumerate(dataset):
         depth, odometry = learner.fit(batch)
-        # if i%100 == 0:
-        #     print(i)
-        #     original_image = list(batch[0].values())[1][0].numpy().transpose(1, 2, 0)
-        #     x = np.vstack((original_image, depth))
-        #     imgg.fromarray(x).show()
-        #     time.sleep(0.5)
+        message = learner.save()
+        learner.load(message)

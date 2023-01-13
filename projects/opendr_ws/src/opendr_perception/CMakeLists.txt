@@ -38,6 +38,7 @@ catkin_install_python(PROGRAMS
    scripts/semantic_segmentation_bisenet_node.py
    scripts/continual_slam_dataset_node.py
    scripts/continual_slam_predictor_node.py
+   scripts/continual_slam_learner_node.py
    scripts/facial_emotion_estimation_node.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )

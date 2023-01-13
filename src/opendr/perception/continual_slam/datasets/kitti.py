@@ -25,7 +25,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.height = 192
         self.width = 640
         # self.valid_sequences = ['00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10']
-        self.valid_sequences = ['10']
+        self.valid_sequences = ['09']
         self.sequences = os.listdir(self._path)
 
         if self.sequences is None:

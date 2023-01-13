@@ -25,7 +25,8 @@ from opendr.perception.continual_slam.continual_slam_learner import ContinualSLA
 
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
-from visualization_msgs.msg import Marker as ROS_Marker, MarkerArray as ROS_MarkerArray
+from visualization_msgs.msg import MarkerArray as ROS_MarkerArray
+from std_msgs.msg import String as ROS_String
 from opendr_bridge import ROSBridge
 
 class ContinualSlamPredictor:
@@ -35,6 +36,7 @@ class ContinualSlamPredictor:
                  input_distance_topic : str,
                  output_depth_topic : str,
                  output_pose_topic : str,
+                 update_topic : str,
                  fps : int = 10,
                  ) -> None:
         
@@ -45,6 +47,7 @@ class ContinualSlamPredictor:
         self.input_distance_topic = input_distance_topic
         self.output_depth_topic = output_depth_topic
         self.output_pose_topic = output_pose_topic
+        self.update_topic = update_topic
 
         self.path = path
         self.predictor = None
@@ -67,6 +70,8 @@ class ContinualSlamPredictor:
             self.input_distance_topic, ROS_Vector3Stamped, queue_size=1, buff_size=10000000)
         self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber, self.input_distance_subscriber], 1)
         self.ts.registerCallback(self.callback)
+
+        self.update_subscriber = rospy.Subscriber(self.update_topic, ROS_String, self.update, queue_size=1, buff_size=10000000)
 
     def _init_publisher(self):
         """
@@ -100,7 +105,7 @@ class ContinualSlamPredictor:
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
         distance = distance[0]
-
+        temp = frame_id
         self._cache_arriving_data(image, distance, frame_id)
         batch = self._convert_cache_into_batch()
         if len(batch) < 3:
@@ -110,15 +115,16 @@ class ContinualSlamPredictor:
             self.odometry = new_odometry
         else:
             self.odometry = self.odometry @ new_odometry
-        translation = self.odometry[0]
-        x = translation[:, -1][0]
+        translation = self.odometry[0][:3, 3]
+        # print(translation)
+        # print(self.odometry)
+        # print(translation.shape)
+        x = translation[0]
         #y = translation[:, -1][1]
         y = 0
-        z = translation[:, -1][2]
+        z = translation[2]
         position = [x, y, z]
-        print(x, y, z)
 
-        # frame_id = self._id_cache[1]
         frame_id = "map"
         self._marker_position_cache.append(position)
         self._marker_frame_id_cache.append(frame_id)
@@ -126,10 +132,21 @@ class ContinualSlamPredictor:
         marker_list = self.bridge.to_ros_marker_array(self._marker_position_cache, self._marker_frame_id_cache)
         depth = self.bridge.to_ros_image(depth)
 
+        rospy.loginfo(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {temp}")
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
 
         time.sleep(self.delay)
+
+    def update(self, message: ROS_String):
+        """
+        Update the predictor with the new data
+        :param message: ROS message
+        :type ROS_Byte
+        """
+        rospy.loginfo("CL-SLAM predictor is currently updating its weights.")
+        message = self.bridge.from_ros_string(message)
+        self.predictor.load(message)
 
     def listen(self):
         """
@@ -166,6 +183,7 @@ def main():
     parser.add_argument('--input_distance_topic', type=str, default='/cl_slam/distance')
     parser.add_argument('--output_depth_topic', type=str, default='/opendr/predicted/image')
     parser.add_argument('--output_pose_topic', type=str, default='/opendr/predicted/pose')
+    parser.add_argument('--update_topic', type=str, default='/cl_slam/update')
     args = parser.parse_args()
 
     local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
@@ -175,7 +193,8 @@ def main():
                                   args.input_image_topic,
                                   args.input_distance_topic, 
                                   args.output_depth_topic, 
-                                  args.output_pose_topic)
+                                  args.output_pose_topic,
+                                  args.update_topic)
     node.listen()
 
 if __name__ == '__main__':

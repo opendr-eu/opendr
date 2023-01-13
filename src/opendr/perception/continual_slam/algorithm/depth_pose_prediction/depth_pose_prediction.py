@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Tuple, List
 
+import math
 import torch
 from torch import nn, optim, Tensor
 import torch.nn.functional as F
@@ -21,7 +22,7 @@ from opendr.perception.continual_slam.algorithm.depth_pose_prediction.utils impo
 from opendr.perception.continual_slam.datasets import KittiDataset
 
 class DepthPosePredictor:
-    def __init__(self, config: Config, dataset_config: DatasetConfig, use_online: bool = False) -> None:
+    def __init__(self, config: Config, dataset_config: DatasetConfig, use_online: bool = False, mode: bool = 'predictor') -> None:
         self.dataset_type = dataset_config.dataset
         self.dataset_path = dataset_config.dataset_path
         self.height = dataset_config.height
@@ -40,6 +41,7 @@ class DepthPosePredictor:
         self.batch_size = config.batch_size
         self.disparity_smoothness = config.disparity_smoothness
         self.velocity_loss_scaling = config.velocity_loss_scaling
+        self.mode = mode
 
 
         self.device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -73,24 +75,24 @@ class DepthPosePredictor:
             self.online_models['pose_decoder'] = PoseDecoder(self.models['pose_encoder'].num_ch_encoder,
                                                       num_input_features=1,
                                                       num_frames_to_predict_for=2)
-            self.backproject_depth = {}
-            self.project_3d = {}
-            self.backproject_depth_single = {}
-            self.project_3d_single = {}
-            for scale in self.scales:
-                h = self.height // (2**scale)
-                w = self.width // (2**scale)
-                self.backproject_depth[scale] = BackprojectDepth(self.batch_size, h, w)
-                self.project_3d[scale] = Project3D(self.batch_size, h, w)
+        self.backproject_depth = {}
+        self.project_3d = {}
+        self.backproject_depth_single = {}
+        self.project_3d_single = {}
+        for scale in self.scales:
+            h = self.height // (2**scale)
+            w = self.width // (2**scale)
+            self.backproject_depth[scale] = BackprojectDepth(self.batch_size, h, w)
+            self.project_3d[scale] = Project3D(self.batch_size, h, w)
 
-                self.backproject_depth_single[scale] = BackprojectDepth(1, h, w)
-                self.project_3d_single[scale] = Project3D(1, h, w)
-            # =================================================
+            self.backproject_depth_single[scale] = BackprojectDepth(1, h, w)
+            self.project_3d_single[scale] = Project3D(1, h, w)
+        # =================================================
 
-            # Structural similarity ===========================
-            self.ssim = SSIM()
-            self.ssim.to(self.device)
-            # =================================================
+        # Structural similarity ===========================
+        self.ssim = SSIM()
+        self.ssim.to(self.device)
+        # =================================================
 
         # Send everything to the GPU(s) ===================
         if 'cuda' in self.device.type:
@@ -156,17 +158,17 @@ class DepthPosePredictor:
             steps = 1
 
         for _ in range(steps):
+            self.optimizer.zero_grad()
             outputs, losses = self._process_batch(inputs, loss_weights)
             if do_adapt:
-                self.optimizer.zero_grad()
                 losses['loss'].backward()
                 self.optimizer.step()
 
         if self.batch_size != 1 and use_expert:
             # online_inputs = {key: value[online_index].unsqueeze(0) for key, value in inputs.items()}
             for _ in range(steps):
-                online_outputs, online_losses = self._process_batch(inputs, use_online=True)
                 self.online_optimizer.zero_grad()
+                online_outputs, online_losses = self._process_batch(inputs, use_online=True)
                 online_losses['loss'].backward()
                 self.online_optimizer.step()
             outputs = online_outputs
@@ -213,7 +215,7 @@ class DepthPosePredictor:
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))
         outputs.update(self._reconstruct_images(inputs, outputs))
-        if self.use_online:
+        if self.mode == 'learner':
             losses = self._compute_loss(inputs, outputs, distances, sample_weights=loss_sample_weights)
         else:
             losses = None
@@ -489,10 +491,14 @@ class DepthPosePredictor:
 
     def _create_scaled_inputs(self, inputs):
         scaled_inputs = {}
-        scaled_hw = [(370, 1226), (185, 613), (93, 307), (47, 154)]
         for scale in self.scales:
-            height, width = scaled_hw[scale]
-            scaled_inputs[('rgb', 0, scale)] = F.interpolate(inputs[0], [height, width], mode='bilinear')
+            exp_scale = 2 ** scale
+            height = math.ceil(self.height / exp_scale)
+            width = math.ceil(self.width / exp_scale)
+            scaled_inputs[('rgb', 0, scale)] = F.interpolate(inputs[0], 
+                                                             [height, width], 
+                                                             mode='bilinear', 
+                                                             align_corners=True)
         return scaled_inputs
 
     def _compute_reprojection_loss(self,
@@ -564,24 +570,4 @@ class DepthPosePredictor:
             num_frames += 1
         velocity_loss /= num_frames
         return velocity_loss
-
-
-# if __name__ == '__main__':
-#     # Set local path
-#     local_path = Path(__file__).parent.parent.parent / 'configs'
-#     config = ConfigParser(local_path / 'singlegpu_kitti.yaml')
-
-#     # Set up model
-#     x = DepthPosePredictor(config.depth_pose, config.dataset)
-#     x.load_model()
-#     x._create_dataset_loaders(training=False, validation=True)
-#     for batch in x.val_loader:
-#         # This part should be removed afterwards, because the arriving input id's will be already 
-#         # in the correct order and named as [-1, 0, 1], because ros node reciever will do that
-#         # TODO: Remove this part
-#         # ==================================================
-#         inputs = prediction_input_formatter(batch)
-#         # ==================================================
-#         x.predict(inputs)
-
     
