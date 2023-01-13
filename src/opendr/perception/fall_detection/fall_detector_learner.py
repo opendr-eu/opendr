@@ -17,7 +17,7 @@ from csv import reader
 from urllib.request import urlretrieve
 
 from tqdm import tqdm
-from numpy import arctan2, linalg, rad2deg
+from numpy import arctan2, linalg, rad2deg, ndarray
 
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.learners import Learner
@@ -27,9 +27,11 @@ from opendr.engine.data import Image
 
 
 class FallDetectorLearner(Learner):
-    def __init__(self, pose_estimator):
+    def __init__(self, pose_estimator=None):
         super().__init__()
+        self.pose_estimator = pose_estimator
 
+    def initialize(self, pose_estimator):
         self.pose_estimator = pose_estimator
 
     def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
@@ -46,6 +48,9 @@ class FallDetectorLearner(Learner):
         Lastly, it returns the absolute number of frames where the pose detection was entirely missed.
 
         """
+        if self.pose_estimator is None:
+            raise AttributeError("self.pose_estimator is None, please initialize the fall detector learner by "
+                                 "providing a pose estimator using initialize(pose_estimator) first.")
         data = self.__prepare_val_dataset(dataset)
 
         tp = 0
@@ -216,16 +221,27 @@ class FallDetectorLearner(Learner):
             if verbose:
                 print("Test data download complete.")
 
-    def infer(self, img):
-        poses = self.pose_estimator.infer(img)
-        results = []
-        for pose in poses:
-            results.append(self.__naive_fall_detection(pose))
-
-        if len(results) >= 1:
+    def infer(self, input_):
+        if type(input_) is Image or type(input_) is ndarray:
+            if self.pose_estimator is None:
+                raise AttributeError("self.pose_estimator is None, please initialize the fall detector learner by "
+                                     "providing a pose estimator in the learner's constructor or by "
+                                     "using fall_detector.initialize(pose_estimator).")
+            poses = self.pose_estimator.infer(input_)
+            results = []
+            for pose in poses:
+                results.append(self.__naive_fall_detection(pose))
             return results
 
-        return []
+        elif type(input_) is list:
+            results = []
+            for pose in input_:
+                results.append(self.__naive_fall_detection(pose))
+            return results
+
+        else:
+            raise ValueError(f"Input provided is wrong type: {type(input_)}, please provide one of "
+                             f"{Image}, {ndarray} (opencv image) or a list of poses.")
 
     @staticmethod
     def __get_angle_to_horizontal(v1, v2):
@@ -242,20 +258,20 @@ class FallDetectorLearner(Learner):
         """
         # Hip detection, hip average serves as the middle point of the pose
         if pose["r_hip"][0] != -1 and pose["l_hip"][0] != -1:
-            hips = (pose["r_hip"] + pose["l_hip"])/2
+            hips = (pose["r_hip"] + pose["l_hip"]) / 2
         elif pose["r_hip"][0] != -1:
             hips = pose["r_hip"]
         elif pose["l_hip"][0] != -1:
             hips = pose["l_hip"]
         else:
             # Can't detect fall without hips
-            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])], pose
+            return Category(0), pose
 
         # Figure out head average position
         head = [-1, -1]
         # Try to detect approximate head position from shoulders, eyes, neck
         if pose["r_eye"][0] != -1 and pose["l_eye"][0] != -1 and pose["neck"][0] != -1:  # Eyes and neck detected
-            head = (pose["r_eye"] + pose["l_eye"] + pose["neck"])/3
+            head = (pose["r_eye"] + pose["l_eye"] + pose["neck"]) / 3
         elif pose["r_eye"][0] != -1 and pose["l_eye"][0] != -1:  # Eyes detected
             head = (pose["r_eye"] + pose["l_eye"]) / 2
         elif pose["r_sho"][0] != -1 and pose["l_sho"][0] != -1:  # Shoulders detected
@@ -313,21 +329,21 @@ class FallDetectorLearner(Learner):
 
         if calves_vertical != -1:
             if calves_vertical == 0:  # Calves are not vertical, so person has fallen
-                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
+                return Category(1), pose
 
         if legs_vertical != -1:
             if legs_vertical == 0:  # Legs are not vertical, probably not under torso, so person has fallen
-                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
+                return Category(1), pose
             elif legs_vertical == 1:  # Legs are vertical, so person is standing
-                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
+                return Category(-1), pose
         elif torso_vertical != -1:
             if torso_vertical == 0:  # Torso is not vertical, without legs we assume person has fallen
-                return Category(1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
+                return Category(1), pose
             elif torso_vertical == 1:  # Torso is vertical, without legs we assume person is standing
-                return Category(-1), [Keypoint(head), Keypoint(hips), Keypoint(legs)], pose
+                return Category(-1), pose
         else:
             # Only hips detected, can't detect fall
-            return Category(0), [Keypoint([-1, -1]), Keypoint([-1, -1]), Keypoint([-1, -1])], pose
+            return Category(0), pose
 
 
 class URFallDatasetIterator(DatasetIterator):
