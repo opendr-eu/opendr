@@ -75,6 +75,7 @@ void freeNanodetModel(NanodetModelT *model);
  */
 void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
 
+void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps);
 #ifdef __cplusplus
 }
 #endif

@@ -16,10 +16,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <opencv2/cv.h>
-#include <opencv2/highgui.h>
 #include "object_detection_2d_nanodet_jit.h"
 #include "opendr_utils.h"
+#include <time.h>
 
 int main(int argc, char **argv) {
   if (argc != 6) {
@@ -39,38 +38,43 @@ int main(int argc, char **argv) {
   loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
   printf("success\n");
 
-  OpendrImageT image;
-  CvCapture* capture = cvCaptureFromCAM(0);
+  OpendrImageT *image;
+  OpendrCameraT *camera;
 
-  if(!capture) {
-    printf("Error opening camera!\n");
-    return -1;
-  }
+  creatCamera(0, 320, 320, camera);
 
   // Initialize opendr detection target list;
   OpendrDetectionVectorTargetT results;
   initDetectionsVector(&results);
   double fps;
-  while (true) {
+  double acc_fps = 0.0;
+  double count = 0.0;
 
-    loadImageFromCapture(capture, &image);
-    if (!image.data) {
+  clock_t start_time, end_time;
+
+  while (count < 10000.0) {
+    loadImageFromCapture(camera, image);
+    if (!image->data) {
       printf("Image not found!");
       return 1;
     }
 
-    double start_time = ;
-    results = inferNanodet(&model, &image);
-    double end_time = ;
-    fps = 1.0 / (end_time - start_time);
-    avg_fps = 0.8 * fps + 0.2 * fps
-    drawBboxesWithFps(&image, &model, &results, fps);
+    start_time = clock();
+    results = inferNanodet(&model, image);
+    end_time = clock();
+    fps = 1.0 / ((double) (end_time - start_time));
+    if (count > 5.0) {
+      acc_fps += fps;
+      double avg_fps = count/acc_fps;
+      drawBboxesWithFps(image, &model, &results, avg_fps);
+    }
+    count += 1;
   }
 
   // Free the memory
-  cvReleaseCapture(&capture);
+  freeCamera(camera);
   freeDetectionsVector(&results);
-  freeImage(&image);
+  freeImage(image);
   freeNanodetModel(&model);
 
   return 0;
