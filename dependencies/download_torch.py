@@ -31,10 +31,8 @@ def search_on_path(filenames):
 
 def get_cuda_path():
     nvcc_path = search_on_path(('nvcc', 'nvcc.exe'))
-    cuda_path_default = None
     if nvcc_path is not None:
-        cuda_path_default = os.path.normpath(os.path.join(os.path.dirname(nvcc_path), '..', '..'))
-    if cuda_path_default is not None:
+        cuda_path_default = os.path.normpath(os.path.join(os.path.dirname(nvcc_path), '..'))
         _cuda_path = cuda_path_default
     elif os.path.exists('/usr/local/cuda'):
         _cuda_path = '/usr/local/cuda'
@@ -49,10 +47,11 @@ if __name__ == '__main__':
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
     parser.add_argument("--opendr_device", help="Target device for installation",
                         type=str, choices=["gpu", "cpu"], default="gpu")
-    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.9.0")
+    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.13.1")
     args = parser.parse_args()
 
     COMPATIBILITY_VERSIONS = {
+        "1.13.1": "0.14.1",
         "1.13.0": "0.14.0",
         "1.12.0": "0.13.0",
         "1.11.0": "0.12.0",
