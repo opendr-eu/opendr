@@ -234,12 +234,12 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
 void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, cv::Size *originalSize,
                torch::Tensor *outputs) {
   // Make all the inputs as tensors to use in jit model
-  torch::Tensor srcHeight = torch::tensor(originalSize->width);
-  torch::Tensor srcWidth = torch::tensor(originalSize->height);
+  torch::Tensor srcHeight = torch::tensor(originalSize->height);
+  torch::Tensor srcWidth = torch::tensor(originalSize->width);
   torch::Tensor warpMat = torch::from_blob(warpMatrix->data, {3, 3});
 
   // Model inference
-  *outputs = (model->network()).forward({*inputTensor, srcHeight, srcWidth, warpMat}).toTensor();
+  *outputs = (model->network()).forward({*inputTensor, srcWidth, srcHeight, warpMat}).toTensor();
   *outputs = outputs->to(torch::Device(torch::kCPU, 0));
 }
 
