@@ -29,6 +29,17 @@ struct OpendrImage {
 };
 typedef struct OpendrImage OpendrImageT;
 
+/***
+ * OpenDR data type for representing cameras
+ */
+struct OpendrCamera {
+  void* cap;
+  int cameraId;
+  int width;
+  int height;
+};
+typedef struct OpendrCamera OpendrCameraT;
+
 #ifdef __cplusplus
 }
 #endif

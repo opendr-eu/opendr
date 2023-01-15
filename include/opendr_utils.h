@@ -58,12 +58,16 @@ float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int
  */
 void loadImage(const char *path, OpendrImageT *image);
 
+void creatCamera(int cameraId, int width, int height, OpendrCameraT *camera);
+void freeCamera(OpendrCameraT *camera);
+
+
 /**
  * Reads an image from C OpenCV video capture and saves it into OpenDR image structure.
  * @param capture OpenCV CvCapture from which the image will be read
  * @param image OpenDR image data structure to store the image
  */
-void loadImageFromCapture(CvCapture *capture, OpendrImageT *image)
+void loadImageFromCapture(OpendrCameraT *camera, OpendrImageT *image);
 
 /**
  * Releases the memory allocated for an OpenDR image structure

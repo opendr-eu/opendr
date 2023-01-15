@@ -19,12 +19,11 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-
+#include <opencv2/videoio.hpp>
 #include <document.h>
 #include <stringbuffer.h>
 #include <writer.h>
+#include <iostream>
 
 float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
@@ -105,8 +104,32 @@ void loadImage(const char *path, OpendrImageT *image) {
   }
 }
 
-void loadImageFromCapture(CvCapture *capture, OpendrImageT *image) {
-  cv::Mat opencvImage = cvQueryFrame(capture);
+void creatCamera(int cameraId, int width, int height, OpendrCameraT *camera) {
+  camera = (OpendrCameraT*)malloc(sizeof(OpendrCameraT));
+  camera->cap = new cv::VideoCapture(cameraId);
+  camera->cameraId = cameraId;
+  camera->width = width;
+  camera->height = height;
+}
+
+void freeCamera(OpendrCameraT *camera) {
+  cv::VideoCapture* capture = (cv::VideoCapture*)camera->cap;
+  capture->release();
+  free(camera);
+}
+
+void loadImageFromCapture(OpendrCameraT *camera, OpendrImageT *image) {
+  cv::VideoCapture* capture = (cv::VideoCapture*)camera->cap;
+
+  if (!capture->isOpened()) {
+    std::cerr << "Error: Unable to open the camera" << std::endl;
+    return;
+  }
+  capture->set(cv::CAP_PROP_FRAME_WIDTH,camera->width);
+  capture->set(cv::CAP_PROP_FRAME_HEIGHT,camera->height);
+
+  cv::Mat opencvImage;
+  *capture >> opencvImage;
   if (opencvImage.empty()) {
     image->data = NULL;
   } else {

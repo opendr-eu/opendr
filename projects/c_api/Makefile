@@ -31,12 +31,13 @@ LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --lib
 OPENDR_INC = -I$(OPENDR_HOME)/include
 OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
-all: download demos
+all: demos download
 
-demos: face_recognition nanodet
+demos: face_recognition nanodet nanodet_webcam
 
 face_recognition: $(BUILD_DIR)/face_recognition_demo
 nanodet: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
+nanodet_webcam: $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo
 
 download:
 	@+if [ -a $(DATA_DIR) ] ; \
@@ -67,6 +68,11 @@ $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
 	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
 	@+echo "Building nanodet object detection demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+$(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d_webcam
+	@+echo "Building nanodet object detection demo..."
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo samples/object_detection_2d/nanodet/nanodet_jit_webcam_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."
