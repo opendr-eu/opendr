@@ -9,7 +9,7 @@ const char* jsonGetKeyString(const char *json, const char *key, const int index)
 ```
 The *jsonGetKeyString()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*) as string.
 If the value is an array it will return only the (*index*) value of the array.
-If fails returns (*""*).
+If it fails it returns ("").
 
 ### Function *jsonGetKeyFloat()*
 ```C
@@ -17,7 +17,7 @@ float jsonGetKeyFloat(const char *json, const char *key, const int index);
 ```
 The *jsonGetKeyFloat()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*) as float.
 If the value is an array it will return only the (*index*) value of the array.
-If fails returns (*0.0f*).
+If it fails it returns (*0.0f*).
 
 ### Function *jsonGetKeyFromInferenceParams()*
 ```C
@@ -25,7 +25,7 @@ float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int
 ```
 The *jsonGetKeyFromInferenceParams()* function reads a JSON string from the pointer (*json*) and returns tha value of a key with pointer (*key*) in inference_params section as float.
 If the value is an array it will return only the (*index*) value of the array.
-If fails returns (*0.0f*).
+If it fails it returns (*0.0f*).
 
 ---
 

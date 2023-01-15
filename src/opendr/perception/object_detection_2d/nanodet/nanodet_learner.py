@@ -220,7 +220,7 @@ class NanodetLearner(Learner):
         Loads the model from the path provided.
         :param path: path of the directory where the model was saved
         :type path: str, optional
-        :param verbose: whether to print a success message or not, defaults to Trye
+        :param verbose: whether to print a success message or not, defaults to True
         :type verbose: bool, optional
         """
 

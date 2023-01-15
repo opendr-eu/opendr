@@ -90,7 +90,7 @@ if __name__ == '__main__':
                 CUDA_VERSION = CUDA_VERSION.replace(".", "")
                 CUDA_VERSION = CUDA_VERSION[:3]
             else:
-                warnings.warn("\033[93m Not CUDA version file found.")
+                warnings.warn("\033[93m No CUDA version file found.")
             DEVICE = f"cu{CUDA_VERSION}"
         except:
             warnings.warn("\033[93m No CUDA installation found.\n"

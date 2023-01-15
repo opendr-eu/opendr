@@ -34,7 +34,7 @@ Releases the memory allocated for an object detection 2D Nanodet model (*model*)
 ```C
 OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
 ```
-This function perform inference using an object detection 2D Nanodet model (*model*) and an input image (*image*).
+This function performs inference using an object detection 2D Nanodet model (*model*) and an input image (*image*).
 The function returns an OpenDR detection vector structure with the inference results.
 
 

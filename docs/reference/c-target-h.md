@@ -88,7 +88,7 @@ The *OpendrDetectionVectorTargetT* structure has the following fields:
 
 #### `OpendrDetectionTargetT startingPointer` field
 
-A pointer to a memory of multiple OpenDR detection targets.
+A pointer to multiple OpenDR detection targets.
 
 #### `int size` field
 

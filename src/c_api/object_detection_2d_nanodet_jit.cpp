@@ -59,8 +59,8 @@ NanoDet::~NanoDet() {
 /**
  * Helper function for preprocessing images for normalization.
  * This function follows the OpenDR's Nanodet pre-processing pipeline for color normalization.
- * Mean and Standard deviation are already part of NanoDet class when is initialized.
- * @param image, image to be preprocesses
+ * Mean and Standard deviation are already part of NanoDet class when it is initialized.
+ * @param image, image to be preprocessed
  */
 torch::Tensor NanoDet::preProcess(cv::Mat *image) {
   torch::Tensor tensorImage = torch::from_blob(image->data, {image->rows, image->cols, 3}, torch::kByte);
@@ -156,10 +156,10 @@ void getResizeMatrix(cv::Size *srcShape, cv::Size *dstShape, cv::Mat *Rs, int ke
 
 /**
  * Helper function for preprocessing images for resizing.
- * This function follows the OpenDR's Nanodet pre-processing pipeline for shape transformation, which include
- * find the actual final size of model input if keep ratio is enabled, calculate the warp matrix and finally
- * resize and warp perspective of the input image.
- * @param src, image to be preprocesses
+ * This function follows OpenDR's Nanodet pre-processing pipeline for shape transformation, which includes
+ * finding the actual final size of the model input if keep ratio is enabled, calculating the warp matrix and finally
+ * resizing and warping the perspective of the input image.
+ * @param src, image to be preprocessed
  * @param dst, output image to be used as model input
  * @param dstSize, final size of the dst
  * @param warpMatrix, matrix to be used for warp perspective
@@ -169,7 +169,7 @@ void preprocess(cv::Mat *src, cv::Mat *dst, cv::Size *dstSize, cv::Mat *warpMatr
   cv::Size srcSize = cv::Size(src->cols, src->rows);
   const float divisible = 0.0;
 
-  // Get new destination size if keep ratio is wanted
+  // Get new destination size if keep ratio is enabled
   if (keepRatio == 1) {
     getMinimumDstShape(&srcSize, dstSize, divisible);
   }
