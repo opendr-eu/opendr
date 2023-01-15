@@ -20,7 +20,7 @@ provided by OpenDR. Specifically the following examples are provided:
    An example of training on the COCO dataset is provided. The user must set the dataset type using the `--dataset`
    argument and provide the dataset root path with the `--data-root` argument. Setting the config file for the specific
    model is done with `--model "model name"`. Setting `--device cpu` performs training on CPU. Additional command
-   line arguments can be set to overwrite various training hyperparameters from the provided config file, run `python3 train_demo.py -h` prints information about them on stdout.
+   line arguments can be set to overwrite various training hyperparameters from the provided config file, run `python3 train_demo.py -h` to print information about them on stdout.
 
     Example usage:
    `python3 train_demo.py --model m --dataset coco --data-root /path/to/coco_dataset`

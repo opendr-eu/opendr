@@ -7,7 +7,7 @@ Bases: `engine.learners.Learner`
 
 The *NanodetLearner* class is a wrapper of the Nanodet object detection algorithms based on the original
 [Nanodet implementation](https://github.com/RangiLyu/nanodet).
-It can be used to perform object detection on images (inference) and train All predefined Nanodet object detection models and new modular models from the user.
+It can be used to perform object detection on images (inference) and train all predefined Nanodet object detection models and new modular models from the user.
 
 The [NanodetLearner](../../src/opendr/perception/object_detection_2d/nanodet/nanodet_learner.py) class has the
 following public methods:
@@ -101,12 +101,12 @@ NanodetLearner.infer(self, input, thershold)
 ```
 
 This method is used to perform object detection on an image.
-Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes that are described by the left-top corner and
-its width and height, or returns an empty list if no detections were made of the image in input.
+Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes that are described by the top-left corner and
+their width and height, or returns an empty list if no detections were made on the input image.
 
 Parameters:
 - **input** : *Image*\
-  Image type object to perform inference on it.
+  Image type object to perform inference on.
 - **threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
@@ -151,7 +151,7 @@ If optimization is performed, the optimized model is saved instead.
 Parameters:
 
 - **path**: *str, default=None*\
-  Path to save the model, if None it will be the `"temp_folder"` or the `"cfg.save_dir"` from learner.
+  Path to save the model, if None it will be `"temp_folder"` or `"cfg.save_dir"` from the learner.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 
@@ -193,10 +193,10 @@ Parameters:
 
 #### Tutorials and Demos
 
-A tutorial on performing inference is available.
-Furthermore, demos on performing [training](../../projects/perception/object_detection_2d/nanodet/train_demo.py),
-[evaluation](../../projects/perception/object_detection_2d/nanodet/eval_demo.py) and
-[inference](../../projects/perception/object_detection_2d/nanodet/inference_demo.py) are also available.
+A Jupyter notebook tutorial on performing inference is [available](../../projects/python/perception/object_detection_2d/nanodet/inference_tutorial.ipynb).
+Furthermore, demos on performing [training](../../projects/python/perception/object_detection_2d/nanodet/train_demo.py),
+[evaluation](../../projects/python/perception/object_detection_2d/nanodet/eval_demo.py) and
+[inference](../../projects/python/perception/object_detection_2d/nanodet/inference_demo.py) are also available.
 
 
 
@@ -211,7 +211,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   All training parameters (optimizer, lr schedule, losses, model parameters etc.) can be changed in the model config file
   in [config directory](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config).
   You can find more information in [corresponding documentation](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config/config_file_detail.md).
-  For easier usage of the NanodetLearner, the user can overwrite the following parameters:
+  For easier usage of the NanodetLearner, you can overwrite the following parameters:
   (iters, lr, batch_size, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, weight_decay, warmup_steps,
   warmup_ratio, lr_schedule_T_max, lr_schedule_eta_min, grad_clip)
 
@@ -326,12 +326,12 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
 #### Performance Evaluation
 
-In terms of speed, the performance of Nanodet is summarized in the table below (in FPS).
+In terms of speed, the performance of Nanodet is summarized in the tables below (in FPS).
 The speed is measured from the start of the forward pass until the end of post-processing.
 
-For PyTorch inference.
+For PyTorch inference:
 
-| Method              {intput} | RTX 2070 | TX2   | NX    |
+| Method              {input} | RTX 2070 | TX2   | NX    |
 |------------------------------|----------|-------|-------|
 | Efficient Lite0     {320}    | 48.63    | 9.38  | 14.48 |
 | Efficient Lite1     {416}    | 43.88    | 7.93  | 11.07 |
@@ -348,9 +348,9 @@ For PyTorch inference.
 | Nanodet-plue m      {416}    | 40.16    | 7.24  | 11.58 |
 | Nanodet-plue m 1.5x {416}    | 38.94    | 7.37  | 11.52 |
 
-For JIT optimization inference.
+For JIT optimization inference:
 
-| Method              {intput} | RTX 2070 | TX2   | NX    |
+| Method              {input} | RTX 2070 | TX2   | NX    |
 |------------------------------|----------|-------|-------|
 | Efficient Lite0     {320}    | 69.06    | 12.94 | 17.78 |
 | Efficient Lite1     {416}    | 62.94    | 9.27  | 12.94 |
@@ -367,15 +367,15 @@ For JIT optimization inference.
 | Nanodet-plue m      {416}    | 64.74    | 11.22 | 17.57 |
 | Nanodet-plue m 1.5x {416}    | 56.77    | 10.39 | 14.81 |
 
-For ONNX optimization inference.
+For ONNX optimization inference:
 
 In this case, the forward pass is performed in ONNX.
 The pre-processing steps were implemented in PyTorch.
 Results show that the performance on ONNX varies significantly among different architectures, with some achieving good performance while others performing poorly.
 Additionally, it was observed that the performance of ONNX on a TX2 device was generally good, although it was observed to have occasional spikes of long run times that made it difficult to accurately measure.
-Overall, the TX2 device demonstrated good performance with ONNX.
+Overall, the TX2 device demonstrated good performance with ONNX:
 
-| Method              {intput} | RTX 2070  | TX2 | NX     |
+| Method              {input} | RTX 2070  | TX2 | NX     |
 |------------------------------|-----------|-----|--------|
 | Efficient Lite0     {320}    | 33.12     |     | 34.03  |
 | Efficient Lite1     {416}    | 16.78     |     | 17.35  |
@@ -392,9 +392,9 @@ Overall, the TX2 device demonstrated good performance with ONNX.
 | Nanodet-plue m      {416}    | 39.17     |     | 36.98  |
 | Nanodet-plue m 1.5x {416}    | 28.55     |     | 27.20  |
 
-Finally, we measure the performance on the COCO dataset, using the corresponding metrics.
+Finally, we measure the performance on the COCO dataset, using the corresponding metrics:
 
-| Method              {intput} | coco2017 mAP |
+| Method              {input} | coco2017 mAP |
 |------------------------------|--------------|
 | Efficient Lite0     {320}    | 24.4         |
 | Efficient Lite1     {416}    | 29.2         |
