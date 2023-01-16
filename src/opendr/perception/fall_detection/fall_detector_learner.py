@@ -22,7 +22,7 @@ from numpy import arctan2, linalg, rad2deg, ndarray
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
-from opendr.engine.target import Category, Keypoint
+from opendr.engine.target import Category
 from opendr.engine.data import Image
 
 
