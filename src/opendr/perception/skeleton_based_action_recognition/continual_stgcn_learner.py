@@ -321,6 +321,7 @@ class CoSTGCNLearner(Learner):
         assert weights_path.is_file() and weights_path.suffix in {
             ".pyth",
             ".pth",
+            ".pt",
             ".onnx",
             ".ckpt",
         }, (
