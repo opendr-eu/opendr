@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_audio_topic", type=str, default="audio/audio",
+    parser.add_argument("-i", "--input_audio_topic", type=str, default="/audio",
                         help="Listen to input data on this topic")
     parser.add_argument("-o", "--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
                         help="Topic name for speech command output")

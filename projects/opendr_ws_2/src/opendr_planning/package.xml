@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>opendr_planning</name>
-  <version>1.0.0</version>
+  <version>2.1.0</version>
   <description>OpenDR ROS2 nodes for the planning package</description>
   <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
   <license>Apache License v2.0</license>
@@ -15,7 +15,7 @@
   <exec_depend>vision_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
 
-  <exec_depend>opendr_ros2_bridge</exec_depend>
+  <exec_depend>opendr_bridge</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

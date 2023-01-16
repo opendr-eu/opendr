@@ -4,7 +4,7 @@ package_name = 'opendr_perception'
 
 setup(
     name=package_name,
-    version='1.0.0',
+    version='2.1.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'pose_estimation = opendr_perception.pose_estimation_node:main',
+            'hr_pose_estimation = opendr_perception.hr_pose_estimation_node:main',
             'object_detection_2d_centernet = opendr_perception.object_detection_2d_centernet_node:main',
             'object_detection_2d_detr = opendr_perception.object_detection_2d_detr_node:main',
             'object_detection_2d_yolov3 = opendr_perception.object_detection_2d_yolov3_node:main',
@@ -47,6 +48,7 @@ setup(
             'rgbd_hand_gestures_recognition = opendr_perception.rgbd_hand_gesture_recognition_node:main',
             'landmark_based_facial_expression_recognition = \
             opendr_perception.landmark_based_facial_expression_recognition_node:main',
+            'facial_emotion_estimation = opendr_perception.facial_emotion_estimation_node:main',
             'skeleton_based_action_recognition = opendr_perception.skeleton_based_action_recognition_node:main',
         ],
     },

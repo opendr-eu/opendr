@@ -17,6 +17,15 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
     By default, the USB cam node publishes images on `/image_raw` and the RGB input nodes subscribe to this topic if not provided with an input topic argument. 
     As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing images, **make sure to change the input topic accordingly.**
 
+3. _(Optional for nodes with [audio input](#audio-input) or [audiovisual input](#rgb--audio-input))_
+    
+    For basic usage and testing, the toolkit's ROS2 nodes that use audio as input are set up to expect input from a basic audio device using the default package `audio_common`  which is installed with OpenDR. You can run the audio node in a new terminal:
+    ```shell
+    ros2 run audio_capture audio_capture_node
+    ```
+    By default, the audio capture node publishes audio data on `/audio` and the audio input nodes subscribe to this topic if not provided with an input topic argument. 
+    As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing audio, **make sure to change the input topic accordingly.**
+
 ---
 
 ## Notes
@@ -71,7 +80,35 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
 2. You are then ready to start the pose detection node:
     ```shell
-    ros2 run opendr_perception pose_estimation_node.py
+    ros2 run opendr_perception pose_estimation
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
+
+3. Default output topics:
+   - Output images: `/opendr/image_pose_annotated`
+   - Detection messages: `/opendr/poses`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+### High Resolution Pose Estimation ROS2 Node
+
+You can find the high resolution pose estimation ROS2 node python script [here](./opendr_perception/hr_pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [high resolution pose estimation tool](../../../../src/opendr/perception/pose_estimation/hr_pose_estimation/high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/high-resolution-pose-estimation.md).
+The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_interface/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_interface/msg/OpenDRPose2DKeypoint.msg).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the high resolution pose detection node:
+    ```shell
+    ros2 run opendr_perception hr_pose_estimation
     ```
     The following optional arguments are available:
    - `-h, --help`: show a help message and exit
@@ -102,7 +139,7 @@ Fall detection uses the toolkit's pose estimation tool internally.
 2. You are then ready to start the fall detection node:
 
     ```shell
-    ros2 run opendr_perception fall_detection_node.py
+    ros2 run opendr_perception fall_detection
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -132,7 +169,7 @@ The node makes use of the toolkit's [face detection tool](../../../../src/opendr
 2. You are then ready to start the face detection node
 
     ```shell
-    ros2 run opendr_perception face_detection_retinaface_node.py
+    ros2 run opendr_perception face_detection_retinaface
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -160,7 +197,7 @@ The node makes use of the toolkit's [face recognition tool](../../../../src/open
 2. You are then ready to start the face recognition node:
 
     ```shell
-    ros2 run opendr_perception face_recognition_node.py
+    ros2 run opendr_perception face_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -216,7 +253,7 @@ whose documentation can be found here:
 2. You are then ready to start a 2D object detector node:
    1. SSD node
       ```shell
-      ros2 run opendr_perception object_detection_2d_ssd_node.py
+      ros2 run opendr_perception object_detection_2d_ssd
       ```
       The following optional arguments are available for the SSD node:
       - `--backbone BACKBONE`: Backbone network (default=`vgg16_atrous`)
@@ -224,35 +261,35 @@ whose documentation can be found here:
 
    2. YOLOv3 node
       ```shell
-      ros2 run opendr_perception object_detection_2d_yolov3_node.py
+      ros2 run opendr_perception object_detection_2d_yolov3
       ```
       The following optional argument is available for the YOLOv3 node:
       - `--backbone BACKBONE`: Backbone network (default=`darknet53`)
 
    3. YOLOv5 node
       ```shell
-      ros2 run opendr_perception object_detection_2d_yolov5_node.py
+      ros2 run opendr_perception object_detection_2d_yolov5
       ```
       The following optional argument is available for the YOLOv5 node:
       - `--model_name MODEL_NAME`: Network architecture, options are `yolov5s`, `yolov5n`, `yolov5m`, `yolov5l`, `yolov5x`, `yolov5n6`, `yolov5s6`, `yolov5m6`, `yolov5l6`, `custom` (default=`yolov5s`)
 
    4. CenterNet node
       ```shell
-      ros2 run opendr_perception object_detection_2d_centernet_node.py
+      ros2 run opendr_perception object_detection_2d_centernet
       ```
       The following optional argument is available for the CenterNet node:
       - `--backbone BACKBONE`: Backbone network (default=`resnet50_v1b`)
 
    5. Nanodet node
       ```shell
-      ros2 run opendr_perception object_detection_2d_nanodet_node.py
+      ros2 run opendr_perception object_detection_2d_nanodet
       ```
       The following optional argument is available for the Nanodet node:
       - `--model Model`: Model that config file will be used (default=`plus_m_1.5x_416`)
 
    6. DETR node
       ```shell
-      ros2 run opendr_perception object_detection_2d_detr_node.py
+      ros2 run opendr_perception object_detection_2d_detr
       ```
 
    The following optional arguments are available for all nodes above:
@@ -280,7 +317,7 @@ The node makes use of the toolkit's [single object tracking 2D SiamRPN tool](../
 2. You are then ready to start the single object tracking 2D node:
 
     ```shell
-    ros2 run opendr_perception object_tracking_2d_siamrpn_node.py
+    ros2 run opendr_perception object_tracking_2d_siamrpn
     ```
 
     The following optional arguments are available:
@@ -321,13 +358,13 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
 2. You are then ready to start a 2D object tracking node:
    1. Deep Sort node
       ```shell
-      ros2 run opendr_perception object_tracking_2d_deep_sort_node.py
+      ros2 run opendr_perception object_tracking_2d_deep_sort
       ```
       The following optional argument is available for the Deep Sort node:
       - `-n --model_name MODEL_NAME`: name of the trained model (default=`deep_sort`)
    2. FairMOT node
       ```shell
-      ros2 run opendr_perception object_tracking_2d_fair_mot_node.py
+      ros2 run opendr_perception object_tracking_2d_fair_mot
       ```
       The following optional argument is available for the FairMOT node:
       - `-n --model_name MODEL_NAME`: name of the trained model (default=`fairmot_dla34`)
@@ -366,7 +403,7 @@ and additional information about Efficient PS [here](../../../../src/opendr/perc
 2. You are then ready to start the panoptic segmentation node:
 
     ```shell
-    ros2 run opendr_perception panoptic_segmentation_efficient_ps_node.py
+    ros2 run opendr_perception panoptic_segmentation_efficient_ps
     ```
 
     The following optional arguments are available:
@@ -395,7 +432,7 @@ The node makes use of the toolkit's [semantic segmentation tool](../../../../src
 2. You are then ready to start the semantic segmentation node:
 
     ```shell
-    ros2 run opendr_perception semantic_segmentation_bisenet_node.py
+    ros2 run opendr_perception semantic_segmentation_bisenet
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -431,7 +468,7 @@ whose documentation can be found [here](../../../../docs/reference/image_based_f
 2. You are then ready to start the image-based facial emotion estimation node:
 
     ```shell
-    ros2 run opendr_perception facial_emotion_estimation_node.py
+    ros2 run opendr_perception facial_emotion_estimation
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -455,7 +492,9 @@ Feel free to modify the node to detect faces in a different way that matches you
 
 ### Landmark-based Facial Expression Recognition ROS2 Node
 
-A ROS2 node for performing landmark-based facial expression recognition using the pretrained model PST-BLN on AFEW, CK+ or Oulu-CASIA datasets.
+A ROS2 node for performing landmark-based facial expression recognition using a trained model on AFEW, CK+ or Oulu-CASIA datasets.
+OpenDR does not include a pretrained model, so one should be provided by the user.
+An alternative would be to use the [image-based facial expression estimation node](#image-based-facial-emotion-estimation-ros2-node) provided by the toolkit.
 
 You can find the landmark-based facial expression recognition ROS2 node python script [here](./opendr_perception/landmark_based_facial_expression_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's landmark-based facial expression recognition tool which can be found [here](../../../../src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/progressive_spatio_temporal_bln_learner.py)
@@ -468,7 +507,7 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 2. You are then ready to start the landmark-based facial expression recognition node:
 
     ```shell
-    ros2 run opendr_perception landmark_based_facial_expression_recognition_node.py
+    ros2 run opendr_perception landmark_based_facial_expression_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -501,7 +540,7 @@ whose documentation can be found [here](../../../../docs/reference/skeleton-base
 2. You are then ready to start the skeleton-based human action recognition node:
 
     ```shell
-    ros2 run opendr_perception skeleton_based_action_recognition_node.py
+    ros2 run opendr_perception skeleton_based_action_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -534,7 +573,7 @@ The node makes use of the toolkit's video human activity recognition tools which
 2. You are then ready to start the video human activity recognition node:
 
     ```shell
-    ros2 run opendr_perception video_activity_recognition_node.py
+    ros2 run opendr_perception video_activity_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -577,7 +616,7 @@ whose documentation can be found [here](../../../../docs/reference/gem.md).
 4. You are then ready to start the object detection 2d GEM node:
 
     ```shell
-    ros2 run opendr_perception object_detection_2d_gem_node.py
+    ros2 run opendr_perception object_detection_2d_gem
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -612,7 +651,7 @@ whose documentation can be found [here](../../../../docs/reference/rgbd-hand-ges
 
 2. You are then ready to start the hand gesture recognition node:
     ```shell
-    ros2 run opendr_perception rgbd_hand_gesture_recognition_node.py
+    ros2 run opendr_perception rgbd_hand_gesture_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -638,16 +677,16 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
-2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
-3. You are then ready to start the face detection node
+2. Start the node responsible for publishing audio. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
+3. You are then ready to start the audiovisual emotion recognition node
 
     ```shell
-    ros2 run opendr_perception speech_command_recognition_node.py
+    ros2 run opendr_perception audiovisual_emotion_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
    - `-iv or --input_video_topic INPUT_VIDEO_TOPIC`: topic name for input video, expects detected face of size 224x224 (default=`/image_raw`)
-   - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio`)
    - `-o or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the predicted emotion (default=`/opendr/audiovisual_emotion`)
    - `--buffer_size BUFFER_SIZE`: length of audio and video in seconds, (default=`3.6`)
    - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
@@ -672,16 +711,16 @@ whose documentation can be found here:
 
 #### Instructions for basic usage:
 
-1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
+1. Start the node responsible for publishing audio. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the face detection node
+2. You are then ready to start the speech command recognition node
 
     ```shell
-    ros2 run opendr_perception speech_command_recognition_node.py
+    ros2 run opendr_perception speech_command_recognition
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
-   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio`)
    - `-o or --output_speech_command_topic OUTPUT_SPEECH_COMMAND_TOPIC`: topic name for speech command output (default=`/opendr/speech_recognition`)
    - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds (default=`1.5`)
    - `--model MODEL`: the model to use, choices are `matchboxnet`, `edgespeechnets` or `quad_selfonn` (default=`matchboxnet`)
@@ -714,7 +753,7 @@ whose documentation can be found [here](../../../../docs/reference/voxel-object-
 2. You are then ready to start the 3D object detection node:
 
     ```shell
-    ros2 run opendr_perception object_detection_3d_voxel_node.py
+    ros2 run opendr_perception object_detection_3d_voxel
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -746,7 +785,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 2. You are then ready to start the 3D object tracking node:
 
     ```shell
-    ros2 run opendr_perception object_tracking_3d_ab3dmot_node.py
+    ros2 run opendr_perception object_tracking_3d_ab3dmot
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -782,7 +821,7 @@ The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](
 2. You are then ready to start the heart anomaly detection node:
 
     ```shell
-    ros2 run opendr_perception heart_anomaly_detection_node.py
+    ros2 run opendr_perception heart_anomaly_detection
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -815,7 +854,7 @@ You can inspect [the node](./opendr_perception/image_dataset_node.py) and modify
 
 To get an image from a dataset on the disk, you can start a `image_dataset.py` node as:
 ```shell
-ros2 run opendr_perception image_dataset_node.py
+ros2 run opendr_perception image_dataset
 ```
 The following optional arguments are available:
    - `-h or --help`: show a help message and exit
@@ -836,7 +875,7 @@ You can inspect [the node](./opendr_perception/point_cloud_dataset_node.py) and 
 
 To get a point cloud from a dataset on the disk, you can start a `point_cloud_dataset.py` node as:
 ```shell
-ros2 run opendr_perception point_cloud_dataset_node.py
+ros2 run opendr_perception point_cloud_dataset
 ```
 The following optional arguments are available:
    - `-h or --help`: show a help message and exit

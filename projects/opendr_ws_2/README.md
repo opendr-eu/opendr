@@ -16,15 +16,7 @@ For the initial setup you can follow the instructions below:
     source /opt/ros/foxy/setup.bash
     ```
    _For convenience, you can add this line to your `.bashrc` so you don't have to source the tools each time you open a  terminal window._
-<!-- Add these to install.sh
-3. Install some dependencies:
-    ```shell
-    # Install colcon https://docs.ros.org/en/foxy/Tutorials/Colcon-Tutorial.html
-    sudo apt install python3-colcon-common-extensions
-    # Install vision messages
-    sudo apt-get install ros-foxy-vision-msgs
-    ```
--->
+
 <!--4. Install `cv_bridge` via the instructions in its [README](https://github.com/ros-perception/vision_opencv/tree/ros2/cv_bridge#installation), excluding the last step (build), as it will get built later with the rest of the workspace. TODO is this needed?-->
 
 2. Navigate to your OpenDR home directory (`~/opendr`) and activate the OpenDR environment using:
@@ -68,18 +60,19 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 ### [Perception](src/opendr_perception/README.md)
 ## RGB input
 1. [Pose Estimation](src/opendr_perception/README.md#pose-estimation-ros2-node)
-2. [Fall Detection](src/opendr_perception/README.md#fall-detection-ros2-node)
-3. [Face Detection](src/opendr_perception/README.md#face-detection-ros2-node)
-4. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros2-node)
-5. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros2-nodes)
-6. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros2-node)
-7. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
-8. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros2-node)
-9. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
-10. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
-11. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
-12. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
-13. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
+2. [High Resolution Pose Estimation](src/opendr_perception/README.md#high-resolution-pose-estimation-ros2-node)
+3. [Fall Detection](src/opendr_perception/README.md#fall-detection-ros2-node)
+4. [Face Detection](src/opendr_perception/README.md#face-detection-ros2-node)
+5. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros2-node)
+6. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros2-nodes)
+7. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros2-node)
+8. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
+9. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros2-node)
+10. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
+11. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
+12. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
+13. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
+14. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
 ## RGB + Infrared input
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#2d-object-detection-gem-ros2-node)
 ## RGBD input

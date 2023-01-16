@@ -1,19 +1,26 @@
 # OpenDR Toolkit Change Log
 
+## Version 2.1.0
+Released on XX, XX, 2023.
+
 ## Version 2.0.0
-Released on December, XX, 2022.
+Released on December, 31st, 2022.
 
   - New Features:
     - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
     - Added Continual Transformer Encoders ([#317](https://github.com/opendr-eu/opendr/pull/317)).
     - Added Continual Spatio-Temporal Graph Convolutional Networks tool ([#370](https://github.com/opendr-eu/opendr/pull/370)).
     - Added AmbiguityMeasure utility tool ([#361](https://github.com/opendr-eu/opendr/pull/361)).
-    - Added SiamRPN 2D tracking tool ([#367](https://github.com/opendr-eu/opendr/pull/367))
-
+    - Added SiamRPN 2D tracking tool ([#367](https://github.com/opendr-eu/opendr/pull/367)).
+    - Added Facial Emotion Estimation tool ([#264](https://github.com/opendr-eu/opendr/pull/264)).
+    - Added High resolution pose estimation tool ([#356](https://github.com/opendr-eu/opendr/pull/356)).
+    - Added ROS2 nodes for all included tools ([#256](https://github.com/opendr-eu/opendr/pull/256)).
+    - Added missing ROS nodes and homogenized the interface across the tools ([#305](https://github.com/opendr-eu/opendr/issues/305)).
   - Bug Fixes:
     - Fixed `BoundingBoxList`, `TrackingAnnotationList`, `BoundingBoxList3D` and `TrackingAnnotationList3D` confidence warnings ([#365](https://github.com/opendr-eu/opendr/pull/365)).
     - Fixed undefined `image_id` and `segmentation` for COCO `BoundingBoxList` ([#365](https://github.com/opendr-eu/opendr/pull/365)).
     - Fixed Continual X3D ONNX support ([#372](https://github.com/opendr-eu/opendr/pull/372)).
+    - Fixed several issues with ROS nodes and improved performance ([#305](https://github.com/opendr-eu/opendr/issues/305)).
 
 ## Version 1.1.1
 Released on June, 30th, 2022.

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright 2020-2022 OpenDR European Project
+#!/usr/bin/env python3
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class ObjectDetection3DVoxelNode:
         device="cuda:0",
         model_name="tanet_car_xyres_16",
         model_config_path=os.path.join(
-            "..", "..", "src", "opendr", "perception", "object_detection_3d",
+            "$OPENDR_HOME", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "tanet",
             "ped_cycle", "test_short.proto"
         ),
@@ -107,7 +107,7 @@ def main():
     parser.add_argument(
         "-c", "--model_config_path", help="Path to a model .proto config",
         type=str, default=os.path.join(
-            "..", "..", "src", "opendr", "perception", "object_detection_3d",
+            "$OPENDR_HOME", "src", "opendr", "perception", "object_detection_3d",
             "voxel_object_detection_3d", "second_detector", "configs", "tanet",
             "car", "xyres_16.proto"
         )

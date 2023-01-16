@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ class ObjectTrackingSiamRPNNode(Node):
             min_distance = dist([center_box.left, center_box.top], img_center)
             for box in boxes:
                 new_distance = dist([int(box.left + box.width // 2), int(box.top + box.height // 2)], img_center)
-                if new_distance < min_distance:
+                if new_distance < min_distance and box.width > 32 and box.height > 32:  # Ignore very small boxes
                     center_box = box
                     min_distance = dist([center_box.left, center_box.top], img_center)
 

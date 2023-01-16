@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ class EfficientPsNode(Node):
             if self._visualization_publisher is not None and self._visualization_publisher.get_subscription_count() > 0:
                 panoptic_image = EfficientPsLearner.visualize(image, prediction, show_figure=False,
                                                               detailed=self.detailed_visualization)
-                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image, encoder="rgb8"))
+                self._visualization_publisher.publish(self._bridge.to_ros_image(panoptic_image, encoding="rgb8"))
 
             if self._instance_heatmap_publisher is not None and self._instance_heatmap_publisher.get_subscription_count() > 0:
                 self._instance_heatmap_publisher.publish(self._bridge.to_ros_image(prediction[0]))
