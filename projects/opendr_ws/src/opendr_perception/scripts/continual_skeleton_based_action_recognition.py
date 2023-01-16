@@ -14,14 +14,16 @@
 # limitations under the License.
 
 import argparse
-import rospy
 import torch
 import numpy as np
+
+import rospy
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
-from ros_bridge.msg import OpenDRPose2D
 from sensor_msgs.msg import Image as ROS_Image
+from opendr_bridge.msg import OpenDRPose2D
 from opendr_bridge import ROSBridge
+
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
@@ -30,20 +32,20 @@ from opendr.perception.skeleton_based_action_recognition import CoSTGCNLearner
 
 class CoSkeletonActionRecognitionNode:
 
-    def __init__(self, input_rgb_image_topic="/image_raw",
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_pose_annotated",
                  pose_annotations_topic="/opendr/poses",
                  output_category_topic="/opendr/continual_skeleton_recognized_action",
                  output_category_description_topic="/opendr/continual_skeleton_recognized_action_description",
                  device="cuda", model='costgcn'):
         """
-        Creates a ROS Node for continual skeleton-based action recognition
+        Creates a ROS Node for continual skeleton-based action recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not
         publishing annotated image)
         :type output_rgb_image_topic: str
-        :param pose_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
+        :param pose_annotations_topic: Topic to which we are publishing the pose annotations (if None, we are not publishing
         annotated pose annotations)
         :type pose_annotations_topic:  str
         :param output_category_topic: Topic to which we are publishing the recognized action category info
@@ -104,14 +106,14 @@ class CoSkeletonActionRecognitionNode:
         """
         Start the node and begin processing input data
         """
-        rospy.init_node('continual_skeleton_action_recognition_node', anonymous=True)
+        rospy.init_node('opendr_continual_skeleton_action_recognition_node', anonymous=True)
         rospy.Subscriber(self.input_rgb_image_topic, ROS_Image, self.callback, queue_size=1, buff_size=10000000)
-        rospy.loginfo("Continual skeleton-based action recognition node started!")
+        rospy.loginfo("Continual skeleton-based action recognition node started.")
         rospy.spin()
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that process the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -122,21 +124,23 @@ class CoSkeletonActionRecognitionNode:
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
         if len(poses) > 2:
-            # select two poses with highest energy
+            # select two poses with the highest energy
             poses = _select_2_poses(poses)
 
-        # Get an OpenCV image back
-        image = image.opencv()
-        #  Annotate image and publish results
-        for pose in poses:
-            if self.pose_publisher is not None:
-                ros_pose = self.bridge.to_ros_pose(pose)
-                self.pose_publisher.publish(ros_pose)
-                draw(image, pose)
+        #  Publish detections in ROS message
+        if self.pose_publisher is not None:
+            for pose in poses:
+                # Convert OpenDR pose to ROS pose message using bridge and publish it
+                self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
-            self.image_publisher.publish(message)
+            # Get an OpenCV image back
+            image = image.opencv()
+            # Annotate image with poses
+            for pose in poses:
+                draw(image, pose)
+            # Convert the annotated OpenDR image to ROS image message using bridge and publish it
+            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
         num_frames = 1
         poses_list = [poses]
@@ -179,11 +183,10 @@ def _pose2numpy(num_current_frames, poses_list):
     return skeleton_seq
 
 
-if __name__ == '__main__':
-
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input image",
-                        type=str, default="/image_raw")
+                        type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated image",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/image_pose_annotated")
@@ -226,3 +229,7 @@ if __name__ == '__main__':
                                         device=device,
                                         model=args.model)
     continual_skeleton_action_recognition_node.listen()
+
+
+if __name__ == '__main__':
+    main()
