@@ -22,8 +22,8 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
-from opendr_ros2_bridge import ROS2Bridge
-from opendr_ros2_messages.msg import OpenDRPose2D
+from opendr_bridge import ROS2Bridge
+from opendr_interface.msg import OpenDRPose2D
 
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
@@ -40,13 +40,13 @@ class CoSkeletonActionRecognitionNode(Node):
                  output_category_description_topic="/opendr/continual_skeleton_recognized_action_description",
                  device="cuda", model='costgcn'):
         """
-        Creates a ROS2 Node for skeleton-based action recognition
+        Creates a ROS2 Node for continual skeleton-based action recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not
         publishing annotated image)
         :type output_rgb_image_topic: str
-        :param pose_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
+        :param pose_annotations_topic: Topic to which we are publishing the pose annotations (if None, we are not publishing
         annotated pose annotations)
         :type pose_annotations_topic:  str
         :param output_category_topic: Topic to which we are publishing the recognized action category info
@@ -61,7 +61,7 @@ class CoSkeletonActionRecognitionNode(Node):
          (Options: "costgcn")
         :type model: str
         """
-        super().__init__('continual_skeleton_based_action_recognition_node')
+        super().__init__('opendr_continual_skeleton_based_action_recognition_node')
         # Set up ROS topics and bridge
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
@@ -104,11 +104,11 @@ class CoSkeletonActionRecognitionNode(Node):
                                                            mode="pretrained",
                                                            file_name="stgcn_ntu_cv_lw_openpose.pt")
         self.action_classifier.load(model_saved_path)
-        self.get_logger().info("Skeleton-based action recognition node started!")
+        self.get_logger().info("Skeleton-based action recognition node initialized.")
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that process the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -119,21 +119,23 @@ class CoSkeletonActionRecognitionNode(Node):
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
         if len(poses) > 2:
-            # select two poses with highest energy
+            # select two poses with the highest energy
             poses = _select_2_poses(poses)
 
-        # Get an OpenCV image back
-        image = image.opencv()
-        #  Annotate image and publish results
+        #  Publish detections in ROS message
         for pose in poses:
             if self.pose_publisher is not None:
-                ros_pose = self.bridge.to_ros_pose(pose)
-                self.pose_publisher.publish(ros_pose)
-                draw(image, pose)
+                # Convert OpenDR pose to ROS2 pose message using bridge and publish it
+                self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
-            self.image_publisher.publish(message)
+            # Get an OpenCV image back
+            image = image.opencv()
+            # Annotate image with poses
+            for pose in poses:
+                draw(image, pose)
+            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
         num_frames = 1
         poses_list = [poses]
