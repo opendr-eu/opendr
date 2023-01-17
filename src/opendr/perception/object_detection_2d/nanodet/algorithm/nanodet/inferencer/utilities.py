@@ -23,11 +23,11 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch 
 
 
 class Predictor(nn.Module):
-    def __init__(self, cfg, model, device="cuda"):
+    def __init__(self, cfg, model, device="cuda", nms_max_num=100):
         super(Predictor, self).__init__()
         self.cfg = cfg
         self.device = device
-
+        self.nms_max_num = nms_max_num
         if self.cfg.model.arch.backbone.name == "RepVGG":
             deploy_config = self.cfg.model
             deploy_config.arch.backbone.update({"deploy": True})
@@ -53,12 +53,12 @@ class Predictor(nn.Module):
         scripted_model = self.postprocessing(preds, img, height, width, warp_matrix)
         return scripted_model
 
-    def forward(self, img, height, width, warp_matrix):
+    def forward(self, img, height=torch.tensor(0), width=torch.tensor(0), warp_matrix=torch.tensor(0)):
         if torch.jit.is_scripting():
             return self.script_model(img, height, width, warp_matrix)
         # In tracing (Jit and Onnx optimizations) we must first run the pipeline before the graf,
         # cv2 is needed, and it is installed with abi cxx11 but torch is in cxx<11
-        meta = {"height": height, "width": width, "img": img, "warp_matrix": warp_matrix}
+        meta = {"img": img}
         meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
         with torch.no_grad():
             results = self.model.inference(meta)
@@ -83,5 +83,5 @@ class Predictor(nn.Module):
     def postprocessing(self, preds, input, height, width, warp_matrix):
         meta = {"height": height, "width": width, 'img': input, 'warp_matrix': warp_matrix}
         meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
-        res = self.model.head.post_process(preds, meta)
+        res = self.model.head.post_process(preds, meta, nms_max_num=self.nms_max_num)
         return res

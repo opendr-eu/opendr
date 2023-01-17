@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import argparse
+
+import cv2
 import time
+
+from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
@@ -55,6 +58,8 @@ if __name__ == '__main__':
         counter, avg_fps = 0, 0
         for img in image_provider:
 
+            img = Image(img)
+
             start_time = time.perf_counter()
 
             # Perform inference
@@ -62,10 +67,13 @@ if __name__ == '__main__':
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
-            img = draw_bounding_boxes(img, boxes, class_names=yolo.classes, show=False)
-
             # Calculate a running average on FPS
-            avg_fps = 0.8 * fps + 0.2 * fps
+            avg_fps = 0.8 * fps + 0.2 * avg_fps
+
+            img = img.opencv()
+
+            if boxes:
+                draw_bounding_boxes(img, boxes, class_names=yolo.classes)
 
             # Wait a few frames for FPS to stabilize
             if counter > 5:

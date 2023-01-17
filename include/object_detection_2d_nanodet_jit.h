@@ -19,10 +19,11 @@
 
 #include "opendr_utils.h"
 #include "target.h"
+#include <opencv2/opencv.hpp>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 struct NanodetModel {
   // Jit cpp class holder
@@ -59,7 +60,8 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
+//OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
+OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, cv::Mat *image);
 
 /**
  * Releases the memory allocated for a nanodet object detection model.
@@ -73,11 +75,13 @@ void freeNanodetModel(NanodetModelT *model);
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
  */
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
+//void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
+void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
 
-void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps);
-#ifdef __cplusplus
-}
-#endif
+//void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps);
+void drawBboxesWithFps(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps);
+//#ifdef __cplusplus
+//}
+//#endif
 
 #endif  // C_API_NANODET_H

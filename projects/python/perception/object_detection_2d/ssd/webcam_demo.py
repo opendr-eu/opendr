@@ -62,10 +62,13 @@ if __name__ == '__main__':
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
-            img = draw_bounding_boxes(img, boxes, class_names=ssd.classes, show=False)
-
             # Calculate a running average on FPS
-            avg_fps = 0.8 * fps + 0.2 * fps
+            avg_fps = 0.8 * fps + 0.2 * avg_fps
+
+            img = img.opencv()
+
+            if boxes:
+                draw_bounding_boxes(img, boxes, class_names=ssd.classes, show=False)
 
             # Wait a few frames for FPS to stabilize
             if counter > 5:

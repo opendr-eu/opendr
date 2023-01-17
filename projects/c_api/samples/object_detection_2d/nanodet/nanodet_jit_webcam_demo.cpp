@@ -16,16 +16,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <chrono>
 #include "object_detection_2d_nanodet_jit.h"
 #include "opendr_utils.h"
-#include <time.h>
+
+#include <iostream>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
 
 int main(int argc, char **argv) {
   if (argc != 6) {
     fprintf(stderr,
             "usage: %s [model_path] [device] [images_path] [input_sizes].\n"
             "model_path = path/to/your/libtorch/model.pth \ndevice = cuda or cpu \n"
-            "images_path = \"xxx/xxx/*.jpg\" \ninput_size = width height.\n",
+            "images_path = \"xxx/xxx.jpg\" \ninput_size = width height.\n",
             argv[0]);
     return -1;
   }
@@ -38,43 +43,43 @@ int main(int argc, char **argv) {
   loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
   printf("success\n");
 
-  OpendrImageT *image;
-  OpendrCameraT *camera;
-
-  creatCamera(0, 320, 320, camera);
+  cv::Mat frameCap;
+  cv::Mat frame;
+  cv::VideoCapture cap(0);
+  if (!cap.isOpened()) {
+    std::cerr << "ERROR! Unable to open camera\n";
+    return -1;
+  }
 
   // Initialize opendr detection target list;
   OpendrDetectionVectorTargetT results;
   initDetectionsVector(&results);
   double fps;
-  double acc_fps = 0.0;
-  double count = 0.0;
+  double avg_fps = 0.0;
+  int count = 0;
 
   clock_t start_time, end_time;
+  while (count > -1) {
+    cap >> frameCap;
 
-  while (count < 10000.0) {
-    loadImageFromCapture(camera, image);
-    if (!image->data) {
-      printf("Image not found!");
-      return 1;
-    }
+    cv::resize(frameCap, frame, cv::Size(640, 640), 0, 0, cv::INTER_CUBIC);
+    auto start = std::chrono::steady_clock::now();
+    results = inferNanodet(&model, &frame);
+    auto end = std::chrono::steady_clock::now();
+    fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
-    start_time = clock();
-    results = inferNanodet(&model, image);
-    end_time = clock();
-    fps = 1.0 / ((double) (end_time - start_time));
+    avg_fps = fps * 0.8 + avg_fps * 0.2;
     if (count > 5.0) {
-      acc_fps += fps;
-      double avg_fps = count/acc_fps;
-      drawBboxesWithFps(image, &model, &results, avg_fps);
+      drawBboxesWithFps(&frame, &model, &results, avg_fps);
     }
     count += 1;
+
+    if (cv::waitKey(1) >= 0)
+      break;
   }
 
   // Free the memory
-  freeCamera(camera);
   freeDetectionsVector(&results);
-  freeImage(image);
   freeNanodetModel(&model);
 
   return 0;

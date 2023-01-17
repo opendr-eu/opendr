@@ -33,7 +33,8 @@ OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
 all: demos download
 
-demos: face_recognition nanodet nanodet_webcam
+#demos: face_recognition nanodet_webcam nanodet
+demos: face_recognition nanodet_webcam
 
 face_recognition: $(BUILD_DIR)/face_recognition_demo
 nanodet: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
@@ -70,12 +71,12 @@ $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
-	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d_webcam
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
 	@+echo "Building nanodet object detection demo..."
-	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo samples/object_detection_2d/nanodet/nanodet_jit_webcam_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo samples/object_detection_2d/nanodet/nanodet_jit_webcam_demo.cpp $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."
 	@+$(RM) -rf $(BUILD_DIR)/*
-	@+$(RM) -rf $(DATA_DIR)
+	@#+$(RM) -rf $(DATA_DIR)
 	@+echo "Done!"

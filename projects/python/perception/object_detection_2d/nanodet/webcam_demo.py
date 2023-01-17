@@ -12,22 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import argparse
+
+import cv2
 import time
+
+from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 class VideoReader(object):
     def __init__(self, file_name):
         self.file_name = file_name
+        self.cap = cv2.VideoCapture(self.file_name)
+        if not self.cap.isOpened():
+            raise IOError('Video {} cannot be opened'.format(self.file_name))
         try:  # OpenCV needs int to read from webcam
             self.file_name = int(file_name)
         except ValueError:
             pass
 
     def __iter__(self):
-        self.cap = cv2.VideoCapture(self.file_name)
         if not self.cap.isOpened():
             raise IOError('Video {} cannot be opened'.format(self.file_name))
         return self
@@ -42,8 +47,11 @@ class VideoReader(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
-    parser.add_argument("--optimize", help="", type=str, default="", choices=["", "onnx", "jit"])
+    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m_0.5x",
+                        choices=["EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512",
+                                 "RepVGG_A0_416", "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416",
+                                 "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "custom"])
+    parser.add_argument("--optimize", help="", type=str, default="jit", choices=["", "onnx", "jit"])
     args = parser.parse_args()
 
     optimize, device, model = args.optimize, args.device, args.model
@@ -57,11 +65,14 @@ if __name__ == '__main__':
 
     if args.optimize != "":
         img = next(image_provider)
-        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), img, optimization=args.optimize)
+        img = Image(img)
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), img, optimization=args.optimize, nms_max_num=20)
 
     try:
-        counter, avg_fps, accum_time = 0, 0, 0
+        counter, avg_fps = 0, 0
         for img in image_provider:
+
+            img = Image(img)
 
             start_time = time.perf_counter()
 
@@ -70,12 +81,16 @@ if __name__ == '__main__':
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
-            img = draw_bounding_boxes(img, boxes, class_names=nanodet.classes, show=False)
+            # Calculate a running average on FPS
+            avg_fps = 0.8 * fps + 0.2 * avg_fps
+
+            img = img.opencv()
+
+            if boxes:
+                draw_bounding_boxes(img, boxes, class_names=nanodet.classes)
 
             # Wait a few frames for FPS to stabilize
             if counter > 5:
-                accum_time += fps
-                avg_fps = (counter - 5) / accum_time
                 image = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, (255, 0, 0), 2, cv2.LINE_AA)
 

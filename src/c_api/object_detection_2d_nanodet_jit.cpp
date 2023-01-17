@@ -243,12 +243,13 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
   *outputs = outputs->to(torch::Device(torch::kCPU, 0));
 }
 
-OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image) {
+OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, cv::Mat *image) {
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpendrDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
 
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+  cv::Mat *opencvImage = image;
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return detectionsVector;
@@ -289,7 +290,7 @@ OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *im
   return detectionsVector;
 }
 
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector) {
+void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector) {
   const int colorList[80][3] = {
     //{255 ,255 ,255}, //bg
     {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},
@@ -308,7 +309,8 @@ void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVector
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
 
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+  cv::Mat *opencvImage = image;
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return;
@@ -349,7 +351,7 @@ void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVector
   cv::waitKey(0);
 }
 
-void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
+void drawBboxesWithFps(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
   const int colorList[80][3] = {
     //{255 ,255 ,255}, //bg
     {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},
@@ -368,7 +370,8 @@ void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectio
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
 
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+  cv::Mat *opencvImage = image;
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return;
@@ -404,15 +407,14 @@ void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectio
                   cv::Scalar(255, 255, 255));
 
       // Put fps counter
-      char fpsText[20];
-      sprintf(fpsText, "FPS: %.2f", fps);
+      std::string fpsText = "FPS: " + std::to_string(fps);
       cv::putText(imageWithDetections, fpsText, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1,
                   cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
     }
   }
 
   cv::imshow("image", imageWithDetections);
-  cv::waitKey(0);
+  cv::waitKey(1);
 }
 
 void freeNanodetModel(NanodetModelT *model) {

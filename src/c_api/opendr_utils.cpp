@@ -104,8 +104,20 @@ void loadImage(const char *path, OpendrImageT *image) {
   }
 }
 
+void loadImageFromPointer(void *src, OpendrImageT *image) {
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(src);
+  std::cout<<"after cast\n";
+  if (opencvImage->empty()) {
+    image->data = NULL;
+  } else {
+    std::cout<<"before new\n";
+    image->data = src;
+    std::cout<<"after new\n";
+  }
+}
+
 void creatCamera(int cameraId, int width, int height, OpendrCameraT *camera) {
-  camera = (OpendrCameraT*)malloc(sizeof(OpendrCameraT));
+//  camera = (OpendrCameraT*)malloc(sizeof(OpendrCameraT));
   camera->cap = new cv::VideoCapture(cameraId);
   camera->cameraId = cameraId;
   camera->width = width;

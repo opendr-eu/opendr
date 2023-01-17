@@ -60,7 +60,7 @@ void loadImage(const char *path, OpendrImageT *image);
 
 void creatCamera(int cameraId, int width, int height, OpendrCameraT *camera);
 void freeCamera(OpendrCameraT *camera);
-
+void loadImageFromPointer(void *src, OpendrImageT *image);
 
 /**
  * Reads an image from C OpenCV video capture and saves it into OpenDR image structure.
