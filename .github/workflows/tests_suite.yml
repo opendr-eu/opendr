@@ -80,7 +80,7 @@ jobs:
           - perception/facial_expression_recognition
           - control/single_demo_grasp
           - planning/end_to_end_planning
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
         include:
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo sh -c 'echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list' \
@@ -185,11 +185,11 @@ jobs:
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
-          # - perception/object_detection_3d
+          - perception/object_detection_3d
           # - control/mobile_manipulation
           # - simulation/human_model_generation
           # - control/single_demo_grasp
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -258,11 +258,11 @@ jobs:
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
           - perception/facial_expression_recognition
-          # - perception/object_detection_3d
+          - perception/object_detection_3d
           # - control/mobile_manipulation
           # - simulation/human_model_generation
           # - control/single_demo_grasp
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -342,7 +342,7 @@ jobs:
           - simulation/human_model_generation
           - control/single_demo_grasp
           - planning/end_to_end_planning
-          # - perception/object_tracking_3d
+          - perception/object_tracking_3d
     runs-on: ubuntu-20.04
     steps:
     - name: Download artifact
