@@ -1,6 +1,3 @@
-# Adapted from:
-# https://github.com/nianticlabs/monodepth2/blob/master/networks/depth_decoder.py
-
 from typing import Dict, Tuple
 
 import numpy as np
@@ -8,16 +5,19 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 
-from .layers import Conv3x3, ConvBlock
+from .layers.ConvBlock import ConvBlock, Conv3x3
 
 
 class DepthDecoder(nn.Module):
-    def __init__(
-            self,
-            num_ch_encoder: np.ndarray,
-            scales: Tuple[int, ...] = (0, 1, 2, 3),
-            use_skips: bool = True,
-    ) -> None:
+    """
+    The DepthNet Decoder module.
+    """
+
+    def __init__(self,
+                 num_ch_encoder: np.ndarray,
+                 scales: Tuple[int, ...]=(0, 1, 2, 3),
+                 use_skips: bool = True) -> None:
+
         super().__init__()
 
         self.scales = scales
@@ -55,9 +55,6 @@ class DepthDecoder(nn.Module):
         for i in range(4, -1, -1):
             x = getattr(self, f'upconv_{i}_0')(x)
             if self.use_skips and i > 0:
-                # Difference to monodepth2 implementation to deal with image resolutions
-                # that cannot be integer-divided by 2, 4, 8, etc.
-                # Only required when evaluating the depth
                 x = [F.interpolate(x, size=input_features[i - 1].shape[2:], mode='nearest')]
                 x += [input_features[i - 1]]
             else:
@@ -65,7 +62,6 @@ class DepthDecoder(nn.Module):
             x = torch.cat(x, 1)
             x = getattr(self, f'upconv_{i}_1')(x)
             if i in self.scales:
-                # monodepth2 paper (w/o uncertainty)
                 self.output[('disp', i)] = self.sigmoid(getattr(self, f'dispconv_{i}')(x))
 
         return self.output

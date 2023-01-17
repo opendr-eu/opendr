@@ -7,7 +7,7 @@ from typing import List, Union, get_args, get_origin
 import yaml
 
 from opendr.perception.continual_slam.datasets import Config as Dataset
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config import Config as DepthPosePrediction
+from opendr.perception.continual_slam.algorithm.parsing.config import Config as DepthPosePrediction
 
 class ConfigParser():
     def __init__(self, config_file: Union[str, PathLike, Path]) -> None:

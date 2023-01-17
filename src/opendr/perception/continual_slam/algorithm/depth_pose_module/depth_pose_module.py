@@ -1,33 +1,176 @@
-from typing import Any, Dict, Optional, Tuple, List
+from typing import Any, Dict, Optional, Tuple
 
 import math
 import torch
 from torch import nn, optim, Tensor
 import torch.nn.functional as F
 
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.networks import (
-    ResnetEncoder, 
-    DepthDecoder, 
+from opendr.perception.continual_slam.algorithm.depth_pose_module.networks import (
+    ResnetEncoder,
+    DepthDecoder,
     PoseDecoder,
-    BackprojectDepth,
-    Project3D,
-    SSIM,
     )
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.config import Config
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.dataset_config import DatasetConfig
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.utils import *
+from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layers import (
+    SSIM,
+    BackProjectDepth,
+    Project3D,
+    )
 
-
+from opendr.perception.continual_slam.algorithm.depth_pose_module.losses import *
+from opendr.perception.continual_slam.algorithm.parsing.config import Config
+from opendr.perception.continual_slam.algorithm.parsing.dataset_config import DatasetConfig
+from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import *
 
 from opendr.perception.continual_slam.datasets import KittiDataset
 
-class DepthPosePredictor:
-    def __init__(self, config: Config, dataset_config: DatasetConfig, use_online: bool = False, mode: bool = 'predictor') -> None:
+
+class DepthPoseModule:
+    """
+    This class implements the DepthPosePredictor algorithm.
+    """
+    def __init__(self, config: Config, dataset_config: DatasetConfig, use_online: bool = False, mode: str = 'predictor'):
+
+        # Parse the configuration parameters
+        self._parse_configs(config, dataset_config)
+
+        # Set the configuration parameters from input
+        self.use_online = use_online
+        self.mode = mode
+
+        # Set static parameters
+        self.num_pose_frames = 2
+        self.camera_matrix = np.array(
+            [[0.58, 0, 0.5, 0], [0, 1.92, 0.5, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
+        self.frame_ids = [0, -1, 1]
+
+        # Set the device
+        self.device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = torch.device(self.device_type)
+
+        # Create the model
+        self._create_model()
+
+        # Set the flag to indicate if the model is trained
+        self.is_trained = False
+
+    def adapt(self,
+              inputs: Dict[Any, Tensor],
+              online_index: int = 0,
+              steps: int = 1,
+              online_loss_weight: Optional[float] = None,
+              use_expert: bool = True,
+              do_adapt: bool = True,
+              return_loss: bool = False
+              ) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+        """
+        Adapt the model to a new task.
+        :param inputs: A dictionary containing the inputs to the model.
+        :type: Dict[Any, Tensor]
+        :param online_index: The index of the online model in the batch. Defaults to 0.
+        :type: int
+        :param steps: The number of gradient steps to take. Defaults to 1.
+        :type: int
+        :param online_loss_weight: The weight to give to the online loss. Defaults to None.
+        :type: float
+        :param use_expert: Whether to use the expert model to compute the online loss. Defaults to True.
+        :type: bool
+        :param do_adapt: Whether to adapt the model. Defaults to True.
+        :type: bool
+        :param return_loss: Whether to return the loss. Defaults to False.
+        :type: bool
+        :return: A tuple containing the outputs and the loss.
+        :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
+        """
+        if online_loss_weight is None:
+            loss_weights = None
+        elif self.batch_size == 1:
+            loss_weights = torch.ones(1, device=self.device)
+        else:
+            loss_weights = torch.empty(self.batch_size, device=self.device)
+            buffer_loss_weight = (1 - online_loss_weight) / (self.batch_size - 1)
+            loss_weights[online_index] = online_loss_weight
+            loss_weights[np.arange(self.batch_size) != online_index] = buffer_loss_weight
+
+        if do_adapt:
+            self._set_adapt(freeze_encoder=True)
+        else:
+            self._set_eval()
+            steps = 1
+
+        for _ in range(steps):
+            self.optimizer.zero_grad()
+            outputs, losses = self._process_batch(inputs, loss_weights)
+            if do_adapt:
+                losses['loss'].backward()
+                self.optimizer.step()
+
+        if self.batch_size != 1 and use_expert:
+            # online_inputs = {key: value[online_index].unsqueeze(0) for key, value in inputs.items()}
+            for _ in range(steps):
+                self.online_optimizer.zero_grad()
+                online_outputs, online_losses = self._process_batch(inputs, use_online=True)
+                online_losses['loss'].backward()
+                self.online_optimizer.step()
+            outputs = online_outputs
+            losses = online_losses
+        if return_loss:
+            return outputs, losses
+        return outputs
+
+    def predict(self,
+                batch: Dict[Any, Tensor],
+                return_loss: bool = False
+                ) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+        """
+        Predict the output of a batch of inputs
+        :param batch: A dictionary containing the inputs to the model.
+        :type: Dict[Any, Tensor]
+        :param return_loss: Whether to return the loss. Defaults to False.
+        :type: bool
+        :return: A dictionary containing the outputs of the model.
+        :rtype: Dict[Tensor, Any]
+        """
+        self._set_eval()
+        with torch.no_grad():
+            outputs, losses = self._process_batch(batch)
+        if return_loss:
+            return outputs, losses
+        return outputs
+
+    def load_model(self, load_optimizer: bool = True) -> None:
+        """
+        Load the model from the checkpoint.
+        :param load_optimizer: Whether to load the optimizer. Defaults to True.
+        :type: bool
+        """
+        self._load_model(load_optimizer)
+
+    def create_dataset_loaders(self,
+                               training: bool = False,
+                               validation: bool = True,
+                               ) -> None:
+        """
+        Create the dataset loaders.
+        :param training: Whether to create the training dataset loader. Defaults to False.
+        :type: bool
+        :param validation: Whether to create the validation dataset loader. Defaults to True.
+        :type: bool
+        """
+        self._create_dataset_loaders(training, validation)
+
+    # Private methods --------------------------------------------------------------------------------------------
+    def _parse_configs(self,
+                       config: Config,
+                       dataset_config: DatasetConfig
+                       ) -> None:
+
+        # Set the configuration parameters from dataset config
         self.dataset_type = dataset_config.dataset
         self.dataset_path = dataset_config.dataset_path
         self.height = dataset_config.height
         self.width = dataset_config.width
 
+        # Set the configuration parameters from config
         self.resnet = config.resnet
         self.resnet_pretrained = config.resnet_pretrained
         self.scales = config.scales
@@ -41,20 +184,10 @@ class DepthPosePredictor:
         self.batch_size = config.batch_size
         self.disparity_smoothness = config.disparity_smoothness
         self.velocity_loss_scaling = config.velocity_loss_scaling
-        self.mode = mode
 
+    def _create_model(self) -> None:
 
-        self.device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.device = torch.device(self.device_type)
-        self.num_pose_frames = 2
-        self.is_trained = False
-
-        self.use_online = use_online
-
-        self.camera_matrix = np.array(
-            [[0.58, 0, 0.5, 0], [0, 1.92, 0.5, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
-    
-        # Create a dictionary to store the models
+        # Create a dictionary to store the models ==============================================================
         self.models = {}
         self.models['depth_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained)
         self.models['depth_decoder'] = DepthDecoder(self.models['depth_encoder'].num_ch_encoder,
@@ -67,14 +200,16 @@ class DepthPosePredictor:
 
         self.online_models = {}
         if self.use_online:
-            self.online_models['depth_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained)
+            self.online_models['depth_encoder'] = ResnetEncoder(self.resnet,
+                                                                self.resnet_pretrained)
             self.online_models['depth_decoder'] = DepthDecoder(self.models['depth_encoder'].num_ch_encoder,
-                                                        self.scales)
-            self.online_models['pose_encoder'] = ResnetEncoder(self.resnet, self.resnet_pretrained,
-                                                        self.num_pose_frames)
+                                                               self.scales)
+            self.online_models['pose_encoder'] = ResnetEncoder(self.resnet,
+                                                               self.resnet_pretrained,
+                                                               self.num_pose_frames)
             self.online_models['pose_decoder'] = PoseDecoder(self.models['pose_encoder'].num_ch_encoder,
-                                                      num_input_features=1,
-                                                      num_frames_to_predict_for=2)
+                                                             num_input_features=1,
+                                                             num_frames_to_predict_for=2)
         self.backproject_depth = {}
         self.project_3d = {}
         self.backproject_depth_single = {}
@@ -82,12 +217,12 @@ class DepthPosePredictor:
         for scale in self.scales:
             h = self.height // (2**scale)
             w = self.width // (2**scale)
-            self.backproject_depth[scale] = BackprojectDepth(self.batch_size, h, w)
+            self.backproject_depth[scale] = BackProjectDepth(self.batch_size, h, w)
             self.project_3d[scale] = Project3D(self.batch_size, h, w)
 
-            self.backproject_depth_single[scale] = BackprojectDepth(1, h, w)
+            self.backproject_depth_single[scale] = BackProjectDepth(1, h, w)
             self.project_3d_single[scale] = Project3D(1, h, w)
-        # =================================================
+        # ======================================================================================================
 
         # Structural similarity ===========================
         self.ssim = SSIM()
@@ -127,69 +262,17 @@ class DepthPosePredictor:
         self.optimizer = optim.Adam(self.parameters_to_train, self.learning_rate)
         self.lr_scheduler = optim.lr_scheduler.StepLR(self.optimizer, self.scheduler_step_size, 0.1)
         self.epoch = 0
-        if use_online:
+        if self.use_online:
             self.online_optimizer = optim.Adam(self.online_parameters_to_train, self.learning_rate)
         else:
             self.online_optimizer = None
         # =================================================
 
-    def adapt(self,
-              inputs: Dict[Any, Tensor],
-              online_index: int = 0,
-              steps: int = 1,
-              online_loss_weight: Optional[float] = None,
-              use_expert: bool = True,
-              do_adapt: bool = True):
-
-        if online_loss_weight is None:
-            loss_weights = None
-        elif self.batch_size == 1:
-            loss_weights = torch.ones(1, device=self.device)
-        else:
-            loss_weights = torch.empty(self.batch_size, device=self.device)
-            buffer_loss_weight = (1 - online_loss_weight) / (self.batch_size - 1)
-            loss_weights[online_index] = online_loss_weight
-            loss_weights[np.arange(self.batch_size) != online_index] = buffer_loss_weight
-
-        if do_adapt:
-            self._set_adapt(freeze_encoder=True)
-        else:
-            self._set_eval()
-            steps = 1
-
-        for _ in range(steps):
-            self.optimizer.zero_grad()
-            outputs, losses = self._process_batch(inputs, loss_weights)
-            if do_adapt:
-                losses['loss'].backward()
-                self.optimizer.step()
-
-        if self.batch_size != 1 and use_expert:
-            # online_inputs = {key: value[online_index].unsqueeze(0) for key, value in inputs.items()}
-            for _ in range(steps):
-                self.online_optimizer.zero_grad()
-                online_outputs, online_losses = self._process_batch(inputs, use_online=True)
-                online_losses['loss'].backward()
-                self.online_optimizer.step()
-            outputs = online_outputs
-            losses = online_losses
-
-        return outputs, losses
-
-        
-    def predict(self, batch) -> Dict[Tensor, Any]:
-
-        # if self.val_loader is None:
-        #     self._create_dataset_loaders()
-        self._set_eval()
-        with torch.no_grad():
-            outputs, losses = self._process_batch(batch)
-        return outputs
-
-    def _process_batch(self, 
+    def _process_batch(self,
                        batch: Dict[Any, Tensor],
                        loss_sample_weights: Optional[Tensor] = None,
-                       use_online: bool = False) -> Dict[Tensor, Any]:
+                       use_online: bool = False
+                       ) -> Dict[Tensor, Any]:
 
         if len(batch) != 6:
             raise ValueError(f'Expected 3 images, but got {len(batch)//2}')
@@ -209,45 +292,48 @@ class DepthPosePredictor:
             else:
                 data = data/255.0
                 inputs[key[0]] = data.to(self.device)
-        
+
         # Compute predictions
         outputs = {}
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))
         outputs.update(self._reconstruct_images(inputs, outputs))
+
         if self.mode == 'learner':
             losses = self._compute_loss(inputs, outputs, distances, sample_weights=loss_sample_weights)
-        else:
+        elif self.mode == 'predictor':
             losses = None
+        else:
+            raise ValueError(f'Invalid mode: {self.mode}')
         return outputs, losses
 
     def _compute_loss(self,
                       inputs: Dict[Any, Tensor],
                       outputs: Dict[Any, Tensor],
                       distances: Dict[Any, Tensor],
-                      scales: Optional[Tuple[int, ...]] = None,
-                      sample_weights: Optional[Tensor] = None) -> Dict[str, Tensor]:
-        """
-        Compute the reprojection and smoothness losses for a minibatch.
-        """
+                      scales: Optional[Tuple[int, ...]]=None,
+                      sample_weights: Optional[Tensor]=None
+                      ) -> Dict[str, Tensor]:
+
         scales = self.scales if scales is None else scales
         if sample_weights is None:
             sample_weights = torch.ones(self.batch_size, device=self.device)/self.batch_size
         losses = {}
         total_loss = torch.zeros(1, device=self.device)
         scaled_inputs = self._create_scaled_inputs(inputs)
+
         for scale in self.scales:
             target = inputs[0]
             reprojection_losses = []
-            for frame_id in [-1, 1]:
+            for frame_id in self.frame_ids[1:]:
                 pred = outputs[('rgb', frame_id, scale)]
-                reprojection_losses.append(self._compute_reprojection_loss(pred, target))
+                reprojection_losses.append(compute_reprojection_loss(self.ssim, pred, target))
             reprojection_losses = torch.cat(reprojection_losses, 1)
 
             identity_reprojection_losses = []
-            for frame_id in [-1, 1]:
+            for frame_id in self.frame_ids[1:]:
                 pred = inputs[frame_id]
-                identity_reprojection_losses.append(self._compute_reprojection_loss(pred, target))
+                identity_reprojection_losses.append(compute_reprojection_loss(self.ssim, pred, target))
             identity_reprojection_losses = torch.cat(identity_reprojection_losses, 1)
             # Add random numbers to break ties
             identity_reprojection_losses += torch.randn(identity_reprojection_losses.shape,
@@ -260,7 +346,7 @@ class DepthPosePredictor:
             disp = outputs['disp', 0, scale]
             mean_disp = disp.mean(2, True).mean(3, True)
             norm_disp = disp / (mean_disp + 1e-7)
-            smooth_loss = self._compute_smooth_loss(norm_disp, color, mask)
+            smooth_loss = compute_smooth_loss(norm_disp, color, mask)
             smooth_loss = (smooth_loss * sample_weights).sum()
             losses[f'smooth_loss/scale_{scale}'] = smooth_loss
             # ==================================================
@@ -275,11 +361,11 @@ class DepthPosePredictor:
 
         total_loss /= len(self.scales)
         losses['depth_loss'] = total_loss
-        
+
         # Velocity supervision loss (scale independent) ====
         if self.velocity_loss_scaling is not None and self.velocity_loss_scaling > 0:
-            velocity_loss = self.velocity_loss_scaling * self._compute_velocity_loss(
-                inputs, outputs, distances)
+            velocity_loss = self.velocity_loss_scaling * \
+                            compute_velocity_loss(inputs, outputs, distances, device=self.device)
             velocity_loss = (velocity_loss * sample_weights).sum()
             losses['velocity_loss'] = velocity_loss
             total_loss += velocity_loss
@@ -323,7 +409,7 @@ class DepthPosePredictor:
                 camera_matrix = camera_matrix.unsqueeze(0)
                 inv_camera_matrix = inv_camera_matrix.unsqueeze(0)
 
-                for i, frame_id in enumerate([-1, 1]):
+                for _, frame_id in enumerate(self.frame_ids[1:]):
                     T = outputs[('cam_T_cam', 0, frame_id)]
 
                     if batch_size == 1:
@@ -333,24 +419,25 @@ class DepthPosePredictor:
                             cam_points, camera_matrix, T)
                     else:
                         cam_points = self.backproject_depth[source_scale](depth,
-                                                                        inv_camera_matrix)
+                                                                          inv_camera_matrix)
                         pixel_coordinates = self.project_3d[source_scale](cam_points,
-                                                                        camera_matrix, T)
+                                                                          camera_matrix,
+                                                                          T)
                     # Save the warped image
                     outputs[('rgb', frame_id, scale)] = F.grid_sample(inputs[frame_id],
-                                                                    pixel_coordinates,
-                                                                    padding_mode='border',
-                                                                    align_corners=True)
+                                                                      pixel_coordinates,
+                                                                      padding_mode='border',
+                                                                      align_corners=True)
         return outputs
 
-    def _predict_disparity(self, 
+    def _predict_disparity(self,
                            inputs: Dict[Any, Tensor],
                            frame_id: int = 0,
                            use_online: bool = False) -> Dict[Any, Tensor]:
         """Predict disparity for the current frame.
         :param inputs: dictionary containing the input images. The format is: {0: img_t1, -1: img_t2, 1: img_t0}
         :param frame_id: the frame id for which the disparity is predicted. Default is 0.
-        :return: dictionary containing the disparity maps. The format is: {('disp', frame_id, scale): disp0, ...}        
+        :return: dictionary containing the disparity maps. The format is: {('disp', frame_id, scale): disp0, ...}
         """
         if not use_online:
             features = self.models['depth_encoder'](inputs[frame_id])
@@ -375,13 +462,13 @@ class DepthPosePredictor:
         outputs = {}
         pose_inputs_dict = inputs
 
-        for frame_id in [-1, 1]:
+        for frame_id in self.frame_ids[1:]:
             if frame_id == -1:
                 pose_inputs = [pose_inputs_dict[frame_id], pose_inputs_dict[0]]
             else:
                 pose_inputs = [pose_inputs_dict[0], pose_inputs_dict[frame_id]]
             pose_inputs = torch.cat(pose_inputs, 1)
-            
+
             if use_online:
                 pose_features = [self.online_models['pose_encoder'](pose_inputs)]
                 axis_angle, translation = self.online_models['pose_decoder'](pose_features)
@@ -393,9 +480,9 @@ class DepthPosePredictor:
             outputs[('axis_angle', 0, frame_id)] = axis_angle
             outputs[('translation', 0, frame_id)] = translation
 
-            outputs[('cam_T_cam', 0, frame_id)] = transformation_from_parameters(axis_angle, 
-                                                                              translation,
-                                                                              invert=(frame_id == -1))
+            outputs[('cam_T_cam', 0, frame_id)] = transformation_from_parameters(axis_angle,
+                                                                                 translation,
+                                                                                 invert=(frame_id == -1))
         return outputs
 
     def _create_dataset_loaders(self, training: bool = True, validation: bool = True) -> None:
@@ -408,7 +495,7 @@ class DepthPosePredictor:
             print('Loading validation dataset...')
             self.val_loader = KittiDataset(str(self.dataset_path))
 
-    def load_model(self, load_optimizer: bool = True) -> None:
+    def _load_model(self, load_optimizer: bool = True) -> None:
         """Load model(s) from disk
         """
         if self.load_weights_folder is None:
@@ -454,8 +541,9 @@ class DepthPosePredictor:
                 print('Cannot find matching optimizer weights, so the optimizer is randomly '
                       'initialized.')
 
+    # Setting the model to adapt, train or eval mode ==================================================
     def _set_adapt(self, freeze_encoder: bool = True) -> None:
-        """ 
+        """
         Set all to train except for batch normalization (freeze parameters)
         Convert all models to adaptation mode: batch norm is in eval mode + frozen params
         Adapted from:
@@ -489,85 +577,16 @@ class DepthPosePredictor:
             if model is not None:
                 model.eval()
 
+    # ==================================================================================================
+
     def _create_scaled_inputs(self, inputs):
         scaled_inputs = {}
         for scale in self.scales:
             exp_scale = 2 ** scale
             height = math.ceil(self.height / exp_scale)
             width = math.ceil(self.width / exp_scale)
-            scaled_inputs[('rgb', 0, scale)] = F.interpolate(inputs[0], 
-                                                             [height, width], 
-                                                             mode='bilinear', 
+            scaled_inputs[('rgb', 0, scale)] = F.interpolate(inputs[0],
+                                                             [height, width],
+                                                             mode='bilinear',
                                                              align_corners=True)
         return scaled_inputs
-
-    def _compute_reprojection_loss(self,
-                                   pred: Tensor,
-                                   target: Tensor,
-                                   ) -> Tensor:
-        """
-        Computes reprojection loss between a batch of predicted and target images
-        This is the photometric error
-        """
-        abs_diff = torch.abs(target - pred)
-        l1_loss = abs_diff.mean(1, True)
-
-        ssim_loss = self.ssim(pred, target).mean(1, True)
-        reprojection_loss = 0.85 * ssim_loss + 0.15 * l1_loss
-
-        return reprojection_loss
-
-    @staticmethod
-    def _compute_smooth_loss(disp: Tensor,
-                             img: Tensor,
-                             mask: Tensor) -> Tensor:
-        """
-        Computes the smoothness loss for a disparity image
-        The color image is used for edge-aware smoothness
-        """
-        grad_disp_x = torch.abs(disp[:, :, :, :-1] - disp[:, :, :, 1:])
-        grad_disp_y = torch.abs(disp[:, :, :-1, :] - disp[:, :, 1:, :])
-
-        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True)
-        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True)
-
-        grad_disp_x *= torch.exp(-grad_img_x)
-        grad_disp_y *= torch.exp(-grad_img_y)
-
-        grad_disp_x = torch.masked_select(grad_disp_x, mask[..., :-1])
-        grad_disp_y = torch.masked_select(grad_disp_y, mask[..., :-1, :])
-
-        batch_size = disp.shape[0]
-        smooth_loss = torch.empty(batch_size, device=disp.device)
-        for i in range(batch_size):
-            _grad_disp_x = torch.masked_select(grad_disp_x[i, ...], mask[i, :, :, :-1])
-            _grad_disp_y = torch.masked_select(grad_disp_y[i, ...], mask[i, :, :-1, :])
-            smooth_loss[i] = _grad_disp_x.mean() + _grad_disp_y.mean()
-
-        return smooth_loss
-
-
-    def _compute_velocity_loss(
-        self,
-        inputs: Dict[Any, Tensor],
-        outputs: Dict[Any, Tensor],
-        distances: Dict[float, float]
-    ) -> Tensor:
-        batch_size = inputs[0].shape[0]  # might be different from self.batch_size
-        velocity_loss = torch.zeros(batch_size, device=self.device).squeeze()
-        num_frames = 0
-        for frame in [0, -1, 1]:
-            if frame == -1:
-                continue
-            if frame == 0:
-                pred_translation = outputs[('translation', 0, -1)]
-            else:
-                pred_translation = outputs[('translation', 0, 1)]
-            gt_distance = torch.abs(distances[frame]).squeeze()
-            pred_distance = torch.linalg.norm(pred_translation, dim=-1).squeeze()
-            velocity_loss += F.l1_loss(pred_distance, gt_distance,
-                                       reduction='none')  # separated by sample in batch
-            num_frames += 1
-        velocity_loss /= num_frames
-        return velocity_loss
-    

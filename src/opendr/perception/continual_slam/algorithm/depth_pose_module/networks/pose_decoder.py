@@ -1,6 +1,3 @@
-# Adapted from:
-# https://github.com/nianticlabs/monodepth2/blob/master/networks/pose_decoder.py
-
 from typing import Optional, Tuple
 
 import numpy as np
@@ -9,6 +6,9 @@ from torch import Tensor, nn
 
 
 class PoseDecoder(nn.Module):
+    """
+    Decoder of the PoseNet module.
+    """
     def __init__(
         self,
         num_ch_encoder: np.ndarray,

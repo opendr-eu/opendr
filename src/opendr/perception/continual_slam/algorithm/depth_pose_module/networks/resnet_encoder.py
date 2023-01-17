@@ -11,8 +11,10 @@ from torchvision import models
 
 
 class ResNetMultiImageInput(models.ResNet):
-    """Constructs a resnet model with varying number of input images.
+    """
+    Constructs a resnet model with varying number of input images.
     Adapted from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
+    Encoders for depth and pose prediction.
     """
     def __init__(
         self,

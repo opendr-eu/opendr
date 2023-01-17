@@ -11,14 +11,13 @@ from opendr.engine.data import Image
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 
 
-
 class KittiDataset(ExternalDataset, DatasetIterator):
 
     def __init__(self, path: Union[str, Path, PathLike]):
         super().__init__(path, dataset_type='kitti')
 
         self._path = Path(os.path.join(path, 'sequence'))
-    
+
         # ========================================================
         self.frame_ids = [0, -1, 1]
         self.scales = [0, 1, 2, 3]
@@ -40,9 +39,9 @@ class KittiDataset(ExternalDataset, DatasetIterator):
             if sequence not in self.valid_sequences:
                 print(f'Sequence {sequence} is not valid. Skipping...')
                 continue
-            self._image_folder = self._path / sequence /'image_2'
-            self._velocity_folder = self._path / sequence /'oxts/data'
-            self._timestamps_file = self._path / sequence /'oxts/timestamps.txt'
+            self._image_folder = self._path / sequence / 'image_2'
+            self._velocity_folder = self._path / sequence / 'oxts/data'
+            self._timestamps_file = self._path / sequence / 'oxts/timestamps.txt'
 
             self._images[sequence] = sorted(self._image_folder.glob(f'*.png'))
             self._velocities[sequence] = sorted(self._velocity_folder.glob(f'*.txt'))
@@ -54,7 +53,6 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         # Now we simply put all sequences available on single lists
         self._create_lists_from_sequences()
 
-   
     def _create_timestamps(self, timestamps) -> List[int]:
         """
         This method is used for creating a list of timestamps from the timestamps file.
@@ -72,7 +70,6 @@ class KittiDataset(ExternalDataset, DatasetIterator):
                 (datetime.strptime(timestamp[:-3], '%Y-%m-%d %H:%M:%S.%f') -
                  datetime.strptime(string_timestamps[0][:-3], '%Y-%m-%d %H:%M:%S.%f')).total_seconds())
         return timestamps
-
 
     def _load_relative_distance(self, index: int) -> float:
         """
@@ -138,5 +135,3 @@ if __name__ == '__main__':
     kitti = KittiDataset(path='/home/canakcia/Desktop/')
     for i in range(len(kitti)):
         x = kitti[i]
-        
-

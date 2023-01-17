@@ -1,1 +1,0 @@
-from opendr.perception.continual_slam.algorithm.depth_pose_prediction.depth_pose_prediction import DepthPosePredictor

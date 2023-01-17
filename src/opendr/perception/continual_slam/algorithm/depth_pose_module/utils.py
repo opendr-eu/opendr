@@ -5,6 +5,25 @@ import torch
 from PIL import Image
 from torch import Tensor
 
+from opendr.perception.continual_slam.algorithm.depth_pose_module.pytorch3d import (
+    matrix_to_quaternion,
+    quaternion_to_axis_angle,
+)
+
+
+def parameters_from_transformation(
+    transformation: Tensor,
+    as_numpy: bool = False,
+) -> Tuple[Tensor, Tensor]:
+    """Convert a 4x4 transformation matrix to a translation vector and the axis angles
+    """
+    translation_vector = transformation[:, :, :3, 3]
+    axis_angle = quaternion_to_axis_angle(matrix_to_quaternion(transformation[:, :, :3, :3]))
+    if as_numpy:
+        translation_vector = translation_vector.squeeze().cpu().numpy()
+        axis_angle = axis_angle.squeeze().cpu().numpy()
+    return translation_vector, axis_angle
+
 
 # -----------------------------------------------------------------------------
 
