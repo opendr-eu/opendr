@@ -71,3 +71,4 @@ temp/
 projects/opendr_ws/.catkin_workspace
 projects/opendr_ws/devel/
 projects/python/control/eagerx/eagerx_ws/
+projects/opendr_ws_2
