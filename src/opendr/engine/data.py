@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ import cv2
 from abc import ABC, abstractmethod
 from opendr.engine.target import BoundingBoxList
 import numpy as np
-import torch
-from typing import Union
 
 
 class Data(ABC):
@@ -428,7 +426,7 @@ class Video(Data):
     - returning a NumPy compatible representation of data (numpy())
     """
 
-    def __init__(self, data: Union[torch.Tensor, np.ndarray]=None):
+    def __init__(self, data=None):
         """Construct a new Video
 
         Args:

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>opendr_simulation</name>
+  <version>2.1.0</version>
+  <description>OpenDR ROS2 nodes for the simulation package</description>
+  <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
+  <license>Apache License v2.0</license>
+  <depend>std_msgs</depend>
+  <depend>shape_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>vision_msgs</depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>opendr_interface</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>opendr_bridge</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
+
+
+
+
+

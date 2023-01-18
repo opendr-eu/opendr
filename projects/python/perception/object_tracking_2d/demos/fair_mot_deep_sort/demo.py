@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ def fair_mot_tracking(model_name, device):
     if predict:
 
         # Init model
-        learner = ObjectTracking2DFairMotLearner(device=device)
+        learner = ObjectTracking2DFairMotLearner(device=device, use_pretrained_backbone=False)
         if not os.path.exists("./models/" + model_name):
             learner.download(model_name, "./models")
         learner.load("./models/" + model_name, verbose=True)
