@@ -31,6 +31,8 @@ struct NanodetModel {
 
   // Device to be used
   char *device;
+  int **colorList;
+  int numberOfClasses;
 
   // Recognition threshold
   float scoreThreshold;
@@ -80,6 +82,8 @@ void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTarge
 
 //void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps);
 void drawBboxesWithFps(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps);
+
+void benchmarkNanodet(NanodetModelT *model, cv::Mat *image, int repetitions, int warmup);
 //#ifdef __cplusplus
 //}
 //#endif

@@ -16,7 +16,6 @@ import os
 import datetime
 import json
 import warnings
-import time
 from pathlib import Path
 
 import pytorch_lightning as pl
@@ -46,12 +45,14 @@ from opendr.engine.learners import Learner
 from urllib.request import urlretrieve
 
 import onnxruntime as ort
+import logging
 
+logging.getLogger("onnxruntime").setLevel(logging.ERROR)
 _MODEL_NAMES = {"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512",
                 "RepVGG_A0_416", "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416",
                 "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "custom"}
 
-
+warnings.filterwarnings("ignore")
 class NanodetLearner(Learner):
     def __init__(self, model_to_use="plus_m_1.5x_416", iters=None, lr=None, batch_size=None, checkpoint_after_iter=None,
                  checkpoint_load_iter=None, temp_path='', device='cuda', weight_decay=None, warmup_steps=None,
@@ -204,7 +205,8 @@ class NanodetLearner(Learner):
         metadata["model_paths"].append("nanodet_{}.pth".format(model))
 
         if self.task is None:
-            print("You haven't called a task yet, only the state of the loaded or initialized model will be saved.")
+            if verbose:
+                print("You haven't called a task yet, only the state of the loaded or initialized model will be saved.")
             save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, verbose)
         else:
             self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]), verbose)
@@ -310,8 +312,9 @@ class NanodetLearner(Learner):
                     json.dump(metadata, f, ensure_ascii=False, indent=4)
 
             except:
-                print("Pretrain weights for this model are not provided!!! \n"
-                      "Only the hole checkpoint will be download")
+                if verbose:
+                    print("Pretrain weights for this model are not provided!!! \n"
+                          "Only the hole checkpoint will be download")
 
                 if verbose:
                     print("Making metadata...")
@@ -372,7 +375,7 @@ class NanodetLearner(Learner):
 
         torch.onnx.export(
             self.predictor,
-            dummy_input,
+            dummy_input[0],
             export_path,
             verbose=verbose,
             keep_initializers_as_inputs=True,
@@ -380,6 +383,8 @@ class NanodetLearner(Learner):
             opset_version=11,
             input_names=['data'],
             output_names=['output'],
+            dynamic_axes={'data' : {1: 'width',
+                                    2: 'height'}}
         )
 
         metadata = {"model_paths": ["nanodet_{}.onnx".format(self.cfg.check_point_name)], "framework": "pytorch",
@@ -396,7 +401,8 @@ class NanodetLearner(Learner):
         try:
             import onnxsim
         except:
-            print("For compression in optimized models, install onnxsim and rerun optimize.")
+            if verbose:
+                print("For compression in optimized models, install onnxsim and rerun optimize.")
             return
 
         import onnx
@@ -660,10 +666,10 @@ class NanodetLearner(Learner):
         :type input: opendr.data.Image
         :param threshold: confidence threshold
         :type threshold: float, optional
-        :return: list of bounding boxes of last image of input or last frame of the video
-        :rtype: opendr.engine.target.BoundingBoxList
         :param nms_max_num: determines the maximum number of bounding boxes that will be retained following the nms.
         :type nms_max_num: int
+        :return: list of bounding boxes of last image of input or last frame of the video
+        :rtype: opendr.engine.target.BoundingBoxList
         """
         if not self.predictor:
             self.predictor = Predictor(self.cfg, self.model, device=self.device, nms_max_num=nms_max_num)
@@ -672,30 +678,21 @@ class NanodetLearner(Learner):
             input = Image(input)
         _input = input.opencv()
 
-        pre_start_time = time.perf_counter()
         _input, *metadata = self.predictor.preprocessing(_input)
-        pre_end_time = time.perf_counter()
 
         if self.ort_session:
             if self.jit_model:
                 warnings.warn(
                     "Warning: Both JIT and ONNX models are initialized, inference will run in ONNX mode by default.\n"
                     "To run in JIT please delete the self.ort_session like: detector.ort_session = None.")
-            start_time = time.perf_counter()
             preds = self.ort_session.run(['output'], {'data': _input.cpu().detach().numpy()})
             res = self.predictor.postprocessing(torch.from_numpy(preds[0]), _input, *metadata)
-            end_time = time.perf_counter()
         elif self.jit_model:
-            start_time = time.perf_counter()
             res = self.jit_model(_input, *metadata).cpu()
-            end_time = time.perf_counter()
         else:
-            start_time = time.perf_counter()
             preds = self.predictor(_input, *metadata)
             res = self.predictor.postprocessing(preds, _input, *metadata)
-            end_time = time.perf_counter()
 
-        bb_start_time = time.perf_counter()
         bounding_boxes = []
         for label in range(len(res)):
             for box in res[label]:
@@ -708,18 +705,159 @@ class NanodetLearner(Learner):
                                        score=score)
                     bounding_boxes.append(bbox)
         bounding_boxes = BoundingBoxList(bounding_boxes)
-        # bounding_boxes.data.sort(key=lambda v: v.confidence)
-
-        bb_end_time = time.perf_counter()
-
-        pre_time = (pre_end_time - pre_start_time)
-        fw_time = (end_time - start_time)
-        bb_time = (bb_end_time - bb_start_time)
-        full_time = pre_time + fw_time + bb_time
-
-        pre_fps = 1.0 / pre_time
-        fw_fps = 1.0 / fw_time
-        bb_fps = 1.0 / bb_time
-        full_fps = 1.0 / full_time
+        bounding_boxes.data.sort(key=lambda v: v.confidence)
 
         return bounding_boxes
+
+    def dummy_input(self):
+        width, height = self.cfg.data.val.input_size
+        dummy_input = (
+            torch.randn((3, width, height), device=self.device, dtype=torch.float32),
+            torch.tensor(width, device="cpu", dtype=torch.int64),
+            torch.tensor(height, device="cpu", dtype=torch.int64),
+            torch.eye(3, device="cpu", dtype=torch.float32),
+        )
+        return dummy_input
+
+    def benchmark(self, input, repetitions=1000, warmup=100, nms_max_num=100):
+        """
+        Performs inference
+        :param repetitions: input image to perform inference on
+        :type repetitions: opendr.data.Image
+        :param warmup: confidence threshold
+        :type warmup: float, optional
+        :param nms_max_num: determines the maximum number of bounding boxes that will be retained following the nms.
+        :type nms_max_num: int
+        """
+
+        import numpy as np
+
+        if not isinstance(input, Image):
+            input = Image(input)
+        preprocess_input = input.opencv()
+
+        if not self.predictor:
+            self.predictor = Predictor(self.cfg, self.model, device=self.device, nms_max_num=nms_max_num)
+
+        # Preprocess measurement
+        preprocess_starter, preprocess_ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(
+            enable_timing=True)
+        preprocess_timings = np.zeros((repetitions, 1))
+        for run in range(warmup):
+            _ = self.predictor.preprocessing(preprocess_input)
+        for run in range(repetitions):
+            preprocess_starter.record()
+            _input, *metadata = self.predictor.preprocessing(preprocess_input)
+            preprocess_ender.record()
+            torch.cuda.synchronize()
+            preprocess_timings[run] = preprocess_starter.elapsed_time(preprocess_ender)
+
+        # Onnx measurements
+        if self.ort_session:
+            # Inference
+            onnx_infer_starter, onnx_infer_ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(
+                enable_timing=True)
+            onnx_infer_timings = np.zeros((repetitions, 1))
+            for run in range(warmup):
+                _ = self.ort_session.run(['output'], {'data': _input.cpu().detach().numpy()})
+            for run in range(repetitions):
+                onnx_infer_starter.record()
+                preds = self.ort_session.run(['output'], {'data': _input.cpu().detach().numpy()})
+                onnx_infer_ender.record()
+                torch.cuda.synchronize()
+                onnx_infer_timings[run] = onnx_infer_starter.elapsed_time(onnx_infer_ender)
+            # Do not measure postprocessing because we will measure it in the actual run
+            res = self.predictor.postprocessing(torch.from_numpy(preds[0]), _input, *metadata)
+
+        # Jit measurements
+        if self.jit_model:
+            jit_infer_starter, jit_infer_ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(
+                enable_timing=True)
+            jit_infer_timings = np.zeros((repetitions, 1))
+
+            for run in range(warmup):
+                _ = self.jit_model(_input, *metadata)
+            for run in range(repetitions):
+                jit_infer_starter.record()
+                res = self.jit_model(_input, *metadata)
+                jit_infer_ender.record()
+                torch.cuda.synchronize()
+                jit_infer_timings[run] = jit_infer_starter.elapsed_time(jit_infer_ender)
+            res = res.cpu()
+
+        # Original Python measurements
+        infer_starter, infer_ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+        infer_timings = np.zeros((repetitions, 1))
+        for run in range(warmup):
+            _ = self.predictor(_input, *metadata)
+        for run in range(repetitions):
+            infer_starter.record()
+            preds = self.predictor(_input, *metadata)
+            infer_ender.record()
+            torch.cuda.synchronize()
+            infer_timings[run] = infer_starter.elapsed_time(infer_ender)
+
+        # Post-processing measurements
+        post_starter, post_ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+        post_timings = np.zeros((repetitions, 1))
+        for run in range(warmup):
+            _ = self.predictor.postprocessing(preds, _input, *metadata)
+        for run in range(repetitions):
+            post_starter.record()
+            res = self.predictor.postprocessing(preds, _input, *metadata)
+            post_ender.record()
+            torch.cuda.synchronize()
+            post_timings[run] = post_starter.elapsed_time(post_ender)
+
+        # Measure std and mean of times
+        std_preprocess_timings = np.std(preprocess_timings)
+        std_infer_timings = np.std(infer_timings)
+        std_post_timings = np.std(post_timings)
+
+        if self.jit_model:
+            std_jit_infer_timings = np.std(jit_infer_timings)
+
+        if self.ort_session:
+            std_onnx_infer_timings = np.std(onnx_infer_timings)
+
+        mean_preprocess_timings = np.mean(preprocess_timings)
+        mean_infer_timings = np.mean(infer_timings)
+        mean_post_timings = np.mean(post_timings)
+
+        if self.jit_model:
+            mean_jit_infer_timings = np.mean(jit_infer_timings)
+
+        if self.ort_session:
+            mean_onnx_infer_timings = np.mean(onnx_infer_timings)
+
+        # mean times to fps, torch measures in milliseconds
+        fps_preprocess_timings = 1000/mean_preprocess_timings
+        fps_infer_timings = 1000/mean_infer_timings
+        fps_ifer_post_timings = 1000/(mean_infer_timings + mean_post_timings)
+        fps_post_timings = 1000/mean_post_timings
+        if self.jit_model:
+            fps_jit_infer_timings = 1000/mean_jit_infer_timings
+
+        if self.ort_session:
+            fps_onnx_infer_timings = 1000/mean_onnx_infer_timings
+            fps_onnx_infer_post_timings = 1000/(mean_onnx_infer_timings + mean_post_timings)
+
+        # Print measurements
+        print(f"\n\nMeasure of model: {self.cfg.check_point_name}")
+        print(f"\n=== Python measurements === \n"
+              f"preprocessing  fps = {fps_preprocess_timings} evn/s\n"
+              f"infer          fps = {fps_infer_timings} evn/s\n"
+              f"postprocessing fps = {fps_post_timings} evn/s\n"
+              f"infer + postpr fps = {fps_ifer_post_timings} evn/s")
+        if self.jit_model:
+            print(f"\n\n=== JIT measurements === \n"
+                  f"preprocessing  fps = {fps_preprocess_timings} evn/s\n"
+                  f"infer + postpr fps = {fps_jit_infer_timings} evn/s")
+        if self.ort_session:
+            print(f"\n\n=== ONNX measurements === \n"
+                  f"preprocessing  fps = {fps_preprocess_timings} evn/s\n"
+                  f"infer          fps = {fps_onnx_infer_timings} evn/s\n"
+                  f"postprocessing fps = {fps_post_timings} evn/s\n"
+                  f"infer + postpr fps = {fps_onnx_infer_post_timings} evn/s\n\n\n")
+
+        return

@@ -104,50 +104,50 @@ void loadImage(const char *path, OpendrImageT *image) {
   }
 }
 
-void loadImageFromPointer(void *src, OpendrImageT *image) {
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(src);
-  std::cout<<"after cast\n";
-  if (opencvImage->empty()) {
-    image->data = NULL;
-  } else {
-    std::cout<<"before new\n";
-    image->data = src;
-    std::cout<<"after new\n";
-  }
-}
+//void loadImageFromPointer(void *src, OpendrImageT *image) {
+//  cv::Mat *opencvImage = static_cast<cv::Mat *>(src);
+//  std::cout<<"after cast\n";
+//  if (opencvImage->empty()) {
+//    image->data = NULL;
+//  } else {
+//    std::cout<<"before new\n";
+//    image->data = src;
+//    std::cout<<"after new\n";
+//  }
+//}
 
-void creatCamera(int cameraId, int width, int height, OpendrCameraT *camera) {
-//  camera = (OpendrCameraT*)malloc(sizeof(OpendrCameraT));
-  camera->cap = new cv::VideoCapture(cameraId);
-  camera->cameraId = cameraId;
-  camera->width = width;
-  camera->height = height;
-}
+//void creatCamera(int cameraId, int width, int height, OpendrCameraT *camera) {
+////  camera = (OpendrCameraT*)malloc(sizeof(OpendrCameraT));
+//  camera->cap = new cv::VideoCapture(cameraId);
+//  camera->cameraId = cameraId;
+//  camera->width = width;
+//  camera->height = height;
+//}
 
-void freeCamera(OpendrCameraT *camera) {
-  cv::VideoCapture* capture = (cv::VideoCapture*)camera->cap;
-  capture->release();
-  free(camera);
-}
+//void freeCamera(OpendrCameraT *camera) {
+//  cv::VideoCapture* capture = (cv::VideoCapture*)camera->cap;
+//  capture->release();
+//  free(camera);
+//}
 
-void loadImageFromCapture(OpendrCameraT *camera, OpendrImageT *image) {
-  cv::VideoCapture* capture = (cv::VideoCapture*)camera->cap;
-
-  if (!capture->isOpened()) {
-    std::cerr << "Error: Unable to open the camera" << std::endl;
-    return;
-  }
-  capture->set(cv::CAP_PROP_FRAME_WIDTH,camera->width);
-  capture->set(cv::CAP_PROP_FRAME_HEIGHT,camera->height);
-
-  cv::Mat opencvImage;
-  *capture >> opencvImage;
-  if (opencvImage.empty()) {
-    image->data = NULL;
-  } else {
-    image->data = new cv::Mat(opencvImage);
-  }
-}
+//void loadImageFromCapture(OpendrCameraT *camera, OpendrImageT *image) {
+//  cv::VideoCapture* capture = (cv::VideoCapture*)camera->cap;
+//
+//  if (!capture->isOpened()) {
+//    std::cerr << "Error: Unable to open the camera" << std::endl;
+//    return;
+//  }
+//  capture->set(cv::CAP_PROP_FRAME_WIDTH,camera->width);
+//  capture->set(cv::CAP_PROP_FRAME_HEIGHT,camera->height);
+//
+//  cv::Mat opencvImage;
+//  *capture >> opencvImage;
+//  if (opencvImage.empty()) {
+//    image->data = NULL;
+//  } else {
+//    image->data = new cv::Mat(opencvImage);
+//  }
+//}
 
 void freeImage(OpendrImageT *image) {
   if (image->data) {

@@ -14,9 +14,11 @@
 
 #include "object_detection_2d_nanodet_jit.h"
 
+#include <iostream>
+#include <chrono>
+
 #include <torch/script.h>
 #include <torchvision/vision.h>
-#include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -217,6 +219,18 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
     "toaster",        "sink",       "refrigerator",  "book",          "clock",        "vase",          "scissors",
     "teddy bear",     "hair drier", "toothbrush"};
 
+  int** colorList = new int*[labels.size()];
+  for (int i = 0; i < labels.size(); i++) {
+    colorList[i] = new int[3];
+  }
+  // seed the random number generator
+  std::srand(1);
+  for (int i = 0; i < labels.size(); i++) {
+    for (int j = 0; j < 3; j++) {
+      colorList[i][j] = std::rand() % 256;
+    }
+  }
+
   // mean and standard deviation tensors for normalization of input
   torch::Tensor meanTensor = torch::tensor({{{-103.53f}}, {{-116.28f}}, {{-123.675f}}});
   torch::Tensor stdValues = torch::tensor({{{0.017429f}}, {{0.017507f}}, {{0.017125f}}});
@@ -229,6 +243,8 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
   NanoDet *detector = new NanoDet(network, meanTensor, stdValues, initDevice, labels);
 
   model->network = static_cast<void *>(detector);
+  model->colorList = colorList;
+  model->numberOfClasses = labels.size();
 }
 
 void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, cv::Size *originalSize,
@@ -290,22 +306,66 @@ OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, cv::Mat *image) 
   return detectionsVector;
 }
 
+void benchmarkNanodet(NanodetModelT *model, cv::Mat *image, int repetitions, int warmup) {
+  NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
+  OpendrDetectionVectorTargetT detectionsVector;
+  initDetectionsVector(&detectionsVector);
+  //  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+  cv::Mat *opencvImage = image;
+
+  // Preprocess image and keep values as input in jit model
+  cv::Mat resizedImg;
+  cv::Size dstSize = cv::Size(model->inputSizes[0], model->inputSizes[1]);
+  cv::Mat warpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
+  double preTimings[repetitions];
+  torch::Tensor input;
+    for (int i = 0; i < warmup; i++) {
+    preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
+    input = networkPTR->preProcess(&resizedImg);
+  }
+  for (int i = 0; i < repetitions; i++) {
+    auto start = std::chrono::steady_clock::now();
+    preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
+    input = networkPTR->preProcess(&resizedImg);
+    auto end = std::chrono::steady_clock::now();
+    preTimings[i] = ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
+  }
+
+  cv::Size originalSize(opencvImage->cols, opencvImage->rows);
+
+  double inferPostTimings[repetitions];
+  torch::Tensor outputs;
+  for (int i = 0; i < warmup; i++) {
+    ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
+  }
+
+  for (int i = 0; i < repetitions; i++) {
+    auto start = std::chrono::steady_clock::now();
+    ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
+    auto end = std::chrono::steady_clock::now();
+    inferPostTimings[i] = ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
+  }
+  // Measure mean time
+  double meanInferPostTiming = 0.0;
+  double meanPreTiming = 0.0;
+  for (int i = 0; i < repetitions; i++) {
+    meanInferPostTiming += inferPostTimings[i];
+    meanPreTiming += preTimings[i];
+  }
+
+  meanInferPostTiming /= repetitions;
+  meanPreTiming /= repetitions;
+
+  std::cout<<"C\n\n"
+             "=== JIT measurements === \n"
+             "preprocessing  fps = "<< (1000000000.0/meanPreTiming) <<" evn/s\n"
+             "infer + postpr fps = "<< (1000000000.0/meanInferPostTiming) <<" evn/s\n\n";
+
+
+}
+
 void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector) {
-  const int colorList[80][3] = {
-    //{255 ,255 ,255}, //bg
-    {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},
-    {153, 153, 153}, {255, 0, 0},     {255, 127, 0},   {190, 190, 0},   {0, 255, 0},     {0, 0, 255},     {170, 0, 255},
-    {84, 84, 0},     {84, 170, 0},    {84, 255, 0},    {170, 84, 0},    {170, 170, 0},   {170, 255, 0},   {255, 84, 0},
-    {255, 170, 0},   {255, 255, 0},   {0, 84, 127},    {0, 170, 127},   {0, 255, 127},   {84, 0, 127},    {84, 84, 127},
-    {84, 170, 127},  {84, 255, 127},  {170, 0, 127},   {170, 84, 127},  {170, 170, 127}, {170, 255, 127}, {255, 0, 127},
-    {255, 84, 127},  {255, 170, 127}, {255, 255, 127}, {0, 84, 255},    {0, 170, 255},   {0, 255, 255},   {84, 0, 255},
-    {84, 84, 255},   {84, 170, 255},  {84, 255, 255},  {170, 0, 255},   {170, 84, 255},  {170, 170, 255}, {170, 255, 255},
-    {255, 0, 255},   {255, 84, 255},  {255, 170, 255}, {42, 0, 0},      {84, 0, 0},      {127, 0, 0},     {170, 0, 0},
-    {212, 0, 0},     {255, 0, 0},     {0, 42, 0},      {0, 84, 0},      {0, 127, 0},     {0, 170, 0},     {0, 212, 0},
-    {0, 255, 0},     {0, 0, 42},      {0, 0, 84},      {0, 0, 127},     {0, 0, 170},     {0, 0, 212},     {0, 0, 255},
-    {0, 0, 0},       {36, 36, 36},    {72, 72, 72},    {109, 109, 109}, {145, 145, 145}, {182, 182, 182}, {218, 218, 218},
-    {0, 113, 188},   {80, 182, 188},  {127, 127, 0},
-  };
+  int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
 
@@ -352,21 +412,7 @@ void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTarge
 }
 
 void drawBboxesWithFps(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
-  const int colorList[80][3] = {
-    //{255 ,255 ,255}, //bg
-    {216, 82, 24},   {236, 176, 31},  {125, 46, 141},  {118, 171, 47},  {76, 189, 237},  {238, 19, 46},   {76, 76, 76},
-    {153, 153, 153}, {255, 0, 0},     {255, 127, 0},   {190, 190, 0},   {0, 255, 0},     {0, 0, 255},     {170, 0, 255},
-    {84, 84, 0},     {84, 170, 0},    {84, 255, 0},    {170, 84, 0},    {170, 170, 0},   {170, 255, 0},   {255, 84, 0},
-    {255, 170, 0},   {255, 255, 0},   {0, 84, 127},    {0, 170, 127},   {0, 255, 127},   {84, 0, 127},    {84, 84, 127},
-    {84, 170, 127},  {84, 255, 127},  {170, 0, 127},   {170, 84, 127},  {170, 170, 127}, {170, 255, 127}, {255, 0, 127},
-    {255, 84, 127},  {255, 170, 127}, {255, 255, 127}, {0, 84, 255},    {0, 170, 255},   {0, 255, 255},   {84, 0, 255},
-    {84, 84, 255},   {84, 170, 255},  {84, 255, 255},  {170, 0, 255},   {170, 84, 255},  {170, 170, 255}, {170, 255, 255},
-    {255, 0, 255},   {255, 84, 255},  {255, 170, 255}, {42, 0, 0},      {84, 0, 0},      {127, 0, 0},     {170, 0, 0},
-    {212, 0, 0},     {255, 0, 0},     {0, 42, 0},      {0, 84, 0},      {0, 127, 0},     {0, 170, 0},     {0, 212, 0},
-    {0, 255, 0},     {0, 0, 42},      {0, 0, 84},      {0, 0, 127},     {0, 0, 170},     {0, 0, 212},     {0, 0, 255},
-    {0, 0, 0},       {36, 36, 36},    {72, 72, 72},    {109, 109, 109}, {145, 145, 145}, {182, 182, 182}, {218, 218, 218},
-    {0, 113, 188},   {80, 182, 188},  {127, 127, 0},
-  };
+  int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
 
@@ -422,4 +468,9 @@ void freeNanodetModel(NanodetModelT *model) {
     NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
     delete networkPTR;
   }
+
+  for (int i = 0; i < model->numberOfClasses; i++) {
+    delete[] model->colorList[i];
+  }
+  delete[] model->colorList;
 }
