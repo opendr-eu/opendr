@@ -24,7 +24,8 @@ if __name__ == '__main__':
     parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
     parser.add_argument("--path", help="Path to the image that is used for inference", type=str,
                         default="./predefined_examples/000000000036.jpg")
-    parser.add_argument("--optimize", help="", type=str, default="", choices=["", "onnx", "jit"])
+    parser.add_argument("--optimize", help="If specified will determine the optimization to be used (onnx, jit)",
+                        type=str, default="", choices=["", "onnx", "jit"])
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     img = Image.open(args.path)
 
     if args.optimize != "":
-        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), img, optimization=args.optimize)
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize)
 
     boxes = nanodet.infer(input=img)
 

@@ -140,12 +140,10 @@ class TestNanodetLearner(unittest.TestCase):
         self.detector.ort_session = None
         self.detector.jit_model = None
 
-        img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))
-
-        self.detector.optimize(os.path.join(self.temp_dir, "onnx"), initial_img=img, verbose=False, optimization="onnx")
+        self.detector.optimize(os.path.join(self.temp_dir, "onnx"), verbose=False, optimization="onnx")
         self.assertIsNotNone(self.detector.ort_session)
 
-        self.detector.optimize(os.path.join(self.temp_dir, "jit"), initial_img=img, verbose=False, optimization="jit")
+        self.detector.optimize(os.path.join(self.temp_dir, "jit"), verbose=False, optimization="jit")
         self.assertIsNotNone(self.detector.jit_model)
 
         # Cleanup
