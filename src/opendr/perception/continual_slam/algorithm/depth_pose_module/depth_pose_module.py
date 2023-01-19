@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import math
 import torch
+import numpy as np
 from torch import nn, optim, Tensor
 import torch.nn.functional as F
 
@@ -16,10 +17,17 @@ from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layer
     Project3D,
     )
 
-from opendr.perception.continual_slam.algorithm.depth_pose_module.losses import *
+from opendr.perception.continual_slam.algorithm.depth_pose_module.losses import (
+    compute_reprojection_loss,
+    compute_smooth_loss,
+    compute_velocity_loss,
+)
 from opendr.perception.continual_slam.algorithm.parsing.config import Config
 from opendr.perception.continual_slam.algorithm.parsing.dataset_config import DatasetConfig
-from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import *
+from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import (
+    transformation_from_parameters,
+    disp_to_depth,
+)
 
 from opendr.perception.continual_slam.datasets import KittiDataset
 
