@@ -30,6 +30,8 @@ struct NanodetModel {
 
   // Device to be used
   char *device;
+  int **colorList;
+  int numberOfClasses;
 
   // Recognition threshold
   float scoreThreshold;
