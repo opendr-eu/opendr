@@ -56,19 +56,22 @@ Constructor parameters:
 
 #### `EfficientLpsLearner.fit`
 ```python
-EfficientLpsLearner.fit(dataset, val_dataset, logging_path, silent)
+EfficientLpsLearner.fit(self, dataset, val_dataset, logging_path, silent)
 ```
 
 Parameters:
 
 - **dataset**: *object*\
-  Specifies the dataset used to train the model. Supported datasets are SemanticKitti and NuScenes (Future) (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
+  Specifies the dataset used to train the model.
+  Supported datasets are SemanticKitti and NuScenes (Future) (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
 - **val_dataset**: *object*\
-  If given, this dataset will be used to evaluate the current model after each epoch. Supported datasets are SemanticKitti and NuScenes (Future) (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
+  If given, this dataset will be used to evaluate the current model after each epoch.
+  Supported datasets are SemanticKitti and NuScenes (Future) (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
 - **logging_path**: *Path*, *str, default='../logging'*\
   Path to store the logging files, e.g., training progress and tensorboard logs.
-- **silent**: *bool, default=False*\
-  If True, disables printing the training progress reports to STDOUT. The validation will still be shown.
+- **silent**: *bool, default=True*\
+  If True, disables printing the training progress reports to STDOUT.
+  The validation will still be shown.
   
 Return:
 
@@ -76,13 +79,14 @@ Return:
   Dictionary with "train" and "val" keys containing the training progress (e.g. losses) and, if a val_dataset is provided, the evaluation results.
 #### `EfficientLpsLearner.eval`
 ```python
-EfficientLpsLearner.eval(dataset, print_results)
+EfficientLpsLearner.eval(self, dataset, print_results)
 ```
 
 Parameters:
 
 - **dataset**: *object*\
-  Specifies the dataset used to evaluate the model. Supported datasets are SemanticKitti and NuScenes (Future) (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
+  Specifies the dataset used to evaluate the model.
+  Supported datasets are SemanticKitti and NuScenes (Future) (see [readme](../../src/opendr/perception/panoptic_segmentation/datasets/README.md)).
 - **print_results**: *bool, default=False*\
   If True, the evaluation results will be formatted and printed to STDOUT.
 
@@ -94,15 +98,16 @@ Return:
 
 #### `EfficientLpsLearner.pcl_to_mmdet`
 ```python
-EfficientLpsLearner.pcl_to_mmdet(point_cloud, frame_id)
+EfficientLpsLearner.pcl_to_mmdet(self, point_cloud, frame_id)
 ```
 
 Parameters:
 
 - **point_cloud**: *PointCloud*\
-  Specifies the OpenDR PointCloud object that will be used to converted for MMDetector compatible object.
+  Specifies the OpenDR PointCloud object that will be converted to a MMDetector compatible object.
 - **frame_id**: *int, default=0*\
-  Number of the scan frame to be used as its filename. Inferences will use the same filename.
+  Number of the scan frame to be used as its filename.
+  Inferences will use the same filename.
   
 Return:
 
@@ -111,7 +116,7 @@ Return:
 
 #### `EfficientLpsLearner.infer`
 ```python
-EfficientLpsLearner.infer(batch, return_raw_logits, projected)
+EfficientLpsLearner.infer(self, batch, return_raw_logits, projected)
 ```
 
 Parameters:
@@ -119,10 +124,10 @@ Parameters:
 - **batch**: *PointCloud*, *List[PointCloud]*\
   Point Cloud(s) to feed to the network.
 - **return_raw_logits**: *bool, default=False*\
-  If True, the raw network output will be returned. Otherwise, the returned object will hold Tuples of Heatmaps of the OpenDR interface.
+  If True, the raw network output will be returned.
+  Otherwise, the returned object will hold Tuples of Heatmaps of the OpenDR interface.
 - **projected**: *bool, default=False*\
-  If True, output will be returned as 2D heatmaps of the spherical projections of the semantic
-  and instance labels, as well as the spherical projection of the scan's range.
+  If True, output will be returned as 2D heatmaps of the spherical projections of the semantic and instance labels, as well as the spherical projection of the scan's range.
   Otherwise, the semantic and instance labels will be returned as Numpy arrays for each point.
 
 Return:
@@ -137,7 +142,7 @@ Return:
 
 #### `EfficientLpsLearner.save`
 ```python
-EfficientLpsLearner.save(path)
+EfficientLpsLearner.save(self, path)
 ```
 
 Parameters:
@@ -148,7 +153,8 @@ Parameters:
 Return:
 
 - **successful**: *bool*\
-  Returns True if the weights could be saved. Otherwise, returns False.
+  Returns True if the weights could be saved.
+  Otherwise, returns False.
 
 #### `EfficientLpsLearner.load`
 ```python
@@ -163,7 +169,8 @@ Parameters:
 Return:
 
 - **successful**: *bool*\
-  Returns True if the weights could be loaded. Otherwise, returns False.
+  Returns True if the weights could be loaded.
+  Otherwise, returns False.
 
 #### `EfficientLpsLearner.download`
 ```python
@@ -177,7 +184,8 @@ Parameters:
 - **mode**: *str, default='model'*\
   Valid options are *'model'* to download pre-trained model weights and *'test_data'* to run the unit tests.
 - **trained_on**: *str, default='semantickitti'*\
-  Specifies which model weights to download. Pre-trained models are available for the SemanticKITTI and NuScenes (Future) datasets.
+  Specifies which model weights to download.
+  Pre-trained models are available for the SemanticKITTI and NuScenes (Future) datasets.
 
 Return:
 
@@ -186,7 +194,7 @@ Return:
 
 #### `EfficientLpsLearner.visualize`
 ```python
-EfficientLpsLearner.visualize(pointcloud, predictions, show_figure, save_figure, figure_filename, figure_size, max_inst, min_alpha, dpi)
+EfficientLpsLearner.visualize(self, pointcloud, predictions, show_figure, save_figure, figure_filename, figure_size, max_inst, min_alpha, dpi)
 ```
 
 Parameters:
@@ -204,15 +212,17 @@ Parameters:
 - **figure_size**: *Tuple[float, float], default=(15, 10)*\
   The size of the figure in inches.
 - **max_inst**: *int, default=20*\
-  Maximum value that the instance ID can take. Used for computing the alpha value of a point.
+  Maximum value that the instance ID can take.
+  Used for computing the alpha value of a point.
 - **min_alpha**: *float, default=0.25*\
   Minimum value that a point's alpha value can take, so that it is never fully transparent.
 - **dpi**: *int, default=600*\
   Resolution of the resulting image, in Dots per Inch.
 - **return_pointcloud**: *Optional[bool], default=False*\
   If True, returns a PointCloud object with the predicted labels as colors.
-- **return_pointcloud_type**: *int, default=600*\
-  If return_pointcloud is True, this parameter specifies the type of the returned PointCloud object. Valid options are "semantic", "instance" and "panoptic".
+- **return_pointcloud_type**: *Optional[str], default=None*\
+  If return_pointcloud is True, this parameter specifies the type of the returned PointCloud object.
+  Valid options are "semantic", "instance" and "panoptic".
 
 Return:
 
