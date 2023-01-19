@@ -180,8 +180,10 @@ class TrainingTask(LightningModule):
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
                 verbose = True if self.logger is not None else False
-                self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
-                                         verbose=verbose)
+                # TODO: save only if local_rank is < 0
+                # self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
+                #                          verbose=verbose)
+                self.save_current_model(os.path.join(best_save_path, "nanodet_model_state_best.pth"), verbose=verbose)
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     f.write("Epoch:{}\n".format(self.current_epoch + 1))
