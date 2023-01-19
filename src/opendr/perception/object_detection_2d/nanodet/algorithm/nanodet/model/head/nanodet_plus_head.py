@@ -401,7 +401,7 @@ class NanoDetPlusHead(nn.Module):
                 dim=1
             )
 
-            pad = det.new_zeros((100 - det.size(0), 5))
+            pad = det.new_zeros((max_count - det.size(0), 5))
             det = torch.cat([det, pad], dim=0)
             det_result[i] = det
         return det_result
