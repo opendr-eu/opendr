@@ -31,7 +31,7 @@ class ContinualSlamDatasetNode:
                  Dataset: DatasetIterator,
                  output_image_topic: str = "/opendr/dataset/image",
                  output_distance_topic: str = "opendr/distance",
-                 dataset_fps: int = 10):
+                 dataset_fps: float = 0.1):
         """
         Creates a ROS Node for publishing dataset images
         :param Dataset: DatasetIterator object
@@ -62,7 +62,7 @@ class ContinualSlamDatasetNode:
     def _publish(self):
 
         rospy.loginfo("Start publishing dataset images")
-        i = 0
+        i = 150
         length = len(self.dataset)-1
         while not rospy.is_shutdown() and i < length:
             if i == length-1:
@@ -103,7 +103,7 @@ def main():
                         help="ROS topic to publish images")
     parser.add_argument("--output_distance_topic", type=str, default="/cl_slam/distance",
                         help="ROS topic to publish distances")
-    parser.add_argument("--dataset_fps", type=int, default=10,
+    parser.add_argument("--dataset_fps", type=float, default=0.5,
                         help="Dataset frame rate")
     args = parser.parse_args()
 

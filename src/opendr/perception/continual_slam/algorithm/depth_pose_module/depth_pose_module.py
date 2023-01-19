@@ -137,13 +137,13 @@ class DepthPoseModule:
             return outputs, losses
         return outputs
 
-    def load_model(self, load_optimizer: bool = True) -> None:
+    def load_model(self, weights_folder: str = None, load_optimizer: bool = True) -> None:
         """
         Load the model from the checkpoint.
         :param load_optimizer: Whether to load the optimizer. Defaults to True.
         :type: bool
         """
-        self._load_model(load_optimizer)
+        self._load_model(weights_folder, load_optimizer)
 
     def create_dataset_loaders(self,
                                training: bool = False,
@@ -495,9 +495,12 @@ class DepthPoseModule:
             print('Loading validation dataset...')
             self.val_loader = KittiDataset(str(self.dataset_path))
 
-    def _load_model(self, load_optimizer: bool = True) -> None:
+    def _load_model(self, weights_folder: str = None, load_optimizer: bool = True) -> None:
         """Load model(s) from disk
         """
+        if weights_folder is not None:
+            from pathlib import Path
+            self.load_weights_folder = Path(weights_folder)
         if self.load_weights_folder is None:
             print('Weights folder required to load the model is not specified.')
         if not self.load_weights_folder.exists():
@@ -509,6 +512,7 @@ class DepthPoseModule:
             if model is None:
                 continue
             path = self.load_weights_folder / f'{model_name}.pth'
+            print(path)
             pretrained_dict = torch.load(path, map_location=self.device)
             if isinstance(model, nn.DataParallel):
                 model_dict = model.module.state_dict()

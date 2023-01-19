@@ -35,7 +35,7 @@ class ContinualSlamLearner:
                  input_distance_topic : str,
                  output_weights_topic : str,
                  fps : int = 10,
-                 publish_rate : int = 20,
+                 publish_rate : int = 5,
                  ) -> None:
         
         self.bridge = ROSBridge()
@@ -81,7 +81,7 @@ class ContinualSlamLearner:
         Creating a ContinualSLAMLearner instance with predictor and ros mode
         """
         try:
-            self.learner = ContinualSLAMLearner(self.path, mode="learner", ros=True)
+            self.learner = ContinualSLAMLearner(self.path, mode="learner", ros=False)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")

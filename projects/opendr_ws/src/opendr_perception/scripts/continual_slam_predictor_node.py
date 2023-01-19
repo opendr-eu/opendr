@@ -87,7 +87,7 @@ class ContinualSlamPredictor:
         Creating a ContinualSLAMLearner instance with predictor and ros mode
         """
         try:
-            self.predictor = ContinualSLAMLearner(self.path, mode="predictor", ros=True)
+            self.predictor = ContinualSLAMLearner(self.path, mode="predictor", ros=False)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")

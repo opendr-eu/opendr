@@ -49,6 +49,8 @@ class ContinualSLAMLearner(Learner):
         """
         self.config_file = ConfigParser(config_file)
         self.dataset_config = self.config_file.dataset
+        self.height = self.dataset_config.height
+        self.width = self.dataset_config.width
         self.model_config = self.config_file.depth_pose
         self.is_ros = ros
         super(ContinualSLAMLearner, self).__init__(lr=self.model_config.learning_rate)
@@ -59,12 +61,12 @@ class ContinualSLAMLearner(Learner):
             # Create the predictor object
             self.predictor = DepthPoseModule(self.model_config, self.dataset_config, use_online=False, mode=mode)
             self.predictor.load_model()
-            if not ros:
+            if not True:
                 self.predictor._create_dataset_loaders(training=False, validation=True)
         elif self.mode == 'learner':
             self.learner = DepthPoseModule(self.model_config, self.dataset_config, use_online=True, mode=mode)
             self.learner.load_model()
-            if not ros:
+            if not True:
                 self.learner._create_dataset_loaders(training=False, validation=True)
         else:
             raise ValueError('Mode should be either predictor or learner')
@@ -111,21 +113,32 @@ class ContinualSLAMLearner(Learner):
         """
         Save the model weights as an binary-encoded string for ros message
         """
+        save_dict = {}
+        location = Path.cwd() / 'temp_weights'
+        if not location.exists():
+            location.mkdir(parents=True, exist_ok=True)
+        for model_name, model in self.learner.models.items():
+            if model is None:
+                continue
+            if isinstance(model, torch.nn.DataParallel):
+                model = model.module
+            to_save = model.state_dict()
+            if 'encoder' in model_name:
+                # ToDo: look into this
+                # Save the sizes - these are needed at prediction time
+                to_save['height'] = Tensor(self.height)
+                to_save['width'] = Tensor(self.width)
+            if not self.is_ros:
+                save_path = location / f'{model_name}.pth'
+                torch.save(to_save, save_path)
+
         if self.is_ros:
-            save_dict = {}
-            for model_name, model in self.learner.models.items():
-                if model is None:
-                    continue
-                if isinstance(model, torch.nn.DataParallel):
-                    model = model.module
-                to_save = model.state_dict()
-                save_dict[model_name] = to_save
             save_dict = pickle.dumps(save_dict).decode('latin1')
             return save_dict
         else:
-            raise NotImplementedError
+            return str(location)
 
-    def load(self, message: str = None, load_optimizer: bool = True) -> None:
+    def load(self, weights_folder: str = None, message: str = None, load_optimizer: bool = False) -> None:
         """
         Load the model weights from an binary-encoded string for ros message
         """
@@ -138,7 +151,7 @@ class ContinualSLAMLearner(Learner):
                     model = model.module
                 model.load_state_dict(load_dict[model_name])
         else:
-            self.learner.load_model(load_optimizer=load_optimizer)
+            self.predictor.load_model(weights_folder = weights_folder, load_optimizer=load_optimizer)
 
     def eval(self, dataset, *args, **kwargs):
         raise NotImplementedError
@@ -165,10 +178,10 @@ class ContinualSLAMLearner(Learner):
         input_dict = self._input_formatter(batch)
         # Adapt
         if return_losses:
-            prediction, losses = self.learner.adapt(input_dict, return_loss=return_losses)
+            prediction, losses = self.learner.adapt(input_dict, steps=5, return_loss=return_losses)
             return self._output_formatter(prediction), losses
         else:
-            prediction = self.learner.adapt(input_dict, return_loss=return_losses)
+            prediction = self.learner.adapt(input_dict, steps=5, return_loss=return_losses)
             return self._output_formatter(prediction), None
 
     def _predict(self,
@@ -222,8 +235,8 @@ class ContinualSLAMLearner(Learner):
         """
         # Convert the prediction to opendr format
         for item in prediction:
-            if item[0] == 'depth':
-                if item[1] == 0:
+            if item[0] == 'disp':
+                if item[2] == 0:
                     depth = self._colorize_depth(prediction[item].squeeze().cpu().detach().numpy())
             if item[0] == 'cam_T_cam':
                 if item[2] == 1:
@@ -231,10 +244,12 @@ class ContinualSLAMLearner(Learner):
         return depth, odometry
 
     def _colorize_depth(self, depth):
+        import cv2
         vmax = np.percentile(depth, 95)
         normalizer = mpl.colors.Normalize(vmin=depth.min(), vmax=vmax)
-        mapper = plt.cm.ScalarMappable(norm=normalizer, cmap="magma_r")
-        colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3] * 255).astype(np.uint8)
+        mapper = plt.cm.ScalarMappable(norm=normalizer, cmap="magma")
+        colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3]*255).astype(np.uint8)
+        colormapped_img = cv2.cvtColor(colormapped_img, cv2.COLOR_RGB2BGR)
         return Image(colormapped_img)
 
     # ================================================================================================
@@ -242,10 +257,10 @@ class ContinualSLAMLearner(Learner):
 # TODO: Delete this later since it is just for debugging and testing
 if __name__ == "__main__":
     local_path = Path(__file__).parent / 'configs'
-    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=True)
-    predictor = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='predictor', ros=True)
+    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=False)
+    predictor = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='predictor', ros=False)
 
-    # Test the learner
+    # Test the learner/predictor
     from opendr.perception.continual_slam.datasets.kitti import KittiDataset
     dataset_config_file = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset.dataset_path
     dataset = KittiDataset(str(dataset_config_file))
