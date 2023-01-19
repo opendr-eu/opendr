@@ -541,7 +541,7 @@ class NanodetLearner(Learner):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=True,
+            pin_memory=False,
             collate_fn=naive_collate,
             drop_last=True,
         )
@@ -550,7 +550,7 @@ class NanodetLearner(Learner):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=True,
+            pin_memory=False,
             collate_fn=naive_collate,
             drop_last=False,
         )

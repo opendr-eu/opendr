@@ -1,0 +1,489 @@
+=> loading pretrained model https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite0.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: EfficientNet_Lite0_320
+
+=== Python measurements === 
+preprocessing  fps = 715.0829949819437 evn/s
+infer          fps = 161.6614188420732 evn/s
+postprocessing fps = 102.88414449083413 evn/s
+infer + postpr fps = 62.87157707427021 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 715.0829949819437 evn/s
+infer + postpr fps = 94.31582385441004 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 715.0829949819437 evn/s
+infer          fps = 38.53954686481782 evn/s
+postprocessing fps = 102.88414449083413 evn/s
+infer + postpr fps = 28.037086786822343 evn/s
+
+
+
+=> loading pretrained model https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite1.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: EfficientNet_Lite1_416
+
+=== Python measurements === 
+preprocessing  fps = 468.966027020386 evn/s
+infer          fps = 133.52329037229993 evn/s
+postprocessing fps = 105.2738513132037 evn/s
+infer + postpr fps = 58.863816033508826 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 468.966027020386 evn/s
+infer + postpr fps = 93.70922177050107 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 468.966027020386 evn/s
+infer          fps = 20.554030746802383 evn/s
+postprocessing fps = 105.2738513132037 evn/s
+infer + postpr fps = 17.19652227551597 evn/s
+
+
+
+=> loading pretrained model https://github.com/RangiLyu/EfficientNet-Lite/releases/download/v1.0/efficientnet_lite2.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: EfficientNet_Lite2_512
+
+=== Python measurements === 
+preprocessing  fps = 339.98948992917946 evn/s
+infer          fps = 125.4506618333744 evn/s
+postprocessing fps = 93.94237270791767 evn/s
+infer + postpr fps = 53.716987209945884 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 339.98948992917946 evn/s
+infer + postpr fps = 85.5943165202736 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 339.98948992917946 evn/s
+infer          fps = 13.847332058148632 evn/s
+postprocessing fps = 93.94237270791767 evn/s
+infer + postpr fps = 12.068418148468865 evn/s
+
+
+
+RepVGG Block, identity =  None
+RepVGG Block, identity =  None
+RepVGG Block, identity =  BatchNorm2d(48, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  None
+RepVGG Block, identity =  BatchNorm2d(96, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(96, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(96, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  None
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+RepVGG Block, identity =  None
+Finish initialize NanoDet Head.
+Finish initialize NanoDet Head.
+deploy param:  stage0.rbr_reparam.weight torch.Size([48, 3, 3, 3]) -0.0007988244
+deploy param:  stage0.rbr_reparam.bias torch.Size([48]) 0.005113386
+deploy param:  stage1.0.rbr_reparam.weight torch.Size([48, 48, 3, 3]) -0.0031702607
+deploy param:  stage1.0.rbr_reparam.bias torch.Size([48]) 0.28128332
+deploy param:  stage1.1.rbr_reparam.weight torch.Size([48, 48, 3, 3]) -0.005448739
+deploy param:  stage1.1.rbr_reparam.bias torch.Size([48]) 0.37951955
+deploy param:  stage2.0.rbr_reparam.weight torch.Size([96, 48, 3, 3]) -0.001880544
+deploy param:  stage2.0.rbr_reparam.bias torch.Size([96]) 0.20109111
+deploy param:  stage2.1.rbr_reparam.weight torch.Size([96, 96, 3, 3]) -0.0028167905
+deploy param:  stage2.1.rbr_reparam.bias torch.Size([96]) 0.33898795
+deploy param:  stage2.2.rbr_reparam.weight torch.Size([96, 96, 3, 3]) -0.002842985
+deploy param:  stage2.2.rbr_reparam.bias torch.Size([96]) 0.17353255
+deploy param:  stage2.3.rbr_reparam.weight torch.Size([96, 96, 3, 3]) -0.0030690664
+deploy param:  stage2.3.rbr_reparam.bias torch.Size([96]) 0.20966451
+deploy param:  stage3.0.rbr_reparam.weight torch.Size([192, 96, 3, 3]) -0.00091049896
+deploy param:  stage3.0.rbr_reparam.bias torch.Size([192]) 0.051035177
+deploy param:  stage3.1.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0011983995
+deploy param:  stage3.1.rbr_reparam.bias torch.Size([192]) 0.0700079
+deploy param:  stage3.2.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0011745748
+deploy param:  stage3.2.rbr_reparam.bias torch.Size([192]) 0.0068132593
+deploy param:  stage3.3.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0017102525
+deploy param:  stage3.3.rbr_reparam.bias torch.Size([192]) 0.0582456
+deploy param:  stage3.4.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0020120065
+deploy param:  stage3.4.rbr_reparam.bias torch.Size([192]) 0.06396887
+deploy param:  stage3.5.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0020996314
+deploy param:  stage3.5.rbr_reparam.bias torch.Size([192]) 0.05737911
+deploy param:  stage3.6.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0026130879
+deploy param:  stage3.6.rbr_reparam.bias torch.Size([192]) 0.14015591
+deploy param:  stage3.7.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0024489798
+deploy param:  stage3.7.rbr_reparam.bias torch.Size([192]) 0.12045387
+deploy param:  stage3.8.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0022955544
+deploy param:  stage3.8.rbr_reparam.bias torch.Size([192]) 0.09335665
+deploy param:  stage3.9.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0023145908
+deploy param:  stage3.9.rbr_reparam.bias torch.Size([192]) 0.082638375
+deploy param:  stage3.10.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0022033353
+deploy param:  stage3.10.rbr_reparam.bias torch.Size([192]) 0.124454536
+deploy param:  stage3.11.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.001759831
+deploy param:  stage3.11.rbr_reparam.bias torch.Size([192]) 0.08366829
+deploy param:  stage3.12.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.001647819
+deploy param:  stage3.12.rbr_reparam.bias torch.Size([192]) 0.08426555
+deploy param:  stage3.13.rbr_reparam.weight torch.Size([192, 192, 3, 3]) -0.0013010311
+deploy param:  stage3.13.rbr_reparam.bias torch.Size([192]) 0.08536297
+deploy param:  stage4.0.rbr_reparam.weight torch.Size([512, 192, 3, 3]) -0.0014951671
+deploy param:  stage4.0.rbr_reparam.bias torch.Size([512]) -0.028772166
+
+
+Measure of model: RepVGG_A0_416
+
+=== Python measurements === 
+preprocessing  fps = 469.7224428035992 evn/s
+infer          fps = 310.5080881279613 evn/s
+postprocessing fps = 104.10056059033863 evn/s
+infer + postpr fps = 77.96283589809335 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 469.7224428035992 evn/s
+infer + postpr fps = 94.56073452802121 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 469.7224428035992 evn/s
+infer          fps = 40.36752632078394 evn/s
+postprocessing fps = 104.10056059033863 evn/s
+infer + postpr fps = 29.087961289500022 evn/s
+
+
+
+Finish initialize NanoDet Head.
+
+
+Measure of model: g
+
+=== Python measurements === 
+preprocessing  fps = 439.8024388294521 evn/s
+infer          fps = 287.37874415642005 evn/s
+postprocessing fps = 102.63698619510728 evn/s
+infer + postpr fps = 75.62691938134091 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 439.8024388294521 evn/s
+infer + postpr fps = 104.56169025972244 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 439.8024388294521 evn/s
+infer          fps = 74.26039363260371 evn/s
+postprocessing fps = 102.63698619510728 evn/s
+infer + postpr fps = 43.08635324918935 evn/s
+
+
+
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: t
+
+=== Python measurements === 
+preprocessing  fps = 562.077735780735 evn/s
+infer          fps = 126.51566577737555 evn/s
+postprocessing fps = 105.9841605957596 evn/s
+infer + postpr fps = 57.671684528957385 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 562.077735780735 evn/s
+infer + postpr fps = 80.50632575067193 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 562.077735780735 evn/s
+infer          fps = 77.67372972182623 evn/s
+postprocessing fps = 105.9841605957596 evn/s
+infer + postpr fps = 44.82347603293469 evn/s
+
+
+
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: m
+
+=== Python measurements === 
+preprocessing  fps = 726.4253864426593 evn/s
+infer          fps = 177.25609905342287 evn/s
+postprocessing fps = 116.81450415626517 evn/s
+infer + postpr fps = 70.41194561305699 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 726.4253864426593 evn/s
+infer + postpr fps = 90.55217528141294 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 726.4253864426593 evn/s
+infer          fps = 128.92084341341982 evn/s
+postprocessing fps = 116.81450415626517 evn/s
+infer + postpr fps = 61.28472988394767 evn/s
+
+
+
+model size is  0.5x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x0.5-f707e7126e.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: m_0.5x
+
+=== Python measurements === 
+preprocessing  fps = 717.2729307810996 evn/s
+infer          fps = 156.38049563906378 evn/s
+postprocessing fps = 107.40715521018713 evn/s
+infer + postpr fps = 63.6738835683771 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 717.2729307810996 evn/s
+infer + postpr fps = 92.11213618715666 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 717.2729307810996 evn/s
+infer          fps = 217.00474164412566 evn/s
+postprocessing fps = 107.40715521018713 evn/s
+infer + postpr fps = 71.84650807545532 evn/s
+
+
+
+model size is  1.5x
+init weights...
+Finish initialize NanoDet Head.
+
+
+Measure of model: m_1.5x
+
+=== Python measurements === 
+preprocessing  fps = 698.3685922358328 evn/s
+infer          fps = 138.3367236000739 evn/s
+postprocessing fps = 109.54442011212802 evn/s
+infer + postpr fps = 61.1342030298849 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 698.3685922358328 evn/s
+infer + postpr fps = 87.24841546186808 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 698.3685922358328 evn/s
+infer          fps = 89.63139462248988 evn/s
+postprocessing fps = 109.54442011212802 evn/s
+infer + postpr fps = 49.29624191995551 evn/s
+
+
+
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet Head.
+
+
+Measure of model: m_416
+
+=== Python measurements === 
+preprocessing  fps = 468.4052839345579 evn/s
+infer          fps = 175.4876800362178 evn/s
+postprocessing fps = 108.5853479493326 evn/s
+infer + postpr fps = 67.07919767209692 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 468.4052839345579 evn/s
+infer + postpr fps = 93.2431345509869 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 468.4052839345579 evn/s
+infer          fps = 74.44923021264508 evn/s
+postprocessing fps = 108.5853479493326 evn/s
+infer + postpr fps = 44.167040175577945 evn/s
+
+
+
+model size is  1.5x
+init weights...
+Finish initialize NanoDet Head.
+
+
+Measure of model: m_1.5x_416
+
+=== Python measurements === 
+preprocessing  fps = 470.8022748958569 evn/s
+infer          fps = 151.66087231024466 evn/s
+postprocessing fps = 107.69696206022572 evn/s
+infer + postpr fps = 62.97637104683052 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 470.8022748958569 evn/s
+infer + postpr fps = 90.24744362567505 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 470.8022748958569 evn/s
+infer          fps = 57.30222566037907 evn/s
+postprocessing fps = 107.69696206022572 evn/s
+infer + postpr fps = 37.40185456768573 evn/s
+
+
+
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet-Plus Head.
+model size is  1.5x
+init weights...
+Finish initialize NanoDet-Plus Head.
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet-Plus Head.
+model size is  1.5x
+init weights...
+Finish initialize NanoDet-Plus Head.
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet-Plus Head.
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet-Plus Head.
+
+
+Measure of model: plus_m_320
+
+=== Python measurements === 
+preprocessing  fps = 582.4030521595499 evn/s
+infer          fps = 117.4317581670192 evn/s
+postprocessing fps = 110.41583369390064 evn/s
+infer + postpr fps = 56.90788905974792 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 582.4030521595499 evn/s
+infer + postpr fps = 1.1435856043344574 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 582.4030521595499 evn/s
+infer          fps = 61.49722364705064 evn/s
+postprocessing fps = 110.41583369390064 evn/s
+infer + postpr fps = 39.498263388931385 evn/s
+
+
+
+model size is  1.5x
+init weights...
+Finish initialize NanoDet-Plus Head.
+
+
+Measure of model: plus_m_1.5x_320
+
+=== Python measurements === 
+preprocessing  fps = 528.9617072849294 evn/s
+infer          fps = 119.29665921889277 evn/s
+postprocessing fps = 115.84113514979543 evn/s
+infer + postpr fps = 58.77175322069405 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 528.9617072849294 evn/s
+infer + postpr fps = 1.160561617187079 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 528.9617072849294 evn/s
+infer          fps = 44.90213371806912 evn/s
+postprocessing fps = 115.84113514979543 evn/s
+infer + postpr fps = 32.3591412392193 evn/s
+
+
+
+model size is  1.0x
+init weights...
+=> loading pretrained model https://download.pytorch.org/models/shufflenetv2_x1-5666bf0f80.pth
+Finish initialize NanoDet-Plus Head.
+
+
+Measure of model: plus_m_416
+
+=== Python measurements === 
+preprocessing  fps = 368.6576192420759 evn/s
+infer          fps = 146.56498109819185 evn/s
+postprocessing fps = 112.8464395573813 evn/s
+infer + postpr fps = 63.75716319246221 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 368.6576192420759 evn/s
+infer + postpr fps = 1.1610930091910887 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 368.6576192420759 evn/s
+infer          fps = 39.4147686300878 evn/s
+postprocessing fps = 112.8464395573813 evn/s
+infer + postpr fps = 29.211749721617018 evn/s
+
+
+
+model size is  1.5x
+init weights...
+Finish initialize NanoDet-Plus Head.
+
+
+Measure of model: plus_m_1.5x_416
+
+=== Python measurements === 
+preprocessing  fps = 372.6093521189222 evn/s
+infer          fps = 128.81710488539548 evn/s
+postprocessing fps = 114.94210286599994 evn/s
+infer + postpr fps = 60.742357415840715 evn/s
+
+
+=== JIT measurements === 
+preprocessing  fps = 372.6093521189222 evn/s
+infer + postpr fps = 1.1636099179564101 evn/s
+
+
+=== ONNX measurements === 
+preprocessing  fps = 372.6093521189222 evn/s
+infer          fps = 31.561893790682845 evn/s
+postprocessing fps = 114.94210286599994 evn/s
+infer + postpr fps = 24.762399153081063 evn/s
+
+
+
