@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+
 import rospy
 import time
 import argparse
@@ -20,7 +20,6 @@ import argparse
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 from opendr_bridge import ROSBridge
 
-from opendr.engine.datasets import DatasetIterator
 from opendr.perception.panoptic_segmentation import SemanticKittiDataset
 
 
@@ -77,7 +76,7 @@ class PointCloud2DatasetNode:
         try:
             self.dataset = SemanticKittiDataset(path=self.path, split=self.split)
             return True
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             rospy.logerr("Dataset not found. Please download the dataset and extract it or enter available path.")
             return False
 
