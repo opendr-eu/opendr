@@ -170,7 +170,7 @@ class EfficientLpsNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('input_pcl_topic', type=str, default='/usb_cam/pcl_raw',
+    parser.add_argument('--input_pcl_topic', type=str, default='/usb_cam/pcl_raw',
                         help='listen to pointclouds on this topic')
     parser.add_argument('--checkpoint', type=str, default='semantickitti',
                         help='download pretrained models [semantickitti] or load from the provided path')

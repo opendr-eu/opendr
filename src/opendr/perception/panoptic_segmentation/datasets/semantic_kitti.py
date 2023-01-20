@@ -107,6 +107,10 @@ class SemanticKittiDataset(ExternalDataset, DatasetIterator):
 
         super().__init__(path=str(path), dataset_type="SemanticKITTIDataset")
 
+        if not os.path.exists(self.path):
+            raise FileNotFoundError(f"Dataset path {self.path} does not exist. \
+                                     Please download the dataset according to the instructions in the README.md file.")
+
         self._pipeline = None
         self._mmdet2_dataset = (None, None)
         self._file_list = None

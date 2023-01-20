@@ -25,17 +25,23 @@ from opendr.perception.panoptic_segmentation import SemanticKittiDataset
 
 
 class PointCloud2DatasetNode:
-    def __init__(
-        self,
-        dataset: DatasetIterator,
-        output_point_cloud_2_topic="/opendr/dataset_point_cloud2"
-    ):
+    def __init__(self,
+                 path: str = './datasets/semantickitti',
+                 split: str = 'valid',
+                 output_point_cloud_2_topic: str = "/opendr/dataset_point_cloud2"
+                 ):
         """
         Creates a ROS Node for publishing dataset point clouds
+        :param path: path to the dataset
+        :type path: str
+        :param split: split of the dataset to use (train, valid, test)
+        :type split: str
+        :param output_point_cloud_2_topic: topic for the output point cloud
+        :type output_point_cloud_2_topic: str
         """
 
-        # Initialize the face detector
-        self.dataset = dataset
+        self.path = path
+        self.split = split
         # Initialize OpenDR ROSBridge object
         self.bridge = ROSBridge()
 
@@ -45,34 +51,45 @@ class PointCloud2DatasetNode:
             )
 
     def start(self):
-        i = 0
+        """
+        Starts the node
+        """
+        if self._init_dataset():
+            rospy.loginfo("Starting point_cloud_2 dataset node")
+            rospy.init_node('opendr_point_cloud_2_dataset')
 
-        while not rospy.is_shutdown():
+            i = 0
+            while not rospy.is_shutdown():
 
-            point_cloud = self.dataset[i % len(self.dataset)][0]
+                point_cloud = self.dataset[i % len(self.dataset)][0]
 
-            rospy.loginfo("Publishing point_cloud_2 [" + str(i) + "]")
-            message = self.bridge.to_ros_point_cloud2(
-                point_cloud
-            )
-            self.output_point_cloud_2_publisher.publish(message)
+                rospy.loginfo("Publishing point_cloud_2 [" + str(i) + "]")
+                message = self.bridge.to_ros_point_cloud2(
+                    point_cloud
+                )
+                self.output_point_cloud_2_publisher.publish(message)
 
-            time.sleep(0.1)
+                time.sleep(0.1)
 
-            i += 1
+                i += 1
 
+    def _init_dataset(self):
+        try:
+            self.dataset = SemanticKittiDataset(path=self.path, split=self.split)
+            return True
+        except FileNotFoundError as e:
+            rospy.logerr("Dataset not found. Please download the dataset and extract it or enter available path.")
+            return False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    # I have defined the default path in the place where I have my example data, this should be adjusted later on
-    parser.add_argument('dataset_path', type=str, default='/home/canakcia/datasets/semantickitti/test_data',
+    parser.add_argument('-d', '--dataset_path', type=str, default='./datasets/semantickitti',
                         help='listen to pointclouds on this topic')
-
-    rospy.init_node('opendr_point_cloud_2_dataset')
-
+    parser.add_argument('-s', '--split', type=str, default='valid',
+                        help='split of the dataset to use (train, valid, test)')
+    parser.add_argument('-o', '--output_point_cloud_2_topic', type=str, default='/opendr/dataset_point_cloud2',
+                        help='topic for the output point cloud')
     args = parser.parse_args()
 
-    dataset = SemanticKittiDataset(path=os.path.join(args.dataset_path, "eval_data"), split="valid")
-
-    dataset_node = PointCloud2DatasetNode(dataset)
+    dataset_node = PointCloud2DatasetNode(args.dataset_path, args.split, args.output_point_cloud_2_topic)
     dataset_node.start()
