@@ -408,11 +408,7 @@ class EfficientLpsLearner(Learner):
         proj = proj * proj_mask.float()
 
         mmdet_pcl = {
-            # TODO: Improve Awful Hack!
-            # Prediction will be saved in $PWD/tmpDir/inference/predictions/pcl_<file_count>.label
-            #                                         |||||||||             \\\\\\\\\\\\\\\\\
-            #                                         VVVVVVVVV              VVVVVVVVVVVVVVVVV
-            "filename": f"expected_path_for_something/inference/__dont_care__/pcl_{frame_id:06d}.bin",
+            "filename": "",
             "img": proj,
             "img_shape": proj.shape,
             "ori_shape": proj.shape,
@@ -480,14 +476,17 @@ class EfficientLpsLearner(Learner):
         with torch.no_grad():
             for data in mmdet_batch:
                 data['eval'] = 'panoptic'
-                prediction = self.model(return_loss=False, rescale=True, **data)[0]
+                if not projected:
+                    prediction = self.model(return_loss=False, rescale=True, return_pred=True, **data)[0]
+                else:
+                    prediction = self.model(return_loss=False, rescale=True, return_pred=False, **data)[0]
 
                 if return_raw_logits:
                     results.append(prediction)
                 else:
-                    instance_pred, category_pred, img_meta = prediction
 
                     if projected:
+                        instance_pred, category_pred, _ = prediction
                         instance_pred = instance_pred.numpy()
                         semantic_pred = category_pred[instance_pred].numpy()
 
@@ -501,9 +500,7 @@ class EfficientLpsLearner(Learner):
 
                         results.append((instance_pred, semantic_pred, ranges))
                     else:
-                        # Load the predicted labels from the saved file, since the un-projected labels are not returned by
-                        panoptic_labels_path = self.model.get_path(img_meta)
-                        panoptic_labels = np.fromfile(panoptic_labels_path, dtype=np.uint32)
+                        panoptic_labels, _ = prediction
                         instance_pred = panoptic_labels >> 16
                         semantic_pred = panoptic_labels & 0xFFFF
                         results.append((instance_pred, semantic_pred, None))

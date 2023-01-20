@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '--data_root', type=str, default='./data/EfficientLPS',
                         help='To specify the path to the data root directory, where models are stored')
-    parser.add_argument('-s', '--semantickitti_root', type=str, default='./data/semantickitti',
+    parser.add_argument('-s', '--semantickitti_root', type=str, default='./datasets/semantickitti',
                         help='To specify the path to the semantickitti root directory, where models are stored')
 
     args = parser.parse_args()
