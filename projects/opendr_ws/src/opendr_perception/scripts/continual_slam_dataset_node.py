@@ -65,6 +65,7 @@ class ContinualSlamDatasetNode:
         i = 150
         length = len(self.dataset)-1
         while not rospy.is_shutdown() and i < length:
+            # TODO: Delete this later or find it out
             if i == length-1:
                 break
             data = self.dataset[i][0] 

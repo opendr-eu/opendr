@@ -5,6 +5,7 @@ import torch
 import numpy as np
 from torch import nn, optim, Tensor
 import torch.nn.functional as F
+from torchvision.transforms import ToPILImage
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module.networks import (
     ResnetEncoder,
@@ -16,7 +17,6 @@ from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layer
     BackProjectDepth,
     Project3D,
     )
-
 from opendr.perception.continual_slam.algorithm.depth_pose_module.losses import (
     compute_reprojection_loss,
     compute_smooth_loss,
@@ -28,7 +28,6 @@ from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import (
     transformation_from_parameters,
     disp_to_depth,
 )
-
 from opendr.perception.continual_slam.datasets import KittiDataset
 
 
@@ -302,6 +301,13 @@ class DepthPoseModule:
                 inputs[key[0]] = data.to(self.device)
 
         # Compute predictions
+        from PIL import Image as pil_image
+        for key, data in inputs.items():
+            # x = inputs[key].cpu().numpy().squeeze(0)
+            # print(x.shape, key)
+            # img = pil_image.fromarray(x.transpose(1, 2, 0) * 255, 'RGB')
+            img = ToPILImage()(inputs[key].cpu().squeeze(0))
+            img.save(f'test_{key}.png')
         outputs = {}
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))
@@ -349,6 +355,7 @@ class DepthPoseModule:
             combined = torch.cat((identity_reprojection_losses, reprojection_losses), dim=1)
             to_optimize, _ = torch.min(combined, dim=1)
             reprojection_loss = (to_optimize.mean(2).mean(1) * sample_weights).sum()
+            losses[f'reprojection_loss/scale_{scale}'] = reprojection_loss
             mask = torch.ones_like(outputs['disp', 0, scale], dtype=torch.bool, device=self.device)
             color = scaled_inputs['rgb', 0, scale]
             disp = outputs['disp', 0, scale]
@@ -406,7 +413,7 @@ class DepthPoseModule:
 
             depth = disp_to_depth(disp, self.min_depth, self.max_depth)
             outputs[('depth', scale, 0)] = depth
-            if self.use_online:
+            if self.mode == 'learner':
                 camera_matrix = self.camera_matrix.copy()
                 original_image_shape = inputs[0].shape
                 camera_matrix[0, :] *= original_image_shape[-2]
