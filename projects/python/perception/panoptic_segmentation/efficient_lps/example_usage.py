@@ -14,22 +14,19 @@
 
 import os
 import sys
+import argparse
 from pathlib import Path
 
 from opendr.perception.panoptic_segmentation import EfficientLpsLearner, SemanticKittiDataset
 
-# User must download the datasets and set the paths accordingly
-DATA_ROOT = '/home/USER/data/efficientLPS'
-SEMANTIC_KITTI_ROOT = f'{DATA_ROOT}/converted_datasets/semantickitti_panoptic'
+
+def download_models(data_root: str):
+    EfficientLpsLearner.download(f'{data_root}/checkpoints', trained_on='semantickitti')
 
 
-def download_models():
-    EfficientLpsLearner.download(f'{DATA_ROOT}/checkpoints', trained_on='semantickitti')
-
-
-def train():
-    train_dataset = SemanticKittiDataset(path=os.path.join(SEMANTIC_KITTI_ROOT, "eval_data"), split="train")
-    val_dataset = SemanticKittiDataset(path=os.path.join(SEMANTIC_KITTI_ROOT, "eval_data"), split="valid")
+def train(data_root: str, semantickitti_root: str):
+    train_dataset = SemanticKittiDataset(path=semantickitti_root, split="train")
+    val_dataset = SemanticKittiDataset(path=semantickitti_root, split="valid")
 
     config_file = Path(sys.modules[
                            EfficientLpsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_semantickitti.py'
@@ -41,41 +38,48 @@ def train():
     )
     train_stats = learner.fit(train_dataset, val_dataset=val_dataset,
                               logging_path=str(Path(__file__).parent / 'work_dir'))
-    learner.save(path=f'{DATA_ROOT}/checkpoints/efficientLPS')
+    learner.save(path=f'{data_root}/checkpoints/efficientLPS')
     assert train_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
-def evaluate():
-    val_dataset = SemanticKittiDataset(path=os.path.join(SEMANTIC_KITTI_ROOT, "eval_data"), split="valid")
+def evaluate(data_root: str, semantickitti_root: str):
+    val_dataset = SemanticKittiDataset(path=semantickitti_root, split="valid")
     config_file = Path(sys.modules[EfficientLpsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_semantickitti.py'
     learner = EfficientLpsLearner(str(config_file))
-    learner.load(path=f'{DATA_ROOT}/checkpoints/model_semantickitti.pth')
+    learner.load(path=f'{data_root}/checkpoints/model_semantickitti.pth')
     eval_stats = learner.eval(val_dataset, print_results=True)
     assert eval_stats  # This assert is just a workaround since pyflakes does not support the NOQA comment
 
 
-def inference():
+def inference(data_root: str, semantickitti_root: str):
     # Pointcloud files
     pcl_filenames = [
-            os.path.join(SEMANTIC_KITTI_ROOT, "infer_data", "seq08_f000000.bin"),
-            os.path.join(SEMANTIC_KITTI_ROOT, "infer_data", "seq08_f000010.bin"),
+            os.path.join(semantickitti_root, "infer_data", "seq08_f000000.bin"),
+            os.path.join(semantickitti_root, "infer_data", "seq08_f000010.bin"),
         ]
     point_clouds = [SemanticKittiDataset.load_point_cloud(f) for f in pcl_filenames]
 
     config_file = Path(sys.modules[EfficientLpsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_semantickitti.py'
     learner = EfficientLpsLearner(str(config_file))
-    learner.load(path=f'{DATA_ROOT}/checkpoints/model_semantickitti.pth')
+    learner.load(path=f'{data_root}/checkpoints/model_semantickitti.pth')
     predictions = learner.infer(point_clouds)
     for point_cloud, prediction in zip(point_clouds, predictions):
         EfficientLpsLearner.visualize(point_cloud, (prediction[0], prediction[1]))
 
 
 if __name__ == "__main__":
-    download_models()
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-d', '--data_root', type=str, default='./data/EfficientLPS',
+                        help='To specify the path to the data root directory, where models are stored')
+    parser.add_argument('-s', '--semantickitti_root', type=str, default='./data/semantickitti',
+                        help='To specify the path to the semantickitti root directory, where models are stored')
 
-    train()
+    args = parser.parse_args()
+
+    download_models(args.data_root)
+    train(args.data_root, args.semantickitti_root)
     print('-' * 40 + '\n===> Training succeeded\n' + '-' * 40)
-    evaluate()
+    evaluate(args.data_root, args.semantickitti_root)
     print('-' * 40 + '\n===> Evaluation succeeded\n' + '-' * 40)
-    inference()
+    inference(args.data_root, args.semantickitti_root)
     print('-' * 40 + '\n===> Inference succeeded\n' + '-' * 40)
