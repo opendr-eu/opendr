@@ -180,7 +180,7 @@ def _pose2numpy(num_current_frames, poses_list):
     for t in range(num_current_frames):
         for m in range(len(poses_list[t])):
             skeleton_seq[0, 0:2, t, :, m] = np.transpose(poses_list[t][m].data)
-    return skeleton_seq
+    return torch.tensor(skeleton_seq)
 
 
 def main():
