@@ -137,6 +137,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [siamrpn Demo](/projects/python/perception/object_tracking_2d/demos/siamrpn)
         - panoptic segmentation:
             - [efficient_ps Demo](/projects/python/perception/panoptic_segmentation/efficient_ps)
+            - [efficient_lps Demo](/projects/python/perception/panoptic_segmentation/efficient_lps)
         - semantic segmentation:
             - [bisnet Demo](/projects/python/perception/semantic_segmentation/bisenet)
         - action recognition:
