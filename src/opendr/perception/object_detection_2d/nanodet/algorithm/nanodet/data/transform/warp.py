@@ -14,10 +14,11 @@
 
 import math
 import random
-from typing import Dict, Optional, Tuple
+from typing import Tuple
 
 import cv2
 import numpy as np
+import torch
 
 
 def get_flip_matrix(prob=0.5):
@@ -93,7 +94,8 @@ def get_shear_matrix(degree):
 
 def get_translate_matrix(translate, width, height):
     """
-
+    :param width:
+    :param height:
     :param translate:
     :return:
     """
@@ -136,60 +138,31 @@ def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
         return Rs
 
 
-def warp_and_resize(
-    meta: Dict,
-    warp_kwargs: Dict,
-    dst_shape: Tuple[int, int],
-    keep_ratio: bool = True,
-):
-    # TODO: background, type
-    raw_img = meta["img"]
-    height = raw_img.shape[0]  # shape(h,w,c)
-    width = raw_img.shape[1]
-
-    # center
-    C = np.eye(3)
-    C[0, 2] = -width / 2
-    C[1, 2] = -height / 2
-
-    # do not change the order of mat mul
-    if "perspective" in warp_kwargs and random.randint(0, 1):
-        P = get_perspective_matrix(warp_kwargs["perspective"])
-        C = P @ C
-    if "scale" in warp_kwargs and random.randint(0, 1):
-        Scl = get_scale_matrix(warp_kwargs["scale"])
-        C = Scl @ C
-    if "stretch" in warp_kwargs and random.randint(0, 1):
-        Str = get_stretch_matrix(*warp_kwargs["stretch"])
-        C = Str @ C
-    if "rotation" in warp_kwargs and random.randint(0, 1):
-        R = get_rotation_matrix(warp_kwargs["rotation"])
-        C = R @ C
-    if "shear" in warp_kwargs and random.randint(0, 1):
-        Sh = get_shear_matrix(warp_kwargs["shear"])
-        C = Sh @ C
-    if "flip" in warp_kwargs:
-        F = get_flip_matrix(warp_kwargs["flip"])
-        C = F @ C
-    if "translate" in warp_kwargs and random.randint(0, 1):
-        T = get_translate_matrix(warp_kwargs["translate"], width, height)
+def scriptable_warp_boxes(boxes, M, width, height):
+    """
+    Warp boxes function that uses pytorch api, so it can be used with scripting and tracing for optimization.
+    """
+    n = boxes.shape[0]
+    if n:
+        # warp points
+        xy = torch.ones((n * 4, 3), dtype=torch.float32)
+        xy[:, :2] = boxes[:, [0, 1, 2, 3, 0, 3, 2, 1]].reshape(
+            n * 4, 2
+        )  # x1y1, x2y2, x1y2, x2y1
+        M = torch.transpose(M, 0, 1).float()
+        xy = torch.mm(xy, M)  # transform
+        xy = (xy[:, :2] / xy[:, 2:3]).reshape(n, 8)  # rescale
+        # create new boxes
+        x = xy[:, [0, 2, 4, 6]]
+        y = xy[:, [1, 3, 5, 7]]
+        xy = torch.cat((x.min(1).values, y.min(1).values, x.max(1).values, y.max(1).values)).reshape(4, n)
+        xy = torch.transpose(xy, 0, 1).float()
+        # clip boxes
+        xy[:, [0, 2]] = xy[:, [0, 2]].clip(0, width)
+        xy[:, [1, 3]] = xy[:, [1, 3]].clip(0, height)
+        return xy
     else:
-        T = get_translate_matrix(0, width, height)
-    M = T @ C
-    # M = T @ Sh @ R @ Str @ P @ C
-    ResizeM = get_resize_matrix((width, height), dst_shape, keep_ratio)
-    M = ResizeM @ M
-    img = cv2.warpPerspective(raw_img, M, dsize=tuple(dst_shape))
-    meta["img"] = img
-    meta["warp_matrix"] = M
-    if "gt_bboxes" in meta:
-        boxes = meta["gt_bboxes"]
-        meta["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
-    if "gt_masks" in meta:
-        for i, mask in enumerate(meta["gt_masks"]):
-            meta["gt_masks"][i] = cv2.warpPerspective(mask, M, dsize=tuple(dst_shape))
-
-    return meta
+        return boxes
 
 
 def warp_boxes(boxes, M, width, height):
@@ -217,7 +190,7 @@ def warp_boxes(boxes, M, width, height):
 def get_minimum_dst_shape(
     src_shape: Tuple[int, int],
     dst_shape: Tuple[int, int],
-    divisible: Optional[int] = None,
+    divisible: int = 0,
 ) -> Tuple[int, int]:
     """Calculate minimum dst shape"""
     src_w, src_h = src_shape
