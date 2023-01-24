@@ -358,7 +358,7 @@ Make sure to change the default input topic of the tracking node if you are not 
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
 Assuming that the OpenDR catkin workspace has been sourced, the node can be started with:
 ```shell
-rosrun perception panoptic_segmentation_efficient_ps.py
+rosrun opendr_perception panoptic_segmentation_efficient_ps.py
 ```
 
 The following optional arguments are available:
@@ -375,11 +375,11 @@ Assuming that the OpenDR catkin workspace has been sourced, the node can be star
 
 First one needs to download SemanticKITTI dataset into POINTCLOUD_LOCATION as it is described in the [Panoptic Segmentation Datasets](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md). Then, once the SPLIT type is specified (train, test or "valid", default "valid"), the point **PointCloud2 Publisher** can be started using the following line:
 ```shell
-rosrun perception point_cloud_2_publisher.py -d POINTCLOUD_LOCATION -s SPLIT
+rosrun opendr_perception point_cloud_2_publisher.py -d POINTCLOUD_LOCATION -s SPLIT
 ```
 After starting the **PointCloud2 Publisher**, one can start **EfficientLPS Node** using the following line:
 ```shell
-rosrun perception panoptic_segmentation_efficient_lps.py /opendr/dataset_point_cloud2
+rosrun opendr_perception panoptic_segmentation_efficient_lps.py /opendr/dataset_point_cloud2
 ```
 
 The following optional arguments are available:
