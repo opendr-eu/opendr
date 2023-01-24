@@ -24,10 +24,10 @@ extern "C" {
 /***
  * OpenDR data type for representing images
  */
-struct opendr_image {
+struct OpendrImage {
   void *data;
 };
-typedef struct opendr_image opendr_image_t;
+typedef struct OpendrImage OpendrImageT;
 
 #ifdef __cplusplus
 }

@@ -13,6 +13,8 @@
 # limitations under the License.
 import torch
 import torch.nn as nn
+from torch import Tensor
+from typing import List
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.ghostnet import GhostBottleneck
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule, DepthwiseConvModule
@@ -65,6 +67,7 @@ class GhostBlocks(nn.Module):
             )
         self.blocks = nn.Sequential(*blocks)
 
+    @torch.jit.unused
     def forward(self, x):
         out = self.blocks(x)
         if self.use_res:
@@ -118,7 +121,7 @@ class GhostPAN(nn.Module):
         conv = DepthwiseConvModule if use_depthwise else ConvModule
 
         # build top-down blocks
-        self.upsample = nn.Upsample(**upsample_cfg)
+        self.upsample = nn.Upsample(**upsample_cfg, align_corners=False)
         self.reduce_layers = nn.ModuleList()
         for idx in range(len(in_channels)):
             self.reduce_layers.append(
@@ -198,12 +201,13 @@ class GhostPAN(nn.Module):
                 )
             )
 
-    def forward(self, inputs):
+    @torch.jit.unused
+    def forward(self, inputs: List[Tensor]):
         """
         Args:
-            inputs (tuple[Tensor]): input features.
+            inputs (List[Tensor]): input features.
         Returns:
-            tuple[Tensor]: multi level features.
+            List[Tensor]: multi level features.
         """
         assert len(inputs) == len(self.in_channels)
         inputs = [
@@ -241,4 +245,4 @@ class GhostPAN(nn.Module):
         ):
             outs.append(extra_in_layer(inputs[-1]) + extra_out_layer(outs[-1]))
 
-        return tuple(outs)
+        return outs

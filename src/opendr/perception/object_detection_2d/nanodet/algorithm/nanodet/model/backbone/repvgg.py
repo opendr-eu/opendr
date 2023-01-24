@@ -176,6 +176,7 @@ class RepVGG(nn.Module):
             self.cur_layer_idx += 1
         return nn.Sequential(*blocks)
 
+    @torch.jit.unused
     def forward(self, x):
         x = self.stage0(x)
         output = []
@@ -184,7 +185,7 @@ class RepVGG(nn.Module):
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)
-        return tuple(output)
+        return output
 
 
 def repvgg_model_convert(model, deploy_model, save_path=None):
