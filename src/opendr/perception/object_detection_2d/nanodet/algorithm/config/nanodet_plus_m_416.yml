@@ -5,7 +5,7 @@
 #           AP_small = 0.106
 #               AP_m = 0.322
 #               AP_l = 0.477
-save_dir: ./workspace/nanodet_plus_m_416
+save_dir: ./temp/nanodet_plus_m_416
 check_point_name: plus_m_416
 model:
   weight_averager:

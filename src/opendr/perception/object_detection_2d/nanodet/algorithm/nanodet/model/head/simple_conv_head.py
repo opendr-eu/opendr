@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 
+from torch import Tensor
+from typing import List
+
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.scale import Scale
@@ -83,11 +86,12 @@ class SimpleConvHead(nn.Module):
         normal_init(self.gfl_cls, std=0.01, bias=bias_cls)
         normal_init(self.gfl_reg, std=0.01)
 
-    def forward(self, feats):
+    @torch.jit.unused
+    def forward(self, feats: List[Tensor]):
         outputs = []
-        for x, scale in zip(feats, self.scales):
-            cls_feat = x
-            reg_feat = x
+        for idx, scale in enumerate(self.scales):
+            cls_feat = feats[idx]
+            reg_feat = feats[idx]
             for cls_conv in self.cls_convs:
                 cls_feat = cls_conv(cls_feat)
             for reg_conv in self.reg_convs:

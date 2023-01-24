@@ -15,6 +15,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
+from typing import List
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
@@ -92,7 +94,8 @@ class TAN(nn.Module):
             elif isinstance(m, nn.Conv2d):
                 normal_init(m, 0.01)
 
-    def forward(self, inputs):
+    @torch.jit.unused
+    def forward(self, inputs: List[Tensor]):
         assert len(inputs) == len(self.in_channels)
 
         # build laterals
@@ -118,4 +121,4 @@ class TAN(nn.Module):
             laterals[1] + mid_lvl,
             laterals[2] + F.interpolate(mid_lvl, size=laterals[2].shape[2:], mode="bilinear"),
         ]
-        return tuple(outs)
+        return outs

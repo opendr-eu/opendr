@@ -5,7 +5,7 @@
 #           AP_small = 0.036
 #               AP_m = 0.119
 #               AP_l = 0.232
-save_dir: ./workspace/nanodet_m_0.5x
+save_dir: ./temp/nanodet_m_0.5x
 check_point_name: m_0.5x
 model:
   arch:

@@ -5,7 +5,7 @@
 #           AP_small = 0.152
 #               AP_m = 0.342
 #               AP_l = 0.481
-save_dir: ./workspace/efficientlite2_512
+save_dir: ./temp/efficientlite2_512
 check_point_name: EfficientNet_Lite2_512
 model:
   arch:
