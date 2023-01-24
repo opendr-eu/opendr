@@ -3,6 +3,9 @@
 ## Version 2.1.0
 Released on XX, XX, 2023.
 
+  - New Features:
+    - Added Efficient LiDAR Panoptic Segmentation ([#359](https://github.com/opendr-eu/opendr/pull/359)).
+
 ## Version 2.0.0
 Released on December, 31st, 2022.
 
