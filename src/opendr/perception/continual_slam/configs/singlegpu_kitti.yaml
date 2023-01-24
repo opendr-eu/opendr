@@ -1,6 +1,6 @@
 Dataset:
   dataset: Kitti
-  dataset_path: /home/canakcia/Desktop
+  dataset_path: /home/canakcia/Desktop/kitti_dset
   scales: [ 0, 1, 2, 3 ] # Provided by dataloader
   height: 370
   width: 1226
@@ -28,5 +28,5 @@ DepthPosePrediction:
   save_val_depth_batches: 1
   multiple_gpus: true
   gpu_ids: [ 0 ]
-  load_weights_folder: '/home/canakcia/opendr/model_weights_2'
+  load_weights_folder: '/home/canakcia/opendr/model_weights_3'
   use_wandb: false

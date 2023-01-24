@@ -136,7 +136,7 @@ class ContinualSlamPredictor:
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
 
-        time.sleep(self.delay)
+        # time.sleep(self.delay)
 
     def update(self, message: ROS_String):
         """

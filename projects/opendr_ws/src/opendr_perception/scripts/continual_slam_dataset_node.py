@@ -62,7 +62,7 @@ class ContinualSlamDatasetNode:
     def _publish(self):
 
         rospy.loginfo("Start publishing dataset images")
-        i = 150
+        i = 0
         length = len(self.dataset)-1
         while not rospy.is_shutdown() and i < length:
             # TODO: Delete this later or find it out
@@ -98,13 +98,13 @@ class ContinualSlamDatasetNode:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset_path", type=str, default="/home/canakcia/Desktop/",
+    parser.add_argument("--dataset_path", type=str, default="/home/canakcia/Desktop/kitti_dset/",
                         help="Path to the dataset")
     parser.add_argument("--output_image_topic", type=str, default="/cl_slam/image",
                         help="ROS topic to publish images")
     parser.add_argument("--output_distance_topic", type=str, default="/cl_slam/distance",
                         help="ROS topic to publish distances")
-    parser.add_argument("--dataset_fps", type=float, default=0.5,
+    parser.add_argument("--dataset_fps", type=float, default=10,
                         help="Dataset frame rate")
     args = parser.parse_args()
 
