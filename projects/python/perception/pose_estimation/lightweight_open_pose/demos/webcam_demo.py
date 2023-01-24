@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import cv2
+import argparse
 import time
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw
-import argparse
 
 
 class VideoReader(object):
@@ -47,9 +47,6 @@ if __name__ == '__main__':
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
     args = parser.parse_args()
-
-    onnx, device = args.onnx, args.device
-    accelerate = args.accelerate
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
     if accelerate:

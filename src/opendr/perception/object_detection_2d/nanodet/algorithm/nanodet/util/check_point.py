@@ -18,7 +18,7 @@ from typing import Any, Dict
 import torch
 
 
-def load_model_weight(model, checkpoint, logger=None):
+def load_model_weight(model, checkpoint, verbose=None):
     state_dict = checkpoint["state_dict"].copy()
     for k in checkpoint["state_dict"]:
         # convert average model weights
@@ -39,8 +39,8 @@ def load_model_weight(model, checkpoint, logger=None):
     for k in state_dict:
         if k in model_state_dict:
             if state_dict[k].shape != model_state_dict[k].shape:
-                if logger:
-                    logger.log(
+                if verbose:
+                    print(
                         "Skip loading parameter {}, required shape{}, "
                         "loaded shape{}.".format(
                             k, model_state_dict[k].shape, state_dict[k].shape
@@ -48,12 +48,12 @@ def load_model_weight(model, checkpoint, logger=None):
                     )
                 state_dict[k] = model_state_dict[k]
         else:
-            if logger:
-                logger.log("Drop parameter {}.".format(k))
+            if verbose:
+                print("Drop parameter {}.".format(k))
     for k in model_state_dict:
         if not (k in state_dict):
-            if logger:
-                logger.log("No param {}.".format(k))
+            if verbose:
+                print("No param {}.".format(k))
             state_dict[k] = model_state_dict[k]
     model.load_state_dict(state_dict, strict=False)
     return model
@@ -71,9 +71,9 @@ def save_model(model, path, epoch, iter, optimizer=None):
     torch.save(data, path)
 
 
-def save_model_state(path, model, weight_averager=None, logger=None):
-    if logger:
-        logger.info("Saving model to {}".format(path))
+def save_model_state(path, model, weight_averager=None, verbose=None):
+    if verbose:
+        print("Saving model to {}".format(path))
     state_dict = (
         weight_averager.state_dict()
         if weight_averager

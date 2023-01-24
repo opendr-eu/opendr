@@ -3,60 +3,60 @@
 
 The *face_recognition.h* header provides function definitions that can be used for accessing the OpenDR face recognition tool.
 
-### Struct *face_recognition_model_t*
+### Struct *FaceRecognitionModelT*
 ```C
 
-struct face_recognition_model {
+struct FaceRecognitionModel {
 ...
 };
-typedef struct face_recognition_model face_recognition_model_t;
+typedef struct FaceRecognitionModel FaceRecognitionModelT;
 ```
-The *face_recognition_model_t* structure keeps all the necessary information that are required by the OpenDR face recognition tool (e.g., model weights, normalization information, database for person recognition, ONNX session information, etc.).
+The *FaceRecognitionModelT* structure keeps all the necessary information that are required by the OpenDR face recognition tool (e.g., model weights, normalization information, database for person recognition, ONNX session information, etc.).
 
 
-### Function *load_face_recognition_model()*
+### Function *loadFaceRecognitionModel()*
 ```C
-void load_face_recognition_model(const char *modelPath, face_recognition_model_t *model);
+void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *model);
 ```
  Loads a face recognition model saved in the local filesystem (*modelPath*) in OpenDR format.
  This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  
-### Function *free_face_recognition_model()*
+### Function *freeFaceRecognitionModel()*
 ```C
-void free_face_recognition_model(face_recognition_model_t *model);
+void freeFaceRecognitionModel(FaceRecognitionModelT *model);
 ```
 Releases the memory allocated for a face recognition model (*model*).
 
 
-### Function *infer_face_recognition()*
+### Function *inferFaceRecognition()*
 ```C
-opendr_category_target_t infer_face_recognition(face_recognition_model_t *model, opendr_image_t *image);
+OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image);
 ```
 This function perform inference using a face recognition model (*model*) and an input image (*image*).
 The function returns an OpenDR category structure with the inference results.
 
 
-### Function *decode_category_face_recognition()*
+### Function *decodeCategoryFaceRecognition()*
 ```C
-void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category, char *personName);
+void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpendrCategoryTargetT category, char *personName);
 ```
 Returns the name of a recognized person by decoding the category id into a string (this function uses the information from the built person database).
 
 
-### Function *build_database_face_recognition()*
+### Function *buildDatabaseFaceRecognition()*
 ```C
-void build_database_face_recognition(const char *databaseFolder, const char *outputPath, face_recognition_model_t *model);
+void buildDatabaseFaceRecognition(const char *databaseFolder, const char *outputPath, faceRecognitionModelT *model);
 ```
 Build a face recognition database (containing images for persons to be recognized). 
-This function expects the *databaseFolder* to have the same format as the main Python toolkit.
+This function expects the (*databaseFolder*) to have the same format as the main Python toolkit.
 The function calculates the features of the person that are contained in the database and it stores it into a binary file that can be then loaded to perform inference (*outputPath*).
 A loaded face recognition model should be provided (*model*), since this model will be used for the feature extraction process.
 
-### Function *load_database_face_recognition()*
+### Function *loadDatabaseFaceRecognition()*
 ```C
-void load_database_face_recognition(const char *databasePath, face_recognition_model_t *model);
+void loadDatabaseFaceRecognition(const char *databasePath, FaceRecognitionModelT *model);
 
 ```
 Loads an already built database (*databasePath*) into a face recognition model (*model*).

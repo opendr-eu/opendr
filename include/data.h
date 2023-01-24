@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ extern "C" {
 /***
  * OpenDR data type for representing images
  */
-struct opendr_image {
+struct OpendrImage {
   void *data;
 };
-typedef struct opendr_image opendr_image_t;
+typedef struct OpendrImage OpendrImageT;
 
 /***
  * Opendr data type for representing tensors

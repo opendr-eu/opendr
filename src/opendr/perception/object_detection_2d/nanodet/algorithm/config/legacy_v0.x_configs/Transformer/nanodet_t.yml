@@ -6,7 +6,7 @@
 #               AP_m = 0.214
 #               AP_l = 0.364
 
-save_dir: ./workspace/nanodet_t
+save_dir: ./temp/nanodet_t
 check_point_name: t
 model:
   arch:
@@ -69,8 +69,8 @@ data:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
   val:
     input_size: [320,320] #[w,h]
-    keep_ratio: False #feature_hw: [20,20]. Size for position embedding are hard coded and can not have varius values,
-                      #Please use images with standard ratio and change the value accordingly if you want to keep_ratio.
+    keep_ratio: False # feature_hw: [20,20]. Size for position embedding is hard coded and can not have various values,
+                      # Please use images with standard ratio and change the value accordingly if you want to keep_ratio.
     pipeline:
       normalize: [[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
 device:

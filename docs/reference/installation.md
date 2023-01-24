@@ -97,8 +97,7 @@ OpenDR distributes the following packages that can be installed:
 - *opendr-toolkit-object-detection-3d*
 - *opendr-toolkit-object-tracking-3d*
 - *opendr-toolkit-ambiguity-measure*
-- *opendr-toolkit-mobile-manipulation* (requires a functional ROS installation)
-- *opendr-toolkit-single-demo-grasp* (requires a functional ROS installation)
+- *opendr-toolkit-fall-detection*
 
 Note that `opendr-toolkit` is actually just a metapackage that includes all the aformentioned packages.
 
@@ -107,14 +106,14 @@ Note that `opendr-toolkit` is actually just a metapackage that includes all the 
 ## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run the OpenDR image as:
 ```bash
-sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_latest
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v2.0.0
 ```
 The docker automatically runs a Jupyter notebook server that listens at port 8888.
 When launched, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running:
 ```bash
-sudo docker run -it opendr/opendr-toolkit:cpu_latest /bin/bash
+sudo docker run -it opendr/opendr-toolkit:cpu_v2.0.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
@@ -123,18 +122,18 @@ source bin/activate.sh
 If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
 ```bash
 xhost +local:root
-sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v1.1.1 /bin/bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v2.0.0 /bin/bash
 ```
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v1.1.1
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v2.0.0
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1.1.1 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v2.0.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash

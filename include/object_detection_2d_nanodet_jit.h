@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,56 +24,58 @@
 extern "C" {
 #endif
 
-struct nanodet_model {
+struct NanodetModel {
   // Jit cpp class holder
   void *network;
 
   // Device to be used
   char *device;
+  int **colorList;
+  int numberOfClasses;
 
   // Recognition threshold
-  float score_threshold;
+  float scoreThreshold;
 
   // Model input size
-  int input_size[2];
+  int inputSizes[2];
 
   // Keep ratio flag
-  int keep_ratio;
+  int keepRatio;
 };
-typedef struct nanodet_model nanodet_model_t;
+typedef struct NanodetModel NanodetModelT;
 
 /**
- * Loads a nanodet object detection model saved in libtorch format
- * @param modelPath path to the libtorch nanodet model (as exported using OpenDR library)
- * @param device the device that will be used for the inference
+ * Loads a nanodet object detection model saved in libtorch format.
+ * @param modelPath path to the libtorch nanodet model (as exported using OpenDR)
+ * @param device the device that will be used for inference
  * @param height the height of model input
  * @param width the width of model input
- * @param scoreThreshold a threshold for score to be inferred
+ * @param scoreThreshold confidence threshold
  * @param model the model to be loaded
  */
-void load_nanodet_model(char *modelPath, char *device, int height, int width, float scoreThreshold, nanodet_model_t *model);
+void loadNanodetModel(char *modelPath, char *device, int height, int width, float scoreThreshold, NanodetModelT *model);
 
 /**
- * This function performs inference using a nanodet object detection model and an input image
+ * This function performs inference using a nanodet object detection model and an input image.
  * @param model nanodet model to be used for inference
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-opendr_detection_vector_target_t infer_nanodet(nanodet_model_t *model, opendr_image_t *image);
+OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
 
 /**
- * Releases the memory allocated for a nanodet object detection model
+ * Releases the memory allocated for a nanodet object detection model.
  * @param model model to be de-allocated
  */
-void free_nanodet_model(nanodet_model_t *model);
+void freeNanodetModel(NanodetModelT *model);
 
 /**
- * Draws the bounding boxes from detections in the given image
+ * Draw the bounding boxes from detections in the given image.
  * @param image image that has been used for inference
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
  */
-void draw_bboxes(opendr_image_t *image, nanodet_model_t *model, opendr_detection_vector_target_t *detectionsVector);
+void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,16 +21,23 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default='m')
-    parser.add_argument("--path", help="Path to the image that want to infer", type=str,
+    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
+    parser.add_argument("--path", help="Path to the image that is used for inference", type=str,
                         default="./predefined_examples/000000000036.jpg")
+    parser.add_argument("--optimize", help="If specified will determine the optimization to be used (onnx, jit)",
+                        type=str, default="", choices=["", "onnx", "jit"])
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
     nanodet.download("./predefined_examples", mode="pretrained")
     nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
+
     img = Image.open(args.path)
+
+    if args.optimize != "":
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize)
+
     boxes = nanodet.infer(input=img)
 
     draw_bounding_boxes(img.opencv(), boxes, class_names=nanodet.classes, show=True)

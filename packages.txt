@@ -16,9 +16,6 @@ perception/object_detection_3d
 perception/object_tracking_3d
 perception/panoptic_segmentation
 simulation/human_model_generation
-control/single_demo_grasp
-control/mobile_manipulation
-planning/end_to_end_planning
 utils/hyperparameter_tuner
 utils/ambiguity_measure
 opendr

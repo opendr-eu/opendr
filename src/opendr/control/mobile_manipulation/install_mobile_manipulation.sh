@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [[ -z "$OPENDR_HOME" ]]; then
-       echo "OPENDR_HOME is not defined"
-       exit 1
+  echo "OPENDR_HOME is not defined"
+  exit 1
 fi
 
 if [[ -z "$ROS_DISTRO" ]]; then
-       echo "ROS_DISTRO is not defined"
-       exit 1
+  echo "ROS_DISTRO is not defined"
+  exit 1
 fi
 
 MODULE_PATH=${OPENDR_HOME}/src/opendr/control/mobile_manipulation

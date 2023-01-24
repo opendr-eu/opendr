@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="Dataset to evaluate on", type=str, default="coco", choices=["voc", "coco"])
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--model", help="Model that config file will be used", type=str, default="m")
+    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
 
     args = parser.parse_args()

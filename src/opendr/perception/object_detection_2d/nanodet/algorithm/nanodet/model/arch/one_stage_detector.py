@@ -47,15 +47,7 @@ class OneStageDetector(nn.Module):
     def inference(self, meta: Dict[str, torch.Tensor]):
         with torch.no_grad():
             preds = self(meta["img"])
-            if torch.jit.is_tracing():
-                return preds
-            if torch.onnx.is_in_onnx_export():
-                # torch.linalg.inv is not supported from onnx opset 11.
-                # problem with constant folding although is set to false.
-                # export scriptable model have problem with barchnorm2d
-                return preds
-            results = self.head.post_process(preds, meta)
-        return results
+        return preds
 
     def forward_train(self, gt_meta):
         preds = self(gt_meta["img"])

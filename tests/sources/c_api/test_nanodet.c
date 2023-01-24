@@ -22,13 +22,13 @@
 
 START_TEST(model_creation_test) {
   // Create a nanodet libtorch model
-  nanodet_model_t model;
+  NanodetModelT model;
   // Load a pretrained model
-  load_nanodet_model("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
+  loadNanodetModel("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
   ck_assert_msg(model.network != 0, "net is NULL");
 
   // Release the resources
-  free_nanodet_model(&model);
+  freeNanodetModel(&model);
 
   // Check if memory steel exist
   ck_assert_msg(model.network, "net is NULL");
@@ -37,22 +37,22 @@ END_TEST
 
 START_TEST(inference_creation_test) {
   // Create a nanodet model
-  nanodet_model_t model;
+  NanodetModelT model;
 
   // Load a pretrained model
-  load_nanodet_model("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
+  loadNanodetModel("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
 
   // Load an image and performance inference
-  opendr_image_t image;
-  load_image("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
-  opendr_detection_vector_target_t res = infer_nanodet(&model, &image);
-  free_image(&image);
+  OpendrImageT image;
+  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
+  OpendrDetectionVectorTargetT res = inferNanodet(&model, &image);
+  freeImage(&image);
 
   ck_assert(res.size != 0);
 
   // Free the model resources
-  free_detections_vector(&res);
-  free_nanodet_model(&model);
+  freeDetectionsVector(&res);
+  freeNanodetModel(&model);
 }
 END_TEST
 

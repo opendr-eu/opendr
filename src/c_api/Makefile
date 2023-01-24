@@ -1,5 +1,5 @@
 #
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ $(OPENDR_HOME)/lib/libopendr.so:
 	$(CPP) $(CFLAGS) -c object_detection_2d_nanodet_jit.cpp -o $(BUILD_DIR)/opendr_nanodet_jit.o $(INC) $(OPENDR_INC) $(TORCHSCRIPT_INC)
 	$(CPP) $(CFLAGS) -c object_tracking_2d_deep_sort.cpp -o $(BUILD_DIR)/opendr_deep_sort.o $(INC) $(OPENDR_INC)
 	$(CPP) $(CFLAGS) -c skeleton_based_action_recognition_pst.cpp -o $(BUILD_DIR)/opendr_skeleton_based_action_recognition_pst.o $(INC) $(OPENDR_INC)
-
 
 	@$(MKDIR_P) $(LIB_DIR)
 	$(CPP) $(CFLAGS)  -o $(OPENDR_HOME)/lib/libopendr.so $(BUILD_DIR)/opendr_utils.o $(BUILD_DIR)/opendr_x3d.o $(BUILD_DIR)/opendr_face_recognition.o $(BUILD_DIR)/opendr_open_pose.o $(BUILD_DIR)/opendr_detr.o $(BUILD_DIR)/opendr_nanodet_jit.o $(BUILD_DIR)/opendr_deep_sort.o $(BUILD_DIR)/opendr_skeleton_based_action_recognition_pst.o $(LD) $(TORCHSCRIPT_LD) --shared

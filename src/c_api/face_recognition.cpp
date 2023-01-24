@@ -1,4 +1,4 @@
-// Copyright 2020-2022 OpenDR European Project
+// Copyright 2020-2023 OpenDR European Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@
  * @param meanValue value used for centering the input image
  * @param stdValue value used for scaling the input image
  */
-void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int resizeTarget = 128, int modelInputSize = 112,
-                                 float meanValue = 0.5, float stdValue = 0.5) {
+void preprocessFaceRecognition(cv::Mat *image, std::vector<float> &data, int resizeTarget = 128, int modelInputSize = 112,
+                               float meanValue = 0.5, float stdValue = 0.5) {
   // Convert to RGB
   cv::Mat normalizedImage;
   cv::cvtColor(*image, normalizedImage, cv::COLOR_BGR2RGB);
@@ -53,8 +53,8 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
   // Resize and then get a center crop
   cv::resize(normalizedImage, normalizedImage, cv::Size(resizeTarget, resizeTarget));
   int stride = (resizeTarget - modelInputSize) / 2;
-  cv::Rect myRoi(stride, stride, resizeTarget - stride, resizeTarget - stride);
-  normalizedImage = normalizedImage(myRoi);
+  cv::Rect myROI(stride, stride, resizeTarget - stride, resizeTarget - stride);
+  normalizedImage = normalizedImage(myROI);
 
   // Scale to 0...1
   cv::Mat outputImage;
@@ -73,18 +73,18 @@ void preprocess_face_recognition(cv::Mat *image, std::vector<float> &data, int r
   }
 }
 
-void load_face_recognition_model(const char *modelPath, face_recognition_model_t *model) {
+void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *model) {
   // Initialize model
-  model->onnx_session = model->env = model->session_options = NULL;
-  model->database = model->database_ids = NULL;
-  model->person_names = NULL;
+  model->onnxSession = model->env = model->sessionOptions = NULL;
+  model->database = model->databaseIds = NULL;
+  model->personNames = NULL;
   model->threshold = 1;
 
   // Parse the model JSON file
   std::string modelJsonPath(modelPath);
   std::size_t splitPosition = modelJsonPath.find_last_of("/");
   splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
-  modelJsonPath = modelJsonPath + "/" + modelJsonPath.substr(splitPosition) + ".json";
+  modelJsonPath = modelJsonPath + "/" + modelJsonPath.substr(splitPos) + ".json";
 
   std::ifstream inStream(modelJsonPath);
   if (!inStream.is_open()) {
@@ -101,11 +101,11 @@ void load_face_recognition_model(const char *modelPath, face_recognition_model_t
     basePath.resize(splitPosition);
 
   // Parse JSON
-  std::string onnxModelPath = basePath + json_get_key_string(json, "model_paths", 0);
-  std::string modelFormat = json_get_key_string(json, "format", 0);
+  std::string onnxModelPath = basePath + jsonGetKeyString(json, "model_paths", 0);
+  std::string modelFormat = jsonGetKeyString(json, "format", 0);
 
   // Parse inference params
-  float threshold = json_get_key_from_inference_params(json, "threshold", 0);
+  float threshold = jsonGetKeyFromInferenceParams(json, "threshold", 0);
   model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
@@ -122,25 +122,25 @@ void load_face_recognition_model(const char *modelPath, face_recognition_model_t
   Ort::Session *session = new Ort::Session(*env, onnxModelPath.c_str(), *sessionOptions);
 
   model->env = env;
-  model->onnx_session = session;
-  model->session_options = sessionOptions;
+  model->onnxSession = session;
+  model->sessionOptions = sessionOptions;
 
   // Should we pass these parameters through the model json file?
-  model->model_size = 112;
-  model->resize_size = 128;
-  model->mean_value = 0.5;
-  model->std_value = 0.5;
-  model->output_size = 128;
+  model->modelSize = 112;
+  model->resizeSize = 128;
+  model->meanValue = 0.5;
+  model->stdValue = 0.5;
+  model->outputSize = 128;
 }
 
-void free_face_recognition_model(face_recognition_model_t *model) {
-  if (model->onnx_session) {
-    Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void freeFaceRecognitionModel(FaceRecognitionModelT *model) {
+  if (model->onnxSession) {
+    Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
     delete session;
   }
 
-  if (model->session_options) {
-    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->session_options);
+  if (model->sessionOptions) {
+    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->sessionOptions);
     delete sessionOptions;
   }
 
@@ -149,8 +149,8 @@ void free_face_recognition_model(face_recognition_model_t *model) {
     delete env;
   }
 
-  if (model->database_ids) {
-    delete[] model->database_ids;
+  if (model->databaseIds) {
+    delete[] model->databaseIds;
   }
 
   if (model->database) {
@@ -158,23 +158,23 @@ void free_face_recognition_model(face_recognition_model_t *model) {
     delete database;
   }
 
-  if (model->person_names) {
-    for (int i = 0; i < model->n_persons; i++)
-      delete[] model->person_names[i];
-    delete[] model->person_names;
+  if (model->personNames) {
+    for (int i = 0; i < model->nPersons; i++)
+      delete[] model->personNames[i];
+    delete[] model->personNames;
   }
 }
 
-void ff_face_recognition(face_recognition_model_t *model, opendr_image_t *image, cv::Mat *features) {
-  Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void ffFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image, cv::Mat *features) {
+  Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
   if (!session) {
     std::cerr << "ONNX session not initialized." << std::endl;
     return;
   }
 
   // Prepare the input dimensions
-  std::vector<int64_t> inputNodeDims = {1, 3, model->model_size, model->model_size};
-  size_t inputTensorSize = model->model_size * model->model_size * 3;
+  std::vector<int64_t> inputNodeDims = {1, 3, model->modelSize, model->modelSize};
+  size_t inputTensorSize = model->modelSize * model->modelSize * 3;
 
   // Get the input image and pre-process it
   std::vector<float> inputTensorValues(inputTensorSize);
@@ -184,8 +184,8 @@ void ff_face_recognition(face_recognition_model_t *model, opendr_image_t *image,
     return;
   }
 
-  preprocess_face_recognition(opencvImage, inputTensorValues, model->resize_size, model->model_size, model->mean_value,
-                              model->std_value);
+  preprocessFaceRecognition(opencvImage, inputTensorValues, model->resizeSize, model->modelSize, model->meanValue,
+                            model->stdValue);
 
   // Setup input/output names
   Ort::AllocatorWithDefaultOptions allocator;
@@ -205,21 +205,21 @@ void ff_face_recognition(face_recognition_model_t *model, opendr_image_t *image,
 
   // Get the results back
   float *tensorData = outputTensors.front().GetTensorMutableData<float>();
-  cv::Mat currentFeatures(cv::Size(model->output_size, 1), CV_32F, tensorData);
+  cv::Mat currentFeatures(cv::Size(model->outputSize, 1), CV_32F, tensorData);
 
   // Perform l2 normalizaton
   cv::Mat featuresSquare = currentFeatures.mul(currentFeatures);
   float normalizationValue = sqrt(cv::sum(featuresSquare)[0]);
   currentFeatures = currentFeatures / normalizationValue;
-  memcpy(features->data, currentFeatures.data, sizeof(float) * model->output_size);
+  memcpy(features->data, currentFeatures.data, sizeof(float) * model->outputSize);
 }
 
-void build_database_face_recognition(const char *databaseFolder, const char *outputPath, face_recognition_model_t *model) {
+void buildDatabaseFaceRecognition(const char *databaseFolder, const char *outputPath, FaceRecognitionModelT *model) {
   using namespace boost::filesystem;
 
   std::vector<std::string> personNames;
   std::vector<int> databaseIds;
-  cv::Mat database(cv::Size(model->output_size, 0), CV_32F);
+  cv::Mat database(cv::Size(model->outputSize, 0), CV_32F);
 
   path rootPath(databaseFolder);
   if (!exists(rootPath)) {
@@ -234,15 +234,14 @@ void build_database_face_recognition(const char *databaseFolder, const char *out
       path currentPersonPath(personPath->path());
       personNames.push_back(personPath->path().filename().string());
 
-      for (auto currentImagePath = directory_iterator(currentPersonPath); currentImagePath != directory_iterator();
-           currentImagePath++) {
-        opendr_image_t image;
-        load_image(currentImagePath->path().string().c_str(), &image);
+      for (auto currentImagePath = directory_iterator(currentPersonPath); currentImagePath != directory_iterator(); currentImagePath++) {
+        OpendrImageT image;
+        loadImage(currentImagePath->path().string().c_str(), &image);
 
-        cv::Mat features(cv::Size(model->output_size, 1), CV_32F);
-        ff_face_recognition(model, &image, &features);
+        cv::Mat features(cv::Size(model->outputSize, 1), CV_32F);
+        ffFaceRecognition(model, &image, &features);
 
-        free_image(&image);
+        freeImage(&image);
         database.push_back(features.clone());
         databaseIds.push_back(currentId);
       }
@@ -287,9 +286,9 @@ void build_database_face_recognition(const char *databaseFolder, const char *out
   fout.close();
 }
 
-void load_database_face_recognition(const char *databasePath, face_recognition_model_t *model) {
+void loadDatabaseFaceRecognition(const char *databasePath, FaceRecognitionModelT *model) {
   model->database = NULL;
-  model->database_ids = NULL;
+  model->databaseIds = NULL;
 
   std::ifstream fin(databasePath, std::ios::out | std::ios::binary);
 
@@ -329,20 +328,20 @@ void load_database_face_recognition(const char *databasePath, face_recognition_m
   delete[] databaseBuff;
 
   model->database = database;
-  model->database_ids = featuresIds;
-  model->person_names = personNames;
-  model->n_persons = nPerson;
-  model->n_features = height;
+  model->databaseIds = featuresIds;
+  model->personNames = personNames;
+  model->nPersons = nPerson;
+  model->nFeatures = height;
 }
 
-opendr_category_target_t infer_face_recognition(face_recognition_model_t *model, opendr_image_t *image) {
-  cv::Mat features(cv::Size(model->output_size, 1), CV_32F);
-  opendr_category_target_t target;
+OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image) {
+  cv::Mat features(cv::Size(model->outputSize, 1), CV_32F);
+  OpendrCategoryTargetT target;
   target.data = -1;
   target.confidence = 0;
 
   // Get the feature vector for the current image
-  ff_face_recognition(model, image, &features);
+  ffFaceRecognition(model, image, &features);
 
   if (!model->database) {
     std::cerr << "Database is not loaded!" << std::endl;
@@ -351,7 +350,7 @@ opendr_category_target_t infer_face_recognition(face_recognition_model_t *model,
   cv::Mat *database = static_cast<cv::Mat *>(model->database);
   // Calculate the distance between the extracted feature vector and database features
   cv::Mat featuresRepeated;
-  cv::repeat(features, model->n_features, 1, featuresRepeated);
+  cv::repeat(features, model->nFeatures, 1, featuresRepeated);
   cv::Mat differences = featuresRepeated - *database;
   differences = differences.mul(differences);
   cv::Mat squareRootDistances;
@@ -363,14 +362,14 @@ opendr_category_target_t infer_face_recognition(face_recognition_model_t *model,
   cv::Point minLoc, maxLoc;
   cv::minMaxLoc(distances, &minDistance, &maxDistance, &minLoc, &maxLoc);
 
-  target.data = model->database_ids[minLoc.y];
+  target.data = model->databaseIds[minLoc.y];
   target.confidence = 1 - (minDistance / model->threshold);
 
   return target;
 }
 
-void decode_category_face_recognition(face_recognition_model_t *model, opendr_category_target_t category, char *personName) {
-  if (category.data >= model->n_persons)
+void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpendrCategoryTargetT category, char *personName) {
+  if (category.data >= model->nPersons)
     return;
-  strcpy(personName, model->person_names[category.data]);
+  strcpy(personName, model->personNames[category.data]);
 }

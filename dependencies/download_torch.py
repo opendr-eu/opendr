@@ -31,10 +31,8 @@ def search_on_path(filenames):
 
 def get_cuda_path():
     nvcc_path = search_on_path(('nvcc', 'nvcc.exe'))
-    cuda_path_default = None
     if nvcc_path is not None:
-        cuda_path_default = os.path.normpath(os.path.join(os.path.dirname(nvcc_path), '..', '..'))
-    if cuda_path_default is not None:
+        cuda_path_default = os.path.normpath(os.path.join(os.path.dirname(nvcc_path), '..'))
         _cuda_path = cuda_path_default
     elif os.path.exists('/usr/local/cuda'):
         _cuda_path = '/usr/local/cuda'
@@ -47,12 +45,13 @@ def get_cuda_path():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
-    parser.add_argument("--opendr_device", help="OpenDR variable to install dependencies during installation",
-                        type=str, default="gpu")
-    parser.add_argument("--torch_version", help="Version of Libtorch to be installed", type=str, default="1.9.0")
+    parser.add_argument("--opendr_device", help="Target device for installation",
+                        type=str, choices=["gpu", "cpu"], default="gpu")
+    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.9.0")
     args = parser.parse_args()
 
     COMPATIBILITY_VERSIONS = {
+        "1.13.1": "0.14.1",
         "1.13.0": "0.14.0",
         "1.12.0": "0.13.0",
         "1.11.0": "0.12.0",
@@ -62,6 +61,8 @@ if __name__ == '__main__':
         "1.9.1": "0.10.1",
         "1.9.0": "0.10.0",
     }
+
+    warnings.simplefilter("error")
 
     TORCH_VERSION = args.torch_version
     VISION_VERSION = COMPATIBILITY_VERSIONS[TORCH_VERSION]
@@ -88,11 +89,12 @@ if __name__ == '__main__':
                 CUDA_VERSION = CUDA_VERSION.replace(".", "")
                 CUDA_VERSION = CUDA_VERSION[:3]
             else:
-                warnings.warn("\033[93m Not cuda version file found. Please sent an Issue in our github")
+                warnings.warn("\033[93m No CUDA version file found.")
             DEVICE = f"cu{CUDA_VERSION}"
         except:
-            warnings.warn("\033[93m No cuda found.\n"
-                          "Please install cuda or specify cuda path with export CUDA_PATH=/path/to/your/cuda.")
+            warnings.warn("\033[93m No CUDA installation found.\n"
+                          "Please install CUDA or specify CUDA path with export CUDA_PATH=/path/to/your/cuda.")
+            exit()
     else:
         DEVICE = "cpu"
 
@@ -106,9 +108,9 @@ if __name__ == '__main__':
         urlretrieve(file_url_libtorch, DOWNLOAD_DIRECTORY)
 
     except:
-        warnings.warn("\033[93m Not Libtorch found with your specific device and torch version.\n"
-                      "Please choose another version of torch or install different CUDA.\n"
-                      "Please reference https://download.pytorch.org/whl/torch_stable.html")
+        warnings.warn("\033[93m No LibTorch found for your specific device and torch version.\n"
+                      "Please choose another version of torch or install a different version of CUDA.\n"
+                      "Please refer to https://download.pytorch.org/whl/torch_stable.html")
         exit()
     # Download Vision
     try:
@@ -117,6 +119,7 @@ if __name__ == '__main__':
         DOWNLOAD_DIRECTORY = "vision.tar.gz"
         urlretrieve(file_url_vision, DOWNLOAD_DIRECTORY)
     except:
-        warnings.warn("\033[93m Not torchvision found with your specific torch version.\n"
-                      "Please see the torchvision GitHub repository for more information.")
-                      
+        warnings.warn("\033[93m No torchvision found for your specific torch version.\n"
+                      "Please refer to https://github.com/pytorch/vision for more information.")
+        exit()
+

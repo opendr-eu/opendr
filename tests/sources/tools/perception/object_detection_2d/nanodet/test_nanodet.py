@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,9 +53,9 @@ class TestNanodetLearner(unittest.TestCase):
         cls.detector = NanodetLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=cls.temp_dir, batch_size=1,
                                       iters=1, checkpoint_after_iter=2, lr=1e-4)
         # Download all required files for testing
-        cls.detector.download(path=cls.temp_dir, mode="pretrained")
-        cls.detector.download(path=cls.temp_dir, mode="images")
-        cls.detector.download(path=cls.temp_dir, mode="test_data")
+        cls.detector.download(path=cls.temp_dir, mode="pretrained", verbose=False)
+        cls.detector.download(path=cls.temp_dir, mode="images", verbose=False)
+        cls.detector.download(path=cls.temp_dir, mode="test_data", verbose=False)
 
     @classmethod
     def tearDownClass(cls):
@@ -105,7 +105,7 @@ class TestNanodetLearner(unittest.TestCase):
         print('Starting inference test for Nanodet...')
         self.detector.load(os.path.join(self.temp_dir, "nanodet_{}".format(_DEFAULT_MODEL)), verbose=False)
         img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))
-        self.assertIsNotNone(self.detector.infer(input=img, verbose=False),
+        self.assertIsNotNone(self.detector.infer(input=img),
                              msg="Returned empty BoundingBoxList.")
         gc.collect()
         print('Finished inference test for Nanodet...')
@@ -140,12 +140,10 @@ class TestNanodetLearner(unittest.TestCase):
         self.detector.ort_session = None
         self.detector.jit_model = None
 
-        img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))
-
-        self.detector.optimize(os.path.join(self.temp_dir, "onnx"), initial_img=img, verbose=False, optimization="onnx")
+        self.detector.optimize(os.path.join(self.temp_dir, "onnx"), verbose=False, optimization="onnx")
         self.assertIsNotNone(self.detector.ort_session)
 
-        self.detector.optimize(os.path.join(self.temp_dir, "jit"), initial_img=img, verbose=False, optimization="jit")
+        self.detector.optimize(os.path.join(self.temp_dir, "jit"), verbose=False, optimization="jit")
         self.assertIsNotNone(self.detector.jit_model)
 
         # Cleanup

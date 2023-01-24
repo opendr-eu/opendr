@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 
 import cv2
 import time
-from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 import argparse
 from os.path import join
-from tqdm import tqdm
 import numpy as np
+from tqdm import tqdm
+from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

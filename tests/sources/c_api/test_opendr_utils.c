@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,16 @@
 
 START_TEST(image_load_test) {
   // Load an image and performance inference
-  opendr_image_t image;
+  OpendrImageT image;
   // An example of an image that exist
-  load_image("data/database/1/1.jpg", &image);
+  loadImage("data/database/1/1.jpg", &image);
   ck_assert(image.data);
   // An example of an image that does not exist
-  load_image("images/not_existant/1.jpg", &image);
+  loadImage("images/not_existant/1.jpg", &image);
   ck_assert(image.data == 0);
 
   // Free the resources
-  free_image(&image);
+  freeImage(&image);
 }
 END_TEST
 

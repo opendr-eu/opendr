@@ -17,7 +17,7 @@
 
 import copy
 from opendr.engine.datasets import ExternalDataset
-
+from opendr.perception.object_detection_2d.datasets import XMLBasedDataset
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.dataset.coco import CocoDataset
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.dataset.xml_dataset import XMLDataset
 
@@ -53,6 +53,10 @@ def build_dataset(cfg, dataset, class_names, mode, verbose=True):
                 dataset = CocoDataset(img_path=img_path, ann_path=ann_path, mode=mode, **dataset_cfg)
             if verbose:
                 print("ExternalDataset loaded.")
+            return dataset
+        elif isinstance(dataset, XMLBasedDataset):
+            dataset = XMLDataset(img_path=dataset.abs_images_dir, ann_path=dataset.abs_annot_dir, mode=mode,
+                                 class_names=dataset.classes, **dataset_cfg)
             return dataset
         else:
             raise ValueError("Dataset type {} not supported".format(type(dataset)))

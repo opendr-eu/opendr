@@ -73,11 +73,11 @@ class TrainingTask(LightningModule):
         return results
 
     @rank_filter
-    def _save_current_model(self, path, logger):
-        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=logger)
+    def _save_current_model(self, path, verbose):
+        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, verbose=verbose)
 
-    def save_current_model(self, path, logger):
-        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, logger=logger)
+    def save_current_model(self, path, verbose):
+        save_model_state(path=path, model=self.model, weight_averager=self.weight_averager, verbose=verbose)
 
     @torch.jit.unused
     def training_step(self, batch, batch_idx):
@@ -179,8 +179,11 @@ class TrainingTask(LightningModule):
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
-                self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
-                                         logger=self.logger)
+                verbose = True if self.logger is not None else False
+                # TODO: save only if local_rank is < 0
+                # self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
+                #                          verbose=verbose)
+                self.save_current_model(os.path.join(best_save_path, "nanodet_model_state_best.pth"), verbose=verbose)
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     f.write("Epoch:{}\n".format(self.current_epoch + 1))

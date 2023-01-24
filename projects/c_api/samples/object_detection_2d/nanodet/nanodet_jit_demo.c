@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,38 +29,34 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  nanodet_model_t model;
+  NanodetModelT model;
 
   int height = atoi(argv[4]);
   int width = atoi(argv[5]);
   printf("start init model\n");
-  load_nanodet_model(argv[1], argv[2], height, width, 0.35, &model);
+  loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
   printf("success\n");
 
-  // Initialize opendr image
-  opendr_image_t image;
+  OpendrImageT image;
 
-  // Load opendr image
-  load_image(argv[3], &image);
+  loadImage(argv[3], &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
   }
 
   // Initialize opendr detection target list;
-  opendr_detection_vector_target_t results;
-  init_detections_vector(&results);
+  OpendrDetectionVectorTargetT results;
+  initDetectionsVector(&results);
 
-  // Infer nanodet model
-  results = infer_nanodet(&model, &image);
+  results = inferNanodet(&model, &image);
 
-  // Draw the results
-  draw_bboxes(&image, &model, &results);
+  drawBboxes(&image, &model, &results);
 
   // Free the memory
-  free_detections_vector(&results);
-  free_image(&image);
-  free_nanodet_model(&model);
+  freeDetectionsVector(&results);
+  freeImage(&image);
+  freeNanodetModel(&model);
 
   return 0;
 }

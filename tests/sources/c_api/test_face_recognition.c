@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,79 +22,79 @@
 
 START_TEST(model_creation_test) {
   // Create a face recognition model
-  face_recognition_model_t model;
+  FaceRecognitionModelT model;
 
   // Load a pretrained model
-  load_face_recognition_model("data/optimized_model", &model);
+  loadFaceRecognitionModel("data/optimized_model", &model);
 
-  ck_assert(model.onnx_session);
+  ck_assert(model.onnxSession);
   ck_assert(model.env);
-  ck_assert(model.session_options);
+  ck_assert(model.sessionOptions);
 
   // Release the resources
-  free_face_recognition_model(&model);
+  freeFaceRecognitionModel(&model);
 
   // Load a model that does not exist
-  load_face_recognition_model("data/optimized_model_not_existant", &model);
-  ck_assert(!model.onnx_session);
+  loadFaceRecognitionModel("data/optimized_model_not_existant", &model);
+  ck_assert(!model.onnxSession);
   ck_assert(!model.env);
-  ck_assert(!model.session_options);
+  ck_assert(!model.sessionOptions);
 
   // Release the resources
-  free_face_recognition_model(&model);
+  freeFaceRecognitionModel(&model);
 }
 END_TEST
 
 START_TEST(database_creation_test) {
-  face_recognition_model_t model;
-  load_face_recognition_model("data/optimized_model", &model);
+  FaceRecognitionModelT model;
+  loadFaceRecognitionModel("data/optimized_model", &model);
 
   // Check that we can create and load a database that exists
-  build_database_face_recognition("data/database", "data/database.dat", &model);
-  load_database_face_recognition("data/database.dat", &model);
+  buildDatabaseFaceRecognition("data/database", "data/database.dat", &model);
+  loadDatabaseFaceRecognition("data/database.dat", &model);
   ck_assert(model.database);
-  ck_assert(model.database_ids);
-  ck_assert(model.database_ids);
+  ck_assert(model.databaseIds);
+  ck_assert(model.databaseIds);
 
   // Check that we can handle errors in the process
-  build_database_face_recognition("data/database_not_existant", "data/database.dat", &model);
-  load_database_face_recognition("data/database_not_existant.dat", &model);
+  buildDatabaseFaceRecognition("data/database_not_existant", "data/database.dat", &model);
+  loadDatabaseFaceRecognition("data/database_not_existant.dat", &model);
   ck_assert(!model.database);
-  ck_assert(!model.database_ids);
+  ck_assert(!model.databaseIds);
 
   // Release the resources
-  free_face_recognition_model(&model);
+  freeFaceRecognitionModel(&model);
 }
 END_TEST
 
 START_TEST(inference_creation_test) {
   // Create a face recognition model
-  face_recognition_model_t model;
+  FaceRecognitionModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  load_face_recognition_model("data/optimized_model", &model);
+  loadFaceRecognitionModel("data/optimized_model", &model);
 
   // Build and load the database
-  build_database_face_recognition("data/database", "data/database.dat", &model);
-  load_database_face_recognition("data/database.dat", &model);
+  buildDatabaseFaceRecognition("data/database", "data/database.dat", &model);
+  loadDatabaseFaceRecognition("data/database.dat", &model);
 
   // Load an image and performance inference
-  opendr_image_t image;
-  load_image("data/database/1/1.jpg", &image);
-  opendr_category_target_t res = infer_face_recognition(&model, &image);
-  free_image(&image);
+  OpendrImageT image;
+  loadImage("data/database/1/1.jpg", &image);
+  OpendrCategoryTargetT res = inferFaceRecognition(&model, &image);
+  freeImage(&image);
   char buff[512];
-  decode_category_face_recognition(&model, res, buff);
+  decodeCategoryFaceRecognition(&model, res, buff);
   ck_assert(!strcmp(buff, "1"));
 
   // Load another image
-  load_image("data/database/5/1.jpg", &image);
-  res = infer_face_recognition(&model, &image);
-  free_image(&image);
-  decode_category_face_recognition(&model, res, buff);
+  loadImage("data/database/5/1.jpg", &image);
+  res = inferFaceRecognition(&model, &image);
+  freeImage(&image);
+  decodeCategoryFaceRecognition(&model, res, buff);
   ck_assert(!strcmp(buff, "5"));
 
   // Free the model resources
-  free_face_recognition_model(&model);
+  freeFaceRecognitionModel(&model);
 }
 END_TEST
 

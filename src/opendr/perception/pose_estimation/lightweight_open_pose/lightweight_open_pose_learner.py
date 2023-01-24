@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# General imports
 import onnxruntime as ort
 import os
 import ntpath
@@ -29,14 +28,12 @@ from tensorboardX import SummaryWriter
 from torchvision import transforms
 from urllib.request import urlretrieve
 
-# OpenDR engine imports
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
 from opendr.engine.data import Image
 from opendr.engine.target import Pose
 from opendr.engine.constants import OPENDR_SERVER_URL
 
-# OpenDR lightweight_open_pose imports
 from opendr.perception.pose_estimation.lightweight_open_pose.filtered_pose import FilteredPose
 from opendr.perception.pose_estimation.lightweight_open_pose.utilities import track_poses
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.with_mobilenet import \
@@ -48,7 +45,7 @@ from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.models.wi
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.get_parameters import \
     get_parameters_conv, get_parameters_bn, get_parameters_conv_depthwise
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.load_state import \
-    load_state  # , load_from_mobilenet
+    load_state
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.loss import l2_loss
 from opendr.perception.pose_estimation.lightweight_open_pose.algorithm.modules.keypoints import \
     extract_keypoints, group_keypoints
@@ -101,10 +98,6 @@ class LightweightOpenPoseLearner(Learner):
             self.mobilenetv2_width = mobilenetv2_width
         if self.backbone == "shufflenet":
             self.shufflenet_groups = shufflenet_groups
-        # if self.backbone == "mobilenet":
-        #     self.from_mobilenet = True # TODO from_mobilenet = True, bugs out the loading
-        # else:
-        #     self.from_mobilenet = False
 
         self.weights_only = weights_only  # If True, it won't load optimizer, scheduler, num_iter, current_epoch
 
@@ -238,10 +231,6 @@ class LightweightOpenPoseLearner(Learner):
             if not silent and verbose:
                 print("Loading checkpoint:", full_path)
 
-        # Loads weights in self.model from checkpoint
-        # if self.from_mobilenet:  # TODO see todo on ctor
-        #     load_from_mobilenet(self.model, checkpoint)
-        # else:
         load_state(self.model, checkpoint)
 
         if not silent and verbose:
@@ -465,7 +454,7 @@ class LightweightOpenPoseLearner(Learner):
 
         :param dataset: object that holds the evaluation dataset.
         :type dataset: ExternalDataset class object or DatasetIterator class object
-        :param silent: if set to True, disables all printing of evalutaion progress reports and other information
+        :param silent: if set to True, disables all printing of evaluation progress reports and other information
             to STDOUT, defaults to 'False'
         :type silent: bool, optional
         :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
@@ -479,7 +468,7 @@ class LightweightOpenPoseLearner(Learner):
             the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
         :type images_folder_name: str, optional
         :param annotations_filename: Filename of the annotations json file. This file should be contained in the
-            dataset path provided, defaults to 'pesron_keypoints_val2017.json'
+            dataset path provided, defaults to 'person_keypoints_val2017.json'
         :type annotations_filename: str, optional
 
         :returns: returns stats regarding evaluation
@@ -512,10 +501,6 @@ class LightweightOpenPoseLearner(Learner):
             if not silent and verbose:
                 print("Loading checkpoint:", full_path)
 
-            # Loads weights in self.model from checkpoint
-            # if self.from_mobilenet:  # TODO see todo on ctor
-            #     load_from_mobilenet(self.model, checkpoint)
-            # else:
             load_state(self.model, checkpoint)
         elif self.model is None:
             raise AttributeError("self.model is None. Please load a model or set checkpoint_load_iter.")
@@ -592,7 +577,7 @@ class LightweightOpenPoseLearner(Learner):
         This method is used to perform pose estimation on an image.
 
         :param img: image to run inference on
-        :rtype img: engine.data.Image class object
+        :type img: engine.data.Image
         :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing,
             defaults to 4
         :type upsample_ratio: int, optional
@@ -685,7 +670,7 @@ class LightweightOpenPoseLearner(Learner):
         Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
         of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
 
-        If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
+        If self.optimize was run previously, it saves the optimized ONNX model in a similar fashion, by copying it
         from the self.temp_path it was saved previously during conversion.
 
         :param path: for the model to be saved, including the folder name
@@ -805,9 +790,6 @@ class LightweightOpenPoseLearner(Learner):
         """
         self.init_model()
         checkpoint = torch.load(path, map_location=torch.device(self.device))
-        # if self.from_mobilenet:  # TODO see todo on ctor
-        #     load_from_mobilenet(self.model, checkpoint)
-        # else:
         load_state(self.model, checkpoint)
         if "cuda" in self.device:
             self.model.to(self.device)
@@ -832,7 +814,7 @@ class LightweightOpenPoseLearner(Learner):
         # # Check that the IR is well formed
         # onnx.checker.check_model(self.model)
         #
-        # # Print a human readable representation of the graph
+        # # Print a human-readable representation of the graph
         # onnx.helper.printable_graph(self.model.graph)
 
     @staticmethod
@@ -920,10 +902,10 @@ class LightweightOpenPoseLearner(Learner):
                  url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/"):
         """
         Download utility for various Lightweight Open Pose components. Downloads files depending on mode and
-        saves them in the path provided. It supports downloading:
-        1) the default mobilenet pretrained model
-        2) mobilenet, mobilenetv2 and shufflenet weights needed for training
-        3) a test dataset with a single COCO image and its annotation
+        saves them in the path provided. It supports the following modes:
+        1) "pretrained": the default mobilenet pretrained model
+        2) "weights": mobilenet, mobilenetv2 and shufflenet weights needed for training
+        3) "test_data": a test dataset with a single COCO image and its annotation
 
         :param path: Local path to save the files, defaults to self.temp_path if None
         :type path: str, path, optional
@@ -1028,12 +1010,12 @@ class LightweightOpenPoseLearner(Learner):
 
     def __infer_eval(self, img):
         """
-        Internal infer method used for evaluation. This infer can run on multiple scale ratios, depending on
+        Internal infer method used for evaluation. This method can run on multiple scale ratios, depending on
         the self.scales attribute, performing multiple passes over the image averaging the results. This generally
-        produces better results.
+        produces better results, but is much slower.
 
         :param img: Image to run infer on
-        :type img: Image class object
+        :type img: engine.data.Image
         """
         if not isinstance(img, Image):
             img = Image(img)
@@ -1095,12 +1077,12 @@ class LightweightOpenPoseLearner(Learner):
         """
         This internal method prepares the train dataset depending on what type of dataset is provided.
 
-        If an ExternalDataset object type is provided, the method tried to prepare the dataset based on the original
-        implementation, supposing that the dataset is in the COCO format. The path provided is searched for the
-        images folder and the annotations file, converts the annotations file into the internal format used if needed
-        and finally the CocoTrainDataset object is returned.
+        If an ExternalDataset object type is provided, the method tries to prepare the dataset based on the original
+        implementation, supposing that the dataset is in the COCO format. It searches for the images folder and the
+        annotations file in the path provided, converts the annotations file into the internal format used if needed,
+        and finally returns the CocoTrainDataset object.
 
-        If the dataset is of the DatasetIterator format, then it's a custom implementation of a dataset and all
+        If the dataset is in the DatasetIterator format, then it is a custom implementation of a dataset and all
         required operations should be handled by the user, so the dataset object is just returned.
 
         :param dataset: the dataset
@@ -1182,11 +1164,11 @@ class LightweightOpenPoseLearner(Learner):
         This internal method prepares the validation dataset depending on what type of dataset is provided.
 
         If an ExternalDataset object type is provided, the method tried to prepare the dataset based on the original
-        implementation, supposing that the dataset is in the COCO format. The path provided is searched for the
-        images folder and the annotations file, converts the annotations file into the internal format used if needed
-        and finally the CocoValDataset object is returned.
+        implementation, supposing that the dataset is in the COCO format. It searches for the images folder and the
+        annotations file in the path provided, converts the annotations file into the internal format used if needed,
+        and finally returns the CocoTrainDataset object.
 
-        If the dataset is of the DatasetIterator format, then it's a custom implementation of a dataset and all
+        If the dataset is in the DatasetIterator format, then it's a custom implementation of a dataset and all
         required operations should be handled by the user, so the dataset object is just returned.
 
         :param dataset: the dataset

@@ -3,7 +3,7 @@
 ## Description
 
 This module contains a C API that can be used for performing inference on models trained using the Python API of OpenDR.
-Therefore, to use the C API you should first use the Python API to train a model and then export it to ONNX or Jit format using the `optimize()` method.
+Therefore, to use the C API you should first use the Python API to export a pretrained or a newly trained model and export it to ONNX or JIT format using the `optimize()` method.
 
 ## Setup
 

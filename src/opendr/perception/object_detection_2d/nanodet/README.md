@@ -10,4 +10,4 @@ Large parts of the implementation are taken from [Nanodet Github](https://github
 Usage
 ------
 - For VOC and COCO like datasets, an ```ExternalDataset``` with the root path and dataset name (```voc```, ```coco```) must be passed to the fit function.
-- The ```workspace``` folder is used to save checkpoints during training.
+- The ```temp``` folder is used to save checkpoints during training.
