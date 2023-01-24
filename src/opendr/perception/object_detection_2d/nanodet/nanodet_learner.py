@@ -719,7 +719,7 @@ class NanodetLearner(Learner):
         )
         return dummy_input
 
-    def benchmark(self, input, repetitions=1000, warmup=100, nms_max_num=100):
+    def benchmark(self, input, repetitions=1000, warmup=100, nms_max_num=100, half_precision=False):
         """
         Performs inference
         :param repetitions: input image to perform inference on
@@ -737,7 +737,7 @@ class NanodetLearner(Learner):
         preprocess_input = input.opencv()
 
         if not self.predictor:
-            self.predictor = Predictor(self.cfg, self.model, device=self.device, nms_max_num=nms_max_num)
+            self.predictor = Predictor(self.cfg, self.model, device=self.device, nms_max_num=nms_max_num, half_precision=half_precision)
 
         # Preprocess measurement
         preprocess_starter, preprocess_ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(
@@ -748,6 +748,8 @@ class NanodetLearner(Learner):
         for run in range(repetitions):
             preprocess_starter.record()
             _input, *metadata = self.predictor.preprocessing(preprocess_input)
+            if half_precision:
+                _input = _input.half()
             preprocess_ender.record()
             torch.cuda.synchronize()
             preprocess_timings[run] = preprocess_starter.elapsed_time(preprocess_ender)

@@ -23,7 +23,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch 
 
 
 class Predictor(nn.Module):
-    def __init__(self, cfg, model, device="cuda", nms_max_num=100):
+    def __init__(self, cfg, model, device="cuda", nms_max_num=100, half_precision=False):
         super(Predictor, self).__init__()
         self.cfg = cfg
         self.device = device
@@ -37,6 +37,8 @@ class Predictor(nn.Module):
             model = repvgg_det_model_convert(model, deploy_model)
 
         self.model = model.to(device).eval()
+        if half_precision:
+            self.model.half()
 
         for para in self.model.parameters():
             para.requires_grad = False

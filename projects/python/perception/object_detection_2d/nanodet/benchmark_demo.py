@@ -44,4 +44,4 @@ if __name__ == '__main__':
     if args.optimize_onnx:
         nanodet.optimize(f"./onnx/nanodet_{args.model}", optimization="onnx", verbose=False)
 
-    nanodet.benchmark(img, repetitions=args.repetitions, warmup=args.warmup, nms_max_num=args.nms)
+    nanodet.benchmark(img, repetitions=args.repetitions, warmup=args.warmup, nms_max_num=args.nms, half_precision=True)
