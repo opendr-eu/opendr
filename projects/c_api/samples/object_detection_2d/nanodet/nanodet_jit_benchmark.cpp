@@ -41,18 +41,27 @@ int main(int argc, char **argv) {
   printf("success\n");
 
   std::srand(1);
-  cv::Mat image(height,width,CV_8UC3);
-  for(int i = 0; i < image.rows; i++) {
-    for(int j = 0; j < image.cols; j++) {
-      image.at<cv::Vec3b>(i, j)[0] = rand() % 256;
-      image.at<cv::Vec3b>(i, j)[1] = rand() % 256;
-      image.at<cv::Vec3b>(i, j)[2] = rand() % 256;
+  cv::Mat frame(height,width,CV_8UC3);
+  for(int i = 0; i < frame.rows; i++) {
+    for(int j = 0; j < frame.cols; j++) {
+      frame.at<cv::Vec3b>(i, j)[0] = rand() % 256;
+      frame.at<cv::Vec3b>(i, j)[1] = rand() % 256;
+      frame.at<cv::Vec3b>(i, j)[2] = rand() % 256;
     }
+  }
+
+  OpendrImageT opImage;
+  // Add frame data to OpenDR Image
+  if (frame.empty()) {
+    opImage.data = NULL;
+  } else {
+    cv::Mat *tempMatPtr = new cv::Mat(frame);
+    opImage.data = (void *)tempMatPtr;
   }
 
   int repetitions = 1000;
   int warmup = 100;
-  benchmarkNanodet(&model, &image, repetitions, warmup);
+  benchmarkNanodet(&model, &opImage, repetitions, warmup);
   // Free the memory
   freeNanodetModel(&model);
 

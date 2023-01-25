@@ -21,6 +21,7 @@
 #include "opendr_utils.h"
 
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/videoio.hpp>
@@ -45,6 +46,7 @@ int main(int argc, char **argv) {
 
   cv::Mat frameCap;
   cv::Mat frame;
+  OpendrImageT opImage;
   cv::VideoCapture cap(0);
   if (!cap.isOpened()) {
     std::cerr << "ERROR! Unable to open camera\n";
@@ -63,17 +65,28 @@ int main(int argc, char **argv) {
     cap >> frameCap;
 
     cv::resize(frameCap, frame, cv::Size(640, 640), 0, 0, cv::INTER_CUBIC);
+
+    // Add frame data to OpenDR Image
+    if (frame.empty()) {
+      opImage.data = NULL;
+    } else {
+      cv::Mat *tempMatPtr = new cv::Mat(frame);
+      opImage.data = (void *)tempMatPtr;
+    }
+
+
     auto start = std::chrono::steady_clock::now();
-    results = inferNanodet(&model, &frame);
+    results = inferNanodet(&model, &opImage);
     auto end = std::chrono::steady_clock::now();
     fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
     avg_fps = fps * 0.8 + avg_fps * 0.2;
     if (count > 5.0) {
-      drawBboxesWithFps(&frame, &model, &results, avg_fps);
+      drawBboxesWithFps(&opImage, &model, &results, avg_fps);
     }
     count += 1;
 
+//    delete tempMatPtr;
     if (cv::waitKey(1) >= 0)
       break;
   }

@@ -259,13 +259,12 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
   *outputs = outputs->to(torch::Device(torch::kCPU, 0));
 }
 
-OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, cv::Mat *image) {
+OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image) {
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpendrDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
 
-//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  cv::Mat *opencvImage = image;
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return detectionsVector;
@@ -306,12 +305,12 @@ OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, cv::Mat *image) 
   return detectionsVector;
 }
 
-void benchmarkNanodet(NanodetModelT *model, cv::Mat *image, int repetitions, int warmup) {
+void benchmarkNanodet(NanodetModelT *model, OpendrImageT *image, int repetitions, int warmup) {
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpendrDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
-  //  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  cv::Mat *opencvImage = image;
+
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
 
   // Preprocess image and keep values as input in jit model
   cv::Mat resizedImg;
@@ -364,13 +363,13 @@ void benchmarkNanodet(NanodetModelT *model, cv::Mat *image, int repetitions, int
 
 }
 
-void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector) {
+void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector) {
   int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
 
-//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  cv::Mat *opencvImage = image;
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return;
@@ -411,13 +410,12 @@ void drawBboxes(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTarge
   cv::waitKey(0);
 }
 
-void drawBboxesWithFps(cv::Mat *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
+void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
   int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
 
-//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  cv::Mat *opencvImage = image;
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
     return;
@@ -473,30 +471,4 @@ void freeNanodetModel(NanodetModelT *model) {
     delete[] model->colorList[i];
   }
   delete[] model->colorList;
-}
-
-const char jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index) {
-  rapidjson::Document doc;
-  doc.Parse(json);
-  if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {
-    return "";
-  }
-  const rapidjson::Value &inferenceParams = doc["inference_params"];
-  if ((!inferenceParams.IsObject()) || (!inferenceParams.HasMember(key))) {
-    return "";
-  }
-  const rapidjson::Value &value = inferenceParams[key];
-  if (value.IsArray()) {
-    if (value.Size() <= index) {
-      return "";
-    }
-    if (!value[index].IsFloat()) {
-      return "";
-    }
-    return value[index].GetFloat();
-  }
-  if (!value.IsFloat()) {
-    return "";
-  }
-  return value.GetString();
 }

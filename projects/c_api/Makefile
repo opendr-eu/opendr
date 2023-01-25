@@ -33,8 +33,8 @@ OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
 all: demos download
 
-#demos: face_recognition nanodet_webcam nanodet
-demos: face_recognition nanodet_webcam nanodet_benchmark
+demos: face_recognition nanodet_webcam nanodet nanodet_benchmark
+#demos: face_recognition nanodet_webcam nanodet_benchmark
 #demos: face_recognition nanodet_benchmark
 
 face_recognition: $(BUILD_DIR)/face_recognition_demo
