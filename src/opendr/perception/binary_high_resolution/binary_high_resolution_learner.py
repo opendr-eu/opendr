@@ -162,7 +162,7 @@ class BinaryHighResolutionLearner(Learner):
                 'f1': f1_score(labels, predictions)}
 
     def infer(self, img):
-        if self.model is None:
+        if self.model is None and self.ort_session is None:
             raise AttributeError("No model is loaded, cannot run inference. Load a model first using load().")
 
         if not isinstance(img, Image):
