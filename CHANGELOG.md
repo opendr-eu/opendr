@@ -1,6 +1,9 @@
 # OpenDR Toolkit Change Log
 
 ## Version 2.1.0
+  - New Features:
+    - Added Binary High Resolution Analysis tool ([#402](https://github.com/opendr-eu/opendr/pull/402)).
+
 Released on XX, XX, 2023.
 
 ## Version 2.0.0
