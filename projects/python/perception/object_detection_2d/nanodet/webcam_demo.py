@@ -47,11 +47,11 @@ class VideoReader(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m_0.5x",
+    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m",
                         choices=["EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512",
                                  "RepVGG_A0_416", "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416",
                                  "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "custom"])
-    parser.add_argument("--optimize", help="", type=str, default="jit", choices=["", "onnx", "jit"])
+    parser.add_argument("--optimize", help="", type=str, default="", choices=["", "onnx", "jit"])
     args = parser.parse_args()
 
     optimize, device, model = args.optimize, args.device, args.model
@@ -64,9 +64,7 @@ if __name__ == '__main__':
     image_provider = VideoReader(0)
 
     if args.optimize != "":
-        img = next(image_provider)
-        img = Image(img)
-        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), img, optimization=args.optimize, nms_max_num=20)
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize, nms_max_num=20)
 
     try:
         counter, avg_fps = 0, 0
@@ -77,7 +75,7 @@ if __name__ == '__main__':
             start_time = time.perf_counter()
 
             # Perform inference
-            boxes = nanodet.infer(img)
+            boxes = nanodet.infer(img, nms_max_num=20)
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
