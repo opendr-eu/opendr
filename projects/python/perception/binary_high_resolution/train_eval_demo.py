@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from opendr.perception.binary_high_resolution import BinaryHighResolutionLearner, visualize
 from opendr.engine.datasets import ExternalDataset
 
@@ -20,7 +19,6 @@ import torch
 import numpy as np
 torch.random.manual_seed(1)
 np.random.seed(1)
-
 
 
 if __name__ == '__main__':
@@ -35,4 +33,3 @@ if __name__ == '__main__':
     # Visualize the results
     visualize(learner, "./demo_dataset/test_img.png")
     print("Evaluation results = ", learner.eval(dataset))
-

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import torch
-from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchsampler import ImbalancedDatasetSampler
 import torch.optim as optim
@@ -32,6 +31,7 @@ from opendr.engine.target import Heatmap
 from opendr.engine.datasets import ExternalDataset
 from opendr.perception.binary_high_resolution.utils.architectures import VGG_720p_64, VGG_1080p_64
 from opendr.perception.binary_high_resolution.utils.high_resolution_loader import HighResolutionDataset
+
 
 class BinaryHighResolutionLearner(Learner):
     def __init__(self, lr=1e-3, iters=100, batch_size=512, optimizer='adam', temp_path='',

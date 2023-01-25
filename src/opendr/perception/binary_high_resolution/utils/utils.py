@@ -15,6 +15,7 @@
 import cv2
 import numpy as np
 
+
 def visualize(learner, image_path):
     """
     Visualizes the output of a fitted high resolution Learner on a given input image using OpenCV

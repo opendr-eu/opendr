@@ -23,6 +23,7 @@ from skimage.util import view_as_blocks
 from tqdm import tqdm
 import PIL
 
+
 def parse_annotation_file(path):
     bboxes = []
     labels = []
