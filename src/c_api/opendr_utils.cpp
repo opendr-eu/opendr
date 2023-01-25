@@ -136,8 +136,8 @@ void freeImage(OpendrImageT *image) {
   }
 }
 
-void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector) {
-  detectionVector->startingPointer = NULL;
+void initDetectionsVector(OpendrDetectionVectorTargetT *vector) {
+  vector->startingPointer = NULL;
 
   std::vector<OpendrDetectionTarget> detections;
   OpendrDetectionTargetT detection;
@@ -151,21 +151,21 @@ void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector) {
 
   detections.push_back(detection);
 
-  loadDetectionsVector(detectionVector, detections.data(), static_cast<int>(detections.size()));
+  loadDetectionsVector(vector, detections.data(), static_cast<int>(detections.size()));
 }
 
-void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection, int vectorSize) {
-  freeDetectionsVector(detectionVector);
+void loadDetectionsVector(OpendrDetectionVectorTargetT *vector, OpendrDetectionTargetT *detectionPtr, int vectorSize) {
+  freeDetectionsVector(vector);
 
-  detectionVector->size = vectorSize;
+  vector->size = vectorSize;
   int sizeOfOutput = (vectorSize) * sizeof(OpendrDetectionTargetT);
-  detectionVector->startingPointer = static_cast<OpendrDetectionTargetT *>(malloc(sizeOfOutput));
-  std::memcpy(detectionVector->startingPointer, detection, sizeOfOutput);
+  vector->startingPointer = static_cast<OpendrDetectionTargetT *>(malloc(sizeOfOutput));
+  std::memcpy(vector->startingPointer, detectionPtr, sizeOfOutput);
 }
 
-void freeDetectionsVector(OpendrDetectionVectorTargetT *detectionVector) {
-  if (detectionVector->startingPointer != NULL)
-    free(detectionVector->startingPointer);
+void freeDetectionsVector(OpendrDetectionVectorTargetT *vector) {
+  if (vector->startingPointer != NULL)
+    free(vector->startingPointer);
 }
 
 void initTensor(OpendrTensorT *tensor) {
@@ -208,7 +208,7 @@ void initTensorVector(OpendrTensorVectorT *vector) {
   vector->memories = NULL;
 }
 
-void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensor, int nTensors) {
+void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int nTensors) {
   freeTensorVector(vector);
 
   vector->nTensors = nTensors;
@@ -224,21 +224,21 @@ void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensor, int nT
   vector->memories = static_cast<float **>(malloc(nTensors * sizeof(float *)));
 
   /* copy size values */
-  for (int i = 0; i < number_of_tensors; i++) {
-    (vector->batchSizes)[i] = tensor[i].batchSize;
-    (vector->frames)[i] = tensor[i].frames;
-    (vector->channels)[i] = tensor[i].channels;
-    (vector->widths)[i] = tensor[i].width;
-    (vector->heights)[i] = tensor[i].height;
+  for (int i = 0; i < nTensors; i++) {
+    (vector->batchSizes)[i] = tensorPtr[i].batchSize;
+    (vector->frames)[i] = tensorPtr[i].frames;
+    (vector->channels)[i] = tensorPtr[i].channels;
+    (vector->widths)[i] = tensorPtr[i].width;
+    (vector->heights)[i] = tensorPtr[i].height;
 
     /* copy data values by,
      * initialize a data pointer into a tensor,
      * copy the values,
      * set tensor data pointer to watch the memory pointer*/
-    int sizeOfData = ((tensor[i].batchSizes) * (tensor[i].frames) * (tensor[i].channels) * (tensor[i].width) *
-                      (tensor[i].height) * sizeof(float));
+    int sizeOfData = ((tensorPtr[i].batchSizes) * (tensorPtr[i].frames) * (tensorPtr[i].channels) * (tensorPtr[i].width) *
+                      (tensorPtr[i].height) * sizeof(float));
     float *memoryOfDataTensor = static_cast<float *>(malloc(sizeOfData));
-    std::memcpy(memoryOfDataTensor, tensor[i].data, sizeOfData);
+    std::memcpy(memoryOfDataTensor, tensorPtr[i].data, sizeOfData);
     (vector->memories)[i] = memoryOfDataTensor;
   }
 }
