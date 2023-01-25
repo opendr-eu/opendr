@@ -49,7 +49,16 @@ float jsonGetKeyFloat(const char *json, const char *key, const int index);
  * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return float with the value of key
  */
-float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index);
+float jsonGetKeyFloatFromInferenceParams(const char *json, const char *key, const int index);
+
+/**
+ * JSON parser for OpenDR model files from inference_params key.
+ * @param json a string of json file
+ * @param key the value to extract from inference_params
+ * @param index the index to choose the value if it is an array, otherwise it is not used
+ * @return string with the value of key
+ */
+const char *jsonGetKeyStringFromInferenceParams(const char *json, const char *key, const int index);
 
 /**
  * Reads an image from path and saves it into OpenDR image structure.

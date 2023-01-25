@@ -25,7 +25,33 @@
 #include <writer.h>
 #include <iostream>
 
-float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index) {
+const char *jsonGetKeyStringFromInferenceParams(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {
+    return "";
+  }
+  const rapidjson::Value &inferenceParams = doc["inference_params"];
+  if ((!inferenceParams.IsObject()) || (!inferenceParams.HasMember(key))) {
+    return "";
+  }
+  const rapidjson::Value &value = inferenceParams[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return "";
+    }
+    if (!value[index].IsFloat()) {
+      return "";
+    }
+    return value[index].GetString();
+  }
+  if (!value.IsFloat()) {
+    return "";
+  }
+  return value.GetString();
+}
+
+float jsonGetKeyFloatFromInferenceParams(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
   if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {

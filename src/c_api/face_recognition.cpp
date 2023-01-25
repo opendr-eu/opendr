@@ -105,7 +105,7 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
   std::string modelFormat = jsonGetKeyString(json, "format", 0);
 
   // Parse inference params
-  float threshold = jsonGetKeyFromInferenceParams(json, "threshold", 0);
+  float threshold = jsonGetKeyFloatFromInferenceParams(json, "threshold", 0);
   model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
