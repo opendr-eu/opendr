@@ -40,7 +40,7 @@ class YOLOv5DetectorLearner(Learner):
                                         force_reload=force_reload)
         else:
             self.model = torch.hub.load('ultralytics/yolov5:master', 'custom', path=path,
-                                        force_reload=force_reload, skip_validation=True)
+                                        force_reload=force_reload)
         torch.hub.set_dir(default_dir)
 
         self.model.to(device)
