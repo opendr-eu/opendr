@@ -22,23 +22,23 @@
 
 START_TEST(model_creation_test) {
   // Create a detr model
-  detr_model_t model;
+  DetrModelT model;
 
   // Load a pretrained model
-  load_detr_model("data/object_detection_2d/detr/optimized_model", &model);
+  loadDetrModel("data/object_detection_2d/detr/optimized_model", &model);
 
-  ck_assert(model.onnx_session);
+  ck_assert(model.onnxSession);
   ck_assert(model.env);
-  ck_assert(model.session_options);
+  ck_assert(model.sessionOptions);
 
   // Release the resources
-  free_detr_model(&model);
+  freeDetrModel(&model);
 
   // Load a model that does not exist
-  load_detr_model("data/optimized_model_not_existant", &model);
-  ck_assert(!model.onnx_session);
+  loadDetrModel("data/optimized_model_not_existant", &model);
+  ck_assert(!model.onnxSession);
   ck_assert(!model.env);
-  ck_assert(!model.session_options);
+  ck_assert(!model.sessionOptions);
 
   // Release the resources
   free_detr_model(&model);
@@ -47,30 +47,30 @@ END_TEST
 
 START_TEST(forward_pass_creation_test) {
   // Create a detr model
-  detr_model_t model;
+  DetrModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  load_detr_model("data/object_detection_2d/detr/optimized_model", &model);
+  loadDetrModel("data/object_detection_2d/detr/optimized_model", &model);
 
   // Load a random tensor and perform forward pass
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
-  init_random_opendr_tensor_detr(&input_tensor, &model);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
+  initRandomOpendrTensorDetr(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
-  forward_detr(&model, &input_tensor, &output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
+  forwardDetr(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  init_random_opendr_tensor_detr(&input_tensor, &model);
-  forward_detr(&model, &input_tensor, &output_tensor_vector);
+  initRandomOpendrTensorDetr(&input_tensor, &model);
+  forwardDetr(&model, &input_tensor, &output_tensor_vector);
 
-  ck_assert(output_tensor_vector.n_tensors == 2);
+  ck_assert(output_tensor_vector.nTensors == 2);
 
   // Free the model resources
-  free_detr_model(&model);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
+  freeDetrModel(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
 }
 END_TEST
 

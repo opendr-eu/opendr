@@ -22,47 +22,47 @@
 
 START_TEST(model_creation_test) {
   // Create a face recognition model
-  open_pose_model_t model;
+  OpenPoseModelT model;
 
   // Load a pretrained model
-  load_open_pose_model("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
+  loadOpenPoseModel("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
 
-  ck_assert(model.onnx_session);
+  ck_assert(model.onnxSession);
   ck_assert(model.env);
-  ck_assert(model.session_options);
+  ck_assert(model.sessionOptions);
 
-  free_open_pose_model(&model);
+  freeOpenPoseModel(&model);
 }
 END_TEST
 
 START_TEST(forward_pass_creation_test) {
   // Create a x3d model
-  open_pose_model_t model;
+  OpenPoseModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  load_open_pose_model("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
+  loadOpenPoseModel("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
 
   // Load a random tensor and perform forward pass
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_op(&input_tensor, &model);
+  initRandomOpendrTensorOp(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_open_pose(&model, &input_tensor, &output_tensor_vector);
+  forwardOpenPose(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  init_random_opendr_tensor_op(&input_tensor, &model);
-  forward_open_pose(&model, &input_tensor, &output_tensor_vector);
+  initRandomOpendrTensorOp(&input_tensor, &model);
+  forwardOpenPose(&model, &input_tensor, &output_tensor_vector);
 
-  ck_assert(output_tensor_vector.n_tensors == model.output_size);
+  ck_assert(output_tensor_vector.nTensors == model.outputSize);
 
   // Free the model resources
-  free_open_pose_model(&model);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
+  freeOpenPoseModel(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
 }
 END_TEST
 

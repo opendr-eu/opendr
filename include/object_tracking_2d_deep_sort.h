@@ -24,53 +24,53 @@
 extern "C" {
 #endif
 
-struct deep_sort_model {
+struct DeepSortModel {
   // ONNX session objects
-  void *onnx_session;
+  void *onnxSession;
   void *env;
-  void *session_options;
+  void *sessionOptions;
 
   // Sizes for resizing an input image
-  int model_size[2];
-  int in_channels;
-  int batch_size;
+  int modelSize[2];
+  int inChannels;
+  int batchSize;
 
   // Statistics for normalization
-  float mean_value[3];
-  float std_value[3];
+  float meanValue[3];
+  float stdValue[3];
 
   // Feature dimension
   int features;
 };
-typedef struct deep_sort_model deep_sort_model_t;
+typedef struct DeepSortModel DeepSortModelT;
 
 /**
- * Loads a deep_sort object tracking 2d model saved in OpenDR format
- * @param modelPath path to the OpenDR deep_sort model (as exported using OpenDR library)
- * @param model the loaded model
+ * Loads a deep sort object tracking 2d model saved in OpenDR format
+ * @param modelPath path to the OpenDR deep sort model (as exported using OpenDR library)
+ * @param model the model to be loaded
  */
-void load_deep_sort_model(const char *modelPath, deep_sort_model_t *model);
+void loadDeepSortModel(const char *modelPath, DeepSortModelT *model);
 
 /**
- * This function performs feed forward of deep_sort object tracking 2d model
- * @param model deep_sort object detection model to be used for inference
- * @param inputTensorValues input of the model as OpenCV mat
- * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward
+ * This function performs feed forward of deep sort object tracking 2d model
+ * @param model deep sort model to be used for feed forward
+ * @param tensor OpenDR tensor structure which will be used as input of the model
+ * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forward_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 
 /**
- * Releases the memory allocated for a deep_sort object tracking 2d model
+ * Releases the memory allocated for a deep sort object tracking 2d model
  * @param model model to be de-allocated
  */
-void free_deep_sort_model(deep_sort_model_t *model);
+void freeDeepSortModel(DeepSortModelT *model);
 
 /**
  * This function initializes a tensor with random values for testing the forward pass of the model
- * @param inputTensorValues opendr tensor to be loaded with random values
- * @param model model to be used for hyper parameters
+ * @param tensor OpenDR tensor structure to be loaded with random values
+ * @param model model to be used to initialize the tensor
  */
-void init_random_opendr_tensor_ds(opendr_tensor_t *inputTensorValues, deep_sort_model_t *model);
+void initRandomOpendrTensorDs(OpendrTensorT *tensor, DeepSortModelT *model);
 
 #ifdef __cplusplus
 }

@@ -1,4 +1,4 @@
-// Copyright 2020-2022 OpenDR European Project
+// Copyright 2020-2023 OpenDR European Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,14 +38,15 @@
  * Helper function for preprocessing images before feeding them into the lightweight open pose estimator model.
  * This function follows the OpenDR's lightweight open pose  pre-processing pipeline, which includes the following:
  * a) resizing the image into modelInputSize x modelInputSize pixels relative to the original ratio,
- * b) normalizing the resulting values using meanValue and c) padding image into a standard size.
+ * b) normalizing the resulting values using meanValue
+ * and c) padding image into a standard size.
  * @param image image to be preprocesses
- * @param preprocessedImage opencv Mat that pre-processed data will be saved
+ * @param normalizedImg pre-processed data in a matrix
  * @param modelInputSize size of the center crop (equals the size that the DL model expects)
  * @param meanValue value used for centering the input image
- * @param imgScale value used for scaling the input image
+ * @param stdValue value used for scaling the input image
  */
-void preprocess_open_pose(cv::Mat *image, cv::Mat *preprocessedImage, int modelInputSize, float meanValue, float imgScale) {
+void preprocessOpenPose(cv::Mat *image, cv::Mat *normalizedImg, int modelInputSize, float meanValue, float stdValue) {
   // Convert to RGB
   cv::Mat resizedImage;
   cv::cvtColor(*image, resizedImage, cv::COLOR_BGR2RGB);
@@ -57,7 +58,7 @@ void preprocess_open_pose(cv::Mat *image, cv::Mat *preprocessedImage, int modelI
 
   // Convert to float32 and normalize
   cv::Mat normalizedImage;
-  resizedImage.convertTo(normalizedImage, CV_32FC3, imgScale, meanValue);
+  resizedImage.convertTo(normalizedImage, CV_32FC3, stdValue, meanValue);
 
   // Padding
   int h = normalizedImage.rows;
@@ -80,50 +81,50 @@ void preprocess_open_pose(cv::Mat *image, cv::Mat *preprocessedImage, int modelI
   pad[3] = minDims.width - w - pad[1];
 
   cv::Scalar padValue(0, 0, 0);
-  cv::copyMakeBorder(normalizedImage, *preprocessedImage, pad[0], pad[2], pad[1], pad[3], cv::BORDER_CONSTANT, padValue);
+  cv::copyMakeBorder(normalizedImage, *normalizedImg, pad[0], pad[2], pad[1], pad[3], cv::BORDER_CONSTANT, padValue);
 }
 
-void load_open_pose_model(const char *modelPath, open_pose_model_t *model) {
+void loadOpenPoseModel(const char *modelPath, OpenPoseModelT *model) {
   // Initialize model
-  model->onnx_session = model->env = model->session_options = NULL;
+  model->onnxSession = model->env = model->sessionOptions = NULL;
 
   Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   Ort::Session *session = new Ort::Session(*env, modelPath, *sessionOptions);
   model->env = env;
-  model->onnx_session = session;
-  model->session_options = sessionOptions;
+  model->onnxSession = session;
+  model->sessionOptions = sessionOptions;
 
   // Should we pass these parameters through the model json file?
-  model->mean_value = -128.0f / 256.0f;
-  model->img_scale = (1.0f / 256.0f);
-  model->model_size = 256;
+  model->meanValue = -128.0f / 256.0f;
+  model->imgScale = (1.0f / 256.0f);
+  model->modelSize = 256;
 
-  model->num_refinement_stages = 2;
-  model->output_size = (model->num_refinement_stages + 1) * 2;
+  model->nRefinementStages = 2;
+  model->outputSize = (model->nRefinementStages + 1) * 2;
 
-  model->even_channel_output = 38;
-  model->odd_channel_output = 19;
+  model->evenChannelOutput = 38;
+  model->oddChannelOutput = 19;
   model->stride = 0;
-  model->batch_size = 1;
+  model->batchSize = 1;
   if (model->stride == 0) {
-    model->width_output = 32;
-    model->height_output = 49;
+    model->widthOutput = 32;
+    model->heightOutput = 49;
   } else {
-    model->width_output = 16;
-    model->height_output = 35;
+    model->widthOutput = 16;
+    model->heightOutput = 35;
   }
 }
 
-void free_open_pose_model(open_pose_model_t *model) {
-  if (model->onnx_session) {
-    Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void freeOpenPoseModel(OpenPoseModelT *model) {
+  if (model->onnxSession) {
+    Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
     delete session;
   }
 
-  if (model->session_options) {
-    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->session_options);
+  if (model->sessionOptions) {
+    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->sessionOptions);
     delete sessionOptions;
   }
 
@@ -133,8 +134,8 @@ void free_open_pose_model(open_pose_model_t *model) {
   }
 }
 
-void ff_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorValues, std::vector<cv::Mat> *outputTensorValues) {
-  Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void ffOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+  Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
     std::cerr << "ONNX session not initialized." << std::endl;
@@ -143,17 +144,16 @@ void ff_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorValues, 
 
   // Prepare the input dimensions
   // Dims of input data
-  size_t inputTensorSize = model->model_size * model->model_size * 3;
+  size_t inputTensorSize = model->modelSize * model->modelSize * 3;
 
   // Dims of input of model
-  std::vector<int64_t> inputNodeDims = {inputTensorValues->batch_size, inputTensorValues->channels, inputTensorValues->width,
-                                        inputTensorValues->height};
+  std::vector<int64_t> inputNodeDims = {tensor->batchSize, tensor->channels, tensor->width, tensor->height};
 
   // Setup input/output names
   Ort::AllocatorWithDefaultOptions allocator;
   std::vector<const char *> inputNodeNames = {"data"};
   std::vector<const char *> outputNodeNames = {"stage_0_output_1_heatmaps", "stage_0_output_0_pafs"};
-  if (model->num_refinement_stages == 2) {
+  if (model->nRefinementStages == 2) {
     outputNodeNames.push_back("stage_1_output_1_heatmaps");
     outputNodeNames.push_back("stage_1_output_0_pafs");
     outputNodeNames.push_back("stage_2_output_1_heatmaps");
@@ -161,35 +161,34 @@ void ff_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorValues, 
   }
   // Set up the input tensor
   auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-  Ort::Value inputTensor =
-    Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues->data, inputTensorSize, inputNodeDims.data(), 4);
+  Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, tensor->data, inputTensorSize, inputNodeDims.data(), 4);
   assert(inputTensor.IsTensor());
 
   // Feed-forward the model
   auto outputTensors =
     session->Run(Ort::RunOptions{nullptr}, inputNodeNames.data(), &inputTensor, 1, outputNodeNames.data(), model->output_size);
-  assert(outputTensors.size() == model->output_size);
+  assert(outputTensors.size() == model->outputSize);
 
   // Get the results back
   for (int i = 0; i < outputTensors.size(); i++) {
-    float *tensor_data = outputTensors[i].GetTensorMutableData<float>();
+    float *tensorData = outputTensors[i].GetTensorMutableData<float>();
 
     int channelDim;
     if ((i % 2) == 0) {
-      channelDim = model->even_channel_output;
+      channelDim = model->evenChannelOoutput;
     } else {
-      channelDim = model->odd_channel_output;
+      channelDim = model->oddChannelOutput;
     }
 
-    int tensorSizes[5] = {1, model->batch_size, channelDim, model->width_output, model->height_output};
+    int tensorSizes[5] = {1, model->batchSize, channelDim, model->widthOutput, model->heightOutput};
 
-    cv::Mat outputMat(5, tensorSizes, CV_32F, static_cast<void *>(tensor_data));
+    cv::Mat outputMat(5, tensorSizes, CV_32F, static_cast<void *>(tensorData));
     outputTensorValues->push_back(outputMat);
   }
 }
 
-void init_random_opendr_tensor_op(opendr_tensor_t *inputTensorValues, open_pose_model_t *model) {
-  int inputTensorSize = model->model_size * model->model_size * 3;
+void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model) {
+  int inputTensorSize = model->modelSize * model->modelSize * 3;
 
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
 
@@ -197,35 +196,35 @@ void init_random_opendr_tensor_op(opendr_tensor_t *inputTensorValues, open_pose_
     data[j] = (((float)rand() / (RAND_MAX)) * 2) - 1;
   }
 
-  load_tensor(inputTensorValues, static_cast<void *>(data), 1, 1, 3, model->model_size, model->model_size);
+  loadTensor(tensor, static_cast<void *>(data), 1, 1, 3, model->modelSize, model->modelSize);
   free(data);
 }
 
-void init_opendr_tensor_from_img_op(opendr_image_t *image, opendr_tensor_t *inputTensorValues, open_pose_model_t *model) {
-  int inputTensorSize = model->model_size * model->model_size * 3;
+void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenPoseModelT *model) {
+  int inputTensorSize = model->modelSize * model->modelSize * 3;
 
   cv::Mat *opencvImage = (static_cast<cv::Mat *>(image->data));
   cv::Mat normImage;
-  preprocess_open_pose(opencvImage, &normImage, model->model_size, model->mean_value, model->img_scale);
+  preprocessOpenPose(opencvImage, &normImage, model->modelSize, model->meanValue, model->imgScale);
 
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
-  for (unsigned int j = 0; j < model->model_size; ++j) {
-    for (unsigned int k = 0; k < model->model_size; ++k) {
+  for (unsigned int j = 0; j < model->modelSize; ++j) {
+    for (unsigned int k = 0; k < model->modelSize; ++k) {
       cv::Vec3f currentPixel = normImage.at<cv::Vec3f>(j, k);
-      data[0 * model->model_size * model->model_size + j * model->model_size + k] = currentPixel[0];
-      data[1 * model->model_size * model->model_size + j * model->model_size + k] = currentPixel[1];
-      data[2 * model->model_size * model->model_size + j * model->model_size + k] = currentPixel[2];
+      data[0 * model->modelSize * model->modelSize + j * model->modelSize + k] = currentPixel[0];
+      data[1 * model->modelSize * model->modelSize + j * model->modelSize + k] = currentPixel[1];
+      data[2 * model->modelSize * model->modelSize + j * model->modelSize + k] = currentPixel[2];
     }
   }
 
-  load_tensor(inputTensorValues, static_cast<void *>(data), 1, 1, 3, model->model_size, model->model_size);
+  loadTensor(tensor, static_cast<void *>(data), 1, 1, 3, model->modelSize, model->modelSize);
   free(data);
 }
 
-void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector) {
+void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
-  ff_open_pose(model, inputTensorValues, &outputTensorValues);
+  ffOpenPose(model, tensor, &outputTensorValues);
 
   int nTensors = static_cast<int>(outputTensorValues.size());
   if (nTensors > 0) {
@@ -235,31 +234,31 @@ void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorVal
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<opendr_tensor> tempTensorsVector;
-    opendr_tensor_t tempTensors[nTensors];
+    std::vector<OpendrTensor> tempTensorsVector;
+    OpendrTensorT tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
-      init_tensor(&(tempTensors[i]));
+      initTensor(&(tempTensors[i]));
 
       batchSizes[i] = 1;
       frames[i] = 1;
       if ((i % 2) == 0) {
-        channels[i] = model->even_channel_output;
+        channels[i] = model->evenChannelOutput;
       } else {
-        channels[i] = model->odd_channel_output;
+        channels[i] = model->oddChannelOutput;
       }
-      widths[i] = model->width_output;
-      heights[i] = model->height_output;
+      widths[i] = model->widthOutput;
+      heights[i] = model->heightOutput;
 
-      load_tensor(&(tempTensors[i]), outputTensorValues[i].ptr<void>(0), batchSizes[i], frames[i], channels[i], widths[i],
-                  heights[i]);
+      loadTensor(&(tempTensors[i]), outputTensorValues[i].ptr<void>(0), batchSizes[i], frames[i], channels[i], widths[i],
+                 heights[i]);
       tempTensorsVector.push_back(tempTensors[i]);
     }
-    load_tensor_vector(tensorVector, tempTensorsVector.data(), nTensors);
+    loadTensorVector(vector, tempTensorsVector.data(), nTensors);
     for (int i = 0; i < nTensors; i++) {
-      free_tensor(&(tempTensors[i]));
+      freeTensor(&(tempTensors[i]));
     }
   } else {
-    init_tensor_vector(tensorVector);
+    initTensorVector(vector);
   }
 }

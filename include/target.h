@@ -43,35 +43,13 @@ struct OpendrDetectionTarget {
 typedef struct OpendrDetectionTarget OpendrDetectionTargetT;
 
 /***
- * OpenDR data type for representing a structure of detection targets
+ * OpenDR data type for representing vectors of detections targets
  */
 struct OpendrDetectionVectorTarget {
   OpendrDetectionTargetT *startingPointer;
   int size;
 };
 typedef struct OpendrDetectionVectorTarget OpendrDetectionVectorTargetT;
-
-/***
- * OpenDR data type for representing detection targets
- */
-struct opendr_detection_target {
-  int name;
-  float left;
-  float top;
-  float width;
-  float height;
-  float score;
-};
-typedef struct opendr_detection_target opendr_detection_target_t;
-
-/***
- * OpenDR data type for representing a structure of detection targets
- */
-struct opendr_detection_vector_target {
-  opendr_detection_target_t *starting_pointer;
-  int size;
-};
-typedef struct opendr_detection_vector_target opendr_detection_vector_target_t;
 
 #ifdef __cplusplus
 }

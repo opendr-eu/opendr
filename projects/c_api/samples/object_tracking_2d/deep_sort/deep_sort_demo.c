@@ -20,27 +20,27 @@
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
-  deep_sort_model_t model;
+  DeepSortModelT model;
 
   printf("start init model\n");
-  load_deep_sort_model("data/object_tracking_2d/deep_sort/optimized_model/onnx_model.onnx", &model);
+  loadDeepSortModel("data/object_tracking_2d/deep_sort/optimized_model/onnx_model.onnx", &model);
   printf("success\n");
 
   // Initialize opendr tensor for input
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_ds(&input_tensor, &model);
+  initRandomOpendrTensorDs(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
-  forward_deep_sort(&model, &input_tensor, &output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
+  forwardDeepSort(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
-  free_deep_sort_model(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
+  freeDeepSortModel(&model);
 
   return 0;
 }

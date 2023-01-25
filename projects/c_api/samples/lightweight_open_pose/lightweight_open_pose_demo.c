@@ -20,36 +20,36 @@
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
-  open_pose_model_t model;
+  OpenPoseModelT model;
 
   printf("start init model\n");
-  load_open_pose_model("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
+  loadOpenPoseModel("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
   printf("success\n");
 
   // Initialize opendr tensor for input
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
   // Load an image and performance inference
-  opendr_image_t image;
-  load_image("data/lightweight_open_pose/database/000000000785.jpg", &image);
+  OpendrImageT image;
+  loadImage("data/lightweight_open_pose/database/000000000785.jpg", &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
   }
 
-  init_opendr_tensor_from_img_op(&image, &input_tensor, &model);
+  initOpendrTensorFromImgOp(&image, &input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_open_pose(&model, &input_tensor, &output_tensor_vector);
+  forwardOpenPose(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
-  free_open_pose_model(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
+  freeOpenPoseModel(&model);
 
   return 0;
 }

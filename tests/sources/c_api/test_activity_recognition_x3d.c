@@ -22,46 +22,46 @@
 
 START_TEST(model_creation_test) {
   // Create a face recognition model
-  x3d_model_t model;
+  X3dModelT model;
 
   // Load a pretrained model
-  load_x3d_model("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", "l", &model);
-  ck_assert(model.onnx_session);
+  loadX3dModel("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", "l", &model);
+  ck_assert(model.onnxSession);
   ck_assert(model.env);
-  ck_assert(model.session_options);
+  ck_assert(model.sessionOptions);
   // Release the resources
-  free_x3d_model(&model);
+  freeX3dModel(&model);
 }
 END_TEST
 
 START_TEST(forward_pass_creation_test) {
   // Create a x3d model
-  x3d_model_t model;
+  X3dModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  load_x3d_model("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", "l", &model);
+  loadX3dModel("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", "l", &model);
 
   // Load a random tensor and perform forward pass
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_x3d(&input_tensor, &model);
+  initRandomOpendrTensorX3d(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_x3d(&model, &input_tensor, &output_tensor_vector);
+  forwardX3d(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  init_random_opendr_tensor_x3d(&input_tensor, &model);
-  forward_x3d(&model, &input_tensor, &output_tensor_vector);
+  initRandomOpendrTensorX3d(&input_tensor, &model);
+  forwardX3d(&model, &input_tensor, &output_tensor_vector);
 
-  ck_assert(output_tensor_vector.n_tensors == 1);
+  ck_assert(output_tensor_vector.nTensors == 1);
 
   // Free the model resources
-  free_x3d_model(&model);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
+  freeX3dModel(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
 }
 END_TEST
 

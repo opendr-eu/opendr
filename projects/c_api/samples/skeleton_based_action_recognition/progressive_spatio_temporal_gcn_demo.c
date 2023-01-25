@@ -20,29 +20,28 @@
 #include "skeleton_based_action_recognition_pst.h"
 
 int main(int argc, char **argv) {
-  pst_model_t model;
+  PstModelT model;
 
   printf("start init model\n");
-  load_pst_model("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx",
-                 &model);
+  loadPstModel("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx", &model);
   printf("success\n");
 
   // Initialize opendr tensor for input
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_pst(&input_tensor, &model);
+  initRandomOpendrTensorPst(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_pst(&model, &input_tensor, &output_tensor_vector);
+  forwardPst(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
-  free_pst_model(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
+  freePstModel(&model);
 
   return 0;
 }

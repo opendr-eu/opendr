@@ -24,54 +24,55 @@
 extern "C" {
 #endif
 
-struct x3d_model {
+struct X3dModel {
   // ONNX session objects
-  void *onnx_session;
+  void *onnxSession;
   void *env;
-  void *session_options;
+  void *sessionOptions;
 
   // Sizes for resizing an input image
-  int model_size;
-  int frames_per_clip;
-  int in_channels;
-  int batch_size;
+  int modelSize;
+  int framesPerClip;
+  int inChannels;
+  int batchSize;
 
   // Statistics for normalization
-  float mean_value;
-  float img_scale;
+  float meanValue;
+  float imgScale;
 
   // Feature dimension
   int features;
 };
-typedef struct x3d_model x3d_model_t;
+typedef struct X3dModel X3dModelT;
 
 /**
  * Loads a x3d activity recognition model saved in OpenDR format
  * @param modelPath path to the OpenDR x3d model (as exported using OpenDR library)
- * @param model the loaded model
+ * @param mode string to determine the model that is used (available options ["xs", "s", "m", "l"])
+ * @param model the model to be loaded
  */
-void load_x3d_model(const char *modelPath, char *mode, x3d_model_t *model);
+void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model);
 
 /**
  * This function performs feed forward of x3d activity recognition model
- * @param model x3d object detection model to be used for inference
- * @param inputTensorValues input of the model as OpenCV mat
- * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward
+ * @param model x3d model to be used for feed forward
+ * @param tensor OpenDR tensor structure which will be used as input of the model
+ * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forward_x3d(x3d_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardX3d(X3dModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a x3d activity recognition model
  * @param model model to be de-allocated
  */
-void free_x3d_model(x3d_model_t *model);
+void freeX3dModel(X3dModelT *model);
 
 /**
  * This function initializes a tensor with random values for testing the forward pass of the model
- * @param inputTensorValues opendr tensor to be loaded with random values
- * @param model model to be used for hyper parameters
+ * @param tensor OpenDR tensor structure to be loaded with random values
+ * @param model model to be used to initialize the tensor
  */
-void init_random_opendr_tensor_x3d(opendr_tensor_t *inputTensorValues, x3d_model_t *model);
+void initRandomOpendrTensorX3d(OpendrTensorT *tensor, X3dModelT *model);
 
 #ifdef __cplusplus
 }

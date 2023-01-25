@@ -22,43 +22,43 @@
 
 START_TEST(model_creation_test) {
   // Create a face recognition model
-  deep_sort_model_t model;
+  DeepSortModelT model;
 
   // Load a pretrained model
-  load_deep_sort_model("data/object_tracking_2d/deep_sort/optimized_model/onnx_model.onnx", &model);
+  loadDeepSortModel("data/object_tracking_2d/deep_sort/optimized_model/onnx_model.onnx", &model);
 
-  ck_assert(model.onnx_session);
+  ck_assert(model.onnxSession);
   ck_assert(model.env);
-  ck_assert(model.session_options);
+  ck_assert(model.sessionOptions);
 
   // Release the resources
-  free_deep_sort_model(&model);
+  freeDeepSortModel(&model);
 }
 END_TEST
 
 START_TEST(forward_pass_creation_test) {
   // Create a face recognition model
-  deep_sort_model_t model;
+  DeepSortModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  load_deep_sort_model("data/object_tracking_2d/deep_sort/optimized_model/onnx_model.onnx", &model);
+  loadDeepSortModel("data/object_tracking_2d/deep_sort/optimized_model/onnx_model.onnx", &model);
 
   // Load a random tensor and perform forward pass
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_ds(&input_tensor, &model);
+  initRandomOpendrTensorDs(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_deep_sort(&model, &input_tensor, &output_tensor_vector);
+  forwardDeepSort(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  init_random_opendr_tensor_ds(&input_tensor, &model);
-  forward_deep_sort(&model, &input_tensor, &output_tensor_vector);
+  initRandomOpendrTensorDs(&input_tensor, &model);
+  forwardDeepSort(&model, &input_tensor, &output_tensor_vector);
 
-  ck_assert(output_tensor_vector.n_tensors == 1);
+  ck_assert(output_tensor_vector.nTensors == 1);
 
   // Free the model resources
   free_deep_sort_model(&model);

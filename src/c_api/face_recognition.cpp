@@ -102,10 +102,10 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
 
   // Parse JSON
   std::string onnxModelPath = basePath + jsonGetKeyString(json, "model_paths", 0);
-  std::string modelFormat = jsonGetKeyString(json, "format", 0);
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
 
   // Parse inference params
-  float threshold = jsonGetKeyFromInferenceParams(json, "threshold", 0);
+  float threshold = jsonGetFloatFromKeyInInferenceParams(json, "threshold", 0);
   model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
@@ -234,7 +234,8 @@ void buildDatabaseFaceRecognition(const char *databaseFolder, const char *output
       path currentPersonPath(personPath->path());
       personNames.push_back(personPath->path().filename().string());
 
-      for (auto currentImagePath = directory_iterator(currentPersonPath); currentImagePath != directory_iterator(); currentImagePath++) {
+      for (auto currentImagePath = directory_iterator(currentPersonPath); currentImagePath != directory_iterator();
+           currentImagePath++) {
         OpendrImageT image;
         loadImage(currentImagePath->path().string().c_str(), &image);
 

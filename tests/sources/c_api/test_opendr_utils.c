@@ -36,25 +36,25 @@ END_TEST
 
 START_TEST(detection_vector_init_load_test) {
   // Initialize a detection target vector
-  opendr_detection_vector_target_t detection_vector;
+  OpendrDetectionVectorTargetT detection_vector;
   // init functions uses load internally
-  init_detections_vector(&detection_vector);
-  ck_assert(detection_vector.starting_pointer);
+  initDetectionsVector(&detection_vector);
+  ck_assert(detection_vector.startingPointer);
   // Free the resources
-  free_detections_vector(&detection_vector);
-  ck_assert(detection_vector.starting_pointer == NULL);
+  freeDetectionsVector(&detection_vector);
+  ck_assert(detection_vector.startingPointer == NULL);
 }
 END_TEST
 
 START_TEST(tensor_init_load_test) {
   // Initialize a detection target vector
-  opendr_tensor_t opendr_tensor;
+  OpendrTensorT opendr_tensor;
   // init functions uses load internally
-  init_tensor(&opendr_tensor);
+  initTensor(&opendr_tensor);
   ck_assert(opendr_tensor.data == NULL);
 
   void *tensor_data = malloc(1 * sizeof(float));
-  load_tensor(&opendr_tensor, tensor_data, 1, 1, 1, 1, 1);
+  loadTensor(&opendr_tensor, tensor_data, 1, 1, 1, 1, 1);
   ck_assert(opendr_tensor.data);
   // Free the resources
   free(tensor_data);
@@ -65,30 +65,30 @@ END_TEST
 
 START_TEST(tensor_vector_init_load_test) {
   // Initialize a detection target vector
-  opendr_tensor_vector_t tensor_vector;
+  OpendrTensorVectorT tensor_vector;
   // init functions uses load internally
-  init_tensor_vector(&tensor_vector);
+  initTensorVector(&tensor_vector);
 
-  ck_assert(tensor_vector.batch_sizes == NULL);
+  ck_assert(tensor_vector.batchSizes == NULL);
   ck_assert(tensor_vector.frames == NULL);
   ck_assert(tensor_vector.channels == NULL);
   ck_assert(tensor_vector.widths == NULL);
   ck_assert(tensor_vector.heights == NULL);
   ck_assert(tensor_vector.memories == NULL);
 
-  opendr_tensor_t tensor[1];
-  init_tensor(&(tensor[0]));
+  OpendrTensorT tensor[1];
+  initTensor(&(tensor[0]));
 
   void *tensor_data = malloc(1 * sizeof(float));
-  load_tensor(&(tensor[0]), tensor_data, 1, 1, 1, 1, 1);
+  loadTensor(&(tensor[0]), tensor_data, 1, 1, 1, 1, 1);
 
-  load_tensor_vector(&tensor_vector, tensor, 1);
+  loadTensorVector(&tensor_vector, tensor, 1);
   ck_assert(tensor_vector.memories);
   // Free the resources
   free(tensor_data);
-  free_tensor(&(tensor[0]));
+  freeTensor(&(tensor[0]));
 
-  free_tensor_vector(&tensor_vector);
+  freeTensorVector(&tensor_vector);
   ck_assert(tensor_vector.memories == NULL);
 }
 END_TEST

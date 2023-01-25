@@ -20,28 +20,28 @@
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
-  detr_model_t model;
+  DetrModelT model;
 
   printf("start init model\n");
-  load_detr_model("data/object_detection_2d/detr/optimized_model", &model);
+  loadDetrModel("data/object_detection_2d/detr/optimized_model", &model);
   printf("success\n");
 
   // Initialize opendr tensor for input
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_detr(&input_tensor, &model);
+  initRandomOpendrTensorDetr(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_detr(&model, &input_tensor, &output_tensor_vector);
+  forwardDetr(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
-  free_detr_model(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
+  freeDetrModel(&model);
 
   return 0;
 }

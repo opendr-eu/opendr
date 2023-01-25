@@ -1,4 +1,4 @@
-// Copyright 2020-2022 OpenDR European Project
+// Copyright 2020-2023 OpenDR European Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,16 +35,16 @@
 /**
  * Helper function for preprocessing images before feeding them into the deep sort object tracking 2d model.
  * This function follows the OpenDR's object tracking 2d deep sort pre-processing pipeline, which includes the following:
- * a) resizing the image into modelInputSizes[1] x modelInputSizes[0] pixels and b) normalizing the resulting values using
- * meanValues and stdValues
+ * a) resizing the image into modelInputSizes[1] x modelInputSizes[0] pixels
+ * and b) normalizing the resulting values using meanValues and stdValues
  * @param image image to be preprocesses
- * @param normalizedImg pre-processed data in a flattened vector
+ * @param normalizedImg pre-processed data in a matrix
  * @param modelInputSizes size of the center crop (equals the size that the DL model expects)
  * @param meanValues value used for centering the input image
  * @param stdValues value used for scaling the input image
  */
-void preprocess_deep_sort(cv::Mat *image, cv::Mat *normalizedImg, int modelInputSizes[2], float meanValues[3],
-                          float stdValues[3]) {
+void preprocessDeepSort(cv::Mat *image, cv::Mat *normalizedImg, int modelInputSizes[2], float meanValues[3],
+                        float stdValues[3]) {
   // Convert to RGB
   cv::Mat resizedImage;
   cv::cvtColor(*image, resizedImage, cv::COLOR_BGR2RGB);
@@ -64,44 +64,44 @@ void preprocess_deep_sort(cv::Mat *image, cv::Mat *normalizedImg, int modelInput
   cv::multiply(*normalizedImg, stdValue, *normalizedImg);
 }
 
-void load_deep_sort_model(const char *modelPath, deep_sort_model_t *model) {
+void loadDeepSortModel(const char *modelPath, DeepSortModelT *model) {
   // Initialize model
-  model->onnx_session = model->env = model->session_options = NULL;
+  model->onnxSession = model->env = model->sessionOptions = NULL;
 
   Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   Ort::Session *session = new Ort::Session(*env, modelPath, *sessionOptions);
   model->env = env;
-  model->onnx_session = session;
-  model->session_options = sessionOptions;
+  model->onnxSession = session;
+  model->sessionOptions = sessionOptions;
 
   // Should we pass these parameters through the model json file?
-  model->mean_value[0] = -0.485f;
-  model->mean_value[1] = -0.456f;
-  model->mean_value[2] = -0.406f;
+  model->meanValue[0] = -0.485f;
+  model->meanValue[1] = -0.456f;
+  model->meanValue[2] = -0.406f;
 
-  model->std_value[0] = (1.0f / 0.229f);
-  model->std_value[1] = (1.0f / 0.224f);
-  model->std_value[2] = (1.0f / 0.225f);
+  model->stdValue[0] = (1.0f / 0.229f);
+  model->stdValue[1] = (1.0f / 0.224f);
+  model->stdValue[2] = (1.0f / 0.225f);
 
-  model->model_size[0] = 64;
-  model->model_size[1] = 128;
+  model->modelSize[0] = 64;
+  model->modelSize[1] = 128;
 
-  model->batch_size = 1;
-  model->in_channels = 3;
+  model->batchSize = 1;
+  model->inChannels = 3;
 
   model->features = 512;
 }
 
-void free_deep_sort_model(deep_sort_model_t *model) {
-  if (model->onnx_session) {
-    Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void freeDeepSortModel(DeepSortModelT *model) {
+  if (model->onnxSession) {
+    Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
     delete session;
   }
 
-  if (model->session_options) {
-    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->session_options);
+  if (model->sessionOptions) {
+    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->sessionOptions);
     delete sessionOptions;
   }
 
@@ -111,8 +111,8 @@ void free_deep_sort_model(deep_sort_model_t *model) {
   }
 }
 
-void ff_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorValues, std::vector<cv::Mat> *outputTensorValues) {
-  Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void ffDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+  Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
     std::cerr << "ONNX session not initialized." << std::endl;
@@ -121,10 +121,10 @@ void ff_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorValues, 
 
   // Prepare the input dimensions
   // Dims of input data
-  size_t inputTensorSize = model->batch_size * model->in_channels * model->model_size[1] * model->model_size[0];
+  size_t inputTensorSize = model->batchSize * model->inChannels * model->modelSize[1] * model->modelSize[0];
 
   // Dims of input of model
-  std::vector<int64_t> inputNodeDims = {model->batch_size, model->in_channels, model->model_size[1], model->model_size[0]};
+  std::vector<int64_t> inputNodeDims = {tensor->batchSize, tensor->channels, tensor->width, tensor->height};
 
   // Setup input/output names
   Ort::AllocatorWithDefaultOptions allocator;
@@ -133,8 +133,7 @@ void ff_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorValues, 
 
   // Set up the input tensor
   auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-  Ort::Value inputTensor =
-    Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues->data, inputTensorSize, inputNodeDims.data(), 4);
+  Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, tensor->data, inputTensorSize, inputNodeDims.data(), 4);
   assert(inputTensor.IsTensor());
 
   // Feed-forward the model
@@ -146,59 +145,59 @@ void ff_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorValues, 
   for (int i = 0; i < outputTensors.size(); i++) {
     float *tensorData = outputTensors[i].GetTensorMutableData<float>();
 
-    int tensorSizes[5] = {1, 1, 1, model->batch_size, model->features};
+    int tensorSizes[5] = {1, 1, 1, model->batchSize, model->features};
     cv::Mat outputMat(5, tensorSizes, CV_32F, static_cast<void *>(tensorData));
     outputTensorValues->push_back(outputMat);
   }
 }
 
-void init_random_opendr_tensor_ds(opendr_tensor_t *inputTensorValues, deep_sort_model_t *model) {
-  int inputTensorSize = 1 * model->batch_size * model->in_channels * model->model_size[1] * model->model_size[0];
+void initRandomOpendrTensorDs(OpendrTensorT *tensor, DeepSortModelT *model) {
+  int inputTensorSize = 1 * model->batchSize * model->inChannels * model->modelSize[1] * model->modelSize[0];
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
   for (unsigned int j = 0; j < inputTensorSize; ++j) {
     data[j] = (((float)rand() / (RAND_MAX)) * 2) - 1;
   }
 
   // Dims of input of model
-  load_tensor(inputTensorValues, static_cast<void *>(data), 1, model->batch_size, model->in_channels, model->model_size[1],
-              model->model_size[0]);
+  loadTensor(tensor, static_cast<void *>(data), model->batchSize, 1, model->inChannels, model->modelSize[1],
+             model->modelSize[0]);
   free(data);
 }
 
-void forward_deep_sort(deep_sort_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector) {
+void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
-  ff_deep_sort(model, inputTensorValues, &outputTensorValues);
+  ffDeepSort(model, tensor, &outputTensorValues);
 
   int nTensors = static_cast<int>(outputTensorValues.size());
   if (nTensors > 0) {
-    int batch_sizes[nTensors];
+    int batchSizes[nTensors];
     int frames[nTensors];
     int channels[nTensors];
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<opendr_tensor> temp_tensors;
-    opendr_tensor_t temp_tensor[nTensors];
+    std::vector<OpendrTensor> tempTensorsVector;
+    OpendrTensorT tempTensor[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
-      init_tensor(&(temp_tensor[i]));
+      initTensor(&(tempTensor[i]));
 
-      batch_sizes[i] = 1;
+      batchSizes[i] = 1;
       frames[i] = 1;
       channels[i] = 1;
-      widths[i] = model->batch_size;
+      widths[i] = model->batchSize;
       heights[i] = model->features;
 
-      load_tensor(&(temp_tensor[i]), outputTensorValues[i].ptr<void>(0), batch_sizes[i], frames[i], channels[i], widths[i],
-                  heights[i]);
-      temp_tensors.push_back(temp_tensor[i]);
+      loadTensor(&(tempTensor[i]), outputTensorValues[i].ptr<void>(0), batchSizes[i], frames[i], channels[i], widths[i],
+                 heights[i]);
+      tempTensorsVector.push_back(tempTensor[i]);
     }
-    load_tensor_vector(tensorVector, temp_tensors.data(), nTensors);
+    loadTensorVector(vector, tempTensorsVector.data(), nTensors);
     for (int i = 0; i < nTensors; i++) {
-      free_tensor(&(temp_tensor[i]));
+      freeTensor(&(temptensor[i]));
     }
   } else {
-    init_tensor_vector(tensorVector);
+    initTensorVector(vector);
   }
 }

@@ -24,55 +24,55 @@
 extern "C" {
 #endif
 
-struct detr_model {
+struct DetrModel {
   // ONNX session objects
-  void *onnx_session;
+  void *onnxSession;
   void *env;
-  void *session_options;
+  void *sessionOptions;
 
   // Sizes for resizing an input image
-  int model_size;
+  int modelSize;
 
   // Statistics for normalization
-  float mean_value[3];
-  float std_value[3];
+  float meanValue[3];
+  float stdValue[3];
 
   // Recognition threshold
   float threshold;
 
   // Feature dimension
   int features;
-  int output_sizes[2];
+  int outputSizes[2];
 };
-typedef struct detr_model detr_model_t;
+typedef struct DetrModel DetrModelT;
 
 /**
  * Loads a detr object detection model saved in OpenDR format
  * @param modelPath path to the OpenDR detr model (as exported using OpenDR library)
- * @param model the loaded model
+ * @param model the model to be loaded
  */
-void load_detr_model(const char *modelPath, detr_model_t *model);
+void loadDetrModel(const char *modelPath, DetrModelT *model);
 
 /**
  * This function performs feed forward of detr object detection model
- * @param model detr object detection model to be used for inference
- * @param inputTensorValues input of the model as OpenCV mat
- * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward
+ * @param model detr object detection model to be used for feed forward
+ * @param tensor OpenDR tensor structure which will be used as input of the model
+ * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forward_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardDetr(DetrModelT *model, opendrTensorT *tensor, opendrTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a detr object detection model
  * @param model model to be de-allocated
  */
-void free_detr_model(detr_model_t *model);
+void freeDetrModel(DetrModelT *model);
 
 /**
  * This function initializes a tensor with random values for testing the forward pass of the model
- * @param inputTensorValues opendr tensor to be loaded with random values
- * @param model model to be used for hyper parameters
+ * @param tensor OpenDR tensor structure to be loaded with random values
+ * @param model model to be used to initialize the tensor
  */
-void init_random_opendr_tensor_detr(opendr_tensor_t *inputTensorValues, detr_model_t *model);
+void initRandomOpendrTensorDetr(opendrTensorT *tensor, DetrModelT *model);
 
 #ifdef __cplusplus
 }

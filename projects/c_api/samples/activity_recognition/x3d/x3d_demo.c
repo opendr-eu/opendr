@@ -20,29 +20,29 @@
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
-  x3d_model_t model;
+  X3dModelT model;
   char *mode = "l";
 
   printf("start init model\n");
-  load_x3d_model("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", mode, &model);
+  loadX3dModel("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", mode, &model);
   printf("success\n");
 
   // Initialize opendr tensor for input
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_x3d(&input_tensor, &model);
+  initRandomOpendrTensorX3d(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_x3d(&model, &input_tensor, &output_tensor_vector);
+  forwardX3d(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
-  free_x3d_model(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
+  freeX3dModel(&model);
 
   return 0;
 }

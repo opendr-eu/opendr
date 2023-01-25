@@ -24,49 +24,49 @@
 extern "C" {
 #endif
 
-struct pst_model {
+struct PstModel {
   // ONNX session objects
-  void *onnx_session;
+  void *onnxSession;
   void *env;
-  void *session_options;
+  void *sessionOptions;
 
   // Sizes for input and output tensor
-  int batch_size;
-  int in_channels;
+  int batchSize;
+  int inChannels;
   int features;
-  int num_point;
-  int num_person;
-  int num_classes;
+  int nPoint;
+  int nPerson;
+  int nClasses;
 };
-typedef struct pst_model pst_model_t;
+typedef struct PstModel PstModelT;
 
 /**
  * Loads a pst skeleton based action recognition model saved in OpenDR format
  * @param modelPath path to the OpenDR pst model (as exported using OpenDR library)
- * @param model the loaded model
+ * @param model the model to be loaded
  */
-void load_pst_model(const char *modelPath, pst_model_t *model);
+void loadPstModel(const char *modelPath, PstModelT *model);
 
 /**
  * This function performs feed forward of pst skeleton based action recognition model
- * @param model pst object detection model to be used for inference
- * @param inputTensorValues input of the model as OpenCV mat
- * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward
+ * @param model pst model to be used for feed forward
+ * @param tensor OpenDR tensor structure which will be used as input of the model
+ * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forward_pst(pst_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardPst(PstModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a pst skeleton based action recognition model
  * @param model model to be de-allocated
  */
-void free_pst_model(pst_model_t *model);
+void freePstModel(PstModelT *model);
 
 /**
  * This function initializes a tensor with random values for testing the forward pass of the model
- * @param inputTensorValues opendr tensor to be loaded with random values
- * @param model model to be used for hyper parameters
+ * @param tensor OpenDR tensor structure to be loaded with random values
+ * @param model model to be used to initialize the tensor
  */
-void init_random_opendr_tensor_pst(opendr_tensor_t *inputTensorValues, pst_model_t *model);
+void initRandomOpendrTensorPst(OpendrTensorT *tensor, PstModelT *model);
 
 #ifdef __cplusplus
 }

@@ -24,66 +24,67 @@
 extern "C" {
 #endif
 
-struct open_pose_model {
+struct OpenPoseModel {
   // ONNX session objects
-  void *onnx_session;
+  void *onnxSession;
   void *env;
-  void *session_options;
+  void *sessionOptions;
 
   // Sizes for resizing an input image
-  int model_size;
+  int modelSize;
 
   // Statistics for normalization
-  float mean_value;
-  float img_scale;
+  float meanValue;
+  float imgScale;
 
   // Model output parameters
-  int num_refinement_stages;
-  int output_size;
+  int nRefinementStages;
+  int outputSize;
   int stride;
 
-  int even_channel_output;
-  int odd_channel_output;
-  int batch_size;
-  int width_output;
-  int height_output;
+  int evenChannelOutput;
+  int oddChannelOutput;
+  int batchSize;
+  int widthOutput;
+  int heightOutput;
 };
-typedef struct open_pose_model open_pose_model_t;
+typedef struct OpenPoseModel OpenPoseModelT;
 
 /**
  * Loads a lightweight open pose model saved in OpenDR format
- * @param modelPath path to the OpenDR open_pose model (as exported using OpenDR library)
- * @param model the loaded model
+ * @param modelPath path to the OpenDR open pose model (as exported using OpenDR library)
+ * @param model the model to be loaded
  */
-void load_open_pose_model(const char *modelPath, open_pose_model_t *model);
+void loadOpenPoseModel(const char *modelPath, OpenPoseModelT *model);
 
 /**
  * This function performs feed forward of open pose model
- * @param model open pose model to be used for inference
- * @param inputTensorValues OpenDR tensor structure as input of the model
- * @param tensorVector OpenDR tensor vector structure to save the output of the feed forward
+ * @param model open pose model to be used for feed forward
+ * @param tensor OpenDR tensor structure which will be used as input of the model
+ * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 
 /**
- * Releases the memory allocated for a open pose model
+ * Releases the memory allocated for an open pose model
  * @param model model to be de-allocated
  */
-void free_open_pose_model(open_pose_model_t *model);
+void freeOpenPoseModel(OpenPoseModelT *model);
 
 /**
- * This function initializes a tensor with values from an opendr image for testing the forward pass of the model
- * @param inputTensorValues opendr tensor to be loaded with random values
- * @param model model to be used for hyper parameters
+ * This function initializes a tensor with values from an OpenDR image for testing the forward pass of the model
+ * @param image OpenDR image to load into tensor
+ * @param tensor OpenDR tensor structure to be loaded with the image values
+ * @param model model to be used to initialize the tensor
  */
-void init_opendr_tensor_from_img_op(opendr_image_t *image, opendr_tensor_t *inputTensorValues, open_pose_model_t *model);
+void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenPoseModelT *model);
 
 /**
  * This function initializes a tensor with random values for testing the forward pass of the model
- * @param inputTensorValues opendr tensor to be loaded with random values
- * @param model model to be used for hyper parameters
+ * @param tensor OpenDR tensor structure to be loaded with random values
+ * @param model model to be used to initialize the tensor
  */
-void init_random_opendr_tensor_op(opendr_tensor_t *inputTensorValues, open_pose_model_t *model);
+void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model);
 #ifdef __cplusplus
 }
 #endif

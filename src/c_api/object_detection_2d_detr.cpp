@@ -1,4 +1,4 @@
-// Copyright 2020-2022 OpenDR European Project
+// Copyright 2020-2023 OpenDR European Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,15 +35,16 @@
 /**
  * Helper function for preprocessing images before feeding them into the detr object detection model.
  * This function follows the OpenDR's object detection detr  pre-processing pipeline, which includes the following:
- * a) resizing the image into modelInputSize x modelInputSize pixels and b) normalizing the resulting values using
+ * a) resizing the image into modelInputSize x modelInputSize pixels
+ * and b) normalizing the resulting values using
  * meanValue and stdValue
  * @param image image to be preprocesses
- * @param data pre-processed data in a flattened vector
+ * @param normalizedImage pre-processed data in a flattened vector
  * @param modelInputSize size of the center crop (equals the size that the DL model expects)
  * @param meanValue values used for centering the input image
  * @param stdValues values used for scaling the input image
  */
-void preprocess_detr(cv::Mat *image, cv::Mat *normalizedImage, int modelInputSize, float meanValues[3], float stdValues[3]) {
+void preprocessDetr(cv::Mat *image, cv::Mat *normalizedImage, int modelInputSize, float meanValues[3], float stdValues[3]) {
   // Convert to RGB
   cv::Mat resizedImage;
   cv::cvtColor(*image, resizedImage, cv::COLOR_BGR2RGB);
@@ -61,9 +62,9 @@ void preprocess_detr(cv::Mat *image, cv::Mat *normalizedImage, int modelInputSiz
   cv::multiply(*normalizedImage, stdValue, *normalizedImage);
 }
 
-void load_detr_model(const char *modelPath, detr_model_t *model) {
+void loadDetrModel(const char *modelPath, detrModelT *model) {
   // Initialize model
-  model->onnx_session = model->env = model->session_options = NULL;
+  model->onnxSession = model->env = model->sessionOptions = NULL;
   model->threshold = 0;
 
   // Parse the model JSON file
@@ -72,21 +73,21 @@ void load_detr_model(const char *modelPath, detr_model_t *model) {
   splitPos = splitPos > 0 ? splitPos + 1 : 0;
   std::string modelJsonPath = basePath + "/" + basePath.substr(splitPos) + ".json";
 
-  std::ifstream in_stream(modelJsonPath);
-  if (!in_stream.is_open()) {
+  std::ifstream inStream(modelJsonPath);
+  if (!inStream.is_open()) {
     std::cerr << "Cannot open JSON model file" << std::endl;
     return;
   }
-  std::string str((std::istreambuf_iterator<char>(in_stream)), std::istreambuf_iterator<char>());
+  std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
   const char *json = str.c_str();
 
   // Parse JSON
-  std::string modelPaths = json_get_key_string(json, "model_paths", 0);
+  std::string modelPaths = jsonGetStringFromKey(json, "model_paths", 0);
   std::string onnxModelPath = basePath + "/" + modelPaths;
-  std::string modelFormat = json_get_key_string(json, "format", 0);
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
 
   // Parse inference params
-  float threshold = json_get_key_from_inference_params(json, "threshold", 0);
+  float threshold = jsonGetFloatFromKeyInInferenceParams(json, "threshold", 0);
   model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
@@ -100,32 +101,32 @@ void load_detr_model(const char *modelPath, detr_model_t *model) {
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   Ort::Session *session = new Ort::Session(*env, onnxModelPath.c_str(), *sessionOptions);
   model->env = env;
-  model->onnx_session = session;
-  model->session_options = sessionOptions;
+  model->onnxSession = session;
+  model->sessionOptions = sessionOptions;
 
-  model->mean_value[0] = -0.485f;
-  model->mean_value[1] = -0.456f;
-  model->mean_value[2] = -0.406f;
+  model->meanValue[0] = -0.485f;
+  model->meanValue[1] = -0.456f;
+  model->meanValue[2] = -0.406f;
 
-  model->std_value[0] = 0.229f;
-  model->std_value[1] = 0.224f;
-  model->std_value[2] = 0.225f;
+  model->stdValue[0] = 0.229f;
+  model->stdValue[1] = 0.224f;
+  model->stdValue[2] = 0.225f;
 
-  model->model_size = 800;
+  model->modelSize = 800;
 
   model->features = 100;
-  model->output_sizes[0] = 92;
-  model->output_sizes[1] = 4;
+  model->outputSizes[0] = 92;
+  model->outputSizes[1] = 4;
 }
 
-void free_detr_model(detr_model_t *model) {
-  if (model->onnx_session) {
-    Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void freeDetrModel(detrModelT *model) {
+  if (model->onnxSession) {
+    Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
     delete session;
   }
 
-  if (model->session_options) {
-    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->session_options);
+  if (model->sessionOptions) {
+    Ort::SessionOptions *sessionOptions = static_cast<Ort::SessionOptions *>(model->sessionOptions);
     delete sessionOptions;
   }
 
@@ -135,8 +136,8 @@ void free_detr_model(detr_model_t *model) {
   }
 }
 
-void ff_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, std::vector<cv::Mat> *outputTensorValues) {
-  Ort::Session *session = static_cast<Ort::Session *>(model->onnx_session);
+void ffDetr(detrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+  Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
     std::cerr << "ONNX session not initialized." << std::endl;
@@ -145,11 +146,10 @@ void ff_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, std::vecto
 
   // Prepare the input dimensions
   // Dims of input data for preprocessing
-  size_t inputTensorSize = model->model_size * model->model_size * 3;
+  size_t inputTensorSize = model->modelSize * model->modelSize * 3;
 
   // Dims of input of model
-  std::vector<int64_t> inputNodeDims = {inputTensorValues->batch_size, inputTensorValues->channels, inputTensorValues->width,
-                                        inputTensorValues->height};
+  std::vector<int64_t> inputNodeDims = {tensor->batch_size, tensor->channels, tensor->width, tensor->height};
 
   // Setup input/output names
   Ort::AllocatorWithDefaultOptions allocator;
@@ -158,8 +158,7 @@ void ff_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, std::vecto
 
   // Set up the input tensor
   auto memoryInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-  Ort::Value inputTensor =
-    Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues->data, inputTensorSize, inputNodeDims.data(), 4);
+  Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo, tensor->data, inputTensorSize, inputNodeDims.data(), 4);
   assert(inputTensor.IsTensor());
 
   // Feed-forward the model
@@ -171,16 +170,16 @@ void ff_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, std::vecto
   for (int i = 0; i < outputTensors.size(); i++) {
     float *tensorData = outputTensors[i].GetTensorMutableData<float>();
 
-    int tensorSizes[5] = {1, 1, 1, model->features, model->output_sizes[i]};
+    int tensorSizes[5] = {1, 1, 1, model->features, model->outputSizes[i]};
 
     cv::Mat outputMat(5, tensorSizes, CV_32F, static_cast<void *>(tensorData));
     outputTensorValues->push_back(outputMat);
   }
 }
 
-void init_random_opendr_tensor_detr(opendr_tensor_t *inputTensorValues, detr_model_t *model) {
+void initRandomOpendrTensorDetr(OpendrTensorT *tensor, detrModelT *model) {
   // Prepare the input data with random values
-  int inputTensorSize = model->model_size * model->model_size * 3;
+  int inputTensorSize = model->modelSize * model->modelSize * 3;
 
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
   // change data structure so channels are the last iterable dimension
@@ -188,14 +187,14 @@ void init_random_opendr_tensor_detr(opendr_tensor_t *inputTensorValues, detr_mod
     data[j] = (((float)rand() / (RAND_MAX)) * 2) - 1;
   }
 
-  load_tensor(inputTensorValues, static_cast<void *>(data), 1, 1, 3, model->model_size, model->model_size);
+  loadTensor(tensor, static_cast<void *>(data), 1, 1, 3, model->modelSize, model->modelSize);
   free(data);
 }
 
-void forward_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector) {
+void forwardDetr(detrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
-  ff_detr(model, inputTensorValues, &outputTensorValues);
+  ffDetr(model, tensor, &outputTensorValues);
 
   int nTensors = static_cast<int>(outputTensorValues.size());
   if (nTensors > 0) {
@@ -205,31 +204,31 @@ void forward_detr(detr_model_t *model, opendr_tensor_t *inputTensorValues, opend
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<opendr_tensor> tempTensorsVector;
-    opendr_tensor_t tempTensors[nTensors];
+    std::vector<OpendrTensor> tempTensorsVector;
+    OpendrTensorT tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
-      init_tensor(&(tempTensors[i]));
+      initTensor(&(tempTensors[i]));
 
       batchSizes[i] = 1;
       frames[i] = 1;
       channels[i] = 1;
       widths[i] = 1;
       if (i == 0) {
-        heights[i] = model->output_sizes[0];
+        heights[i] = model->outputSizes[0];
       } else {
-        heights[i] = model->output_sizes[1];
+        heights[i] = model->outputSizes[1];
       }
-      load_tensor(&(tempTensors[i]), outputTensorValues[i].ptr<void>(0), batchSizes[i], frames[i], channels[i], widths[i],
-                  heights[i]);
+      loadTensor(&(tempTensors[i]), outputTensorValues[i].ptr<void>(0), batchSizes[i], frames[i], channels[i], widths[i],
+                 heights[i]);
       tempTensorsVector.push_back(tempTensors[i]);
     }
-    load_tensor_vector(tensorVector, tempTensorsVector.data(), nTensors);
+    loadTensorVector(vector, tempTensorsVector.data(), nTensors);
     for (int i = 0; i < nTensors; i++) {
-      free_tensor(&(tempTensors[i]));
+      freeTensor(&(tempTensors[i]));
     }
 
   } else {
-    init_tensor_vector(tensorVector);
+    initTensorVector(vector);
   }
 }

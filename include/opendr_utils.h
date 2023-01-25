@@ -25,31 +25,40 @@ extern "C" {
 #endif
 
 /**
- * JSON parser for OpenDR model files.
+ * JSON parser to extract strings from OpenDR model files.
  * @param json a string of json file
- * @param key the value to extract from json file
- * @param index the index to choose the value if it is an array, otherwise it is not used
- * @return string with the value of key
+ * @param key the key of value to extract from json file
+ * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @return string with the value of the key
  */
-const char *jsonGetKeyString(const char *json, const char *key, const int index);
+const char *jsonGetStringFromKey(const char *json, const char *key, const int index);
 
 /**
- * JSON parser for OpenDR model files.
+ * JSON parser to extract floats from OpenDR model files.
  * @param json a string of json file
- * @param key the value to extract from json file
- * @param index the index to choose the value if it is an array, otherwise it is not used
- * @return float with the value of key
+ * @param key the key of value to extract from json file
+ * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @return float with the value of the key
  */
-float jsonGetKeyFloat(const char *json, const char *key, const int index);
+float jsonGetFloatFromKey(const char *json, const char *key, const int index);
 
 /**
- * JSON parser for OpenDR model files from inference_params key.
+ * JSON parser to extract strings from OpenDR model files inference_params key.
+ * @param json a string of json file
+ * @param key the key of value to extract from inference_params
+ * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @return string with the value of the key
+ */
+const char *jsonGetStringFromKeyInInferenceParams(const char *json, const char *key, const int index);
+
+/**
+ * JSON parser to extract floats from OpenDR model files inference_params key.
  * @param json a string of json file
  * @param key the value to extract from inference_params
- * @param index the index to choose the value if it is an array, otherwise it is not used
- * @return float with the value of key
+ * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @return float with the value of the key
  */
-float jsonGetKeyFromInferenceParams(const char *json, const char *key, const int index);
+float jsonGetFloatFromKeyInInferenceParams(const char *json, const char *key, const int index);
 
 /**
  * Reads an image from path and saves it into OpenDR image structure.
@@ -66,76 +75,75 @@ void freeImage(OpendrImageT *image);
 
 /**
  * Initialize an empty detection list.
- * @param detectionVector OpenDR OpendrDetectionVectorTarget structure to be initialized
+ * @param vector OpenDR OpendrDetectionVectorTargetT structure to be initialized
  */
-void initDetectionsVector(OpendrDetectionVectorTargetT *detectionVector);
+void initDetectionsVector(OpendrDetectionVectorTargetT *vector);
 
 /**
- * Loads an OpenDR detection target list.
- * @param detectionVector OpenDR OpendrDetectionVectorTarget structure to be loaded
- * @param detection the pointer of the first OpenDR detection target in a vector
+ * Loads an OpenDR vector of detections.
+ * @param vector OpenDR OpendrDetectionVectorTargetT structure to be loaded
+ * @param detectionPtr the pointer of the first OpenDR detection target in a vector
  * @param vectorSize the size of the vector
  */
-void loadDetectionsVector(OpendrDetectionVectorTargetT *detectionVector, OpendrDetectionTargetT *detection, int vectorSize);
+void loadDetectionsVector(OpendrDetectionVectorTargetT *vector, OpendrDetectionTargetT *detectionPtr, int vectorSize);
 
 /**
- * Releases the memory allocated for a detection list structure
- * @param detectionVector OpenDR detection vector target structure to release
+ * Releases the memory allocated for a vector of detections
+ * @param vector OpenDR vector of detections structure to release
  */
-void freeDetectionsVector(OpendrDetectionVectorTargetT *detectionVector);
+void freeDetectionsVector(OpendrDetectionVectorTargetT *vector);
 
 /**
- * Initialize an empty OpenDR tensor to be used in C API
+ * Initialize an empty OpenDR tensor
  * @param tensor OpenDR tensor to initialize
  */
-void init_tensor(opendr_tensor_t *opendr_tensor);
+void initTensor(OpendrTensorT *tensor);
 
 /**
- * Load a tensor values to be used in C.
- * @param tensor Opendr tensor structure to be loaded
- * @param tensor_data vector of cv Mat that holds tensors data to be used
- * @param batch_size batch size for each OpenDR mat in an array of integers
- * @param frames frames size for each OpenDR mat in an array of integers
- * @param channels channels size for each OpenDR mat in an array of integers
- * @param width width size for each OpenDR mat in an array of integers
- * @param height height size for each OpenDR mat in an array of integers
+ * Load a OpenDR tensor
+ * @param tensor OpenDR tensor structure to be loaded
+ * @param tensorData data pointer of a vector that holds tensors data to be loaded
+ * @param batchSize batch size of tensor
+ * @param frames frames size of tensor
+ * @param channels channels size of tensor
+ * @param width width size of tensor
+ * @param height height size of tensor
  */
-void load_tensor(opendr_tensor_t *opendr_tensor, void *tensor_data, int batch_size, int frames, int channels, int width,
-                 int height);
+void loadTensor(OpendrTensorT *tensor, void *tensorData, int batchSize, int frames, int channels, int width, int height);
 
 /**
  * Releases the memory allocated for an OpenDR tensor structure
- * @param opendr_tensor OpenDR tensor structure to release
+ * @param tensor OpenDR tensor structure to release
  */
-void free_tensor(opendr_tensor_t *opendr_tensor);
+void freeTensor(opendrTensorT *tensor);
 
 /**
- * Initialize an empty OpenDR tensor vector to be used in C API
- * @param tensor_vector
+ * Initialize an empty OpenDR vector of tensors
+ * @param vector an OpenDR vector of tensors to initialize
  */
-void init_tensor_vector(opendr_tensor_vector_t *tensor_vector);
+void initTensorVector(OpendrTensorVectorT *vector);
 
 /**
- * Load a vector of tensors values to be used in C.
- * @param tensor_vector OpenDR vector of tensors structure to be loaded
- * @param tensor data in vector of OpenDR tensors structure
- * @param number_of_tensors the number of tensors that we want to load into the structure
+ * Load an OpenDR vector of tensors
+ * @param vector OpenDR vector of tensors structure to be loaded
+ * @param tensorPtr pointer of a vector of OpenDR tensors structure
+ * @param nTensors the number of tensors that we want to load into the structure
  */
-void load_tensor_vector(opendr_tensor_vector_t *tensor_vector, opendr_tensor_t *tensor, int number_of_tensors);
+void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int nTensors);
 
 /**
- * Releases the memory allocated for an OpenDR tensor vector structure
- * @param tensor_vector OpenDR tensor vector structure to release
+ * Releases the memory allocated for an OpenDR vector of tensors
+ * @param vector OpenDR vector of tensors structure to release
  */
-void free_tensor_vector(opendr_tensor_vector_t *tensor_vector);
+void freeTensorVector(OpendrTensorVectorT *vector);
 
 /**
- * Helper function to store a tensor from OpenDR tensor vector structure into an OpenCV Mat.
- * @param tensor OpenDR tensor to store the tensor
- * @param tensor_vector OpenDR tensor vector from which tensor is wanted
- * @param index the tensor is wanted from Opendr tensor vector
+ * Helper function to store an OpenDR tensor from a specific tensor of OpenDR vector of tensors
+ * @param tensor OpenDR tensor to store the wanted data
+ * @param vector the OpenDR vector of tensors source of wanted tensor
+ * @param index the index of tensor that is wanted from OpenDR vector
  */
-void iter_tensor_vector(opendr_tensor_t *output, opendr_tensor_vector_t *tensor_vector, int index);
+void iterTensorVector(OpendrTensorT *tensor, OpendrTensorVectorT *vector, int index);
 
 #ifdef __cplusplus
 }

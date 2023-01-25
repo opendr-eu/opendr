@@ -22,47 +22,45 @@
 
 START_TEST(model_creation_test) {
   // Create a skeleton based action recognition pst model
-  pst_model_t model;
+  PstModelT model;
 
   // Load a pretrained model
-  load_pst_model("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx",
-                 &model);
+  loadPstModel("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx", &model);
 
-  ck_assert(model.onnx_session);
+  ck_assert(model.onnxSession);
   ck_assert(model.env);
-  ck_assert(model.session_options);
+  ck_assert(model.sessionOptions);
 
-  free_pst_model(&model);
+  freePstModel(&model);
 }
 END_TEST
 
 START_TEST(forward_pass_creation_test) {
   // Create a skeleton based action recognition pst model
-  pst_model_t model;
+  PstModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  load_pst_model("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx",
-                 &model);
+  loadPstModel("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx", &model);
   // Load a random tensor and perform forward pass
-  opendr_tensor_t input_tensor;
-  init_tensor(&input_tensor);
+  OpendrTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  init_random_opendr_tensor_pst(&input_tensor, &model);
+  initRandomOpendrTensorPst(&input_tensor, &model);
 
   // Initialize opendr tensor vector for output
-  opendr_tensor_vector_t output_tensor_vector;
-  init_tensor_vector(&output_tensor_vector);
+  OpendrTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  forward_pst(&model, &input_tensor, &output_tensor_vector);
+  forwardPst(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  init_random_opendr_tensor_pst(&input_tensor, &model);
-  forward_pst(&model, &input_tensor, &output_tensor_vector);
+  initRandomOpendrTensorPst(&input_tensor, &model);
+  forwardPst(&model, &input_tensor, &output_tensor_vector);
 
-  ck_assert(output_tensor_vector.n_tensors == 1);
+  ck_assert(output_tensor_vector.nTensors == 1);
 
-  free_pst_model(&model);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
+  freePstModel(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
 }
 END_TEST
 
