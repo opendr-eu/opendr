@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ from tqdm import tqdm
 from shutil import copyfile
 import cv2
 import os
-from algorithm.DDFA import preprocessing_1
-from algorithm.DDFA import preprocessing_2
-from algorithm.Rotate_and_Render import test_multipose
+from .algorithm.DDFA import preprocessing_1
+from .algorithm.DDFA import preprocessing_2
+from .algorithm.Rotate_and_Render import test_multipose
 
 
 class MultiviewDataGeneration():

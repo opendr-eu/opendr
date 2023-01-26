@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ import cv2
 import shutil
 import os
 import torch
+
 from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
 
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 
@@ -46,7 +48,8 @@ class TestYOLOv5DetectorLearner(unittest.TestCase):
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "object_detection_2d",
                                     "yolov5", "yolov5_temp")
-        cls.detector = YOLOv5DetectorLearner(model_name='yolov5s', device=device, temp_path=cls.temp_dir)
+        cls.detector = YOLOv5DetectorLearner(model_name='yolov5s', device=device, temp_path=cls.temp_dir,
+                                             force_reload=True)
 
     @classmethod
     def tearDownClass(cls):

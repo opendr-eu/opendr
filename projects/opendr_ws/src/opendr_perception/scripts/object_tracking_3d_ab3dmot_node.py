@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 import argparse
 import os
 import torch
-from opendr.engine.learners import Learner
 import rospy
 from vision_msgs.msg import Detection3DArray
 from std_msgs.msg import Int32MultiArray

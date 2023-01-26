@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import torch
 import numpy as np
 from opendr_bridge import ROSBridge
 from opendr.simulation.human_model_generation.pifu_generator_learner import PIFuGeneratorLearner
-from simulation.srv import Mesh_vc
+from opendr_simulation.srv import Mesh_vc
 
 
 class PifuNode:

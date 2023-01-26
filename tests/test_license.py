@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/activity_recognition/cox3d/algorithm',
             'src/opendr/perception/object_tracking_2d/fair_mot/algorithm',
             'src/opendr/perception/object_tracking_2d/deep_sort/algorithm',
+            'src/opendr/perception/object_tracking_2d/siamrpn/data_utils',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/backbones',
             'src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/algorithm',
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
@@ -106,19 +107,36 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/detr/algorithm',
             'src/opendr/perception/object_detection_2d/nanodet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
-            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
+            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/algorithm',
+            'src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/algorithm',
+            'projects/python/perception/facial_expression_recognition/image_based_facial_emotion_estimation',
+            'projects/opendr_ws_2/src/opendr_perception/test',
+            'projects/opendr_ws_2/src/opendr_ros2_bridge/test',
+            'projects/opendr_ws_2/src/vision_opencv',
+            'projects/opendr_ws_2/install',
+            'projects/opendr_ws_2/src/data_generation/test',
+            'projects/opendr_ws_2/src/opendr_planning/test',
+            'projects/opendr_ws_2/src/opendr_bridge/test',
+            'projects/opendr_ws_2/src/opendr_interface/test',
+            'projects/opendr_ws_2/src/opendr_data_generation/test',
+            'projects/opendr_ws_2/src/opendr_simulation/test',
         ]
 
         skippedFilePaths = [
             'src/opendr/perception/activity_recognition/datasets/utils/decoder.py',
-            'projects/python/perception/lightweight_open_pose/jetbot/utils/pid.py',
+            'projects/python/perception/pose_estimation/lightweight_open_pose/jetbot/utils/pid.py',
             'src/opendr/perception/compressive_learning/multilinear_compressive_learning/algorithm/trainers.py',
             'src/opendr/perception/object_detection_2d/retinaface/Makefile',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_modulator.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/efficientface_utils.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/spatial_transforms.py',
             'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/transformer_timm.py',
-            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py'
+            'src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/algorithm/utils.py',
+            'projects/opendr_ws_2/src/opendr_perception/setup.py',
+            'projects/opendr_ws_2/src/opendr_planning/setup.py',
+            'projects/opendr_ws_2/src/opendr_bridge/setup.py',
+            'projects/opendr_ws_2/src/data_generation/setup.py',
+            'projects/opendr_ws_2/src/opendr_simulation/setup.py',
         ]
 
         skippedDirectories = [

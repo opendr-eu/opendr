@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         self.covariance_matrix = covariance_matrix
         self.process_uncertainty_matrix = process_uncertainty_matrix
         self.iou_threshold = iou_threshold
+        self.model = None
 
         self.infers_count = 0
         self.infers_time = 0

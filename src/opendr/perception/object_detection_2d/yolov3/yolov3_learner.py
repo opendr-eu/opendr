@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -534,7 +534,6 @@ class YOLOv3DetectorLearner(Learner):
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "/perception/object_detection_2d/yolov3/"):
-        # url='ftp://155.207.131.93/perception/object_detection_2d/yolov3/'):
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
         "images", "test_data"].

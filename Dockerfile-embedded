@@ -1,5 +1,5 @@
 #
-# this dockerfile roughly follows the 'Installing from source' from:
+# This dockerfile roughly follows the 'Installing from source' ROS instructions from:
 #   http://wiki.ros.org/noetic/Installation/Source
 #
 ARG BASE_IMAGE=nvcr.io/nvidia/l4t-base:r32.6.1
@@ -28,11 +28,11 @@ ARG OPENCV_VERSION="4.4.0"
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
             build-essential \
-           gfortran \
+            gfortran \
             cmake \
             git \
-           file \
-           tar \
+            file \
+            tar \
             libatlas-base-dev \
             libavcodec-dev \
             libavformat-dev \
@@ -62,8 +62,8 @@ RUN apt-get update && \
             libxine2-dev \
             libxvidcore-dev \
             libx264-dev \
-           libgtkglext1 \
-           libgtkglext1-dev \
+            libgtkglext1 \
+            libgtkglext1-dev \
             pkg-config \
             qv4l2 \
             v4l-utils \
@@ -74,11 +74,11 @@ RUN apt-get install ca-certificates -y
 # OpenCV looks for the cuDNN version in cudnn_version.h, but it's been renamed to cudnn_version_v8.h
 RUN ln -s /usr/include/$(uname -i)-linux-gnu/cudnn_version_v8.h /usr/include/$(uname -i)-linux-gnu/cudnn_version.h
 
-# architecture-specific build options
+# Architecture-specific build options
 ARG CUDA_ARCH_BIN=""
 ARG ENABLE_NEON="OFF"
 
-# clone and configure OpenCV repo
+# Clone and configure OpenCV repo
 RUN git clone --depth 1 --branch ${OPENCV_VERSION} https://github.com/opencv/opencv.git && \
     git clone --depth 1 --branch ${OPENCV_VERSION} https://github.com/opencv/opencv_contrib.git && \
     cd opencv && \
@@ -86,37 +86,37 @@ RUN git clone --depth 1 --branch ${OPENCV_VERSION} https://github.com/opencv/ope
     cd build && \
     echo "configuring OpenCV ${OPENCV_VERSION}, CUDA_ARCH_BIN=${CUDA_ARCH_BIN}, ENABLE_NEON=${ENABLE_NEON}" && \
     cmake \
-        -D CPACK_BINARY_DEB=ON \
-	   -D BUILD_EXAMPLES=OFF \
-        -D BUILD_opencv_python2=OFF \
-        -D BUILD_opencv_python3=ON \
-	   -D BUILD_opencv_java=OFF \
-        -D CMAKE_BUILD_TYPE=RELEASE \
-        -D CMAKE_INSTALL_PREFIX=/usr/local \
-        -D CUDA_ARCH_BIN=${CUDA_ARCH_BIN} \
-        -D CUDA_ARCH_PTX= \
-        -D CUDA_FAST_MATH=ON \
-        -D CUDNN_INCLUDE_DIR=/usr/include/$(uname -i)-linux-gnu \
-        -D EIGEN_INCLUDE_PATH=/usr/include/eigen3 \
-	   -D WITH_EIGEN=ON \
-        -D ENABLE_NEON=${ENABLE_NEON} \
-        -D OPENCV_DNN_CUDA=ON \
-        -D OPENCV_ENABLE_NONFREE=ON \
-        -D OPENCV_EXTRA_MODULES_PATH=/workspace/opencv_contrib/modules \
-        -D OPENCV_GENERATE_PKGCONFIG=ON \
-        -D WITH_CUBLAS=ON \
-        -D WITH_CUDA=ON \
-        -D WITH_CUDNN=ON \
-        -D WITH_GSTREAMER=ON \
-        -D WITH_LIBV4L=ON \
-        -D WITH_OPENGL=ON \
-	   -D WITH_OPENCL=OFF \
-	   -D WITH_IPP=OFF \
-        -D WITH_TBB=ON \
-	   -D BUILD_TIFF=ON \
-	   -D BUILD_PERF_TESTS=OFF \
-	   -D BUILD_TESTS=OFF \
-	   ../
+    -D CPACK_BINARY_DEB=ON \
+    -D BUILD_EXAMPLES=OFF \
+    -D BUILD_opencv_python2=OFF \
+    -D BUILD_opencv_python3=ON \
+    -D BUILD_opencv_java=OFF \
+    -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CUDA_ARCH_BIN=${CUDA_ARCH_BIN} \
+    -D CUDA_ARCH_PTX= \
+    -D CUDA_FAST_MATH=ON \
+    -D CUDNN_INCLUDE_DIR=/usr/include/$(uname -i)-linux-gnu \
+    -D EIGEN_INCLUDE_PATH=/usr/include/eigen3 \
+    -D WITH_EIGEN=ON \
+    -D ENABLE_NEON=${ENABLE_NEON} \
+    -D OPENCV_DNN_CUDA=ON \
+    -D OPENCV_ENABLE_NONFREE=ON \
+    -D OPENCV_EXTRA_MODULES_PATH=/workspace/opencv_contrib/modules \
+    -D OPENCV_GENERATE_PKGCONFIG=ON \
+    -D WITH_CUBLAS=ON \
+    -D WITH_CUDA=ON \
+    -D WITH_CUDNN=ON \
+    -D WITH_GSTREAMER=ON \
+    -D WITH_LIBV4L=ON \
+    -D WITH_OPENGL=ON \
+    -D WITH_OPENCL=OFF \
+    -D WITH_IPP=OFF \
+    -D WITH_TBB=ON \
+    -D BUILD_TIFF=ON \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_TESTS=OFF \
+    ../
 
 RUN cd opencv/build && make -j$(nproc)
 RUN cd opencv/build && make install
@@ -128,40 +128,40 @@ RUN apt-get update -y
 RUN apt-get install software-properties-common -y && \
     apt-get update
 
-# add the ROS deb repo to the apt sources list
+# Add the ROS deb repo to the apt sources list
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-          git \
-		cmake \
-		build-essential \
-		curl \
-		wget \
-		gnupg2 \
-		lsb-release \
-		ca-certificates \
+    git \
+    cmake \
+    build-essential \
+    curl \
+    wget \
+    gnupg2 \
+    lsb-release \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
 
 #
-# install bootstrap dependencies
+# Install bootstrap dependencies
 #
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-          libpython3-dev \
-          python3-rosdep \
-          python3-rosinstall-generator \
-          python3-vcstool \
-          libyaml-cpp-dev \
-          build-essential && \
+    libpython3-dev \
+    python3-rosdep \
+    python3-rosinstall-generator \
+    python3-vcstool \
+    libyaml-cpp-dev \
+    build-essential && \
     rosdep init && \
     rosdep update && \
     rm -rf /var/lib/apt/lists/*
 
 #
-# download/build the ROS source
+# Download/build the ROS source
 #
 RUN mkdir ros_catkin_ws && \
     cd ros_catkin_ws && \
@@ -186,16 +186,16 @@ RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> /root/.bashrc
 CMD ["bash"]
 WORKDIR /
 
-RUN git clone --depth 1 --recurse-submodules -j8 --branch tx2_install_dev https://github.com/opendr-eu/opendr
+RUN git clone --depth 1 --recurse-submodules -j8 --branch master https://github.com/opendr-eu/opendr
 RUN apt-get update
 RUN cd ./opendr && ./bin/install_nvidia.sh $device
 RUN cd ./opendr/projects/opendr_ws/src && \
-	git clone --branch noetic https://github.com/ros-perception/vision_opencv && \
+    git clone --branch noetic https://github.com/ros-perception/vision_opencv && \
     git clone --branch develop https://github.com/bosch-ros-pkg/usb_cam.git && \
     cd ./usb_cam && git reset --hard 3ce8ee1 && cd ../ && \
     git clone https://github.com/ros-perception/image_common.git && \
     git clone https://github.com/ros-drivers/audio_common && \
-	sed -i 's/(Boost REQUIRED python37)/(Boost REQUIRED python3)/' ./vision_opencv/cv_bridge/CMakeLists.txt && \
-	cd ../
+    sed -i 's/(Boost REQUIRED python37)/(Boost REQUIRED python3)/' ./vision_opencv/cv_bridge/CMakeLists.txt && \
+    cd ../
 
 RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; cd /opendr/projects/opendr_ws; catkin_make'

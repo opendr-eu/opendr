@@ -22,6 +22,8 @@ ______________________________________________________________________
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Test Suite (master)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml/badge.svg)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml)
 [![Test Packages](https://github.com/opendr-eu/opendr/actions/workflows/test_packages.yml/badge.svg)](https://github.com/opendr-eu/opendr/actions/workflows/test_packages.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7540781.svg)](https://doi.org/10.5281/zenodo.7540781)
+
 </div>
 
 ## About
@@ -39,7 +41,7 @@ OpenDR aims to develop, train, deploy and evaluate deep learning models that imp
 
 ## Where to start?
 
-You can start by [installing](docs/reference/installation.md) the OpenDR toolkit. 
+You can start by [installing](docs/reference/installation.md) the OpenDR toolkit.
 OpenDR can be installed in the following ways:
 1. By *cloning* this repository (CPU/GPU support)
 2. Using *pip* (CPU/GPU support only)
@@ -53,7 +55,7 @@ OpenDR is built to support [Webots Open Source Robot Simulator](https://cyberbot
 
 ## How can I start using OpenDR?
 
-You can find detailed documentation in OpenDR [wiki](https://github.com/opendr-eu/opendr/wiki). 
+You can find detailed documentation in OpenDR [wiki](https://github.com/opendr-eu/opendr/wiki).
 The main point of reference after installing the toolkit is the [tools index](docs/reference/index.md).
 Starting from there, you can find detailed documentation for all the tools included in OpenDR.
 

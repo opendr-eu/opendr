@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import os
 from cv_bridge import CvBridge
 from opendr_bridge import ROSBridge
 from std_msgs.msg import Bool
-from simulation.srv import Mesh_vc
+from opendr_simulation.srv import Mesh_vc
 from opendr.simulation.human_model_generation.utilities.model_3D import Model_3D
 
 

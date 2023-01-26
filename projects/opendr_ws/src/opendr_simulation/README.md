@@ -1,4 +1,4 @@
-# Simulation Package
+# OpenDR Simulation Package
 
 This package contains ROS nodes related to simulation package of OpenDR.
 
@@ -14,10 +14,10 @@ export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 2. You can start the human model generation service node. 
 
 ```shell
-rosrun simulation human_model_generation_service.py
+rosrun opendr_simulation human_model_generation_service.py
 ```
 
 3. An example client node can run to examine the basic utilities of the service.
 ```shell
-rosrun simulation human_model_generation_client.py
+rosrun opendr_simulation human_model_generation_client.py
 ```

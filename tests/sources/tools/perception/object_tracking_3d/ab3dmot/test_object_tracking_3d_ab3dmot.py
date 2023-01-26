@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,6 +48,9 @@ class TestObjectTracking3DAb3dmot(unittest.TestCase):
             cls.temp_dir, True
         )
 
+        cls.use_long_tests = os.environ.get("OPENDR_USE_LONG_TESTS", "False") == "True"
+        cls.long_tracking_dataset_path = os.environ.get("OPENDR_KITTI_TRACKING_PATH", "")
+
         print("Dataset downloaded", file=sys.stderr)
 
     @classmethod
@@ -70,11 +73,25 @@ class TestObjectTracking3DAb3dmot(unittest.TestCase):
     def test_eval(self):
 
         learner = ObjectTracking3DAb3dmotLearner()
-        results = learner.eval(self.dataset, count=1)
 
-        self.assertTrue("car" in results)
-        self.assertTrue("pedestrian" in results)
-        self.assertTrue("cyclist" in results)
+        if self.use_long_tests:
+
+            self.assertTrue(len(self.long_tracking_dataset_path) > 0)
+
+            dataset = KittiTrackingDatasetIterator(self.long_tracking_dataset_path, self.long_tracking_dataset_path, "tracking")
+
+            results = learner.eval(dataset)
+            self.assertTrue("car" in results)
+            self.assertTrue("pedestrian" in results)
+            self.assertTrue("cyclist" in results)
+            for k, v in results.items():
+                print(k, v)
+        else:
+            results = learner.eval(self.dataset, count=1)
+
+            self.assertTrue("car" in results)
+            self.assertTrue("pedestrian" in results)
+            self.assertTrue("cyclist" in results)
 
     def test_infer(self):
 
