@@ -60,14 +60,13 @@ class ContinualSLAMLearner(Learner):
         if self.mode == 'predictor':
             # Create the predictor object
             self.predictor = DepthPoseModule(self.model_config, self.dataset_config, use_online=False, mode=mode)
-            self.predictor.load_model()
-            if not True:
-                self.predictor._create_dataset_loaders(training=False, validation=True)
+            self.predictor.load_model(load_optimizer=True)
         elif self.mode == 'learner':
-            self.learner = DepthPoseModule(self.model_config, self.dataset_config, use_online=True, mode=mode)
-            self.learner.load_model()
-            if not True:
-                self.learner._create_dataset_loaders(training=False, validation=True)
+            self.learner = DepthPoseModule(self.model_config, self.dataset_config, use_online=False, mode=mode)
+            self.learner.load_model(load_optimizer=True)
+            depth_pose_config = self.config_file.depth_pose
+            for g in self.learner.optimizer.param_groups:
+                g['lr'] = depth_pose_config.learning_rate
         else:
             raise ValueError('Mode should be either predictor or learner')
 
@@ -258,18 +257,20 @@ class ContinualSLAMLearner(Learner):
 if __name__ == "__main__":
     local_path = Path(__file__).parent / 'configs'
     learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=False)
-    predictor = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='predictor', ros=False)
 
     # Test the learner/predictor
     from opendr.perception.continual_slam.datasets.kitti import KittiDataset
-    dataset_config_file = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset.dataset_path
-    dataset = KittiDataset(str(dataset_config_file))
+    dataset_config = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset
+    dataset_path = dataset_config.dataset_path
+    dataset = KittiDataset(str(dataset_path), dataset_config)
 
     from PIL import Image as imgg 
     import time
 
     for i, batch in enumerate(dataset):
+        if i < 5:
+            continue
         depth, odometry = learner.fit(batch)
-        depth, odometry = predictor.infer(batch)
+        # depth, odometry = predictor.infer(batch)
         message = learner.save()
-        predictor.load(message)
+        # predictor.load(message)

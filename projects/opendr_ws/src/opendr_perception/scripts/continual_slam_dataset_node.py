@@ -21,8 +21,11 @@ import time
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from opendr_bridge import ROSBridge
+
+from pathlib import Path
 from opendr.engine.datasets import DatasetIterator
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
+from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 
 
 class ContinualSlamDatasetNode:
@@ -108,7 +111,10 @@ def main():
                         help="Dataset frame rate")
     args = parser.parse_args()
 
-    dataset = KittiDataset(args.dataset_path)
+    local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
+    config_path = local_path / 'singlegpu_kitti.yaml'
+    config_file = ConfigParser(config_path).dataset
+    dataset = KittiDataset(args.dataset_path, config_file)
     node = ContinualSlamDatasetNode(dataset, 
                                     args.output_image_topic,  
                                     args.output_distance_topic, 

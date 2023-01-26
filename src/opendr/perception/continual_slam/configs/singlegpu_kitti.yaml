@@ -2,8 +2,8 @@ Dataset:
   dataset: Kitti
   dataset_path: /home/canakcia/Desktop/kitti_dset
   scales: [ 0, 1, 2, 3 ] # Provided by dataloader
-  height: 370
-  width: 1226
+  height: 192
+  width: 640
   frame_ids: [ 0, -1, 1 ]
 
 DepthPosePrediction:
@@ -14,19 +14,19 @@ DepthPosePrediction:
   scales: [ 0, 1, 2, 3 ]  # Network size
   learning_rate: 1e-4
   scheduler_step_size: 15
-  batch_size: 18
+  batch_size: 1
   num_workers: 12
   num_epochs: 25
   min_depth: .1
   max_depth:
   disparity_smoothness: .001
   velocity_loss_scaling: .05
-  mask_dynamic: false
+  mask_dynamic: False
   log_path: ./log/kitti
   save_frequency: 5
   save_val_depth: true
   save_val_depth_batches: 1
   multiple_gpus: true
   gpu_ids: [ 0 ]
-  load_weights_folder: '/home/canakcia/opendr/model_weights_3'
+  load_weights_folder: /home/canakcia/Downloads/weights_025
   use_wandb: false

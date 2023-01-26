@@ -48,7 +48,7 @@ class DepthPoseModule:
         self.num_pose_frames = 2
         self.camera_matrix = np.array(
             [[0.58, 0, 0.5, 0], [0, 1.92, 0.5, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
-        self.frame_ids = [0, -1, 1]
+        self.frame_ids = (0, -1, 1)
 
         # Set the device
         self.device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -151,6 +151,14 @@ class DepthPoseModule:
         :type: bool
         """
         self._load_model(weights_folder, load_optimizer)
+
+    def load_online_model(self, load_optimizer: bool = True) -> None:
+        """
+        Load the online model from the checkpoint.
+        :param load_optimizer: Whether to load the optimizer. Defaults to True.
+        :type: bool
+        """
+        self._load_online_model(load_optimizer)
 
     def create_dataset_loaders(self,
                                training: bool = False,
@@ -255,14 +263,14 @@ class DepthPoseModule:
             for m in self.online_models.values():
                 m.to(self.device)
                 self.online_parameters_to_train += list(m.parameters())
-            for m in self.backproject_depth.values():
-                m.to(self.device)
-            for m in self.project_3d.values():
-                m.to(self.device)
-            for m in self.backproject_depth_single.values():
-                m.to(self.device)
-            for m in self.project_3d_single.values():
-                m.to(self.device)
+        for m in self.backproject_depth.values():
+            m.to(self.device)
+        for m in self.project_3d.values():
+            m.to(self.device)
+        for m in self.backproject_depth_single.values():
+            m.to(self.device)
+        for m in self.project_3d_single.values():
+            m.to(self.device)
         # =================================================
 
         # Set up optimizer ================================
@@ -301,13 +309,13 @@ class DepthPoseModule:
                 inputs[key[0]] = data.to(self.device)
 
         # Compute predictions
-        from PIL import Image as pil_image
-        for key, data in inputs.items():
-            # x = inputs[key].cpu().numpy().squeeze(0)
-            # print(x.shape, key)
-            # img = pil_image.fromarray(x.transpose(1, 2, 0) * 255, 'RGB')
-            img = ToPILImage()(inputs[key].cpu().squeeze(0))
-            img.save(f'test_{key}.png')
+        # from PIL import Image as pil_image
+        # for key, data in inputs.items():
+        #     # x = inputs[key].cpu().numpy().squeeze(0)
+        #     # print(x.shape, key)
+        #     # img = pil_image.fromarray(x.transpose(1, 2, 0) * 255, 'RGB')
+        #     img = ToPILImage()(inputs[key].cpu().squeeze(0))
+        #     img.save(f'test_{key}.png')
         outputs = {}
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))
@@ -414,15 +422,10 @@ class DepthPoseModule:
             depth = disp_to_depth(disp, self.min_depth, self.max_depth)
             outputs[('depth', scale, 0)] = depth
             if self.mode == 'learner':
-                camera_matrix = self.camera_matrix.copy()
-                original_image_shape = inputs[0].shape
-                camera_matrix[0, :] *= original_image_shape[-2]
-                camera_matrix[1, :] *= original_image_shape[-1]
-                inv_camera_matrix = np.linalg.pinv(camera_matrix)
-                camera_matrix = torch.Tensor(camera_matrix).to(self.device)
-                inv_camera_matrix = torch.Tensor(inv_camera_matrix).to(self.device)
-                camera_matrix = camera_matrix.unsqueeze(0)
-                inv_camera_matrix = inv_camera_matrix.unsqueeze(0)
+                camera_matrix, inv_camera_matrix = self._scale_camera_matrix(
+                    self.camera_matrix, scale)
+                camera_matrix = torch.Tensor(camera_matrix).to(self.device).unsqueeze(0)
+                inv_camera_matrix = torch.Tensor(inv_camera_matrix).to(self.device).unsqueeze(0)
 
                 for _, frame_id in enumerate(self.frame_ids[1:]):
                     T = outputs[('cam_T_cam', 0, frame_id)]
@@ -500,6 +503,14 @@ class DepthPoseModule:
                                                                                  invert=(frame_id == -1))
         return outputs
 
+    def _scale_camera_matrix(self, camera_matrix: np.ndarray,
+                             scale: int) -> Tuple[np.ndarray, np.ndarray]:
+        scaled_camera_matrix = camera_matrix.copy()
+        scaled_camera_matrix[0, :] *= self.width // (2**scale)
+        scaled_camera_matrix[1, :] *= self.height // (2**scale)
+        inv_scaled_camera_matrix = np.linalg.pinv(scaled_camera_matrix)
+        return scaled_camera_matrix, inv_scaled_camera_matrix
+
     def _create_dataset_loaders(self, training: bool = True, validation: bool = True) -> None:
         if self.dataset_type.lower() != 'kitti':
             raise ValueError(f'Unknown dataset type: {self.dataset_type}')
@@ -556,6 +567,50 @@ class DepthPoseModule:
                 else:
                     self.optimizer.load_state_dict(optimizer_dict)
                     print('Restored optimizer (legacy mode).')
+            except:  # pylint: disable=bare-except
+                print('Cannot find matching optimizer weights, so the optimizer is randomly '
+                      'initialized.')
+
+
+    def _load_online_model(self, load_optimizer: bool = True) -> None:
+        """Load model(s) from disk
+        """
+        if self.load_weights_folder is None:
+            print('Weights folder required to load the model is not specified.')
+        if not self.load_weights_folder.exists():
+            print(f'Cannot find folder: {self.load_weights_folder}')
+        print(f'Load online model from: {self.load_weights_folder}')
+
+        # Load the network weights
+        for model_name, model in self.online_models.items():
+            if model is None:
+                continue
+            path = self.load_weights_folder / f'{model_name}.pth'
+            pretrained_dict = torch.load(path, map_location=self.device)
+            if isinstance(model, nn.DataParallel):
+                model_dict = model.module.state_dict()
+            else:
+                model_dict = model.state_dict()
+            pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+            if len(pretrained_dict.keys()) == 0:
+                raise RuntimeError(f'No fitting weights found in: {path}')
+            model_dict.update(pretrained_dict)
+            if isinstance(model, nn.DataParallel):
+                model.module.load_state_dict(model_dict)
+            else:
+                model.load_state_dict(model_dict)
+
+        if load_optimizer:
+            # Load the optimizer and LR scheduler
+            optimizer_load_path = self.load_weights_folder / 'optimizer.pth'
+            try:
+                optimizer_dict = torch.load(optimizer_load_path, map_location=self.device)
+                if 'optimizer' in optimizer_dict:
+                    self.online_optimizer.load_state_dict(optimizer_dict['optimizer'])
+                    print('Restored online optimizer')
+                else:
+                    self.online_optimizer.load_state_dict(optimizer_dict)
+                    print('Restored online optimizer (legacy mode).')
             except:  # pylint: disable=bare-except
                 print('Cannot find matching optimizer weights, so the optimizer is randomly '
                       'initialized.')

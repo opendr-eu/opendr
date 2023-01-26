@@ -9,20 +9,24 @@ from typing import Tuple, Union, Any, List
 
 from opendr.engine.data import Image
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.perception.continual_slam.datasets.config import Dataset
 
+from torchvision.transforms import Resize, InterpolationMode
+from PIL import Image as PILImage
+import cv2
 
 class KittiDataset(ExternalDataset, DatasetIterator):
 
-    def __init__(self, path: Union[str, Path, PathLike]):
+    def __init__(self, path: Union[str, Path, PathLike], config: Dataset):
         super().__init__(path, dataset_type='kitti')
 
         self._path = Path(os.path.join(path, 'sequences'))
 
         # ========================================================
-        self.frame_ids = [0, -1, 1]
-        self.scales = [0, 1, 2, 3]
-        self.height = 192
-        self.width = 640
+        self.frame_ids = config.frame_ids
+        self.height = config.height
+        self.width = config.width
+        self.scales = config.scales
         # self.valid_sequences = ['00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10']
         self.valid_sequences = ['10']
         self.sequences = os.listdir(self._path)
@@ -114,7 +118,10 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         """
         data = {}
         for i in range(idx, idx+3):
-            image = Image.open(str(self.images[i]))
+            image = PILImage.open(str(self.images[i]))
+            image = Resize((self.height, self.width), interpolation=InterpolationMode.LANCZOS)(image)
+            image = Image(image).opencv().transpose(2, 0, 1)
+            image = Image(image)
             distance = self._load_relative_distance(i)
             image_id = self.images[i].name.split('.')[0]
             sequence_id = re.findall("sequences/\d\d", str(self.images[i]))[0].split('/')[1]
