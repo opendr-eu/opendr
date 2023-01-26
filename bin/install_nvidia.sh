@@ -89,17 +89,7 @@ cd ../
 rm -r torchvision/
 
 # Install dlib
-wget http://dlib.net/files/dlib-19.21.tar.bz2
-tar jxvf dlib-19.21.tar.bz2
-cd dlib-19.21/
-mkdir build
-cd build/
-cmake ..
-cmake --build .
-cd ../
-sudo python3 setup.py install
-cd $OPENDR_HOME
-rm dlib-19.21.tar.bz2
+pip3 install dlib
 
 apt-get install -y libprotobuf-dev protobuf-compiler
 apt-get install -y python3-tk
