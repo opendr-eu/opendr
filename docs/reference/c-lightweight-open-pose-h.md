@@ -1,52 +1,52 @@
 ## C_API: lightweight_open_pose.h
 
 
-The *lightweight_open_pose.h* header provides function definitions that can be used for accessing the OpenDR pose estimation, lightweight open pose tool.
+The *lightweight_open_pose.h* header provides function definitions that can be used for accessing the OpenDR lightweight open pose, pose estimation tool.
 
-### Struct *open_pose_model_t*
+### Struct *OpenPoseModelT*
 ```C
-struct open_pose_model {
+struct OpenPoseModel {
  ...
 };
-typedef struct open_pose_model open_pose_model_t;
+typedef struct OpenPoseModel OpenPoseModelT;
 ```
-The *open_pose_model_t* structure keeps all the necessary information that are required by the OpenDR pose estimation lightweight open pose tool (e.g., model weights, normalization information, ONNX session information, etc.).
+The *OpenPoseModelT* structure keeps all the necessary information that are required by the OpenDR lightweight open pose tool (e.g., model weights, normalization information, ONNX session information, etc.).
 
 
-### Function *load_open_pose_model()*
+### Function *loadOpenPoseModel()*
 ```C
-void load_open_pose_model(char *modelPath, open_pose_model_t *model);
+void loadOpenPoseModel(const char *modelPath, OpenPoseModelT *model);
 ```
  Loads a lightweight open pose, pose estimation model saved in the local filesystem (*modelPath*) in OpenDR format.
  This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  
-### Function *free_open_pose_model()*
+### Function *freeOpenPoseModel()*
 ```C
-void free_open_pose_model(open_pose_model_t *model);
+void freeOpenPoseModel(OpenPoseModelT *model);
 ```
 Releases the memory allocated for a pose estimation lightweight open pose model (*model*).
 
 
-### Function *forward_open_pose()*
+### Function *forwardOpenPose()*
 ```C
-void forward_open_pose(open_pose_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 ```
-This function perform forward pass using a pose estimation, lightweight open pose model (*model*) and an input tensor (*inputTensorValues*).
-The function returns an OpenDR tensor vector structure with the forward pass results.
+This function perform forward pass using a pose estimation, lightweight open pose model (*model*) and an input tensor (*tensor*).
+The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 
-### Function *init_random_opendr_tensor_op()*
+### Function *initRandomOpendrTensorOp()*
 ```C
-void init_random_opendr_tensor_op(opendr_tensor_t *inputTensorValues, open_pose_model_t *model);
+void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model);
 ```
-This is used to initialize a random OpenDR tensor structure (*inputTensorValues*) with the appropriate dimensions for the pose estimation lightweight open pose model (*model*).
+This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the pose estimation lightweight open pose model (*model*).
 The (*model*) keeps all the necessary information.
 
-### Function *init_opendr_tensor_from_img_op()*
+### Function *initOpendrTensorFromImgOp()*
 ```C
-void init_opendr_tensor_from_img_op(opendr_image_t *image, opendr_tensor_t *inputTensorValues, open_pose_model_t *model);
+void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenPoseModelT *model);
 ```
-This is used to initialize an OpenDR tensor structure (*inputTensorValues*) with the data from an OpenDR image (*image*) for the pose estimation lightweight open pose model (*model*).
+This is used to initialize an OpenDR tensor structure (*tensor*) with the data from an OpenDR image (*image*) for the lightweight open pose model (*model*).
 The (*model*) keeps all the necessary information.

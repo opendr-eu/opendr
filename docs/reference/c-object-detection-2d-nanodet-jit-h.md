@@ -35,13 +35,13 @@ Releases the memory allocated for an object detection 2D Nanodet model (*model*)
 OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
 ```
 This function performs inference using an object detection 2D Nanodet model (*model*) and an input image (*image*).
-The function returns an OpenDR detection vector structure with the inference results.
+The function returns an OpenDR vector of detections structure with the inference results.
 
 
 ### Function *drawBboxes()*
 ```C
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
+void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *vector);
 ```
-This function draws the given detections (*detectionsVector*) onto the input image (*image*) and then shows the image on screen.
+This function draws the given detections (*vector*) onto the input image (*image*) and then shows the image on screen.
 The (*model*) keeps all the necessary information.
 

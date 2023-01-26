@@ -1,46 +1,46 @@
 ## C_API: activity_recognition_2d_x3d.h
 
 
-The *activity_recognition_2d_x3d.h* header provides function definitions that can be used for accessing the OpenDR activity recognition 2d x3d tool.
+The *activity_recognition_2d_x3d.h* header provides function definitions that can be used for accessing the OpenDR activity recognition x3d tool.
 
-### Struct *x3d_model_t*
+### Struct *X3dModelT*
 ```C
-struct x3d_model {
+struct X3dModel {
   ...
 };
-typedef struct x3d_model x3d_model_t;
+typedef struct X3dModel X3dModelT;
 ```
-The *x3d_model_t* structure keeps all the necessary information that are required by the OpenDR activity recognition 2d x3d tool (e.g., model weights, normalization information, ONNX session information, etc.).
+The *X3dModelT* structure keeps all the necessary information that are required by the OpenDR activity recognition x3d tool (e.g., model weights, normalization information, ONNX session information, etc.).
 
 
-### Function *load_x3d_model()*
+### Function *loadX3dModel()*
 ```C
-void load_x3d_model(char *modelPath, x3d_model_t *model);
+void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model);
 ```
- Loads a x3d activity recognition model saved in the local filesystem (*modelPath*) in OpenDR format.
+ Loads a x3d activity recognition model saved in the local filesystem (*modelPath*) in OpenDR format, with the expected hyperparameters of (*mode*).
  This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
  
-### Function *free_x3d_model()*
+### Function *freeX3dModel()*
 ```C
-void free_x3d_model(x3d_model_t *model);
+void freeX3dModel(X3dModelT *model);
 ```
-Releases the memory allocated for an activity recognition 2d x3d model (*model*).
+Releases the memory allocated for an activity recognition x3d model (*model*).
 
 
-### Function *forward_x3d()*
+### Function *forwardX3d()*
 ```C
-void forward_x3d(x3d_model_t *model, opendr_tensor_t *inputTensorValues, opendr_tensor_vector_t *tensorVector);
+void forwardX3d(X3dModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 ```
-This function perform forward pass using an activity recognition 2d x3d model (*model*) and an input tensor (*inputTensorValues*).
-The function returns an OpenDR tensor vector structure with the forward pass results.
+This function perform forward pass using an activity recognition x3d model (*model*) and an input tensor (*tensor*).
+The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 
-### Function *init_random_opendr_tensor_x3d()*
+### Function *initRandomOpendrTensorX3d()*
 ```C
-void init_random_opendr_tensor_x3d(opendr_tensor_t *inputTensorValues, x3d_model_t *model);
+void initRandomOpendrTensorX3d(OpendrTensorT *tensor, X3dModelT *model);
 ```
-This is used to initialize a random OpenDR tensor structure (*inputTensorValues*) with the appropriate dimensions for the activity recognition x3d model (*model*).
+This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the activity recognition x3d model (*model*).
 The (*model*) keeps all the necessary information.
 
