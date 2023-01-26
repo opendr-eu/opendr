@@ -87,7 +87,7 @@ void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model) {
     model->framesPerClip = 4;
   } else {
     std::cout << "mode: {'" << modeName
-               << "'} is not a compatible choice, please use one of {'xs', 's', 'm', 'l'} and try again." << std::endl;
+              << "'} is not a compatible choice, please use one of {'xs', 's', 'm', 'l'} and try again." << std::endl;
     return;
   }
 

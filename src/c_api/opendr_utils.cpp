@@ -164,9 +164,10 @@ void loadDetectionsVector(OpendrDetectionVectorTargetT *vector, OpendrDetectionT
 }
 
 void freeDetectionsVector(OpendrDetectionVectorTargetT *vector) {
-  if (vector->startingPointer != NULL)
+  if (vector->startingPointer != NULL) {
     free(vector->startingPointer);
     vector->startingPointer = NULL;
+  }
 }
 
 void initTensor(OpendrTensorT *tensor) {
