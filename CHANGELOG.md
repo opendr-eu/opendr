@@ -3,6 +3,19 @@
 ## Version 2.1.0
 Released on XX, XX, 2023.
 
+  - New Features:
+    - Added Nanodet 2D Object detection tool ([#352](https://github.com/opendr-eu/opendr/pull/352)).
+    - Added C API implementations of Nanodet 2D Object detection tool ([#352](https://github.com/opendr-eu/opendr/pull/352)).
+    - Added C API implementations of forward pass of Detr 2D Object detection tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
+    - Added C API implementations of forward pass of Deep Sort 2D Object tracking tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
+    - Added C API implementations of forward pass of Lightweight open pose, Pose estimator tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
+    - Added C API implementations of forward pass of X3D 2D Activity recognition tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
+    - Added C API implementations of forward pass of Progressive spatiotemporal GCN Skeleton based action recognition tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
+  - Enhancements:
+    - Added support in C API for detection target structure and vector of detections ([#352](https://github.com/opendr-eu/opendr/pull/352))
+    - Added support in C API for tensor structure and vector of tensors ([#383](https://github.com/opendr-eu/opendr/pull/383))
+    - Added support in C API for json parser ([#383](https://github.com/opendr-eu/opendr/pull/383))
+
 ## Version 2.0.0
 Released on December, 31st, 2022.
 
