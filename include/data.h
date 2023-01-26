@@ -54,7 +54,7 @@ struct OpendrTensorVector {
   int *widths;
   int *heights;
 
-  float **memories;
+  float **datas;
 };
 typedef struct OpendrTensorVector OpendrTensorVectorT;
 

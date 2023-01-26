@@ -115,7 +115,7 @@ void loadTensor(OpendrTensorT *tensor, void *tensorData, int batchSize, int fram
  * Releases the memory allocated for an OpenDR tensor structure
  * @param tensor OpenDR tensor structure to release
  */
-void freeTensor(opendrTensorT *tensor);
+void freeTensor(OpendrTensorT *tensor);
 
 /**
  * Initialize an empty OpenDR vector of tensors

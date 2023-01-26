@@ -41,7 +41,7 @@ START_TEST(model_creation_test) {
   ck_assert(!model.sessionOptions);
 
   // Release the resources
-  free_detr_model(&model);
+  freeDetrModel(&model);
 }
 END_TEST
 

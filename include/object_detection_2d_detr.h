@@ -59,7 +59,7 @@ void loadDetrModel(const char *modelPath, DetrModelT *model);
  * @param tensor OpenDR tensor structure which will be used as input of the model
  * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forwardDetr(DetrModelT *model, opendrTensorT *tensor, opendrTensorVectorT *vector);
+void forwardDetr(DetrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a detr object detection model
@@ -72,7 +72,7 @@ void freeDetrModel(DetrModelT *model);
  * @param tensor OpenDR tensor structure to be loaded with random values
  * @param model model to be used to initialize the tensor
  */
-void initRandomOpendrTensorDetr(opendrTensorT *tensor, DetrModelT *model);
+void initRandomOpendrTensorDetr(OpendrTensorT *tensor, DetrModelT *model);
 
 #ifdef __cplusplus
 }

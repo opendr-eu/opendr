@@ -166,6 +166,7 @@ void loadDetectionsVector(OpendrDetectionVectorTargetT *vector, OpendrDetectionT
 void freeDetectionsVector(OpendrDetectionVectorTargetT *vector) {
   if (vector->startingPointer != NULL)
     free(vector->startingPointer);
+    vector->startingPointer = NULL;
 }
 
 void initTensor(OpendrTensorT *tensor) {
@@ -205,7 +206,7 @@ void initTensorVector(OpendrTensorVectorT *vector) {
   vector->channels = NULL;
   vector->widths = NULL;
   vector->heights = NULL;
-  vector->memories = NULL;
+  vector->datas = NULL;
 }
 
 void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int nTensors) {
@@ -221,7 +222,7 @@ void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int
   vector->heights = static_cast<int *>(malloc(sizeOfDataShape));
 
   /* initialize array to hold data values for all tensors */
-  vector->memories = static_cast<float **>(malloc(nTensors * sizeof(float *)));
+  vector->datas = static_cast<float **>(malloc(nTensors * sizeof(float *)));
 
   /* copy size values */
   for (int i = 0; i < nTensors; i++) {
@@ -235,11 +236,11 @@ void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int
      * initialize a data pointer into a tensor,
      * copy the values,
      * set tensor data pointer to watch the memory pointer*/
-    int sizeOfData = ((tensorPtr[i].batchSizes) * (tensorPtr[i].frames) * (tensorPtr[i].channels) * (tensorPtr[i].width) *
+    int sizeOfData = ((tensorPtr[i].batchSize) * (tensorPtr[i].frames) * (tensorPtr[i].channels) * (tensorPtr[i].width) *
                       (tensorPtr[i].height) * sizeof(float));
     float *memoryOfDataTensor = static_cast<float *>(malloc(sizeOfData));
     std::memcpy(memoryOfDataTensor, tensorPtr[i].data, sizeOfData);
-    (vector->memories)[i] = memoryOfDataTensor;
+    (vector->datas)[i] = memoryOfDataTensor;
   }
 }
 
@@ -267,9 +268,9 @@ void freeTensorVector(OpendrTensorVectorT *vector) {
   }
 
   // free tensors data and vector memory
-  if (vector->memories != NULL) {
-    free(vector->memories);
-    vector->memories = NULL;
+  if (vector->datas != NULL) {
+    free(vector->datas);
+    vector->datas = NULL;
   }
 
   // reset tensor vector values
@@ -277,6 +278,6 @@ void freeTensorVector(OpendrTensorVectorT *vector) {
 }
 
 void iterTensorVector(OpendrTensorT *tensor, OpendrTensorVectorT *vector, int index) {
-  loadTensor(tensor, static_cast<void *>((vector->memories)[index]), (vector->batchSizes)[index], (vector->frames)[index],
+  loadTensor(tensor, static_cast<void *>((vector->datas)[index]), (vector->batchSizes)[index], (vector->frames)[index],
              (vector->channels)[index], (vector->widths)[index], (vector->heights)[index]);
 }

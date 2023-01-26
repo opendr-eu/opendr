@@ -58,7 +58,7 @@ START_TEST(tensor_init_load_test) {
   ck_assert(opendr_tensor.data);
   // Free the resources
   free(tensor_data);
-  free_tensor(&opendr_tensor);
+  freeTensor(&opendr_tensor);
   ck_assert(opendr_tensor.data == NULL);
 }
 END_TEST
@@ -74,7 +74,7 @@ START_TEST(tensor_vector_init_load_test) {
   ck_assert(tensor_vector.channels == NULL);
   ck_assert(tensor_vector.widths == NULL);
   ck_assert(tensor_vector.heights == NULL);
-  ck_assert(tensor_vector.memories == NULL);
+  ck_assert(tensor_vector.datas == NULL);
 
   OpendrTensorT tensor[1];
   initTensor(&(tensor[0]));
@@ -83,13 +83,13 @@ START_TEST(tensor_vector_init_load_test) {
   loadTensor(&(tensor[0]), tensor_data, 1, 1, 1, 1, 1);
 
   loadTensorVector(&tensor_vector, tensor, 1);
-  ck_assert(tensor_vector.memories);
+  ck_assert(tensor_vector.datas);
   // Free the resources
   free(tensor_data);
   freeTensor(&(tensor[0]));
 
   freeTensorVector(&tensor_vector);
-  ck_assert(tensor_vector.memories == NULL);
+  ck_assert(tensor_vector.datas == NULL);
 }
 END_TEST
 

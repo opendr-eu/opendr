@@ -61,9 +61,9 @@ START_TEST(forward_pass_creation_test) {
   ck_assert(output_tensor_vector.nTensors == 1);
 
   // Free the model resources
-  free_deep_sort_model(&model);
-  free_tensor(&input_tensor);
-  free_tensor_vector(&output_tensor_vector);
+  freeDeepSortModel(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
 }
 END_TEST
 

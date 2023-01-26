@@ -75,7 +75,7 @@ void freeNanodetModel(NanodetModelT *model);
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
  */
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector);
+void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *vector);
 
 #ifdef __cplusplus
 }

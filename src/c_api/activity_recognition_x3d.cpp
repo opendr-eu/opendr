@@ -86,7 +86,7 @@ void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model) {
     model->modelSize = 160;
     model->framesPerClip = 4;
   } else {
-    std::count << "mode: {'" << modeName
+    std::cout << "mode: {'" << modeName
                << "'} is not a compatible choice, please use one of {'xs', 's', 'm', 'l'} and try again." << std::endl;
     return;
   }
@@ -97,7 +97,7 @@ void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model) {
   model->features = 400;
 }
 
-void freeX3dModel(x3dModelT *model) {
+void freeX3dModel(X3dModelT *model) {
   if (model->onnxSession) {
     Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
     delete session;

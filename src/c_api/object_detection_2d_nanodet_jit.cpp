@@ -234,7 +234,7 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
   torch::Tensor stdValues = torch::tensor({{{0.017429f}}, {{0.017507f}}, {{0.017125f}}});
 
   // initialization of jit model and class as holder of c++ values.
-  torch::DeviceType initDevice = torchDevice(device, 1);
+  torch::DeviceType initDevice = torchDevice(device, 0);
   torch::jit::script::Module network = torch::jit::load(modelPath, initDevice);
   network.eval();
 
@@ -303,7 +303,7 @@ OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *im
   return detectionsVector;
 }
 
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector) {
+void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *vector) {
   int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
@@ -315,8 +315,8 @@ void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVector
   }
 
   cv::Mat imageWithDetections = (*opencvImage).clone();
-  for (size_t i = 0; i < detectionsVector->size; i++) {
-    const OpendrDetectionTarget bbox = (detectionsVector->startingPointer)[i];
+  for (size_t i = 0; i < vector->size; i++) {
+    const OpendrDetectionTarget bbox = (vector->startingPointer)[i];
     float score = bbox.score > 1 ? 1 : bbox.score;
     if (score > model->scoreThreshold) {
       cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);

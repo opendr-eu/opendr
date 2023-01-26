@@ -166,7 +166,7 @@ void ffOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, std::vector<cv::Ma
 
   // Feed-forward the model
   auto outputTensors =
-    session->Run(Ort::RunOptions{nullptr}, inputNodeNames.data(), &inputTensor, 1, outputNodeNames.data(), model->output_size);
+    session->Run(Ort::RunOptions{nullptr}, inputNodeNames.data(), &inputTensor, 1, outputNodeNames.data(), model->outputSize);
   assert(outputTensors.size() == model->outputSize);
 
   // Get the results back
@@ -175,7 +175,7 @@ void ffOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, std::vector<cv::Ma
 
     int channelDim;
     if ((i % 2) == 0) {
-      channelDim = model->evenChannelOoutput;
+      channelDim = model->evenChannelOutput;
     } else {
       channelDim = model->oddChannelOutput;
     }

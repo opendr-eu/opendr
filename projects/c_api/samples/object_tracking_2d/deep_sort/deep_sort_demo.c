@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   printf("success\n");
 
   // Initialize opendr tensor for input
-  OendrTensorT input_tensor;
+  OpendrTensorT input_tensor;
   initTensor(&input_tensor);
 
   initRandomOpendrTensorDs(&input_tensor, &model);

@@ -62,7 +62,7 @@ void preprocessDetr(cv::Mat *image, cv::Mat *normalizedImage, int modelInputSize
   cv::multiply(*normalizedImage, stdValue, *normalizedImage);
 }
 
-void loadDetrModel(const char *modelPath, detrModelT *model) {
+void loadDetrModel(const char *modelPath, DetrModelT *model) {
   // Initialize model
   model->onnxSession = model->env = model->sessionOptions = NULL;
   model->threshold = 0;
@@ -119,7 +119,7 @@ void loadDetrModel(const char *modelPath, detrModelT *model) {
   model->outputSizes[1] = 4;
 }
 
-void freeDetrModel(detrModelT *model) {
+void freeDetrModel(DetrModelT *model) {
   if (model->onnxSession) {
     Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
     delete session;
@@ -136,7 +136,7 @@ void freeDetrModel(detrModelT *model) {
   }
 }
 
-void ffDetr(detrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+void ffDetr(DetrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
@@ -149,7 +149,7 @@ void ffDetr(detrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outp
   size_t inputTensorSize = model->modelSize * model->modelSize * 3;
 
   // Dims of input of model
-  std::vector<int64_t> inputNodeDims = {tensor->batch_size, tensor->channels, tensor->width, tensor->height};
+  std::vector<int64_t> inputNodeDims = {tensor->batchSize, tensor->channels, tensor->width, tensor->height};
 
   // Setup input/output names
   Ort::AllocatorWithDefaultOptions allocator;
@@ -177,7 +177,7 @@ void ffDetr(detrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outp
   }
 }
 
-void initRandomOpendrTensorDetr(OpendrTensorT *tensor, detrModelT *model) {
+void initRandomOpendrTensorDetr(OpendrTensorT *tensor, DetrModelT *model) {
   // Prepare the input data with random values
   int inputTensorSize = model->modelSize * model->modelSize * 3;
 
@@ -191,7 +191,7 @@ void initRandomOpendrTensorDetr(OpendrTensorT *tensor, detrModelT *model) {
   free(data);
 }
 
-void forwardDetr(detrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
+void forwardDetr(DetrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
   ffDetr(model, tensor, &outputTensorValues);

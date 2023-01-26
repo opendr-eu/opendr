@@ -84,7 +84,7 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
   std::string modelJsonPath(modelPath);
   std::size_t splitPosition = modelJsonPath.find_last_of("/");
   splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
-  modelJsonPath = modelJsonPath + "/" + modelJsonPath.substr(splitPos) + ".json";
+  modelJsonPath = modelJsonPath + "/" + modelJsonPath.substr(splitPosition) + ".json";
 
   std::ifstream inStream(modelJsonPath);
   if (!inStream.is_open()) {
@@ -101,7 +101,7 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
     basePath.resize(splitPosition);
 
   // Parse JSON
-  std::string onnxModelPath = basePath + jsonGetKeyString(json, "model_paths", 0);
+  std::string onnxModelPath = basePath + jsonGetStringFromKey(json, "model_paths", 0);
   std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
 
   // Parse inference params

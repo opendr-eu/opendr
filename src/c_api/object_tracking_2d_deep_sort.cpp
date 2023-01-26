@@ -195,7 +195,7 @@ void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorV
     }
     loadTensorVector(vector, tempTensorsVector.data(), nTensors);
     for (int i = 0; i < nTensors; i++) {
-      freeTensor(&(temptensor[i]));
+      freeTensor(&(tempTensor[i]));
     }
   } else {
     initTensorVector(vector);
