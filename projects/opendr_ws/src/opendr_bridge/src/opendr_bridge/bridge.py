@@ -671,7 +671,7 @@ class ROSBridge:
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
 
-    def to_ros_marker(self, frame_id: str, position: list, id: int) -> MarkerMsg:
+    def to_ros_marker(self, frame_id: str, position: list, id: int, rgba: tuple = None) -> MarkerMsg:
         """
         Creates ROS Marker message given positions x,y,z and frame_id.
         :param frame_id: The frame_id of the marker.
@@ -697,16 +697,22 @@ class ROSBridge:
         marker.scale.x = 1.0
         marker.scale.y = 1.0
         marker.scale.z = 1.0
-        marker.color.a = 1.0
-        marker.color.r = 1.0
-        marker.color.g = 0.0
-        marker.color.b = 0.0
+        if rgba is not None:
+            marker.color.a = rgba[3]
+            marker.color.r = rgba[0]
+            marker.color.g = rgba[1]
+            marker.color.b = rgba[2]
+        else:
+            marker.color.a = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 0.0
+            marker.color.b = 0.0
         return marker
     
     def from_ros_marker(self):
         raise NotImplementedError
 
-    def to_ros_marker_array(self, position_list: list, frame_id_list: list) -> MarkerArrayMsg:
+    def to_ros_marker_array(self, position_list: list, frame_id_list: list, rgba: tuple = None) -> MarkerArrayMsg:
         """
         Creates ROS MarkerArray message given positions x,y,z and frame_id.
         :param position_list: The list of positions of the markers.
@@ -718,7 +724,7 @@ class ROSBridge:
         """
         marker_array = MarkerArrayMsg()
         for i in range(len(position_list)):
-            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i], i))
+            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i], i, rgba))
         return marker_array
 
     def from_ros_marker_array(self):

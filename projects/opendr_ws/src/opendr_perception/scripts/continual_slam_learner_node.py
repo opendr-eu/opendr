@@ -35,7 +35,7 @@ class ContinualSlamLearner:
                  input_distance_topic : str,
                  output_weights_topic : str,
                  fps : int = 10,
-                 publish_rate : int = 5,
+                 publish_rate : int = 20,
                  ) -> None:
         
         self.bridge = ROSBridge()
@@ -48,7 +48,7 @@ class ContinualSlamLearner:
 
         self.path = path
         self.learner = None
-
+        self.sequence = None
 
         self.do_publish = 0
 
@@ -98,6 +98,13 @@ class ContinualSlamLearner:
         """
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
+        incoming_sequence = frame_id.split("_")[0]
+        if self.sequence is None:
+            self.sequence = incoming_sequence
+        if self.sequence != incoming_sequence:
+            # Now we do cleaning
+            self._clean_cache()
+            self.sequence = incoming_sequence
         distance = distance[0]
 
         self._cache_arriving_data(image, distance, frame_id)
@@ -122,6 +129,14 @@ class ContinualSlamLearner:
             self._init_publisher()
             self._init_subscribers()
             rospy.spin()
+
+    def _clean_cache(self):
+        self._image_cache = []
+        self._distance_cache = []
+        self._id_cache = []
+        self._marker_position_cache = []
+        self._marker_frame_id_cache = []
+        self.odometry = None
 
     def _cache_arriving_data(self, image, distance, frame_id):
         # Cache the arriving last 3 data

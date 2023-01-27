@@ -65,7 +65,7 @@ class ContinualSlamDatasetNode:
     def _publish(self):
 
         rospy.loginfo("Start publishing dataset images")
-        i = 0
+        i = 1550
         length = len(self.dataset)-1
         while not rospy.is_shutdown() and i < length:
             # TODO: Delete this later or find it out
@@ -76,6 +76,9 @@ class ContinualSlamDatasetNode:
             # Get the image_id's
             image_ids = list(data.keys())
             # Get the image, velocity and distance
+            if len(data) < 3:
+                i += 1 
+                continue
             image_t0, distance_t0 = data[image_ids[0]]
 
             stamp = rospy.Time.now()
@@ -107,7 +110,7 @@ def main():
                         help="ROS topic to publish images")
     parser.add_argument("--output_distance_topic", type=str, default="/cl_slam/distance",
                         help="ROS topic to publish distances")
-    parser.add_argument("--dataset_fps", type=float, default=10,
+    parser.add_argument("--dataset_fps", type=float, default=5,
                         help="Dataset frame rate")
     args = parser.parse_args()
 

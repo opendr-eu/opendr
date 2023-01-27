@@ -51,6 +51,8 @@ class ContinualSlamPredictor:
 
         self.path = path
         self.predictor = None
+        self.sequence = None
+        self.color = None
 
         # Create caches
         self._image_cache = []
@@ -104,6 +106,15 @@ class ContinualSlamPredictor:
         """
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
+        incoming_sequence = frame_id.split("_")[0]
+        if self.sequence is None:
+            self.sequence = incoming_sequence
+            self.color = list(np.random.choice(range(256), size=3))
+        if self.sequence != incoming_sequence:
+            # Now we do cleaning
+            self._clean_cache()
+            self.sequence = incoming_sequence
+            self.color = list(np.random.choice(range(256), size=3))
         distance = distance[0]
         temp = frame_id
         self._cache_arriving_data(image, distance, frame_id)
@@ -116,20 +127,18 @@ class ContinualSlamPredictor:
         else:
             self.odometry = self.odometry @ new_odometry
         translation = self.odometry[0][:3, 3]
-        # print(translation)
-        # print(self.odometry)
-        # print(translation.shape)
-        x = translation[0]
-        #y = translation[:, -1][1]
+        x = -translation[0]
         y = 0
-        z = translation[2]
+        z = -translation[2]
         position = [x, y, z]
 
         frame_id = "map"
         self._marker_position_cache.append(position)
         self._marker_frame_id_cache.append(frame_id)
-
-        marker_list = self.bridge.to_ros_marker_array(self._marker_position_cache, self._marker_frame_id_cache)
+        if self.color is None:
+            self.color = [255, 0, 0]
+        rgba = (self.color[0], self.color[1], self.color[2], 1.0)
+        marker_list = self.bridge.to_ros_marker_array(self._marker_position_cache, self._marker_frame_id_cache, rgba)
         depth = self.bridge.to_ros_image(depth)
 
         rospy.loginfo(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {temp}")
@@ -159,6 +168,14 @@ class ContinualSlamPredictor:
             self._init_publisher()
             self._init_subscribers()
             rospy.spin()
+    
+    def _clean_cache(self):
+        self._image_cache = []
+        self._distance_cache = []
+        self._id_cache = []
+        self._marker_position_cache = []
+        self._marker_frame_id_cache = []
+        self.odometry = None
 
     def _cache_arriving_data(self, image, distance, frame_id):
         # Cache the arriving last 3 data

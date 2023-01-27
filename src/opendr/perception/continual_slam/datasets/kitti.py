@@ -13,7 +13,7 @@ from opendr.perception.continual_slam.datasets.config import Dataset
 
 from torchvision.transforms import Resize, InterpolationMode
 from PIL import Image as PILImage
-import cv2
+
 
 class KittiDataset(ExternalDataset, DatasetIterator):
 
@@ -27,8 +27,8 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.height = config.height
         self.width = config.width
         self.scales = config.scales
-        # self.valid_sequences = ['00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10']
-        self.valid_sequences = ['10']
+        self.valid_sequences = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
+        # self.valid_sequences = ['09']
         self.sequences = os.listdir(self._path)
 
         if self.sequences is None:
@@ -54,8 +54,10 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.camera_matrix = np.array(
             [[0.58, 0, 0.5, 0], [0, 1.92, 0.5, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=np.float32)
 
-        # Now we simply put all sequences available on single lists
+        # Now we simply put all sequences available on into a single list
         self._create_lists_from_sequences()
+
+        self.sequence_check = None
 
     def _create_timestamps(self, timestamps) -> List[int]:
         """
@@ -101,7 +103,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         for sequence in self.sequences:
             # Check if the sequence is valid
             if sequence not in self.valid_sequences:
-                print(f'Sequence {sequence} is not valid. Skipping...')
+                # print(f'Sequence {sequence} is not valid. Skipping...')
                 continue
             self.images.extend(self._images[sequence])
             self.velocities.extend(self._velocities[sequence])
@@ -117,6 +119,8 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: Tuple[Any, None]
         """
         data = {}
+        flag = False
+        counter = 0
         for i in range(idx, idx+3):
             image = PILImage.open(str(self.images[i]))
             image = Resize((self.height, self.width), interpolation=InterpolationMode.LANCZOS)(image)
@@ -125,6 +129,21 @@ class KittiDataset(ExternalDataset, DatasetIterator):
             distance = self._load_relative_distance(i)
             image_id = self.images[i].name.split('.')[0]
             sequence_id = re.findall("sequences/\d\d", str(self.images[i]))[0].split('/')[1]
+            if self.sequence_check == None:
+                self.sequence_check = sequence_id
+            else:
+                if self.sequence_check != sequence_id:
+                    # This means that now we have a new sequence and we need to wait two iterations
+                    # to get the first image of the new sequence
+                    flag = True
+            if flag:
+                counter += 1
+                if counter < 2:
+                    continue
+                else:
+                    self.sequence_check = sequence_id
+                    flag = False
+                    counter = 0
             image_id = sequence_id + '_' + image_id
             data[image_id] = (image, distance)
         return data, None
@@ -137,3 +156,13 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: int
         """
         return len(self.images)
+
+# TODO: For debugging purposes only
+if __name__ == '__main__':
+    local_path = Path(__file__).parent.parent / 'configs'
+    from opendr.perception.continual_slam.configs.config_parser import ConfigParser
+    dataset_config = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset
+    dataset_path = dataset_config.dataset_path
+    dataset = KittiDataset(str(dataset_path), dataset_config)
+    for i in range(len(dataset)):
+        print(dataset[i][0].keys())
