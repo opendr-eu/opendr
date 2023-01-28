@@ -245,7 +245,7 @@ pip3 install roslibpy==1.2.1
 pip3 install rospkg==1.3.0
 pip3 install rsa==4.8
 pip3 install scikit-image==0.16.2
-pip3 install scikit-learn==0.22
+pip3 install scikit-learn==0.23
 pip3 install seaborn==0.11.2
 pip3 install setuptools-rust==1.1.2
 pip3 install scipy==1.5.4
