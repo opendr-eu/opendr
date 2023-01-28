@@ -198,7 +198,7 @@ pip3 install multidict==5.2.0
 pip3 install munkres==1.1.4
 pip3 install netifaces==0.11.0
 pip3 install networkx==2.5.1
-pip3 install numpy==1.19.4
+pip3 install numpy==1.22.1
 pip3 install oauthlib==3.1.1
 pip3 install onnx==1.10.2
 pip3 install onnxruntime==1.7.0
