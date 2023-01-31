@@ -164,7 +164,7 @@ def main(args=None):
                         help='Publish the rgb visualization on this topic')
 
     args = parser.parse_args()
-    efficient_lps_node = EfficientLpsNode(args.input_pcl_topic, 
+    efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic, 
                                           args.checkpoint,
                                           args.output_rgb_visualization_topic)
     efficient_lps_node.listen()
