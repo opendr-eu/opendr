@@ -800,45 +800,46 @@ class VoxelObjectDetection3DLearner(Learner):
         return input_dataset_iterator, eval_dataset_iterator, gt_annos
 
     def __create_model(self):
-        (
-            model,
-            input_config,
-            train_config,
-            evaluation_input_config,
-            model_config,
-            voxel_generator,
-            target_assigner,
-            mixed_optimizer,
-            lr_scheduler,
-            float_dtype,
-            loss_scale,
-            class_names,
-            center_limit_range,
-        ) = second_create_model(
-            self.model_config_path,
-            device=self.device,
-            optimizer_name=self.optimizer,
-            optimizer_params=self.optimizer_params,
-            lr=self.lr,
-            lr_schedule_name=self.lr_schedule,
-            lr_schedule_params=self.lr_schedule_params,
-        )
+        # (
+        #     model,
+        #     input_config,
+        #     train_config,
+        #     evaluation_input_config,
+        #     model_config,
+        #     voxel_generator,
+        #     target_assigner,
+        #     mixed_optimizer,
+        #     lr_scheduler,
+        #     float_dtype,
+        #     loss_scale,
+        #     class_names,
+        #     center_limit_range,
+        # ) = second_create_model(
+        #     self.model_config_path,
+        #     device=self.device,
+        #     optimizer_name=self.optimizer,
+        #     optimizer_params=self.optimizer_params,
+        #     lr=self.lr,
+        #     lr_schedule_name=self.lr_schedule,
+        #     lr_schedule_params=self.lr_schedule_params,
+        # )
 
-        self.model = model
-        self.input_config = input_config
-        self.train_config = train_config
-        self.evaluation_input_config = evaluation_input_config
-        self.model_config = model_config
-        self.train_config = train_config
-        self.voxel_generator = voxel_generator
-        self.target_assigner = target_assigner
-        self.mixed_optimizer = mixed_optimizer
-        self.lr_scheduler = lr_scheduler
+        # self.model = model
+        # self.input_config = input_config
+        # self.train_config = train_config
+        # self.evaluation_input_config = evaluation_input_config
+        # self.model_config = model_config
+        # self.train_config = train_config
+        # self.voxel_generator = voxel_generator
+        # self.target_assigner = target_assigner
+        # self.mixed_optimizer = mixed_optimizer
+        # self.lr_scheduler = lr_scheduler
 
-        self.float_dtype = float_dtype
-        self.loss_scale = loss_scale
-        self.class_names = class_names
-        self.center_limit_range = center_limit_range
+        # self.float_dtype = float_dtype
+        # self.loss_scale = loss_scale
+        # self.class_names = class_names
+        # self.center_limit_range = center_limit_range
+        pass
 
     @staticmethod
     def __extract_trailing(path):
