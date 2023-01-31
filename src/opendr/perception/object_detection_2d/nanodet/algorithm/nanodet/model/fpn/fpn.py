@@ -1,6 +1,6 @@
 # Modification 2020 RangiLyu
 # Copyright 2018-2019 Open-MMLab.
-
+import torch.jit
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
+from typing import List
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import xavier_init
@@ -72,7 +74,8 @@ class FPN(nn.Module):
             if isinstance(m, nn.Conv2d):
                 xavier_init(m, distribution="uniform")
 
-    def forward(self, inputs):
+    @torch.jit.unused
+    def forward(self, inputs: List[Tensor]):
         assert len(inputs) == len(self.in_channels)
 
         # build laterals
@@ -84,17 +87,10 @@ class FPN(nn.Module):
         # build top-down path
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
-            laterals[i - 1] += F.interpolate(
+            laterals[i - 1] = laterals[i - 1] + F.interpolate(
                 laterals[i], scale_factor=2, mode="bilinear"
             )
 
         # build outputs
-        outs = [
-            # self.fpn_convs[i](laterals[i]) for i in range(used_backbone_levels)
-            laterals[i]
-            for i in range(used_backbone_levels)
-        ]
-        return tuple(outs)
-
-
-# if __name__ == '__main__':
+        outs = [laterals[i] for i in range(used_backbone_levels)]
+        return outs
