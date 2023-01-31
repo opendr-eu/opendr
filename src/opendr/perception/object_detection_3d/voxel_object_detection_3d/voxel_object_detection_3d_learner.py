@@ -26,19 +26,19 @@ from opendr.engine.datasets import (
     MappedDatasetIterator,
 )
 from opendr.engine.data import PointCloud
-# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
-#     create_model as second_create_model,
-#     load_from_checkpoint,
-# )
-# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
-#     compute_lidar_kitti_output,
-#     evaluate,
-#     example_convert_to_torch,
-#     train,
-# )
-# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
-#     input_reader_builder,
-# )
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.load import (
+    create_model as second_create_model,
+    load_from_checkpoint,
+)
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.run import (
+    compute_lidar_kitti_output,
+    evaluate,
+    example_convert_to_torch,
+    train,
+)
+from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
+    input_reader_builder,
+)
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.logger import (
     Logger,
 )
