@@ -37,22 +37,23 @@ def rmdir(_dir):
         print("Error: %s - %s." % (e.filename, e.strerror))
 
 
-class TestBisenetLearner(unittest.TestCase):
+class TestBinaryHighResolutionLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST BisenetLearner\n"
+        print("\n\n**********************************\nTEST BinaryHighResolutionLearner\n"
               "**********************************")
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "binary_high_resolution")
         cls.learner = BinaryHighResolutionLearner(device=device)
-        # Download CamVid dataset
-        cls.dataset_path = os.path.join(".", "projects", "python", "perception", "binary_high_resolution",
-                                        "demo_dataset")
+        # Download dataset
+        cls.learner.download(os.path.join(cls.temp_dir, "demo_dataset"))
+        cls.dataset_path = os.path.join(cls.temp_dir, "demo_dataset")
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        rmdir(os.path.join(cls.temp_dir, "demo_dataset"))
+        rmfile(os.path.join(cls.temp_dir, "onnx_model_temp.onnx"))
 
     def test_fit(self):
         dataset = ExternalDataset(self.dataset_path, "VOC2012")
