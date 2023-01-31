@@ -22,10 +22,12 @@ np.random.seed(1)
 
 
 if __name__ == '__main__':
+    learner = BinaryHighResolutionLearner(device='cuda')
+    # Download dataset
+    learner.download(verbose=True)
     # Prepare the dataset loader
     dataset = ExternalDataset("./demo_dataset", "VOC2012")
 
-    learner = BinaryHighResolutionLearner(device='cuda')
     # Fit the learner
     learner.fit(dataset)
     # Save the trained model
