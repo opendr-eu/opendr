@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find opendr_control)/launch/robot_control.launch"/>
+  <node name="opendr_grasp_example" type="opendr_grasp_example.py" pkg="opendr_control" output="screen"/>
+</launch>

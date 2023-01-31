@@ -1,12 +1,12 @@
 opendr:
   detectron2_grasp_detection_node:
     ros__parameters:
-      object_categories: 
+      object_categories:
         0: 'rocker arm'
-        1: 'bolt holes' 
+        1: 'bolt holes'
         2: 'big pushrod holes'
-        3: 'small pushrod holes' 
+        3: 'small pushrod holes'
         4: 'engine'
         5: 'bolt'
-        6: 'pushrod' 
+        6: 'pushrod'
         7: 'rocker arm object'

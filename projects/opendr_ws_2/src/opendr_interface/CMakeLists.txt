@@ -33,6 +33,16 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/OpenDRPose3DKeypoint.msg"
   "srv/OpenDRSingleObjectTracking.srv"
   "srv/ImgToMesh.srv"
+  "srv/Grasp.srv"
+  "srv/MoveGripper.srv"
+  "srv/RotateEE.srv"
+  "srv/SetJointState.srv"
+  "srv/SetPoseTarget.srv"
+  "srv/SetPoseTarget1D.srv"
+  "srv/SetPoseTarget2D.srv"
+  "action/Pick.action"
+  "action/Place.action"
+
   DEPENDENCIES std_msgs shape_msgs sensor_msgs vision_msgs
 )
 
