@@ -276,9 +276,17 @@ if __name__ == '__main__':
     rospy.init_node('opendr_grasp_pose_detection', anonymous=True)
     # Select the device for running
     try:
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    except Exception:
-        device = 'cpu'
+        if args.device == "cuda" and torch.cuda.is_available():
+            device = "cuda"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
 
     grasp_detection_node = Detectron2GraspDetectionNode(camera_tf_frame=args.camera_tf_frame,
                                                         robot_tf_frame=args.robot_tf_frame,
