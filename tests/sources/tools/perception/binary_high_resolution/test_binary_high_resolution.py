@@ -56,7 +56,7 @@ class TestBisenetLearner(unittest.TestCase):
 
     def test_fit(self):
         dataset = ExternalDataset(self.dataset_path, "VOC2012")
-        self.learner = BinaryHighResolutionLearner(device='cuda', iters=1)
+        self.learner = BinaryHighResolutionLearner(device=device, iters=1)
         m = list(self.learner.model.parameters())[0].clone()
         self.learner.fit(dataset, silent=True)
         self.assertFalse(torch.equal(m, list(self.learner.model.parameters())[0]),
