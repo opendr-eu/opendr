@@ -11,5 +11,5 @@ Specifically the following examples are provided:
 
 Example usage:
 ```shell
-python3 train_eval_demo.py
+python3 train_demo.py
 ```
