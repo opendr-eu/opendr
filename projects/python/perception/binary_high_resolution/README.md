@@ -8,7 +8,7 @@ Specifically the following examples are provided:
 3. **onnx_inference_demo.py**: Optimize a model using ONNX and perform inference on a single image.
 
 For the last two demos it is required to have a trained model.
-Please find turn **train_eval_demo.py** in order to save a model before running these demos.
+Please first run **train_eval_demo.py** in order to save a model before running these demos.
 
 Example usage:
 ```shell
