@@ -19,7 +19,7 @@ import os
 import torch
 from opendr.engine.datasets import PointCloudsDatasetIterator
 from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
-from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
+# from opendr.perception.object_detection_3d import KittiDataset, LabeledPointCloudsDatasetIterator
 
 DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
@@ -38,41 +38,42 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     def setUpClass(cls):
         print("\n\n****************************************\nTEST Voxel Object Detection 3D Learner\n"
               "****************************************")
-        cls.temp_dir = os.path.join("tests", "sources", "tools",
-                                    "perception", "object_detection_3d",
-                                    "voxel_object_detection_3d",
-                                    "voxel_object_detection_3d_temp")
+        # cls.temp_dir = os.path.join("tests", "sources", "tools",
+        #                             "perception", "object_detection_3d",
+        #                             "voxel_object_detection_3d",
+        #                             "voxel_object_detection_3d_temp")
 
-        cls.config_tanet_car = os.path.join(".", "src", "opendr", "perception",
-                                            "object_detection_3d",
-                                            "voxel_object_detection_3d",
-                                            "second_detector", "configs", "tanet",
-                                            "car", "test_short.proto")
+        # cls.config_tanet_car = os.path.join(".", "src", "opendr", "perception",
+        #                                     "object_detection_3d",
+        #                                     "voxel_object_detection_3d",
+        #                                     "second_detector", "configs", "tanet",
+        #                                     "car", "test_short.proto")
 
-        cls.config_pointpillars_car = os.path.join(
-            ".", "src", "opendr", "perception", "object_detection_3d",
-            "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
-            "car", "test_short.proto")
+        # cls.config_pointpillars_car = os.path.join(
+        #     ".", "src", "opendr", "perception", "object_detection_3d",
+        #     "voxel_object_detection_3d", "second_detector", "configs", "pointpillars",
+        #     "car", "test_short.proto")
 
-        cls.subsets_path = os.path.join(
-            ".", "src", "opendr", "perception", "object_detection_3d",
-            "datasets", "nano_kitti_subsets")
+        # cls.subsets_path = os.path.join(
+        #     ".", "src", "opendr", "perception", "object_detection_3d",
+        #     "datasets", "nano_kitti_subsets")
 
-        cls.car_configs = {
-            "tanet_car": cls.config_tanet_car,
-            "pointpillars_car": cls.config_pointpillars_car,
-        }
+        # cls.car_configs = {
+        #     "tanet_car": cls.config_tanet_car,
+        #     "pointpillars_car": cls.config_pointpillars_car,
+        # }
 
-        cls.dataset_path = KittiDataset.download_nano_kitti(
-            cls.temp_dir, True, cls.subsets_path
-        ).path
+        # cls.dataset_path = KittiDataset.download_nano_kitti(
+        #     cls.temp_dir, True, cls.subsets_path
+        # ).path
 
-        print("Dataset downloaded", file=sys.stderr)
+        # print("Dataset downloaded", file=sys.stderr)
 
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-        rmdir(os.path.join(cls.temp_dir))
+        # rmdir(os.path.join(cls.temp_dir))
+        pass
 
     def test_fit(self):
         from time import sleep
