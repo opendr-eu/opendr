@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -102,37 +102,14 @@ class EfficientLpsNode:
             self._visualization_pointcloud_publisher = rospy.Publisher(self.output_rgb_visualization_topic,
                                                                        ROS_PointCloud2, queue_size=10)
 
-    def _join_arrays(self, arrays: List[np.ndarray]):
-        """
-        Function for efficiently concatenating numpy arrays.
-
-        :param arrays: List of numpy arrays to be concatenated
-        :type arrays: List[np.ndarray]
-
-        :return: Array comprised of the concatenated inputs.
-        :rtype: np.ndarray
-        """
-
-        sizes = np.array([a.itemsize for a in arrays])
-        offsets = np.r_[0, sizes.cumsum()]
-        n = len(arrays[0])
-        joint = np.empty((n, offsets[-1]), dtype=np.uint8)
-
-        for a, size, offset in zip(arrays, sizes, offsets):
-            joint[:, offset:offset + size] = a.view(np.uint8).reshape(n, size)
-
-        dtype = sum((a.dtype.descr for a in arrays), [])
-
-        return joint.ravel().view(dtype)
-
     def listen(self):
         """
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input point clouds without being in a trained state.
         """
 
-        rospy.init_node("efficient_lps", anonymous=True)
-        rospy.loginfo("EfficientLPS node started!")
+        rospy.init_node("opendr_efficient_lps_node", anonymous=True)
+        rospy.loginfo("EfficientLPS node started.")
         if self._init_learner():
             self._init_publisher()
             self._init_subscribers()
@@ -170,12 +147,13 @@ class EfficientLpsNode:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--input_pcl_topic', type=str, default='/usb_cam/pcl_raw',
-                        help='listen to pointclouds on this topic')
-    parser.add_argument('--checkpoint', type=str, default='semantickitti',
-                        help='download pretrained models [semantickitti] or load from the provided path')
-    parser.add_argument('--output_rgb_visualization_topic', type=str, default="/opendr/panoptic",
-                        help='publish the rgb visualization on this topic')
+    parser.add_argument('-i', '--input_point_cloud_2_topic', type=str, default='/opendr/dataset_point_cloud2',
+                        help='Point Cloud 2 topic provided by either a \
+                              point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node')
+    parser.add_argument('-c', '--checkpoint', type=str, default='semantickitti',
+                        help='Download pretrained models [semantickitti] or load from the provided path')
+    parser.add_argument('-o', '--output_rgb_visualization_topic', type=str, default="/opendr/panoptic",
+                        help='Publish the rgb visualization on this topic')
 
     args = parser.parse_args()
 

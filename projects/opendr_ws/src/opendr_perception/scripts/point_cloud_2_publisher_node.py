@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +56,7 @@ class PointCloud2DatasetNode:
         """
         if self._init_dataset():
             rospy.loginfo("Starting point_cloud_2 dataset node")
-            rospy.init_node('opendr_point_cloud_2_dataset')
+            rospy.init_node('opendr_point_cloud_2_dataset_node')
 
             i = 0
             while not rospy.is_shutdown():
