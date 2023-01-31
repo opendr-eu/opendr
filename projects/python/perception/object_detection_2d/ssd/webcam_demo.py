@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
 import argparse
+
+import cv2
 import time
+
+from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
@@ -54,6 +57,8 @@ if __name__ == '__main__':
     try:
         counter, avg_fps = 0, 0
         for img in image_provider:
+
+            img = Image(img)
 
             start_time = time.perf_counter()
 

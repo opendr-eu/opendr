@@ -85,5 +85,5 @@ $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."
 	@+$(RM) -rf $(BUILD_DIR)/*
-	@#+$(RM) -rf $(DATA_DIR)
+	@+$(RM) -rf $(DATA_DIR)
 	@+echo "Done!"
