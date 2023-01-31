@@ -47,7 +47,7 @@ class HighResolutionDataset(Dataset):
 
     def __init__(self, dataset_folder, patch_size=64, non_zero_threshold=0.5, transform=None):
         """
-        Loads the images (expected to be in VOC2012 format) and splits them into pathces of size patch_size
+        Loads the images (expected to be in VOC2012 format) and splits them into patches of size patch_size
         :param dataset_folder: folder from which the data are loaded
         :param patch_size: size of the patches to extract from images
         :param non_zero_threshold: threshold for discarding a patch (if a patch contains zeros more that this threshold
