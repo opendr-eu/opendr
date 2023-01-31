@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    efficient_lps_node = EfficientLpsNode(args.input_pcl_topic,
+    efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic,
                                          args.checkpoint,
                                          args.output_rgb_visualization_topic)
 
