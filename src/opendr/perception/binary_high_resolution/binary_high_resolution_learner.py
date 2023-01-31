@@ -23,14 +23,17 @@ import json
 import onnxruntime as ort
 import numpy as np
 import torch.nn.functional as F
+from urllib.request import urlretrieve
 from sklearn.metrics import precision_score, recall_score, f1_score
 import cv2
+
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.engine.target import Heatmap
 from opendr.engine.datasets import ExternalDataset
 from opendr.perception.binary_high_resolution.utils.architectures import VGG_720p_64, VGG_1080p_64
 from opendr.perception.binary_high_resolution.utils.high_resolution_loader import HighResolutionDataset
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 
 class BinaryHighResolutionLearner(Learner):
@@ -180,9 +183,38 @@ class BinaryHighResolutionLearner(Learner):
         heatmap = Heatmap(heatmap)
         return heatmap
 
-    def download(self, path=None, mode="pretrained", verbose=True):
-        """This method is not used in this implementation."""
-        raise NotImplementedError
+    def download(self, path="./demo_dataset", verbose=False,
+                 url=OPENDR_SERVER_URL + "perception/binary_high_resolution/demo_dataset/"):
+        """
+        Download utility for the toy dataset of the Binary High Resolution tool.
+
+        :param path: Local path to save the files, defaults to self.temp_path if None
+        :type path: str, path, optional
+        :param verbose: Whether to print messages in the console, defaults to False
+        :type verbose: bool, optional
+        :param url: URL of the FTP server, defaults to OpenDR FTP URL
+        :type url: str, optional
+        """
+        path = os.path.join(self.temp_path, path)
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if verbose:
+            print("Downloading test data...")
+        if not os.path.exists(path):
+            os.makedirs(path)
+        # Download annotation file
+        file_url = os.path.join(url, "test_img.xml")
+        if not os.path.exists(file_url):
+            urlretrieve(file_url, os.path.join(path, "test_img.xml"))
+        # Download test image
+        file_url = os.path.join(url, "test_img.png")
+        if not os.path.exists(file_url):
+            urlretrieve(file_url, os.path.join(path, "test_img.png"))
+
+        if verbose:
+            print("Test data download complete.")
 
     def save(self, path, verbose=False):
         """
