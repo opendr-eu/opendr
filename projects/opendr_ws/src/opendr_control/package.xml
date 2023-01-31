@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>control</name>
-  
-  <version>1.1.1</version>
-  
+  <name>opendr_control</name>
+
+  <version>2.1.0</version>
+
   <description>OpenDR's ROS nodes for control package</description>
-  
+
   <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
-  
+
   <license>Apache License v2.0 </license>
-  
+
   <url type="website">opendr.eu</url>
 
   <buildtool_depend>catkin</buildtool_depend>
@@ -18,7 +18,7 @@
   <build_depend>rospy</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>actionlib_msgs</build_depend>
-  
+
   <exec_depend>rospy</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>actionlib_msgs</exec_depend>

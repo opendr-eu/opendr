@@ -1,15 +1,15 @@
-# single_demo_grasp module
+# Grasp pose detection module
 
-The *single_demo_grasp* module contains the *SingleDemoGraspLearner* class, which inherits from the abstract class *LearnerRL*.
+The *grasp_pose_detection* module contains the *Detectron2Learner* class, which inherits from the abstract class *Learner*.
 
-### Class SingleDemoGraspLearner
-Bases: `engine.learners.LearnerRL`
+### Class Detectron2Learner
+Bases: `engine.learners.Learner`
 
-The *SingleDemoGraspLearner* class is a wrapper class based on [Detectron2](https://github.com/facebookresearch/detectron2) implementation of Keypoint-rcnn keypoint architecture. This module is used to train a keypoint detection module which its predictions are utilized to extract planar grasp poses that are translated to 6D grasp pose. A demonstration is then provided as an example in the projects directory.
+The *Detectron2Learner* class is a wrapper class based on [Detectron2](https://github.com/facebookresearch/detectron2) implementation of Keypoint-rcnn keypoint architecture. This module is used to train a keypoint detection module which its predictions are utilized to extract planar grasp poses that are translated to 6D grasp pose. A demonstration is then provided as an example in the projects directory.
 
-The [SingleDemoGraspLearner](/src/opendr/control/single_demo_grasp/training/single_demo_grasp_learner.py) class has the following public methods:
+The [Detectron2Learner](/src/opendr/perception/object_detection_2d/detectron2/detectron2_learner.py) class has the following public methods:
 
-#### `SingleDemoGraspLearner` constructor
+#### `Detectron2Learner` constructor
 
 Constructor parameters:
 

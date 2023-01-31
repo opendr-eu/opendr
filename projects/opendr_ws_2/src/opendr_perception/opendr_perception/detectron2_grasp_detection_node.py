@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -281,8 +281,6 @@ def main(args=None):
     args = parser.parse_args()
 
     device = "cuda"
-    image_topic = "/camera/color/image_raw"
-    depth_topic = "/camera/aligned_depth_to_color/image_raw"
     grasp_detection_node = Detectron2GraspDetectionNode(camera_tf_frame=args.camera_tf_frame,
                                                         robot_tf_frame=args.robot_tf_frame,
                                                         ee_tf_frame=args.ee_tf_frame,

@@ -5,16 +5,14 @@
   <arg name="arm" default="opendr" />
   <arg name="gripper" default="opendr" />
 
-  <node name="arm_control" type="arm_node.py" pkg="control" output="screen">   
+  <node name="arm_control" type="arm_node.py" pkg="control" output="screen">
       <param name="group_name" value="$(arg group_name)" />
   </node>
 
-  <node name="gripper_control" type="gripper_node.py" pkg="control" output="screen" />  
+  <node name="gripper_control" type="gripper_node.py" pkg="control" output="screen" />
 
-  <node name="opendr_pick_and_place_server" type="pick_and_place_node.py" pkg="control" output="screen">   
+  <node name="opendr_pick_and_place_server" type="pick_and_place_node.py" pkg="control" output="screen">
       <param name="arm" value="$(arg arm)" />
       <param name="gripper" value="$(arg gripper)" />
   </node>
-
-
 </launch>

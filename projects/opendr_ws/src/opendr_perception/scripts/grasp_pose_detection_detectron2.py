@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-
-# -*- coding: utf-8 -*-
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -287,7 +285,7 @@ if __name__ == '__main__':
                                                         ee_tf_frame=args.ee_tf_frame,
                                                         input_image_topic=args.image_topic,
                                                         input_depth_image_topic=args.depth_topic,
-                                                        device=device,
+                                                        device='cpu',
                                                         only_visualize=args.only_visualize,
                                                         camera_info_topic=args.camera_info_topic)
     rospy.loginfo("Detectron2 object detection node started!")

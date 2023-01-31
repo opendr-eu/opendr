@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(control)
+project(opendr_control)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
@@ -23,13 +23,13 @@ add_service_files(
 )
 
 add_action_files(
-  FILES 
+  FILES
   Pick.action
   Place.action
 )
 
 generate_messages(
-  DEPENDENCIES 
+  DEPENDENCIES
   actionlib_msgs
   geometry_msgs
 )
