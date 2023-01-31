@@ -34,6 +34,12 @@
 # )
 
 
+def create_model(*args, **kwargs):
+    pass
+
+def load_from_checkpoint(*args, **kwargs):
+    pass
+
 # def create_model(
 #     config_path, device, optimizer_name,
 #     optimizer_params, lr, lr_schedule_name, lr_schedule_params,
