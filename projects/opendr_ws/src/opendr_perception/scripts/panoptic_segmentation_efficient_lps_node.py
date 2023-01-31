@@ -16,9 +16,8 @@
 import sys
 from pathlib import Path
 import argparse
-from typing import Optional, List
+from typing import Optional
 
-import numpy as np
 import matplotlib
 import rospy
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
