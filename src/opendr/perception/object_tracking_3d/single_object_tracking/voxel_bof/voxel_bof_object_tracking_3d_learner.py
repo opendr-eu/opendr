@@ -366,7 +366,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         with open(os.path.join(new_path, folder_name_no_ext + ".json"), "w") as outfile:
             json.dump(model_metadata, outfile)
 
-    def load(self, path, verbose=False, backbone=False):
+    def load(self, path, verbose=False, backbone=False, full=False):
         """
         Loads the model from inside the path provided, based on the metadata .json file included.
         :param path: path of the directory the model was saved
@@ -376,7 +376,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
         """
 
         target = self.model.branch if backbone else self.model
-        state_dict_name = "state_dict" if backbone else "siamese_model"
+        state_dict_name = "state_dict" if backbone or full else "siamese_model"
         use_original = backbone
 
         model_name, _, _ = self.__extract_trailing(
@@ -871,13 +871,13 @@ class VoxelBofObjectTracking3DLearner(Learner):
                 else:
                     raise ValueError()
 
-                print("^not reliable, delta_image =", delta_image)
+                # print("^not reliable, delta_image =", delta_image)
 
                 new_angle = self.search_region[2]
 
-            print(
-                "norm_max_score =", norm_max, "raw_max_score =", torch.max(top_scores)
-            )
+            # print(
+            #     "norm_max_score =", norm_max, "raw_max_score =", torch.max(top_scores)
+            # )
 
             delta_image = delta_image[[1, 0]]
             delta_image *= self.offset_interpolation
@@ -1034,7 +1034,7 @@ class VoxelBofObjectTracking3DLearner(Learner):
             self.times["final_result"].append(t7 - t6)
 
             fps = 1 / (t8 - t)
-            print("fps =", fps)
+            # print("fps =", fps)
 
             self.fpses.append(fps)
 
