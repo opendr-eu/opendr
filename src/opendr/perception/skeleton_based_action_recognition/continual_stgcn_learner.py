@@ -352,6 +352,10 @@ class CoSTGCNLearner(Learner):
         self.model.load_state_dict(to_load, strict=False)
 
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
+
+        # Exclude adjacency matrix from checks - it's defined based on model arguments
+        names_not_loaded = set([k for k in names_not_loaded if not k.endswith(".A")])
+
         if len(names_not_loaded) > 0:
             logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
         self.model.to(self.device)
