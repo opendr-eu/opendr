@@ -29,9 +29,9 @@ from opendr.perception.binary_high_resolution import BinaryHighResolutionLearner
 class BinaryHighResolutionNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", output_heatmap_topic="/opendr/binary_hr_heatmap",
-                 output_rgb_image_topic="/opendr/binary_hr_heatmap_visualization", device="cuda"):
+                 output_rgb_image_topic="/opendr/binary_hr_heatmap_visualization", model_path=None, device="cuda"):
         """
-        Creates a ROS Node for binary high resolution classification with Binary High Resolution.
+        Create a ROS Node for binary high resolution classification with Binary High Resolution.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param output_heatmap_topic: Topic to which we are publishing the heatmap in the form of a ROS image
@@ -39,6 +39,8 @@ class BinaryHighResolutionNode:
         :param output_rgb_image_topic: Topic to which we are publishing the heatmap image blended with the
         input image for visualization purposes
         :type output_rgb_image_topic: str
+        :param model_path: The path to the directory of a trained model
+        :type model_path: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -59,12 +61,20 @@ class BinaryHighResolutionNode:
         # Initialize the binary high resolution model
         self.learner = BinaryHighResolutionLearner(device=device)
         try:
-            self.learner.load("test_model")
+            self.learner.load(model_path)
         except FileNotFoundError:
-            print("A trained model folder containing the trained model should be present in opendr_ws. Please refer to "
-                  "/projects/python/perception/binary_high_resolution/train_eval_demo.py and train a model for "
-                  "your purposes first.")
-            exit()
+            if model_path is None or model_path == "test_model":
+                raise TypeError("A trained model path should be provided in the --model_path /path/to/model/dir "
+                                "argument. Please refer to /projects/python/perception/binary_high_resolution/"
+                                "train_eval_demo.py and train a model for your purposes first.")
+            elif model_path != "test_model":
+                # Handle case where relative path is provided with '/' in front
+                try:
+                    self.learner.load(model_path[1:])
+                except FileNotFoundError:
+                    raise FileNotFoundError("A trained model could not be found in the provided path. Try specifying the path "
+                                            "with opendr_ws as root or provide an absolute path.")
+        rospy.loginfo(f"Model loaded from specified path: {model_path}")
 
     def listen(self):
         """
@@ -113,6 +123,8 @@ def main():
                                                                 "blended with the input image for visualization purposes",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/binary_hr_heatmap_visualization")
+    parser.add_argument("-m", "--model_path", help="Path to the directory of the trained model",
+                        type=str, default="test_model")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -133,7 +145,8 @@ def main():
     binary_hr_node = BinaryHighResolutionNode(device=device,
                                               input_rgb_image_topic=args.input_rgb_image_topic,
                                               output_heatmap_topic=args.output_heatmap_topic,
-                                              output_rgb_image_topic=args.output_rgb_image_topic)
+                                              output_rgb_image_topic=args.output_rgb_image_topic,
+                                              model_path=args.model_path)
     binary_hr_node.listen()
 
 
