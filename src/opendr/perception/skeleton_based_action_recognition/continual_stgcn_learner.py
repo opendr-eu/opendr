@@ -21,6 +21,7 @@ import onnxruntime as ort
 import pytorch_lightning as pl
 import torch.nn.functional as F
 
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from opendr.engine.target import Category
@@ -29,6 +30,8 @@ from opendr.engine.helper.io import bump_version
 from opendr.engine.datasets import Dataset
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_CLASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_CLASSES
 from urllib.request import urlretrieve
 
 from logging import getLogger
@@ -54,6 +57,11 @@ from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_str
 _MODEL_NAMES = {"costgcn", "costr", "coagcn"}
 
 logger = getLogger(__name__)
+
+
+class KeyDict(defaultdict):
+    def __missing__(self, key):
+        return str(key)
 
 
 class CoSTGCNLearner(Learner):
@@ -149,6 +157,13 @@ class CoSTGCNLearner(Learner):
             raise ValueError(
                 self.backbone + f"is not a valid dataset name. Supported methods: {_MODEL_NAMES}"
             )
+
+        if "ntu" in self.graph_type:
+            self.classes_dict = NTU60_CLASSES
+        elif "openpose" in self.graph_type:
+            self.classes_dict = KINETICS400_CLASSES
+        else:
+            self.classes_dict = KeyDict()
 
         pl.seed_everything(self.seed)
         self.init_model()
@@ -304,11 +319,19 @@ class CoSTGCNLearner(Learner):
                 )
                 results = self.model.forward_steps(batch)
 
-        results = [
-            Category(prediction=int(r.argmax(dim=0)), confidence=F.softmax(r, dim=-1))
-            for r in results
-        ]
-        return results
+        categories = []
+        for r in results:
+            class_ind = int(r.argmax(dim=0))
+            class_description = self.classes_dict[class_ind]
+            categories.append(
+                Category(
+                    prediction=class_ind,
+                    confidence=F.softmax(r, dim=-1),
+                    description=class_description,
+                )
+            )
+
+        return categories
 
     def _load_model_weights(self, weights_path: Union[str, Path]):
         """Load pretrained model weights
