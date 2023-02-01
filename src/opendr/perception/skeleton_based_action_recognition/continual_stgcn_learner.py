@@ -295,7 +295,8 @@ class CoSTGCNLearner(Learner):
             self._ort_state = {k: v for k, v in zip(self._ort_state.keys(), next_state)}
         else:
             self.model.eval()
-            results = self.model.forward_steps(batch)
+            with torch.no_grad():
+                results = self.model.forward_steps(batch)
             if results is None:
                 print("Warming model up prior to inference")
                 _ = self.model.forward_steps(
