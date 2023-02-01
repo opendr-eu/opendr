@@ -88,6 +88,8 @@ class HighResolutionDataset(Dataset):
                 # Get positive patches
                 cur_patches = view_as_blocks(pos_patch, (patch_size, patch_size, 3))
                 cur_patches = cur_patches.reshape((-1, patch_size, patch_size, 3))
+                if type(self.labels) != list:
+                    self.labels = self.labels.tolist()
                 self.patches.extend(cur_patches)
                 self.labels.extend(np.ones((cur_patches.shape[0], 1)))
 
@@ -125,7 +127,10 @@ class HighResolutionDataset(Dataset):
             # Convert to PIL images to be used with PyTorch
             for i in range(len(labels)):
                 img = patches[i]
-                self.patches.append(PIL.Image.fromarray(img))
+                try:
+                    self.patches.append(PIL.Image.fromarray(img))
+                except TypeError:
+                    self.patches.append(PIL.Image.fromarray(np.array(img)))
 
     def __len__(self):
         return len(self.labels)
