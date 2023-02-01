@@ -1,4 +1,4 @@
-save_dir: ./workspace/RepVGG_A0_416
+save_dir: ./temp/RepVGG_A0_416
 check_point_name: RepVGG_A0_416
 model:
   arch:
