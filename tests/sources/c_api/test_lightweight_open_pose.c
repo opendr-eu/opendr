@@ -21,40 +21,48 @@
 #include "opendr_utils.h"
 
 START_TEST(model_creation_test) {
-  // Create a face recognition model
+  // Create a lightweigh open pose model
   OpenPoseModelT model;
 
   // Load a pretrained model
-  loadOpenPoseModel("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
+  loadOpenPoseModel("data/pose_estimation/lightweight_open_pose/optimized_model", &model);
 
   ck_assert(model.onnxSession);
   ck_assert(model.env);
   ck_assert(model.sessionOptions);
 
   freeOpenPoseModel(&model);
+
+  // Load a model that does not exist
+  loadOpenPoseModel("data/optimized_model_not_existant", &model);
+  ck_assert(!model.onnxSession);
+  ck_assert(!model.env);
+  ck_assert(!model.sessionOptions);
+
+  // Release the resources
+  freeOpenPoseModel(&model);
 }
 END_TEST
 
 START_TEST(forward_pass_creation_test) {
-  // Create a x3d model
+  // Create a lightweight open pose model
   OpenPoseModelT model;
-  // Load a pretrained model (see instructions for downloading the data)
-  loadOpenPoseModel("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
+  loadOpenPoseModel("data/pose_estimation/lightweight_open_pose/optimized_model", &model);
 
   // Load a random tensor and perform forward pass
-  OpendrTensorT input_tensor;
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
-  initRandomOpendrTensorOp(&input_tensor, &model);
+  initRandomOpenDRTensorOp(&input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
 
   forwardOpenPose(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  initRandomOpendrTensorOp(&input_tensor, &model);
+  initRandomOpenDRTensorOp(&input_tensor, &model);
   forwardOpenPose(&model, &input_tensor, &output_tensor_vector);
 
   ck_assert(output_tensor_vector.nTensors == model.outputSize);
@@ -73,6 +81,7 @@ Suite *open_pose_suite(void) {
   s = suite_create("Open Pose");
   tc_core = tcase_create("Core");
 
+  tcase_set_timeout(tc_core, 60.0);
   tcase_add_test(tc_core, model_creation_test);
   tcase_add_test(tc_core, forward_pass_creation_test);
   suite_add_tcase(s, tc_core);

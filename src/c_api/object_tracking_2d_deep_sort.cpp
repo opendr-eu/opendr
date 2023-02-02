@@ -68,10 +68,34 @@ void loadDeepSortModel(const char *modelPath, DeepSortModelT *model) {
   // Initialize model
   model->onnxSession = model->env = model->sessionOptions = NULL;
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  // Parse the model JSON file
+  std::string basePath(modelPath);
+  std::size_t splitPosition = basePath.find_last_of("/");
+  splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
+  std::string modelName = basePath.substr(splitPosition);
+  std::string modelJsonPath = basePath + "/" + modelName + ".json";
+  std::ifstream inStream(modelJsonPath);
+  if (!inStream.is_open()) {
+    std::cerr << "Cannot open JSON model file" << std::endl;
+    return;
+  }
+  std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
+  const char *json = str.c_str();
+
+  // Parse JSON
+  std::string onnxModelName = jsonGetStringFromKey(json, "model_paths", 0);
+  std::string onnxModelPath = basePath + "/" + onnxModelName;
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
+  // Proceed only if the model is in onnx format
+  if (modelFormat != "onnx") {
+    std::cerr << "Model not in ONNX format." << std::endl;
+    return;
+  }
+
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-  Ort::Session *session = new Ort::Session(*env, modelPath, *sessionOptions);
+  Ort::Session *session = new Ort::Session(*env, onnxModelPath.c_str(), *sessionOptions);
   model->env = env;
   model->onnxSession = session;
   model->sessionOptions = sessionOptions;
@@ -111,7 +135,7 @@ void freeDeepSortModel(DeepSortModelT *model) {
   }
 }
 
-void ffDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+void ffDeepSort(DeepSortModelT *model, OpenDRTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
@@ -151,7 +175,7 @@ void ffDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, std::vector<cv::Ma
   }
 }
 
-void initRandomOpendrTensorDs(OpendrTensorT *tensor, DeepSortModelT *model) {
+void initRandomOpenDRTensorDs(OpenDRTensorT *tensor, DeepSortModelT *model) {
   int inputTensorSize = 1 * model->batchSize * model->inChannels * model->modelSize[1] * model->modelSize[0];
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
   for (unsigned int j = 0; j < inputTensorSize; ++j) {
@@ -164,7 +188,7 @@ void initRandomOpendrTensorDs(OpendrTensorT *tensor, DeepSortModelT *model) {
   free(data);
 }
 
-void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
+void forwardDeepSort(DeepSortModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
   ffDeepSort(model, tensor, &outputTensorValues);
@@ -177,8 +201,8 @@ void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorV
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<OpendrTensor> tempTensorsVector;
-    OpendrTensorT tempTensor[nTensors];
+    std::vector<OpenDRTensor> tempTensorsVector;
+    OpenDRTensorT tempTensor[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
       initTensor(&(tempTensor[i]));

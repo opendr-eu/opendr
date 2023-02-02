@@ -96,7 +96,7 @@ void loadDetrModel(const char *modelPath, DetrModelT *model) {
     return;
   }
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   Ort::Session *session = new Ort::Session(*env, onnxModelPath.c_str(), *sessionOptions);
@@ -136,7 +136,7 @@ void freeDetrModel(DetrModelT *model) {
   }
 }
 
-void ffDetr(DetrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+void ffDetr(DetrModelT *model, OpenDRTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
@@ -177,7 +177,7 @@ void ffDetr(DetrModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outp
   }
 }
 
-void initRandomOpendrTensorDetr(OpendrTensorT *tensor, DetrModelT *model) {
+void initRandomOpenDRTensorDetr(OpenDRTensorT *tensor, DetrModelT *model) {
   // Prepare the input data with random values
   int inputTensorSize = model->modelSize * model->modelSize * 3;
 
@@ -191,7 +191,7 @@ void initRandomOpendrTensorDetr(OpendrTensorT *tensor, DetrModelT *model) {
   free(data);
 }
 
-void forwardDetr(DetrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
+void forwardDetr(DetrModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
   ffDetr(model, tensor, &outputTensorValues);
@@ -204,8 +204,8 @@ void forwardDetr(DetrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<OpendrTensor> tempTensorsVector;
-    OpendrTensorT tempTensors[nTensors];
+    std::vector<OpenDRTensor> tempTensorsVector;
+    OpenDRTensorT tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
       initTensor(&(tempTensors[i]));

@@ -14,6 +14,7 @@
 
 #include "object_detection_2d_nanodet_jit.h"
 
+#include <document.h>
 #include <torch/script.h>
 #include <torchvision/vision.h>
 #include <iostream>
@@ -41,7 +42,7 @@ public:
   torch::Tensor meanTensor() const;
   torch::Tensor stdTensor() const;
   std::vector<std::string> labels() const;
-  std::vector<OpendrDetectionTarget> outputs;
+  std::vector<OpenDRDetectionTarget> outputs;
 };
 
 NanoDet::NanoDet(torch::jit::script::Module network, torch::Tensor meanValues, torch::Tensor stdValues,
@@ -102,6 +103,76 @@ std::vector<std::string> NanoDet::labels() const {
 }
 
 /**
+ * Helper function to extract Arrays or vectors of integers from json files
+ * @param json a string of json file
+ * @param key the key of value to extract from json file
+ * @return a vector of integers from extracted key values
+ */
+std::vector<int> gestIntVectorFromJson(const char *json, const char *key) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+
+  std::vector<int> items;
+  if (!doc.HasMember(key)) {
+    if (doc.HasMember("inference_params")) {
+      const rapidjson::Value &inferenceParams = doc["inference_params"];
+      if (inferenceParams.HasMember(key) && inferenceParams[key].IsArray()) {
+        for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++) {
+          if (inferenceParams[key][i].IsInt())
+            items.push_back(inferenceParams[key][i].GetInt());
+        }
+        return items;
+      }
+    }
+    std::cout << key << " is not a member of json or inference_params" << std::endl;
+  }
+  if (doc[key].IsArray()) {
+    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++) {
+      if (doc[key][i].IsInt())
+        items.push_back(doc[key][i].GetInt());
+    }
+    return items;
+  }
+  std::cout << key << " is not a member of json or it is not an array" << std::endl;
+  return items;
+}
+
+/**
+ * Helper function to extract Arrays or vectors of strings from json files
+ * @param json a string of json file
+ * @param key the key of value to extract from json file
+ * @return a vector of integers from extracted key values
+ */
+std::vector<std::string> getStringVectorFromJson(const char *json, const char *key) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+
+  std::vector<std::string> items;
+  if (!doc.HasMember(key)) {
+    if (doc.HasMember("inference_params")) {
+      const rapidjson::Value &inferenceParams = doc["inference_params"];
+      if (inferenceParams.HasMember(key) && inferenceParams[key].IsArray()) {
+        for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++) {
+          if (inferenceParams[key][i].IsString())
+            items.push_back(inferenceParams[key][i].GetString());
+        }
+        return items;
+      }
+    }
+    std::cout << key << " is not a member of json or inference_params" << std::endl;
+  }
+  if (doc[key].IsArray()) {
+    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++) {
+      if (doc[key][i].IsString())
+        items.push_back(doc[key][i].GetString());
+    }
+    return items;
+  }
+  std::cout << key << " is not a member of json or it is not an array" << std::endl;
+  return items;
+}
+
+/**
  * Helper function to calculate the final shape of the model input relative to size ratio of input image.
  */
 void getMinimumDstShape(cv::Size *srcSize, cv::Size *dstSize, float divisible) {
@@ -126,7 +197,7 @@ void getMinimumDstShape(cv::Size *srcSize, cv::Size *dstSize, float divisible) {
  * Helper function to calculate the warp matrix for resizing.
  */
 void getResizeMatrix(cv::Size *srcShape, cv::Size *dstShape, cv::Mat *Rs, int keepRatio) {
-  if (keepRatio == 1) {
+  if (keepRatio == 0) {
     float ratio;
     cv::Mat C = cv::Mat::eye(3, 3, CV_32FC1);
 
@@ -170,7 +241,7 @@ void preprocess(cv::Mat *src, cv::Mat *dst, cv::Size *dstSize, cv::Mat *warpMatr
   const float divisible = 0.0;
 
   // Get new destination size if keep ratio is enabled
-  if (keepRatio == 1) {
+  if (keepRatio == 0) {
     getMinimumDstShape(&srcSize, dstSize, divisible);
   }
 
@@ -195,27 +266,38 @@ torch::DeviceType torchDevice(char *deviceName, int verbose = 0) {
   return device;
 }
 
-void loadNanodetModel(char *modelPath, char *device, int height, int width, float scoreThreshold, NanodetModelT *model) {
+void loadNanodetModel(char *modelPath, char *modelName, char *device, float scoreThreshold, int height, int width,
+                      NanodetModelT *model) {
   // Initialize model
-  model->inputSizes[0] = width;
-  model->inputSizes[1] = height;
-
   model->scoreThreshold = scoreThreshold;
-  model->keepRatio = 1;
+  model->keepRatio = 0;
 
-  const std::vector<std::string> labels{
-    "person",         "bicycle",    "car",           "motorcycle",    "airplane",     "bus",           "train",
-    "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",    "parking meter", "bench",
-    "bird",           "cat",        "dog",           "horse",         "sheep",        "cow",           "elephant",
-    "bear",           "zebra",      "giraffe",       "backpack",      "umbrella",     "handbag",       "tie",
-    "suitcase",       "frisbee",    "skis",          "snowboard",     "sports ball",  "kite",          "baseball bat",
-    "baseball glove", "skateboard", "surfboard",     "tennis racket", "bottle",       "wine glass",    "cup",
-    "fork",           "knife",      "spoon",         "bowl",          "banana",       "apple",         "sandwich",
-    "orange",         "broccoli",   "carrot",        "hot dog",       "pizza",        "donut",         "cake",
-    "chair",          "couch",      "potted plant",  "bed",           "dining table", "toilet",        "tv",
-    "laptop",         "mouse",      "remote",        "keyboard",      "cell phone",   "microwave",     "oven",
-    "toaster",        "sink",       "refrigerator",  "book",          "clock",        "vase",          "scissors",
-    "teddy bear",     "hair drier", "toothbrush"};
+  // Parse the model JSON file
+  std::string basePath(modelPath);
+  std::string modelJsonPath = basePath + "/nanodet_" + *modelName + ".json";
+  std::ifstream inStream(modelJsonPath);
+  if (!inStream.is_open()) {
+    std::cerr << "Cannot open JSON model file" << std::endl;
+    return;
+  }
+  std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
+  const char *json = str.c_str();
+
+  // Parse JSON
+  std::string jitModelName = jsonGetStringFromKey(json, "model_paths", 0);
+  std::string jitModelPath = basePath + "/" + jitModelName;
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
+  int modelOptimized = jsonGetBoolFromKey(json, "optimized", 0);
+
+  // Proceed only if the model is in onnx format
+  if (modelFormat != "pth" || modelOptimized != 0) {
+    std::cerr << "Model not in JIT format." << std::endl;
+    return;
+  }
+
+  // Parse inference params
+  const std::vector<int> jsonSize = gestIntVectorFromJson(json, "input_size");
+  const std::vector<std::string> labels = getStringVectorFromJson(json, "classes");
 
   int **colorList = new int *[labels.size()];
   for (int i = 0; i < labels.size(); i++) {
@@ -235,7 +317,7 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
 
   // initialization of jit model and class as holder of c++ values.
   torch::DeviceType initDevice = torchDevice(device, 0);
-  torch::jit::script::Module network = torch::jit::load(modelPath, initDevice);
+  torch::jit::script::Module network = torch::jit::load(jitModelPath.c_str(), initDevice);
   network.eval();
 
   NanoDet *detector = new NanoDet(network, meanTensor, stdValues, initDevice, labels);
@@ -243,6 +325,14 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
   model->network = static_cast<void *>(detector);
   model->colorList = colorList;
   model->numberOfClasses = labels.size();
+
+  model->inputSizes[0] = jsonSize[0];
+  model->inputSizes[1] = jsonSize[1];
+
+  if (width != 0)
+    model->inputSizes[0] = width;
+  if (height != 0)
+    model->inputSizes[1] = height;
 }
 
 void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, cv::Size *originalSize,
@@ -257,9 +347,9 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
   *outputs = outputs->to(torch::Device(torch::kCPU, 0));
 }
 
-OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image) {
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image) {
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
-  OpendrDetectionVectorTargetT detectionsVector;
+  OpenDRDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
 
   cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
@@ -279,12 +369,12 @@ OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *im
   torch::Tensor outputs;
   ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
 
-  std::vector<OpendrDetectionTarget> detections;
+  std::vector<OpenDRDetectionTarget> detections;
   // Postprocessing, find which outputs have better score than threshold and keep them.
   for (int label = 0; label < outputs.size(0); label++) {
     for (int box = 0; box < outputs.size(1); box++) {
       if (outputs[label][box][4].item<float>() > model->scoreThreshold) {
-        OpendrDetectionTargetT detection;
+        OpenDRDetectionTargetT detection;
         detection.name = label;
         detection.left = outputs[label][box][0].item<float>();
         detection.top = outputs[label][box][1].item<float>();
@@ -303,7 +393,7 @@ OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *im
   return detectionsVector;
 }
 
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *vector) {
+void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector) {
   int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
@@ -316,7 +406,7 @@ void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVector
 
   cv::Mat imageWithDetections = (*opencvImage).clone();
   for (size_t i = 0; i < vector->size; i++) {
-    const OpendrDetectionTarget bbox = (vector->startingPointer)[i];
+    const OpenDRDetectionTarget bbox = (vector->startingPointer)[i];
     float score = bbox.score > 1 ? 1 : bbox.score;
     if (score > model->scoreThreshold) {
       cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
@@ -353,6 +443,7 @@ void freeNanodetModel(NanodetModelT *model) {
   if (model->network) {
     NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
     delete networkPTR;
+    model->network = NULL;
   }
 
   for (int i = 0; i < model->numberOfClasses; i++) {

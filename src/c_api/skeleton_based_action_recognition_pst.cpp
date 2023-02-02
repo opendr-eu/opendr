@@ -38,7 +38,7 @@ void loadPstModel(const char *modelPath, PstModelT *model) {
   // Initialize model
   model->onnxSession = model->env = model->sessionOptions = NULL;
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
   Ort::Session *session = new Ort::Session(*env, modelPath, *sessionOptions);
@@ -73,7 +73,7 @@ void freePstModel(PstModelT *model) {
   }
 }
 
-void ffPst(PstModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+void ffPst(PstModelT *model, OpenDRTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
@@ -114,7 +114,7 @@ void ffPst(PstModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *output
   }
 }
 
-void initRandomOpendrTensorPst(OpendrTensorT *tensor, PstModelT *model) {
+void initRandomOpenDRTensorPst(OpenDRTensorT *tensor, PstModelT *model) {
   int inputTensorSize = model->batchSize * model->inChannels * model->features * model->nPoint * model->nPerson;
 
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
@@ -127,7 +127,7 @@ void initRandomOpendrTensorPst(OpendrTensorT *tensor, PstModelT *model) {
   free(data);
 }
 
-void forwardPst(PstModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
+void forwardPst(PstModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
   ffPst(model, tensor, &outputTensorValues);
@@ -140,8 +140,8 @@ void forwardPst(PstModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *ve
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<OpendrTensor> tempTensorsVector;
-    OpendrTensorT tempTensors[nTensors];
+    std::vector<OpenDRTensor> tempTensorsVector;
+    OpenDRTensorT tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
       initTensor(&(tempTensors[i]));

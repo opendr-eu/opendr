@@ -38,22 +38,21 @@ END_TEST
 START_TEST(forward_pass_creation_test) {
   // Create a skeleton based action recognition pst model
   PstModelT model;
-  // Load a pretrained model (see instructions for downloading the data)
   loadPstModel("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx", &model);
   // Load a random tensor and perform forward pass
-  OpendrTensorT input_tensor;
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
-  initRandomOpendrTensorPst(&input_tensor, &model);
+  initRandomOpenDRTensorPst(&input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
 
   forwardPst(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  initRandomOpendrTensorPst(&input_tensor, &model);
+  initRandomOpenDRTensorPst(&input_tensor, &model);
   forwardPst(&model, &input_tensor, &output_tensor_vector);
 
   ck_assert(output_tensor_vector.nTensors == 1);

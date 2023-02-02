@@ -57,7 +57,7 @@ void loadDeepSortModel(const char *modelPath, DeepSortModelT *model);
  * @param tensor OpenDR tensor structure which will be used as input of the model
  * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardDeepSort(DeepSortModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a deep sort object tracking 2d model
@@ -70,7 +70,7 @@ void freeDeepSortModel(DeepSortModelT *model);
  * @param tensor OpenDR tensor structure to be loaded with random values
  * @param model model to be used to initialize the tensor
  */
-void initRandomOpendrTensorDs(OpendrTensorT *tensor, DeepSortModelT *model);
+void initRandomOpenDRTensorDs(OpenDRTensorT *tensor, DeepSortModelT *model);
 
 #ifdef __cplusplus
 }

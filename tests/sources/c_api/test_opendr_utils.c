@@ -21,9 +21,9 @@
 
 START_TEST(image_load_test) {
   // Load an image and performance inference
-  OpendrImageT image;
+  OpenDRImageT image;
   // An example of an image that exist
-  loadImage("data/database/1/1.jpg", &image);
+  loadImage("data/face_recognition/database/1/1.jpg", &image);
   ck_assert(image.data);
   // An example of an image that does not exist
   loadImage("images/not_existant/1.jpg", &image);
@@ -36,7 +36,7 @@ END_TEST
 
 START_TEST(detection_vector_init_load_test) {
   // Initialize a detection target vector
-  OpendrDetectionVectorTargetT detection_vector;
+  OpenDRDetectionVectorTargetT detection_vector;
   // init functions uses load internally
   initDetectionsVector(&detection_vector);
   ck_assert(detection_vector.startingPointer);
@@ -48,24 +48,24 @@ END_TEST
 
 START_TEST(tensor_init_load_test) {
   // Initialize a detection target vector
-  OpendrTensorT opendr_tensor;
+  OpenDRTensorT OpenDR_tensor;
   // init functions uses load internally
-  initTensor(&opendr_tensor);
-  ck_assert(opendr_tensor.data == NULL);
+  initTensor(&OpenDR_tensor);
+  ck_assert(OpenDR_tensor.data == NULL);
 
   void *tensor_data = malloc(1 * sizeof(float));
-  loadTensor(&opendr_tensor, tensor_data, 1, 1, 1, 1, 1);
-  ck_assert(opendr_tensor.data);
+  loadTensor(&OpenDR_tensor, tensor_data, 1, 1, 1, 1, 1);
+  ck_assert(OpenDR_tensor.data);
   // Free the resources
   free(tensor_data);
-  freeTensor(&opendr_tensor);
-  ck_assert(opendr_tensor.data == NULL);
+  freeTensor(&OpenDR_tensor);
+  ck_assert(OpenDR_tensor.data == NULL);
 }
 END_TEST
 
 START_TEST(tensor_vector_init_load_test) {
   // Initialize a detection target vector
-  OpendrTensorVectorT tensor_vector;
+  OpenDRTensorVectorT tensor_vector;
   // init functions uses load internally
   initTensorVector(&tensor_vector);
 
@@ -76,7 +76,7 @@ START_TEST(tensor_vector_init_load_test) {
   ck_assert(tensor_vector.heights == NULL);
   ck_assert(tensor_vector.datas == NULL);
 
-  OpendrTensorT tensor[1];
+  OpenDRTensorT tensor[1];
   initTensor(&(tensor[0]));
 
   void *tensor_data = malloc(1 * sizeof(float));
@@ -93,7 +93,7 @@ START_TEST(tensor_vector_init_load_test) {
 }
 END_TEST
 
-Suite *opendr_utilities_suite(void) {
+Suite *OpenDR_utilities_suite(void) {
   Suite *s;
   TCase *tc_core;
 
@@ -114,7 +114,7 @@ int main() {
   Suite *s;
   SRunner *runner;
 
-  s = opendr_utilities_suite();
+  s = OpenDR_utilities_suite();
   runner = srunner_create(s);
 
   srunner_run_all(runner, CK_NORMAL);

@@ -56,14 +56,45 @@ void preprocessX3d(cv::Mat *image, cv::Mat *normalizedImage, int modelInputSize,
   imageRgb.convertTo(*normalizedImage, CV_32FC3, stdValue, meanValue);
 }
 
-void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model) {
+void loadX3dModel(const char *modelPath, X3dModelT *model) {
   // Initialize model
   model->onnxSession = model->env = model->sessionOptions = NULL;
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  // Parse the model JSON file
+  std::string basePath(modelPath);
+  std::size_t modelNamePosition = basePath.find_last_of("_");
+  modelNamePosition = modelNamePosition > 0 ? modelNamePosition + 1 : 0;
+  std::string modelName = basePath.substr(modelNamePosition);
+  std::string modelJsonPath = basePath + "/x3d_" + modelName + ".json";
+  std::ifstream inStream(modelJsonPath);
+  if (!inStream.is_open()) {
+    std::cerr << "Cannot open JSON model file" << std::endl;
+    return;
+  }
+  std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
+  const char *json = str.c_str();
+
+  // Parse JSON
+  std::string onnxModelName = jsonGetStringFromKey(json, "model_paths", 0);
+  std::string onnxModelPath = basePath + "/" + onnxModelName;
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
+  // Proceed only if the model is in onnx format
+  if (modelFormat != "onnx") {
+    std::cerr << "Model not in ONNX format." << std::endl;
+    return;
+  }
+
+  // Parse inference params
+  float threshold = jsonGetFloatFromKeyInInferenceParams(json, "threshold", 0);
+  model->threshold = threshold;
+
+  const char *networkHead = jsonGetStringFromKeyInInferenceParams(json, "network_head", 0);
+  std::string networkBackbone = jsonGetStringFromKeyInInferenceParams(json, "backbone", 0);
+
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-  Ort::Session *session = new Ort::Session(*env, modelPath, *sessionOptions);
+  Ort::Session *session = new Ort::Session(*env, onnxModelPath.c_str(), *sessionOptions);
   model->env = env;
   model->onnxSession = session;
   model->sessionOptions = sessionOptions;
@@ -72,21 +103,22 @@ void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model) {
   model->meanValue = -128.0f / 255.0f;
   model->imgScale = (1.0f / 255.0f);
 
-  std::string modeName = mode;
-  if (modeName == "l") {
+  model->networkHead = networkHead;
+  //  std::string modeName = mode;
+  if (networkBackbone == "l") {
     model->modelSize = 312;
     model->framesPerClip = 16;
-  } else if (modeName == "m") {
+  } else if (networkBackbone == "m") {
     model->modelSize = 224;
     model->framesPerClip = 16;
-  } else if (modeName == "s") {
+  } else if (networkBackbone == "s") {
     model->modelSize = 160;
     model->framesPerClip = 13;
-  } else if (modeName == "xs") {
+  } else if (networkBackbone == "xs") {
     model->modelSize = 160;
     model->framesPerClip = 4;
   } else {
-    std::cout << "mode: {'" << modeName
+    std::cout << "mode: {'" << networkBackbone
               << "'} is not a compatible choice, please use one of {'xs', 's', 'm', 'l'} and try again." << std::endl;
     return;
   }
@@ -114,7 +146,7 @@ void freeX3dModel(X3dModelT *model) {
   }
 }
 
-void ffX3d(X3dModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+void ffX3d(X3dModelT *model, OpenDRTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
@@ -153,7 +185,7 @@ void ffX3d(X3dModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *output
   outputTensorValues->push_back(outputMat);
 }
 
-void initRandomOpendrTensorX3d(OpendrTensorT *tensor, X3dModelT *model) {
+void initRandomOpenDRTensorX3d(OpenDRTensorT *tensor, X3dModelT *model) {
   // Prepare the input dimensions
   // Dims of input data
   int inputTensorSize = model->batchSize * model->framesPerClip * model->inChannels * model->modelSize * model->modelSize;
@@ -170,7 +202,7 @@ void initRandomOpendrTensorX3d(OpendrTensorT *tensor, X3dModelT *model) {
   free(data);
 }
 
-void forwardX3d(X3dModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
+void forwardX3d(X3dModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
   ffX3d(model, tensor, &outputTensorValues);
@@ -184,8 +216,8 @@ void forwardX3d(X3dModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *ve
     int heights[nTensors];
 
     // TODO: use std::unique_ptr to not have to free after the copy
-    std::vector<OpendrTensor> tempTensorsVector;
-    OpendrTensorT tempTensors[nTensors];
+    std::vector<OpenDRTensor> tempTensorsVector;
+    OpenDRTensorT tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
       initTensor(&(tempTensors[i]));

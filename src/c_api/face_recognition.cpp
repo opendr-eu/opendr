@@ -114,7 +114,7 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
     return;
   }
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
 
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
@@ -165,7 +165,7 @@ void freeFaceRecognitionModel(FaceRecognitionModelT *model) {
   }
 }
 
-void ffFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image, cv::Mat *features) {
+void ffFaceRecognition(FaceRecognitionModelT *model, OpenDRImageT *image, cv::Mat *features) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
   if (!session) {
     std::cerr << "ONNX session not initialized." << std::endl;
@@ -236,7 +236,7 @@ void buildDatabaseFaceRecognition(const char *databaseFolder, const char *output
 
       for (auto currentImagePath = directory_iterator(currentPersonPath); currentImagePath != directory_iterator();
            currentImagePath++) {
-        OpendrImageT image;
+        OpenDRImageT image;
         loadImage(currentImagePath->path().string().c_str(), &image);
 
         cv::Mat features(cv::Size(model->outputSize, 1), CV_32F);
@@ -335,9 +335,9 @@ void loadDatabaseFaceRecognition(const char *databasePath, FaceRecognitionModelT
   model->nFeatures = height;
 }
 
-OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image) {
+OpenDRCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpenDRImageT *image) {
   cv::Mat features(cv::Size(model->outputSize, 1), CV_32F);
-  OpendrCategoryTargetT target;
+  OpenDRCategoryTargetT target;
   target.data = -1;
   target.confidence = 0;
 
@@ -369,7 +369,7 @@ OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrI
   return target;
 }
 
-void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpendrCategoryTargetT category, char *personName) {
+void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpenDRCategoryTargetT category, char *personName) {
   if (category.data >= model->nPersons)
     return;
   strcpy(personName, model->personNames[category.data]);

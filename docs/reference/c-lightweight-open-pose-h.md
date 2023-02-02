@@ -31,22 +31,22 @@ Releases the memory allocated for a pose estimation lightweight open pose model 
 
 ### Function *forwardOpenPose()*
 ```C
-void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardOpenPose(OpenPoseModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
 This function perform forward pass using a pose estimation, lightweight open pose model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 
-### Function *initRandomOpendrTensorOp()*
+### Function *initRandomOpenDRTensorOp()*
 ```C
-void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model);
+void initRandomOpenDRTensorOp(OpenDRTensorT *tensor, OpenPoseModelT *model);
 ```
 This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the pose estimation lightweight open pose model (*model*).
 The (*model*) keeps all the necessary information.
 
-### Function *initOpendrTensorFromImgOp()*
+### Function *initOpenDRTensorFromImgOp()*
 ```C
-void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenPoseModelT *model);
+void initOpenDRTensorFromImgOp(OpenDRImageT *image, OpenDRTensorT *tensor, OpenPoseModelT *model);
 ```
 This is used to initialize an OpenDR tensor structure (*tensor*) with the data from an OpenDR image (*image*) for the lightweight open pose model (*model*).
 The (*model*) keeps all the necessary information.

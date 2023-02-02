@@ -31,15 +31,15 @@ Releases the memory allocated for an object tracking 2d deep sort model (*model*
 
 ### Function *forwardDeepSort()*
 ```C
-void forwardDeepSort(DeepSortModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardDeepSort(DeepSortModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
 This function perform forward pass using an object tracking 2d deep sort model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 
-### Function *initRandomOpendrTensorDs()*
+### Function *initRandomOpenDRTensorDs()*
 ```C
-void initRandomOpendrTensorDs(OpendrTensorT *tensor, DeepSortModelT *model);
+void initRandomOpenDRTensorDs(OpenDRTensorT *tensor, DeepSortModelT *model);
 ```
 This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the object tracking deep sort model (*model*).
 The (*model*) keeps all the necessary information.

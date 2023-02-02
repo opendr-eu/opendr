@@ -25,7 +25,7 @@ START_TEST(model_creation_test) {
   FaceRecognitionModelT model;
 
   // Load a pretrained model
-  loadFaceRecognitionModel("data/optimized_model", &model);
+  loadFaceRecognitionModel("data/face_recognition/optimized_model", &model);
 
   ck_assert(model.onnxSession);
   ck_assert(model.env);
@@ -35,7 +35,7 @@ START_TEST(model_creation_test) {
   freeFaceRecognitionModel(&model);
 
   // Load a model that does not exist
-  loadFaceRecognitionModel("data/optimized_model_not_existant", &model);
+  loadFaceRecognitionModel("data/face_recognition/optimized_model_not_existant", &model);
   ck_assert(!model.onnxSession);
   ck_assert(!model.env);
   ck_assert(!model.sessionOptions);
@@ -47,18 +47,18 @@ END_TEST
 
 START_TEST(database_creation_test) {
   FaceRecognitionModelT model;
-  loadFaceRecognitionModel("data/optimized_model", &model);
+  loadFaceRecognitionModel("data/face_recognition/optimized_model", &model);
 
   // Check that we can create and load a database that exists
-  buildDatabaseFaceRecognition("data/database", "data/database.dat", &model);
-  loadDatabaseFaceRecognition("data/database.dat", &model);
+  buildDatabaseFaceRecognition("data/face_recognition/database", "data/face_recognition/database.dat", &model);
+  loadDatabaseFaceRecognition("data/face_recognition/database.dat", &model);
   ck_assert(model.database);
   ck_assert(model.databaseIds);
   ck_assert(model.databaseIds);
 
   // Check that we can handle errors in the process
-  buildDatabaseFaceRecognition("data/database_not_existant", "data/database.dat", &model);
-  loadDatabaseFaceRecognition("data/database_not_existant.dat", &model);
+  buildDatabaseFaceRecognition("data/face_recognition/database_not_existant", "data/face_recognition/database.dat", &model);
+  loadDatabaseFaceRecognition("data/face_recognition/database_not_existant.dat", &model);
   ck_assert(!model.database);
   ck_assert(!model.databaseIds);
 
@@ -71,23 +71,23 @@ START_TEST(inference_creation_test) {
   // Create a face recognition model
   FaceRecognitionModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  loadFaceRecognitionModel("data/optimized_model", &model);
+  loadFaceRecognitionModel("data/face_recognition/optimized_model", &model);
 
   // Build and load the database
-  buildDatabaseFaceRecognition("data/database", "data/database.dat", &model);
-  loadDatabaseFaceRecognition("data/database.dat", &model);
+  buildDatabaseFaceRecognition("data/face_recognition/database", "data/face_recognition/database.dat", &model);
+  loadDatabaseFaceRecognition("data/face_recognition/database.dat", &model);
 
   // Load an image and performance inference
-  OpendrImageT image;
-  loadImage("data/database/1/1.jpg", &image);
-  OpendrCategoryTargetT res = inferFaceRecognition(&model, &image);
+  OpenDRImageT image;
+  loadImage("data/face_recognition/database/1/1.jpg", &image);
+  OpenDRCategoryTargetT res = inferFaceRecognition(&model, &image);
   freeImage(&image);
   char buff[512];
   decodeCategoryFaceRecognition(&model, res, buff);
   ck_assert(!strcmp(buff, "1"));
 
   // Load another image
-  loadImage("data/database/5/1.jpg", &image);
+  loadImage("data/face_recognition/database/5/1.jpg", &image);
   res = inferFaceRecognition(&model, &image);
   freeImage(&image);
   decodeCategoryFaceRecognition(&model, res, buff);

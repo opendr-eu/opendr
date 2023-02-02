@@ -48,21 +48,20 @@ END_TEST
 START_TEST(forward_pass_creation_test) {
   // Create a detr model
   DetrModelT model;
-  // Load a pretrained model (see instructions for downloading the data)
   loadDetrModel("data/object_detection_2d/detr/optimized_model", &model);
 
   // Load a random tensor and perform forward pass
-  OpendrTensorT input_tensor;
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
-  initRandomOpendrTensorDetr(&input_tensor, &model);
+  initRandomOpenDRTensorDetr(&input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
   forwardDetr(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  initRandomOpendrTensorDetr(&input_tensor, &model);
+  initRandomOpenDRTensorDetr(&input_tensor, &model);
   forwardDetr(&model, &input_tensor, &output_tensor_vector);
 
   ck_assert(output_tensor_vector.nTensors == 2);
@@ -81,6 +80,7 @@ Suite *detr_suite(void) {
   s = suite_create("Detr");
   tc_core = tcase_create("Core");
 
+  tcase_set_timeout(tc_core, 60.0);
   tcase_add_test(tc_core, model_creation_test);
   tcase_add_test(tc_core, forward_pass_creation_test);
   suite_add_tcase(s, tc_core);

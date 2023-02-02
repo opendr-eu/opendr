@@ -3,33 +3,33 @@
 
 The *data.h* header provides definitions of OpenDR data types that can be used in the C API of OpenDR.
 
-### struct *OpendrImageT*
+### struct *OpenDRImageT*
 ```C
-struct OpendrImage {
+struct OpenDRImage {
     void *data;
 };
-typedef struct OpendrImage OpendrImageT;
+typedef struct OpenDRImage OpenDRImageT;
 ```
 
 
-The *OpendrImageT* structure provides a data structure for storing OpenDR images. 
+The *OpenDRImageT* structure provides a data structure for storing OpenDR images. 
 Every function in the C API receiving images is expected to use this structure.
 Helper functions that directly convert images into this format are provided in *opendr_utils.h*.
 
-The *OpendrImageT* structure has the following field:
+The *OpenDRImageT* structure has the following field:
 
 #### `void *data` field
 
 A pointer where image data are stored. 
-*OpendrImageT* is using internally OpenCV images (*cv::Mat*) for storing images. 
+*OpenDRImageT* is using internally OpenCV images (*cv::Mat*) for storing images. 
 Therefore, only a pointer to the memory location of the corresponding *cv::Mat* is stored.
-Please note that the user is not expected to directly manipulate these data without first converting them into OpenCV data type or using the corresponding functions provided in *opendr_utils.h*.
+Please note that the user is not expected to directly manipulate these data without first converting them into OpenCV data type or using the corresponding functions provided in *OpenDR_utils.h*.
 
 ---
 
-### struct *OpendrTensorT*
+### struct *OpenDRTensorT*
 ```C
-struct OpendrTensor {
+struct OpenDRTensor {
   int batchSize;
   int frames;
   int channels;
@@ -38,15 +38,15 @@ struct OpendrTensor {
 
   float *data;
 };
-typedef struct OpendrTensor OpendrTensorT;
+typedef struct OpenDRTensor OpenDRTensorT;
 ```
 
 
-The *OpendrTensorT* structure provides a data structure for storing OpenDR tensors.
+The *OpenDRTensorT* structure provides a data structure for storing OpenDR tensors.
 Every function in the C API receiving and return tensors is expected to use this structure.
 Helper functions that directly maps data into this format are provided in *opendr_utils.h*.
 
-The *OpendrTensorT* structure has the following field:
+The *OpenDRTensorT* structure has the following field:
 
 #### `int batchSize` field
 
@@ -71,13 +71,13 @@ An integer that represent the height of the tensor.
 #### `float *data` field
 
 A pointer where data are stored.
-*OpendrTensorT* is using internally a pointer and corresponding sizes to copy the data into the memory of float *data.
+*OpenDRTensorT* is using internally a pointer and corresponding sizes to copy the data into the memory of float *data.
 Therefore, only a pointer to the memory location of the corresponding data is stored.
 Please note that the user is not expected to directly manipulate these data without first converting them into OpenCV cv::Mat or other form of data type or using the corresponding functions provided in *opendr_utils.h*.
 
-### struct *OpendrTensorVectorT*
+### struct *OpenDRTensorVectorT*
 ```C
-struct OpendrTensorVector {
+struct OpenDRTensorVector {
   int nTensors;
   int *batchSizes;
   int *frames;
@@ -87,15 +87,15 @@ struct OpendrTensorVector {
 
   float **memories;
 };
-typedef struct OpendrTensorVector OpendrTensorVectorT;
+typedef struct OpenDRTensorVector OpenDRTensorVectorT;
 ```
 
 
-The *OpendrTensorVectorT* structure provides a data structure for storing OpenDR vector of tensors structures.
+The *OpenDRTensorVectorT* structure provides a data structure for storing OpenDR vector of tensors structures.
 Every function in the C API receiving and returning multiple tensors is expected to use this structure.
 Helper functions that directly maps data into this format are provided in *opendr_utils.h*.
 
-The *OpendrTensorVectorT* structure has the following field:
+The *OpenDRTensorVectorT* structure has the following field:
 
 #### `int nTensors` field
 
@@ -123,7 +123,7 @@ A pointer of integers that represent the height of each tensor.
 
 #### `float **datas` field
 
-A pointer where stores the data of each *OpendrTensorVectorT.data* stored in the vector.
-*OpendrTensorVectorT* is using internally pointers and corresponding sizes to copy the data into the memory of *datas* for each tensor that is provided.
+A pointer where stores the data of each *OpenDRTensorVectorT.data* stored in the vector.
+*OpenDRTensorVectorT* is using internally pointers and corresponding sizes to copy the data into the memory of *datas* for each tensor that is provided.
 Therefore, only a pointer to the memory location of the corresponding data is stored.
 Please note that the user is not expected to directly manipulate these data without first converting them into OpenCV cv::Mat or other form of data type or using the corresponding functions provided in *opendr_utils.h*.

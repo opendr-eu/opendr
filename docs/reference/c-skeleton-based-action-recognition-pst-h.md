@@ -31,15 +31,15 @@ Releases the memory allocated for a skeleton based action recognition progressiv
 
 ### Function *forwardPst()*
 ```C
-void forwardPst(PstModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardPst(PstModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
 This function perform forward pass using a skeleton based action recognition progressive spatiotemporal gcn model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 
-### Function *initRandomOpendrTensorPst()*
+### Function *initRandomOpenDRTensorPst()*
 ```C
-void initRandomOpendrTensorPst(OpendrTensorT *tensor, PstModelT *model);
+void initRandomOpenDRTensorPst(OpenDRTensorT *tensor, PstModelT *model);
 ```
 This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the skeleton based action recognition progressive spatiotemporal gcn model (*model*).
 The (*model*) keeps all the necessary information.

@@ -31,15 +31,15 @@ Releases the memory allocated for an object detection detr model (*model*).
 
 ### Function *forwardDetr()*
 ```C
-void forwardDetr(DetrModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardDetr(DetrModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
 This function perform forward pass using an object detection detr model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 
-### Function *initRandomOpendrTensorDetr()*
+### Function *initRandomOpenDRTensorDetr()*
 ```C
-void initRandomOpendrTensorDetr(OpendrTensorT *tensor, DetrModelT *model);
+void initRandomOpenDRTensorDetr(OpenDRTensorT *tensor, DetrModelT *model);
 ```
 This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the object detection detr model (*model*).
 The (*model*) keeps all the necessary information.

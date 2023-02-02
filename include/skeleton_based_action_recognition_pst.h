@@ -53,7 +53,7 @@ void loadPstModel(const char *modelPath, PstModelT *model);
  * @param tensor OpenDR tensor structure which will be used as input of the model
  * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forwardPst(PstModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardPst(PstModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a pst skeleton based action recognition model
@@ -66,7 +66,7 @@ void freePstModel(PstModelT *model);
  * @param tensor OpenDR tensor structure to be loaded with random values
  * @param model model to be used to initialize the tensor
  */
-void initRandomOpendrTensorPst(OpendrTensorT *tensor, PstModelT *model);
+void initRandomOpenDRTensorPst(OpenDRTensorT *tensor, PstModelT *model);
 
 #ifdef __cplusplus
 }

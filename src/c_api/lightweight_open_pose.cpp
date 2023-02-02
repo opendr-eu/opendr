@@ -88,10 +88,35 @@ void loadOpenPoseModel(const char *modelPath, OpenPoseModelT *model) {
   // Initialize model
   model->onnxSession = model->env = model->sessionOptions = NULL;
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  // Parse the model JSON file
+  std::string basePath(modelPath);
+  std::size_t splitPosition = basePath.find_last_of("/");
+  splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
+
+  std::string modelName = basePath.substr(splitPosition);
+  std::string modelJsonPath = basePath + "/" + modelName + ".json";
+  std::ifstream inStream(modelJsonPath);
+  if (!inStream.is_open()) {
+    std::cerr << "Cannot open JSON model file" << std::endl;
+    return;
+  }
+  std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
+  const char *json = str.c_str();
+
+  // Parse JSON
+  std::string onnxModelName = jsonGetStringFromKey(json, "model_paths", 0);
+  std::string onnxModelPath = basePath + "/" + onnxModelName;
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
+  // Proceed only if the model is in onnx format
+  if (modelFormat != "onnx") {
+    std::cerr << "Model not in ONNX format." << std::endl;
+    return;
+  }
+
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-  Ort::Session *session = new Ort::Session(*env, modelPath, *sessionOptions);
+  Ort::Session *session = new Ort::Session(*env, onnxModelPath.c_str(), *sessionOptions);
   model->env = env;
   model->onnxSession = session;
   model->sessionOptions = sessionOptions;
@@ -134,7 +159,7 @@ void freeOpenPoseModel(OpenPoseModelT *model) {
   }
 }
 
-void ffOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
+void ffOpenPose(OpenPoseModelT *model, OpenDRTensorT *tensor, std::vector<cv::Mat> *outputTensorValues) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
 
   if (!session) {
@@ -187,7 +212,7 @@ void ffOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, std::vector<cv::Ma
   }
 }
 
-void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model) {
+void initRandomOpenDRTensorOp(OpenDRTensorT *tensor, OpenPoseModelT *model) {
   int inputTensorSize = model->modelSize * model->modelSize * 3;
 
   float *data = static_cast<float *>(malloc(inputTensorSize * sizeof(float)));
@@ -200,7 +225,7 @@ void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model) {
   free(data);
 }
 
-void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenPoseModelT *model) {
+void initOpenDRTensorFromImgOp(OpenDRImageT *image, OpenDRTensorT *tensor, OpenPoseModelT *model) {
   int inputTensorSize = model->modelSize * model->modelSize * 3;
 
   cv::Mat *opencvImage = (static_cast<cv::Mat *>(image->data));
@@ -221,7 +246,7 @@ void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenP
   free(data);
 }
 
-void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector) {
+void forwardOpenPose(OpenPoseModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector) {
   // Get the feature vector for the current image
   std::vector<cv::Mat> outputTensorValues;
   ffOpenPose(model, tensor, &outputTensorValues);
@@ -234,8 +259,8 @@ void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorV
     int widths[nTensors];
     int heights[nTensors];
 
-    std::vector<OpendrTensor> tempTensorsVector;
-    OpendrTensorT tempTensors[nTensors];
+    std::vector<OpenDRTensor> tempTensorsVector;
+    OpenDRTensorT tempTensors[nTensors];
 
     for (int i = 0; i < nTensors; i++) {
       initTensor(&(tempTensors[i]));

@@ -63,7 +63,7 @@ void loadOpenPoseModel(const char *modelPath, OpenPoseModelT *model);
  * @param tensor OpenDR tensor structure which will be used as input of the model
  * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forwardOpenPose(OpenPoseModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardOpenPose(OpenPoseModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for an open pose model
@@ -77,14 +77,14 @@ void freeOpenPoseModel(OpenPoseModelT *model);
  * @param tensor OpenDR tensor structure to be loaded with the image values
  * @param model model to be used to initialize the tensor
  */
-void initOpendrTensorFromImgOp(OpendrImageT *image, OpendrTensorT *tensor, OpenPoseModelT *model);
+void initOpenDRTensorFromImgOp(OpenDRImageT *image, OpenDRTensorT *tensor, OpenPoseModelT *model);
 
 /**
  * This function initializes a tensor with random values for testing the forward pass of the model
  * @param tensor OpenDR tensor structure to be loaded with random values
  * @param model model to be used to initialize the tensor
  */
-void initRandomOpendrTensorOp(OpendrTensorT *tensor, OpenPoseModelT *model);
+void initRandomOpenDRTensorOp(OpenDRTensorT *tensor, OpenPoseModelT *model);
 #ifdef __cplusplus
 }
 #endif

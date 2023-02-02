@@ -23,25 +23,25 @@ int main(int argc, char **argv) {
   OpenPoseModelT model;
 
   printf("start init model\n");
-  loadOpenPoseModel("data/lightweight_open_pose/optimized_model/onnx_model.onnx", &model);
+  loadOpenPoseModel("data/pose_estimation/lightweight_open_pose/optimized_model", &model);
   printf("success\n");
 
-  // Initialize opendr tensor for input
-  OpendrTensorT input_tensor;
+  // Initialize OpenDR tensor for input
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
   // Load an image and performance inference
-  OpendrImageT image;
+  OpenDRImageT image;
   loadImage("data/lightweight_open_pose/database/000000000785.jpg", &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
   }
 
-  initOpendrTensorFromImgOp(&image, &input_tensor, &model);
+  initOpenDRTensorFromImgOp(&image, &input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
 
   forwardOpenPose(&model, &input_tensor, &output_tensor_vector);

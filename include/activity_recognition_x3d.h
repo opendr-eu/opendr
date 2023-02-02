@@ -30,6 +30,10 @@ struct X3dModel {
   void *env;
   void *sessionOptions;
 
+  // Network parameters
+  const char *networkHead;
+  float threshold;
+
   // Sizes for resizing an input image
   int modelSize;
   int framesPerClip;
@@ -48,10 +52,9 @@ typedef struct X3dModel X3dModelT;
 /**
  * Loads a x3d activity recognition model saved in OpenDR format
  * @param modelPath path to the OpenDR x3d model (as exported using OpenDR library)
- * @param mode string to determine the model that is used (available options ["xs", "s", "m", "l"])
  * @param model the model to be loaded
  */
-void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model);
+void loadX3dModel(const char *modelPath, X3dModelT *model);
 
 /**
  * This function performs feed forward of x3d activity recognition model
@@ -59,7 +62,7 @@ void loadX3dModel(const char *modelPath, char *mode, X3dModelT *model);
  * @param tensor OpenDR tensor structure which will be used as input of the model
  * @param vector OpenDR vector of tensors structure to save the output of the feed forward
  */
-void forwardX3d(X3dModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
+void forwardX3d(X3dModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 
 /**
  * Releases the memory allocated for a x3d activity recognition model
@@ -72,7 +75,7 @@ void freeX3dModel(X3dModelT *model);
  * @param tensor OpenDR tensor structure to be loaded with random values
  * @param model model to be used to initialize the tensor
  */
-void initRandomOpendrTensorX3d(OpendrTensorT *tensor, X3dModelT *model);
+void initRandomOpenDRTensorX3d(OpenDRTensorT *tensor, X3dModelT *model);
 
 #ifdef __cplusplus
 }

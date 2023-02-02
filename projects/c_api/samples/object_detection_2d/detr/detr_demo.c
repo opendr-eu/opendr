@@ -26,14 +26,14 @@ int main(int argc, char **argv) {
   loadDetrModel("data/object_detection_2d/detr/optimized_model", &model);
   printf("success\n");
 
-  // Initialize opendr tensor for input
-  OpendrTensorT input_tensor;
+  // Initialize OpenDR tensor for input
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
-  initRandomOpendrTensorDetr(&input_tensor, &model);
+  initRandomOpenDRTensorDetr(&input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
 
   forwardDetr(&model, &input_tensor, &output_tensor_vector);

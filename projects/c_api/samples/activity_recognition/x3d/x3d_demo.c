@@ -21,20 +21,19 @@
 
 int main(int argc, char **argv) {
   X3dModelT model;
-  char *mode = "l";
 
   printf("start init model\n");
-  loadX3dModel("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", mode, &model);
+  loadX3dModel("data/activity_recognition/x3d/optimized_model_l", &model);
   printf("success\n");
 
-  // Initialize opendr tensor for input
-  OpendrTensorT input_tensor;
+  // Initialize OpenDR tensor for input
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
-  initRandomOpendrTensorX3d(&input_tensor, &model);
+  initRandomOpenDRTensorX3d(&input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
 
   forwardX3d(&model, &input_tensor, &output_tensor_vector);

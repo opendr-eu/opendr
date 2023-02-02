@@ -21,14 +21,23 @@
 #include "opendr_utils.h"
 
 START_TEST(model_creation_test) {
-  // Create a face recognition model
+  // Create a x3d model
   X3dModelT model;
 
   // Load a pretrained model
-  loadX3dModel("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", "l", &model);
+  loadX3dModel("data/activity_recognition/x3d/optimized_model_l", &model);
   ck_assert(model.onnxSession);
   ck_assert(model.env);
   ck_assert(model.sessionOptions);
+  // Release the resources
+  freeX3dModel(&model);
+
+  // Load a model that does not exist
+  loadX3dModel("data/optimized_model_not_existant", &model);
+  ck_assert(!model.onnxSession);
+  ck_assert(!model.env);
+  ck_assert(!model.sessionOptions);
+
   // Release the resources
   freeX3dModel(&model);
 }
@@ -37,23 +46,22 @@ END_TEST
 START_TEST(forward_pass_creation_test) {
   // Create a x3d model
   X3dModelT model;
-  // Load a pretrained model (see instructions for downloading the data)
-  loadX3dModel("data/activity_recognition/x3d/optimized_model/x3d_l.onnx", "l", &model);
+  loadX3dModel("data/activity_recognition/x3d/optimized_model_l", &model);
 
   // Load a random tensor and perform forward pass
-  OpendrTensorT input_tensor;
+  OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
-  initRandomOpendrTensorX3d(&input_tensor, &model);
+  initRandomOpenDRTensorX3d(&input_tensor, &model);
 
-  // Initialize opendr tensor vector for output
-  OpendrTensorVectorT output_tensor_vector;
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
   initTensorVector(&output_tensor_vector);
 
   forwardX3d(&model, &input_tensor, &output_tensor_vector);
 
   // Load another tensor
-  initRandomOpendrTensorX3d(&input_tensor, &model);
+  initRandomOpenDRTensorX3d(&input_tensor, &model);
   forwardX3d(&model, &input_tensor, &output_tensor_vector);
 
   ck_assert(output_tensor_vector.nTensors == 1);
@@ -72,6 +80,7 @@ Suite *x3d_suite(void) {
   s = suite_create("X3d");
   tc_core = tcase_create("Core");
 
+  tcase_set_timeout(tc_core, 60.0);
   tcase_add_test(tc_core, model_creation_test);
   tcase_add_test(tc_core, forward_pass_creation_test);
   suite_add_tcase(s, tc_core);

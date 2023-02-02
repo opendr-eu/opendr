@@ -47,13 +47,15 @@ typedef struct NanodetModel NanodetModelT;
 /**
  * Loads a nanodet object detection model saved in libtorch format.
  * @param modelPath path to the libtorch nanodet model (as exported using OpenDR)
+ * @param modelName name of the model to be loaded
  * @param device the device that will be used for inference
- * @param height the height of model input
- * @param width the width of model input
  * @param scoreThreshold confidence threshold
+ * @param height the height of model input, if set to zero the trained height will be used instead
+ * @param width the width of model input, if set to zero the trained width will be used instead
  * @param model the model to be loaded
  */
-void loadNanodetModel(char *modelPath, char *device, int height, int width, float scoreThreshold, NanodetModelT *model);
+void loadNanodetModel(char *modelPath, char *modelName, char *device, float scoreThreshold, int height, int width,
+                      NanodetModelT *model);
 
 /**
  * This function performs inference using a nanodet object detection model and an input image.
@@ -61,7 +63,7 @@ void loadNanodetModel(char *modelPath, char *device, int height, int width, floa
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-OpendrDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpendrImageT *image);
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image);
 
 /**
  * Releases the memory allocated for a nanodet object detection model.
@@ -75,7 +77,7 @@ void freeNanodetModel(NanodetModelT *model);
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
  */
-void drawBboxes(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *vector);
+void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector);
 
 #ifdef __cplusplus
 }
