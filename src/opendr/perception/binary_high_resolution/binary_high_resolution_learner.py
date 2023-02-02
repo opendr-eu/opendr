@@ -37,17 +37,12 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 
 
 class BinaryHighResolutionLearner(Learner):
-    def __init__(self, lr=1e-3, iters=100, batch_size=512, optimizer='adam', temp_path='',
-                 checkpoint_after_iter=0, checkpoint_load_iter=0, device='cpu',
-                 val_after=1, weight_decay=1e-5, momentum=0.9, num_workers=4,
+    def __init__(self, lr=1e-3, iters=100, batch_size=512, optimizer='adam', temp_path='', device='cpu',
+                 weight_decay=1e-5, momentum=0.9, num_workers=4,
                  architecture='VGG_720p'):
         super(BinaryHighResolutionLearner, self).__init__(lr=lr, batch_size=batch_size, iters=iters,
                                                           optimizer=optimizer,
-                                                          temp_path=temp_path,
-                                                          checkpoint_after_iter=checkpoint_after_iter,
-                                                          checkpoint_load_iter=checkpoint_load_iter, device=device)
-
-        self.val_after = val_after
+                                                          temp_path=temp_path, device=device)
         self.weight_decay = weight_decay
         self.momentum = momentum
         self.num_workers = num_workers
@@ -68,7 +63,7 @@ class BinaryHighResolutionLearner(Learner):
         if 'cuda' in self.device:
             self.model = self.model.to(self.device)
 
-    def fit(self, dataset, val_dataset=None, silent=False, verbose=True):
+    def fit(self, dataset, silent=False, verbose=True):
         """
         This method is used for training the algorithm on a train dataset and validating on a val dataset.
         :param dataset: object that holds the training dataset
@@ -102,7 +97,7 @@ class BinaryHighResolutionLearner(Learner):
         train_loader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size,
                                                    sampler=ImbalancedDatasetSampler(dataset),
                                                    num_workers=self.num_workers)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=int(self.iters) / 2, gamma=0.1)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=int(self.iters / 2), gamma=0.1)
         self.model.train()
         n_steps = 0
         training_loss = []
@@ -114,7 +109,7 @@ class BinaryHighResolutionLearner(Learner):
                 data, target = data.to(self.device), target.to(self.device).squeeze()
                 output = self.model(data)
                 aux_loss = target * (output[:, 1] - 1) ** 2 + (1 - target) * (output[:, 0] - 1) ** 2 + (1 - target) * (
-                    output[:, 1]) ** 2 + (target) * (output[:, 1]) ** 2
+                    output[:, 1]) ** 2 + target * (output[:, 1]) ** 2
                 loss = F.cross_entropy(output.squeeze(), target) + torch.mean(aux_loss)
                 loss.backward()
                 if verbose:
@@ -127,7 +122,7 @@ class BinaryHighResolutionLearner(Learner):
                     break
                 n_steps += 1
             if not silent and not verbose:
-                print("Epoch loss %6.5f" % (total_loss))
+                print("Epoch loss %6.5f" % total_loss)
         return {"loss": training_loss}
 
     def eval(self, dataset, silent=False, verbose=True):
@@ -302,7 +297,7 @@ class BinaryHighResolutionLearner(Learner):
 
         if self.architecture != metadata['architecture']:
             raise ValueError(
-                "Architectures not match! Expected %s but got %s" % (self.architecture, metadata["architecture"]))
+                "Architectures do not match! Expected %s but got %s" % (self.architecture, metadata["architecture"]))
 
         if not metadata["optimized"]:
             self._build_model()
