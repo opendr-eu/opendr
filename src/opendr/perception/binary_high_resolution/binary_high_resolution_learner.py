@@ -97,7 +97,7 @@ class BinaryHighResolutionLearner(Learner):
         train_loader = torch.utils.data.DataLoader(dataset, batch_size=self.batch_size,
                                                    sampler=ImbalancedDatasetSampler(dataset),
                                                    num_workers=self.num_workers)
-        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=int(self.iters / 2), gamma=0.1)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=int(self.iters) / 2, gamma=0.1)
         self.model.train()
         n_steps = 0
         training_loss = []
