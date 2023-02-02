@@ -69,10 +69,11 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 8. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
 9. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros2-node)
 10. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
-11. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
-12. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
-13. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
-14. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
+11. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros2-node)
+12. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
+13. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
+14. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
+15. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
 ## RGB + Infrared input
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#2d-object-detection-gem-ros2-node)
 ## RGBD input
