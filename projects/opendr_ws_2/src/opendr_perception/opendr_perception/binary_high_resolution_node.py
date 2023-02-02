@@ -31,7 +31,8 @@ from opendr.perception.binary_high_resolution import BinaryHighResolutionLearner
 class BinaryHighResolutionNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_heatmap_topic="/opendr/binary_hr_heatmap",
-                 output_rgb_image_topic="/opendr/binary_hr_heatmap_visualization", model_path=None, device="cuda"):
+                 output_rgb_image_topic="/opendr/binary_hr_heatmap_visualization",
+                 model_path=None, architecture="VGG_720p", device="cuda"):
         """
         Create a ROS2 Node for binary high resolution classification with Binary High Resolution.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -43,6 +44,8 @@ class BinaryHighResolutionNode(Node):
         :type output_rgb_image_topic: str
         :param model_path: The path to the directory of a trained model
         :type model_path: str
+        :param architecture: Architecture used on trained model (`VGG_720p` or `VGG_1080p`)
+        :type architecture: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -63,7 +66,7 @@ class BinaryHighResolutionNode(Node):
         self.bridge = ROS2Bridge()
 
         # Initialize the semantic segmentation model
-        self.learner = BinaryHighResolutionLearner(device=device)
+        self.learner = BinaryHighResolutionLearner(device=device, architecture=architecture)
         try:
             self.learner.load(model_path)
         except FileNotFoundError:
@@ -123,6 +126,9 @@ def main(args=None):
                         default="/opendr/binary_hr_heatmap_visualization")
     parser.add_argument("-m", "--model_path", help="Path to the directory of the trained model",
                         type=str, default="test_model")
+    parser.add_argument("-a", "--architecture", help="Architecture used on trained model, either \"VGG_720p\" or \"VGG_1080p\","
+                                                     "defaults to \"VGG_720p\"",
+                        type=str, default="VGG_720p", choices=["VGG_720p", "VGG_1080p"])
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -144,7 +150,8 @@ def main(args=None):
                                               input_rgb_image_topic=args.input_rgb_image_topic,
                                               output_heatmap_topic=args.output_heatmap_topic,
                                               output_rgb_image_topic=args.output_rgb_image_topic,
-                                              model_path=args.model_path)
+                                              model_path=args.model_path,
+                                              architecture=args.architecture)
 
     rclpy.spin(binary_hr_node)
 
