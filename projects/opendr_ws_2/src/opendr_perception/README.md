@@ -523,7 +523,7 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 
    For viewing the output, refer to the [notes above.](#notes)
 
-### Skeleton-based Human Action Recognition ROS Nodes
+### Skeleton-based Human Action Recognition ROS2 Nodes
 
 A ROS2 node for performing skeleton-based human action recognition is provided, one using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
 Another ROS2 node for performing continual skeleton-based human action recognition is provided, using the CoSTGCN method. 
