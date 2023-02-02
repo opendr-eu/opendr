@@ -45,7 +45,7 @@ class TestBinaryHighResolutionLearner(unittest.TestCase):
               "**********************************")
 
         cls.temp_dir = os.path.join(".", "tests", "sources", "tools", "perception", "binary_high_resolution")
-        cls.learner = BinaryHighResolutionLearner(device=device)
+        cls.learner = BinaryHighResolutionLearner(device=device, num_workers=2)
         # Download dataset
         cls.learner.download(os.path.join(cls.temp_dir, "demo_dataset"))
         cls.dataset_path = os.path.join(cls.temp_dir, "demo_dataset")
