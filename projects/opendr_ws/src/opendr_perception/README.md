@@ -88,6 +88,34 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
    For viewing the output, refer to the [notes above.](#notes)
 
+### High Resolution Pose Estimation ROS Node
+
+You can find the high resolution pose estimation ROS node python script [here](./scripts/hr_pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [high resolution pose estimation tool](../../../../src/opendr/perception/pose_estimation/hr_pose_estimation/high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/high-resolution-pose-estimation.md).
+The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_bridge/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_bridge/msg/OpenDRPose2DKeypoint.msg).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the high resolution pose detection node:
+    ```shell
+    rosrun opendr_perception hr_pose_estimation_node.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
+
+3. Default output topics:
+   - Output images: `/opendr/image_pose_annotated`
+   - Detection messages: `/opendr/poses`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
 ### Fall Detection ROS Node
 
 You can find the fall detection ROS node python script [here](./scripts/fall_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
@@ -418,6 +446,41 @@ On the table below you can find the detectable classes and their corresponding I
 | Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
+
+### Binary High Resolution ROS Node
+
+You can find the binary high resolution ROS node python script [here](./scripts/binary_high_resolution_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [binary high resolution tool](../../../../src/opendr/perception/binary_high_resolution/binary_high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/binary_high_resolution.md).
+
+#### Instructions for basic usage:
+
+0. Before running this node it is required to first train a model for a specific binary classification task. 
+   Refer to the tool's [documentation](../../../../docs/reference/binary_high_resolution.md) for more information.
+   To test the node out, run [train_eval_demo.py](../../../python/perception/binary_high_resolution/train_eval_demo.py) 
+   to download the test dataset provided and to train a test model. 
+   You would then need to move the model folder in `opendr_ws` so the node can load it using the default `model_path` argument.
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the binary high resolution node:
+
+    ```shell
+    ros2 run opendr_perception binary_high_resolution
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS2 image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap_visualization`)
+   - `-m or --model_path MODEL_PATH`: path to the directory of the trained model (default=`test_model`)
+   - `-a or --architecture ARCHITECTURE`: architecture used for the trained model, either `VGG_720p` or `VGG_1080p` (default=`VGG_720p`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/binary_hr_heatmap`, `/opendr/binary_hr_heatmap_visualization`
+   - Detection messages: `/opendr/binary_hr_heatmap`
+
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Image-based Facial Emotion Estimation ROS Node
 
