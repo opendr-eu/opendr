@@ -49,27 +49,27 @@ def create_model(
     loss_scale = None
 
     config = pipeline_pb2.TrainEvalPipelineConfig()
-    with open(config_path, "r") as f:
-        proto_str = f.read()
-        text_format.Merge(proto_str, config)
-    input_cfg = config.train_input_reader
-    eval_input_cfg = config.eval_input_reader
-    model_cfg = config.model.second
-    train_cfg = config.train_config
-    class_names = list(input_cfg.class_names)
-    ######################
-    # BUILD VOXEL GENERATOR
-    ######################
-    voxel_generator = voxel_builder.build(model_cfg.voxel_generator)
-    ######################
-    # BUILD TARGET ASSIGNER
-    ######################
-    bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
-    box_coder = box_coder_builder.build(model_cfg.box_coder)
-    target_assigner_cfg = model_cfg.target_assigner
-    target_assigner = target_assigner_builder.build(
-        target_assigner_cfg, bv_range, box_coder
-    )
+    # with open(config_path, "r") as f:
+    #     proto_str = f.read()
+    #     text_format.Merge(proto_str, config)
+    # input_cfg = config.train_input_reader
+    # eval_input_cfg = config.eval_input_reader
+    # model_cfg = config.model.second
+    # train_cfg = config.train_config
+    # class_names = list(input_cfg.class_names)
+    # ######################
+    # # BUILD VOXEL GENERATOR
+    # ######################
+    # voxel_generator = voxel_builder.build(model_cfg.voxel_generator)
+    # ######################
+    # # BUILD TARGET ASSIGNER
+    # ######################
+    # bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
+    # box_coder = box_coder_builder.build(model_cfg.box_coder)
+    # target_assigner_cfg = model_cfg.target_assigner
+    # target_assigner = target_assigner_builder.build(
+    #     target_assigner_cfg, bv_range, box_coder
+    # )
     # ######################
     # # BUILD NET
     # ######################
