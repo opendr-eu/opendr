@@ -70,53 +70,53 @@ def create_model(
     target_assigner = target_assigner_builder.build(
         target_assigner_cfg, bv_range, box_coder
     )
-    ######################
-    # BUILD NET
-    ######################
-    center_limit_range = model_cfg.post_center_limit_range
-    net = second_builder.build(model_cfg, voxel_generator, target_assigner, device)
-    net.to(device)
-    net.device = device
+    # ######################
+    # # BUILD NET
+    # ######################
+    # center_limit_range = model_cfg.post_center_limit_range
+    # net = second_builder.build(model_cfg, voxel_generator, target_assigner, device)
+    # net.to(device)
+    # net.device = device
 
-    if verbose:
-        log("num_trainable parameters:", len(list(net.parameters())))
-        for n, p in net.named_parameters():
-            log(n, p.shape)
-    ######################
-    # BUILD OPTIMIZER
-    ######################
-    gstep = net.get_global_step() - 1
-    if train_cfg.enable_mixed_precision:
-        net.half()
-        net.metrics_to_float()
-        net.convert_norm_to_float(net)
-    optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
-    if train_cfg.enable_mixed_precision:
-        loss_scale = train_cfg.loss_scale_factor
-        mixed_optimizer = MixedPrecisionWrapper(optimizer, loss_scale)
-    else:
-        mixed_optimizer = optimizer
-    lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
-    if train_cfg.enable_mixed_precision:
-        float_dtype = torch.float16
-    else:
-        float_dtype = torch.float32
+    # if verbose:
+    #     log("num_trainable parameters:", len(list(net.parameters())))
+    #     for n, p in net.named_parameters():
+    #         log(n, p.shape)
+    # ######################
+    # # BUILD OPTIMIZER
+    # ######################
+    # gstep = net.get_global_step() - 1
+    # if train_cfg.enable_mixed_precision:
+    #     net.half()
+    #     net.metrics_to_float()
+    #     net.convert_norm_to_float(net)
+    # optimizer = optimizer_builder.build_online(optimizer_name, optimizer_params, lr, net.parameters())
+    # if train_cfg.enable_mixed_precision:
+    #     loss_scale = train_cfg.loss_scale_factor
+    #     mixed_optimizer = MixedPrecisionWrapper(optimizer, loss_scale)
+    # else:
+    #     mixed_optimizer = optimizer
+    # lr_scheduler = lr_scheduler_builder.build_online(lr_schedule_name, lr_schedule_params, mixed_optimizer, gstep)
+    # if train_cfg.enable_mixed_precision:
+    #     float_dtype = torch.float16
+    # else:
+    #     float_dtype = torch.float32
 
-    return (
-        net,
-        input_cfg,
-        train_cfg,
-        eval_input_cfg,
-        model_cfg,
-        voxel_generator,
-        target_assigner,
-        mixed_optimizer,
-        lr_scheduler,
-        float_dtype,
-        loss_scale,
-        class_names,
-        center_limit_range,
-    )
+    # return (
+    #     net,
+    #     input_cfg,
+    #     train_cfg,
+    #     eval_input_cfg,
+    #     model_cfg,
+    #     voxel_generator,
+    #     target_assigner,
+    #     mixed_optimizer,
+    #     lr_scheduler,
+    #     float_dtype,
+    #     loss_scale,
+    #     class_names,
+    #     center_limit_range,
+    # )
 
 
 # def load_from_checkpoint(net, mixed_optimizer, path, lr_schedule_name, lr_schedule_params, device=None):
