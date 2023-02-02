@@ -123,8 +123,8 @@ class CoSkeletonActionRecognitionNode(Node):
             poses = _select_2_poses(poses)
 
         #  Publish detections in ROS message
-        for pose in poses:
-            if self.pose_publisher is not None:
+        if self.pose_publisher is not None:
+            for pose in poses:
                 # Convert OpenDR pose to ROS2 pose message using bridge and publish it
                 self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
@@ -168,10 +168,9 @@ def _select_2_poses(poses):
 
 def _pose2numpy(num_current_frames, poses_list):
     C = 2
-    T = 4  # To be checked
     V = 18
     M = 2  # num_person_in
-    skeleton_seq = np.zeros((1, C, T, V, M))
+    skeleton_seq = np.zeros((1, C, num_current_frames, V, M))
     for t in range(num_current_frames):
         for m in range(len(poses_list[t])):
             skeleton_seq[0, 0:2, t, :, m] = np.transpose(poses_list[t][m].data)
