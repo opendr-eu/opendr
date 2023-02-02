@@ -126,8 +126,8 @@ def main(args=None):
                         default="/opendr/binary_hr_heatmap_visualization")
     parser.add_argument("-m", "--model_path", help="Path to the directory of the trained model",
                         type=str, default="test_model")
-    parser.add_argument("-a", "--architecture", help="Architecture used on trained model, either \"VGG_720p\" or \"VGG_1080p\","
-                                                     "defaults to \"VGG_720p\"",
+    parser.add_argument("-a", "--architecture", help="Architecture used for the trained model, either \"VGG_720p\" or "
+                                                     "\"VGG_1080p\", defaults to \"VGG_720p\"",
                         type=str, default="VGG_720p", choices=["VGG_720p", "VGG_1080p"])
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
