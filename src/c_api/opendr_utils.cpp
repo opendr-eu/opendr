@@ -68,6 +68,28 @@ float jsonGetFloatFromKey(const char *json, const char *key, const int index) {
   return value.GetFloat();
 }
 
+int jsonGetBoolFromKey(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember(key))) {
+    return -1;
+  }
+  const rapidjson::Value &value = doc[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return -1;
+    }
+    if (!value[index].IsBool()) {
+      return -1;
+    }
+    return (value[index].GetBool() ? 0 : 1);
+  }
+  if (!value.IsBool()) {
+    return -1;
+  }
+  return (value.GetBool() ? 0 : 1);
+}
+
 const char *jsonGetStringFromKeyInInferenceParams(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
   doc.Parse(json);
@@ -120,7 +142,33 @@ float jsonGetFloatFromKeyInInferenceParams(const char *json, const char *key, co
   return value.GetFloat();
 }
 
-void loadImage(const char *path, OpendrImageT *image) {
+int jsonGetBoolFromKeyInInferenceParams(const char *json, const char *key, const int index) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+  if ((!doc.IsObject()) || (!doc.HasMember("inference_params"))) {
+    return -1;
+  }
+  const rapidjson::Value &inferenceParams = doc["inference_params"];
+  if ((!inferenceParams.IsObject()) || (!inferenceParams.HasMember(key))) {
+    return -1;
+  }
+  const rapidjson::Value &value = inferenceParams[key];
+  if (value.IsArray()) {
+    if (value.Size() <= index) {
+      return -1;
+    }
+    if (!value[index].IsBool()) {
+      return -1;
+    }
+    return (value[index].GetBool() ? 0 : 1);
+  }
+  if (!value.IsBool()) {
+    return -1;
+  }
+  return (value.GetBool() ? 0 : 1);
+}
+
+void loadImage(const char *path, OpenDRImageT *image) {
   cv::Mat opencvImage = cv::imread(path, cv::IMREAD_COLOR);
   if (opencvImage.empty()) {
     image->data = NULL;
@@ -129,18 +177,18 @@ void loadImage(const char *path, OpendrImageT *image) {
   }
 }
 
-void freeImage(OpendrImageT *image) {
+void freeImage(OpenDRImageT *image) {
   if (image->data) {
     cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
     delete opencvImage;
   }
 }
 
-void initDetectionsVector(OpendrDetectionVectorTargetT *vector) {
+void initDetectionsVector(OpenDRDetectionVectorTargetT *vector) {
   vector->startingPointer = NULL;
 
-  std::vector<OpendrDetectionTarget> detections;
-  OpendrDetectionTargetT detection;
+  std::vector<OpenDRDetectionTarget> detections;
+  OpenDRDetectionTargetT detection;
 
   detection.name = -1;
   detection.left = 0.0;
@@ -154,23 +202,23 @@ void initDetectionsVector(OpendrDetectionVectorTargetT *vector) {
   loadDetectionsVector(vector, detections.data(), static_cast<int>(detections.size()));
 }
 
-void loadDetectionsVector(OpendrDetectionVectorTargetT *vector, OpendrDetectionTargetT *detectionPtr, int vectorSize) {
+void loadDetectionsVector(OpenDRDetectionVectorTargetT *vector, OpenDRDetectionTargetT *detectionPtr, int vectorSize) {
   freeDetectionsVector(vector);
 
   vector->size = vectorSize;
-  int sizeOfOutput = (vectorSize) * sizeof(OpendrDetectionTargetT);
-  vector->startingPointer = static_cast<OpendrDetectionTargetT *>(malloc(sizeOfOutput));
+  int sizeOfOutput = (vectorSize) * sizeof(OpenDRDetectionTargetT);
+  vector->startingPointer = static_cast<OpenDRDetectionTargetT *>(malloc(sizeOfOutput));
   std::memcpy(vector->startingPointer, detectionPtr, sizeOfOutput);
 }
 
-void freeDetectionsVector(OpendrDetectionVectorTargetT *vector) {
+void freeDetectionsVector(OpenDRDetectionVectorTargetT *vector) {
   if (vector->startingPointer != NULL) {
     free(vector->startingPointer);
     vector->startingPointer = NULL;
   }
 }
 
-void initTensor(OpendrTensorT *tensor) {
+void initTensor(OpenDRTensorT *tensor) {
   tensor->batchSize = 0;
   tensor->frames = 0;
   tensor->channels = 0;
@@ -179,7 +227,7 @@ void initTensor(OpendrTensorT *tensor) {
   tensor->data = NULL;
 }
 
-void loadTensor(OpendrTensorT *tensor, void *tensorData, int batchSize, int frames, int channels, int width, int height) {
+void loadTensor(OpenDRTensorT *tensor, void *tensorData, int batchSize, int frames, int channels, int width, int height) {
   freeTensor(tensor);
 
   tensor->batchSize = batchSize;
@@ -193,14 +241,14 @@ void loadTensor(OpendrTensorT *tensor, void *tensorData, int batchSize, int fram
   std::memcpy(tensor->data, tensorData, sizeOfData);
 }
 
-void freeTensor(OpendrTensorT *tensor) {
+void freeTensor(OpenDRTensorT *tensor) {
   if (tensor->data != NULL) {
     free(tensor->data);
     tensor->data = NULL;
   }
 }
 
-void initTensorVector(OpendrTensorVectorT *vector) {
+void initTensorVector(OpenDRTensorVectorT *vector) {
   vector->nTensors = 0;
   vector->batchSizes = NULL;
   vector->frames = NULL;
@@ -210,7 +258,7 @@ void initTensorVector(OpendrTensorVectorT *vector) {
   vector->datas = NULL;
 }
 
-void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int nTensors) {
+void loadTensorVector(OpenDRTensorVectorT *vector, OpenDRTensorT *tensorPtr, int nTensors) {
   freeTensorVector(vector);
 
   vector->nTensors = nTensors;
@@ -245,7 +293,7 @@ void loadTensorVector(OpendrTensorVectorT *vector, OpendrTensorT *tensorPtr, int
   }
 }
 
-void freeTensorVector(OpendrTensorVectorT *vector) {
+void freeTensorVector(OpenDRTensorVectorT *vector) {
   // free vector pointers
   if (vector->batchSizes != NULL) {
     free(vector->batchSizes);
@@ -278,7 +326,7 @@ void freeTensorVector(OpendrTensorVectorT *vector) {
   vector->nTensors = 0;
 }
 
-void iterTensorVector(OpendrTensorT *tensor, OpendrTensorVectorT *vector, int index) {
+void iterTensorVector(OpenDRTensorT *tensor, OpenDRTensorVectorT *vector, int index) {
   loadTensor(tensor, static_cast<void *>((vector->datas)[index]), (vector->batchSizes)[index], (vector->frames)[index],
              (vector->channels)[index], (vector->widths)[index], (vector->heights)[index]);
 }
