@@ -355,7 +355,7 @@ An [image dataset node](#image-dataset-ros-node) is also provided to be used alo
 Make sure to change the default input topic of the tracking node if you are not using the USB cam node.
 
 ### Vision Based Panoptic Segmentation ROS Node
-A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
+A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientps-efficient-panoptic-segmentation) network.
 
 You can find the vision based panoptic segmentation (EfficientPS) ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md)
@@ -767,7 +767,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 
 
 ### LiDAR Based Panoptic Segmentation ROS Node
-A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md) network.
+A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientlps-efficient-lidar-panoptic-segmentation) network.
 
 You can find the lidar based panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_lps_node.py). You can further also find the point cloud 2 publisher ROS node python script [here](./scripts/point_cloud_2_publisher_node.py), and more explanation [here](#point-cloud-2-publisher-ros-node).You can inspect the codes and make changes as you wish to fit your needs.
 The EfficientLPS node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_lps/efficient_lps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-lps.md)
@@ -790,7 +790,7 @@ and additional information about EfficientLPS [here](../../../../src/opendr/perc
    - `-h, --help`: show a help message and exit
    - `-i or --input_point_cloud_2_topic INPUT_POINTCLOUD2_TOPIC` : Point Cloud 2 topic provided by either a point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node (default=`/opendr/dataset_point_cloud2`)
    - `-c or --checkpoint CHECKPOINT` : download pretrained models [semantickitti] or load from the provided path (default=`semantickitti`)
-   - `-o or --output_rgb_visualization_topic OUTPUT_RGB_VISUALIZATION_TOPIC`: publish the rgb visualization on this topic on `OUTPUT_RGB_VISUALIZATION_TOPIC` (default=`/opendr/panoptic`)
+   - `-o or --output_rgb_visualization_topic OUTPUT_RGB_VISUALIZATION_TOPIC`: publish the RGB visualization on this topic on `OUTPUT_RGB_VISUALIZATION_TOPIC` (default=`/opendr/panoptic`)
  
 3. Default output topics:
    - Detection messages: `/opendr/panoptic`
@@ -879,7 +879,7 @@ The following optional arguments are available:
 
 ### Point Cloud 2 Publisher ROS Node
 
-The point cloud 2 dataset publisher, publishes point cloud 2 messages from pre-downloaded dataset SemanticKITTI. It is currently being used by the ROS node [LiDAR Based Panoptic Segmentation ROS Node](#lidar-based-panoptic-segmentation-ros-node)
+The point cloud 2 dataset publisher, publishes point cloud 2 messages from pre-downloaded dataset SemanticKITTI. It is currently being used by the ROS node [LiDAR Based Panoptic Segmentation ROS Node](#lidar-based-panoptic-segmentation-ros-node).
 
 You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements,
 to use alongside other nodes and datasets.
