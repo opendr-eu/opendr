@@ -28,7 +28,7 @@ CFLAGS  = -fPIC
 INC = -I/usr/local/include/onnxruntime/ -I/usr/local/include/rapidjson/ `pkg-config --cflags opencv4`
 LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --libs opencv4` -lboost_filesystem
 OPENDR_INC = -I$(OPENDR_HOME)/include
-OPENDR_LD = -L$(OPENDR_HOME)//lib -lopendr
+OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
 LIBTORCH_DIR = /usr/local/libtorch
 TORCHSCRIPT_INC = -I$(LIBTORCH_DIR)/include -I$(LIBTORCH_DIR)/include/torch/csrc/api/include

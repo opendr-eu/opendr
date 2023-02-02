@@ -36,38 +36,40 @@ all: tests
 
 download:
 	@+if [ -a $(DATA_DIR) ] ; \
-	then \
-		echo Resources already downloaded. Run rm -rf $(DATA_DIR) to remove existing resources.; \
-	else \
-		echo Downloading resources for C API...; \
-		$(RM) -r opendrdata.csd.auth.gr; \
-		$(MKDIR_P) $(DATA_DIR)/activity_recognition/x3d; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/activity_recognition/weights/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/activity_recognition/weights/optimized_model  $(DATA_DIR)/activity_recognition/x3d/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR); \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/test_data/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/test_data/images  $(DATA_DIR)/database; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/optimized_model  $(DATA_DIR)/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/lightweight_open_pose; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/optimized_model  $(DATA_DIR)/lightweight_open_pose/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/detr; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/detr/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/detr/optimized_model  $(DATA_DIR)/object_detection_2d/detr/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/nanodet; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/object_detection_2d/nanodet/database; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/object_detection_2d/nanodet/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/object_tracking_2d/deep_sort; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_tracking_2d/deep_sort/optimized_model/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/object_tracking_2d/deep_sort/optimized_model  $(DATA_DIR)/object_tracking_2d/deep_sort/optimized_model; \
-		$(MKDIR_P) $(DATA_DIR)/skeleton_based_action_recognition/progressive_spatiotemporal_gcn; \
-		$(WGET) ftp://opendrdata.csd.auth.gr/perception/skeleton_based_action_recognition/pretrained_models/optimized_data/*; \
-		$(MV) opendrdata.csd.auth.gr/perception/skeleton_based_action_recognition/pretrained_models/optimized_data  $(DATA_DIR)/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model; \
-		$(RM) -r opendrdata.csd.auth.gr; \
-	fi;
+    	then \
+    		echo Resources already downloaded. Run rm -rf $(DATA_DIR) to remove existing resources.; \
+    	else \
+    		echo Downloading resources for C API...; \
+    		$(RM) -r opendrdata.csd.auth.gr; \
+    		$(MKDIR_P) $(DATA_DIR)/activity_recognition/x3d; \
+    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/activity_recognition/weights/optimized_model/*; \
+    		$(MV) opendrdata.csd.auth.gr/perception/activity_recognition/weights/optimized_model/*  $(DATA_DIR)/activity_recognition/x3d/; \
+    		$(MKDIR_P) $(DATA_DIR)/face_recognition; \
+    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/test_data/*; \
+    		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/test_data/images  $(DATA_DIR)/face_recognition/database; \
+    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/face_recognition/optimized_model/*; \
+    		$(MV) opendrdata.csd.auth.gr/perception/face_recognition/optimized_model  $(DATA_DIR)/face_recognition/optimized_model; \
+    		$(MKDIR_P) $(DATA_DIR)/pose_estimation/lightweight_open_pose; \
+       		$(WGET) ftp://opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/optimized_model/*; \
+       		$(MV) opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/optimized_model  $(DATA_DIR)/pose_estimation/lightweight_open_pose/optimized_model; \
+       		$(WGET) ftp://opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/dataset/image/*; \
+       		$(MV) opendrdata.csd.auth.gr/perception/pose_estimation/lightweight_open_pose/dataset/image  $(DATA_DIR)/pose_estimation/lightweight_open_pose/database; \
+    		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/detr; \
+            $(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/detr/optimized_model/*; \
+            $(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/detr/optimized_model  $(DATA_DIR)/object_detection_2d/detr/optimized_model; \
+    		$(MKDIR_P) $(DATA_DIR)/object_detection_2d/nanodet; \
+    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images/*; \
+    		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/images  $(DATA_DIR)/object_detection_2d/nanodet/database; \
+    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model/*; \
+    		$(MV) opendrdata.csd.auth.gr/perception/object_detection_2d/nanodet/optimized_model  $(DATA_DIR)/object_detection_2d/nanodet/optimized_model; \
+    		$(MKDIR_P) $(DATA_DIR)/object_tracking_2d/deep_sort; \
+            $(WGET) ftp://opendrdata.csd.auth.gr/perception/object_tracking_2d/deep_sort/optimized_model/*; \
+            $(MV) opendrdata.csd.auth.gr/perception/object_tracking_2d/deep_sort/optimized_model  $(DATA_DIR)/object_tracking_2d/deep_sort/optimized_model; \
+    		$(MKDIR_P) $(DATA_DIR)/skeleton_based_action_recognition/progressive_spatiotemporal_gcn; \
+    		$(WGET) ftp://opendrdata.csd.auth.gr/perception/skeleton_based_action_recognition/pretrained_models/optimized_data/*; \
+            $(MV) opendrdata.csd.auth.gr/perception/skeleton_based_action_recognition/pretrained_models/optimized_data  $(DATA_DIR)/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model; \
+    		$(RM) -r opendrdata.csd.auth.gr; \
+    	fi;
 
 $(BUILD_DIR)/test_opendr_utils:
 	@+echo "Building C API test..."
