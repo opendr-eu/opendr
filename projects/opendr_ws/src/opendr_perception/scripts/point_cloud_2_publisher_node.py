@@ -13,21 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import rospy
 import time
 import argparse
-from tqdm import tqdm
-import urllib
-from pathlib import Path
 
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 from opendr_bridge import ROSBridge
 
 from opendr.perception.panoptic_segmentation import SemanticKittiDataset
 from opendr.perception.panoptic_segmentation import EfficientLpsLearner
-
-from opendr.engine.constants import OPENDR_SERVER_URL
 
 
 class PointCloud2DatasetNode:
