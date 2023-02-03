@@ -19,6 +19,7 @@ import numpy as np
 import os
 from PIL import Image as PilImage
 from pathlib import Path
+from zipfile import ZipFile
 import shutil
 import sys
 import time
@@ -613,7 +614,8 @@ class EfficientLpsLearner(Learner):
     @staticmethod
     def download(path: Union[str, Path],
                  mode: str = "model",
-                 trained_on: str = "semantickitti"
+                 trained_on: str = "semantickitti",
+                 prepare_data: bool = False,
                  ) -> str:
         """
         Download data from the OpenDR server.
@@ -668,6 +670,18 @@ class EfficientLpsLearner(Learner):
             with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1, desc=f"Downloading {filename}")\
                  as pbar:
                 urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+        if prepare_data and mode == "test_data":
+            print(f"Extracting {filename}")
+            try:
+                with ZipFile(filename, 'r') as zipObj:
+                    zipObj.extractall(path)
+                os.remove(filename)
+            except:
+                print(f"Could not extract {filename} to {path}. Please extract it manually.")
+                print("The data might have been already extracted an is available in the test_data folder.")
+            path = os.path.join(path, "test_data", "eval_data")
+            return path
+
         return str(filename)
 
     @staticmethod
