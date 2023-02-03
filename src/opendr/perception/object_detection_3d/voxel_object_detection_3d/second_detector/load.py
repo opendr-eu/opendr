@@ -45,8 +45,9 @@ def create_model(
     optimizer_params, lr, lr_schedule_name, lr_schedule_params,
     log=print, verbose=False
 ):
+    pass
 
-    loss_scale = None
+    # loss_scale = None
 
     # config = pipeline_pb2.TrainEvalPipelineConfig()
     # with open(config_path, "r") as f:
