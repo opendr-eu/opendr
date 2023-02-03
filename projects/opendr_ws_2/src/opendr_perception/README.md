@@ -405,7 +405,7 @@ and additional information about EfficientPS [here](../../../../src/opendr/perce
 2. You are then ready to start the panoptic segmentation node:
 
     ```shell
-    ros2 run opendr_perception panoptic_segmentation_efficient_ps_node.py
+    ros2 run opendr_perception panoptic_segmentation_efficient_ps
     ```
 
     The following optional arguments are available:
@@ -817,12 +817,12 @@ and additional information about EfficientLPS [here](../../../../src/opendr/perc
 1.  First one needs to download SemanticKITTI dataset into POINTCLOUD_LOCATION as it is described in the [Panoptic Segmentation Datasets](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md). Then, once the SPLIT type is specified (train, test or "valid", default "valid"), the point **Point Cloud 2 Publisher** can be started using the following line:
 
 - ```shell
-  ros2 run opendr_perception point_cloud_2_publisher_node.py -d POINTCLOUD_LOCATION -s SPLIT
+  ros2 run opendr_perception point_cloud_2_publisher -d POINTCLOUD_LOCATION -s SPLIT
   ```
 2. After starting the **PointCloud2 Publisher**, one can start **EfficientLPS Node** using the following line:
 
 - ```shell
-  ros2 run opendr_perception panoptic_segmentation_efficient_lps_node.py /opendr/dataset_point_cloud2
+  ros2 run opendr_perception panoptic_segmentation_efficient_lps /opendr/dataset_point_cloud2
   ```
 
   The following optional arguments are available:
@@ -917,7 +917,7 @@ The following optional arguments are available:
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
 
-### Point Cloud 2 Publisher ROS Node
+### Point Cloud 2 Publisher ROS2 Node
 
 The point cloud 2 dataset publisher, publishes point cloud 2 messages from pre-downloaded dataset SemanticKITTI. It is currently being used by the ROS node [LiDAR Based Panoptic Segmentation ROS Node](#lidar-based-panoptic-segmentation-ros-node).
 
@@ -927,7 +927,7 @@ You can inspect [the node](./opendr_perception/point_cloud_2_publisher_node.py) 
 
 To get a point cloud from a dataset on the disk, you can start a `point_cloud_2_publisher_node.py` node as:
 ```shell
-ros2 run opendr_perception point_cloud_2_publisher_node.py
+ros2 run opendr_perception point_cloud_2_publisher
 ```
 The following optional arguments are available:
    - `-h or --help`: show a help message and exit
