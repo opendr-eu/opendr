@@ -19,19 +19,19 @@
 # from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
 #     pipeline_pb2,
 # )
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
-    target_assigner_builder,
-    voxel_builder,
-)
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
-    box_coder_builder,
-    lr_scheduler_builder,
-    optimizer_builder,
-    second_builder,
-)
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import (
-    MixedPrecisionWrapper
-)
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
+#     target_assigner_builder,
+#     voxel_builder,
+# )
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
+#     box_coder_builder,
+#     lr_scheduler_builder,
+#     optimizer_builder,
+#     second_builder,
+# )
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import (
+#     MixedPrecisionWrapper
+# )
 
 
 # def create_model(*args, **kwargs):
