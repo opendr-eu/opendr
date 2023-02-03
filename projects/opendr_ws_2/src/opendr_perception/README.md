@@ -390,7 +390,7 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
 An [image dataset node](#image-dataset-ros2-node) is also provided to be used along these nodes.
 Make sure to change the default input topic of the tracking node if you are not using the USB cam node.
 
-### Panoptic Segmentation ROS2 Node
+### Vision Based Panoptic Segmentation ROS2 Node
 
 A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientps-efficient-panoptic-segmentation) network.
 
@@ -405,7 +405,7 @@ and additional information about EfficientPS [here](../../../../src/opendr/perce
 2. You are then ready to start the panoptic segmentation node:
 
     ```shell
-    rosrun opendr_perception panoptic_segmentation_efficient_ps_node.py
+    ros2 run opendr_perception panoptic_segmentation_efficient_ps_node.py
     ```
 
     The following optional arguments are available:
@@ -805,7 +805,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
    For viewing the output, refer to the [notes above.](#notes)
 
 
-### LiDAR Based Panoptic Segmentation ROS Node
+### LiDAR Based Panoptic Segmentation ROS2 Node
 A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientlps-efficient-lidar-panoptic-segmentation) network.
 
 You can find the lidar based panoptic segmentation ROS node python script [here](./opendr_perception/panoptic_segmentation_efficient_lps_node.py). You can further also find the point cloud 2 publisher ROS node python script [here](./opendr_perception/point_cloud_2_publisher_node.py), and more explanation [here](#point-cloud-2-publisher-ros-node).You can inspect the codes and make changes as you wish to fit your needs.
