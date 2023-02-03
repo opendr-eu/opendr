@@ -23,6 +23,7 @@ from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 from opendr_ros2_bridge import ROS2Bridge
 
 from opendr.perception.panoptic_segmentation import SemanticKittiDataset
+from opendr.perception.panoptic_segmentation import EfficientLpsLearner
 
 
 class PointCloud2DatasetNode(Node):
@@ -89,8 +90,12 @@ def main(args=None):
                         help='split of the dataset to use (train, valid, test)')
     parser.add_argument('-o', '--output_point_cloud_2_topic', type=str, default='/opendr/dataset_point_cloud2',
                         help='topic for the output point cloud')
+    parser.add_argument('-t', '--test_data', action='store_true',
+                        help='Use uploaded test data on the FTP server')
     args = parser.parse_args()
 
+    if args.test_data:
+        args.dataset_path = EfficientLpsLearner.download(args.dataset_path, mode="test_data", prepare_data=True)
     dataset_node = PointCloud2DatasetNode(args.dataset_path, args.split, args.output_point_cloud_2_topic)
 
     dataset_node.start()
