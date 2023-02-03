@@ -25,9 +25,9 @@
 # )
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.builder import (
     box_coder_builder,
-    lr_scheduler_builder,
-    optimizer_builder,
-    second_builder,
+    # lr_scheduler_builder,
+    # optimizer_builder,
+    # second_builder,
 )
 # from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.torchplus_tanet.train import (
 #     MixedPrecisionWrapper
