@@ -16,7 +16,7 @@
 import sys
 from pathlib import Path
 import argparse
-from typing import Optional, List
+from typing import Optional
 
 import rclpy
 from rclpy.node import Node
