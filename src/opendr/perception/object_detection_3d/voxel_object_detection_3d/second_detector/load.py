@@ -48,7 +48,7 @@ def create_model(
 
     loss_scale = None
 
-    config = pipeline_pb2.TrainEvalPipelineConfig()
+    # config = pipeline_pb2.TrainEvalPipelineConfig()
     # with open(config_path, "r") as f:
     #     proto_str = f.read()
     #     text_format.Merge(proto_str, config)
