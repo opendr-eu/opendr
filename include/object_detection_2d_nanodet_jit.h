@@ -54,7 +54,7 @@ typedef struct NanodetModel NanodetModelT;
  * @param width the width of model input, if set to zero the trained width will be used instead
  * @param model the model to be loaded
  */
-void loadNanodetModel(char *modelPath, char *modelName, char *device, float scoreThreshold, int height, int width,
+void loadNanodetModel(char *modelPath, const char *modelName, char *device, float scoreThreshold, int height, int width,
                       NanodetModelT *model);
 
 /**

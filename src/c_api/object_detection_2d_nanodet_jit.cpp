@@ -266,7 +266,7 @@ torch::DeviceType torchDevice(char *deviceName, int verbose = 0) {
   return device;
 }
 
-void loadNanodetModel(char *modelPath, char *modelName, char *device, float scoreThreshold, int height, int width,
+void loadNanodetModel(char *modelPath, const char *modelName, char *device, float scoreThreshold, int height, int width,
                       NanodetModelT *model) {
   // Initialize model
   model->scoreThreshold = scoreThreshold;
