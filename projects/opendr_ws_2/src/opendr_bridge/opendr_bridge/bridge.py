@@ -406,7 +406,10 @@ class ROS2Bridge:
             fields.append(PointFieldMsg(name="rgba", offset=12, datatype=PointFieldMsg.UINT32, count=1))
         else:
             for i in range(channel_count):
-                fields.append(PointFieldMsg(name="channel_" + str(i), offset=12 + i * 4, datatype=PointFieldMsg.FLOAT32, count=1))
+                fields.append(PointFieldMsg(name="channel_" + str(i),
+                                            offset=12 + i * 4,
+                                            datatype=PointFieldMsg.FLOAT32,
+                                            count=1))
 
         points = []
 

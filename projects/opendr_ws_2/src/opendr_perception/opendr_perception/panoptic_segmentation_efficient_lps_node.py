@@ -18,7 +18,6 @@ from pathlib import Path
 import argparse
 from typing import Optional, List
 
-import numpy as  np
 import rclpy
 from rclpy.node import Node
 import matplotlib
@@ -52,7 +51,6 @@ class EfficientLpsNode(Node):
         self.input_pcl_topic = input_pcl_topic
         self.checkpoint = checkpoint
         self.output_rgb_visualization_topic = output_rgb_visualization_topic
-        
 
         # Initialize all ROS2 related things
         self._bridge = ROS2Bridge()
@@ -76,7 +74,7 @@ class EfficientLpsNode(Node):
         """
         if self.checkpoint in ['semantickitti']:
             file_path = EfficientLpsLearner.download(str(self._tmp_folder),
-                                                    trained_on=self.checkpoint)
+                                                     trained_on=self.checkpoint)
             self.checkpoint = file_path
 
         if self._learner.load(self.checkpoint):
@@ -92,17 +90,18 @@ class EfficientLpsNode(Node):
         """
         if self.output_rgb_visualization_topic is not None:
             self._visualization_publisher = self.create_publisher(ROS_PointCloud2,
-                                                                  self.output_rgb_visualization_topic, 
+                                                                  self.output_rgb_visualization_topic,
                                                                   10)
+
     def _init_subscriber(self):
         """
         Subscribe to all relevant topics.
         """
-        self.pointcloud2_subscriber = self.create_subscription(ROS_PointCloud2, 
+        self.pointcloud2_subscriber = self.create_subscription(ROS_PointCloud2,
                                                                self.input_pcl_topic,
                                                                self.callback,
                                                                1)
-     
+
     def listen(self):
         """
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
@@ -126,22 +125,22 @@ class EfficientLpsNode(Node):
         :param data: PointCloud2 data message
         :type data: sensor_msgs.msg.PointCloud2
         """
-        
+
         pointcloud = self._bridge.from_ros_point_cloud2(data)
 
-        try: 
+        try:
             prediction = self._learner.infer(pointcloud)
 
         except Exception as e:
             self.get_logger().error('Failed to perform inference: {}'.format(e))
             return
-        
+
         try:
             # The output topics are only published if there is at least one subscriber
             if self._visualization_publisher is not None and self._visualization_publisher.get_subscription_count() > 0:
                 pointcloud_visualization = EfficientLpsLearner.visualize(pointcloud,
-                                                                         prediction, 
-                                                                         return_pointcloud=True, 
+                                                                         prediction,
+                                                                         return_pointcloud=True,
                                                                          return_pointcloud_type="panoptic")
                 ros_pointcloud2_msg = self._bridge.to_ros_point_cloud2(pointcloud_visualization,
                                                                        self.get_clock().now().to_msg(),
@@ -164,7 +163,7 @@ def main(args=None):
                         help='Publish the rgb visualization on this topic')
 
     args = parser.parse_args()
-    efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic, 
+    efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic,
                                           args.checkpoint,
                                           args.output_rgb_visualization_topic)
     efficient_lps_node.listen()

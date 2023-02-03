@@ -58,13 +58,13 @@ class PointCloud2DatasetNode(Node):
         """
         if self._init_dataset():
             self.get_logger().info("Starting point cloud 2 dataset node")
-        i = 0 
+        i = 0
         print("Starting point cloud 2 publisher")
         while rclpy.ok():
             print("Publishing point cloud 2 message")
             point_cloud = self.dataset[i % len(self.dataset)][0]
             self.get_logger().info("Publishing point_cloud_2 [" + str(i) + "]")
-            message = self._ros2_bridge.to_ros_point_cloud2(point_cloud, 
+            message = self._ros2_bridge.to_ros_point_cloud2(point_cloud,
                                                             self.get_clock().now().to_msg(),
                                                             ROS_PointCloud2)
             self.point_cloud_2_publisher.publish(message)
@@ -79,6 +79,7 @@ class PointCloud2DatasetNode(Node):
         except FileNotFoundError:
             self.get_logger().error("Dataset not found. Please download the dataset and extract it or enter available path.")
             return False
+
 
 def main(args=None):
     rclpy.init(args=args)
