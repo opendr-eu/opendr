@@ -16,9 +16,9 @@
 
 # from google.protobuf import text_format
 
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
-    pipeline_pb2,
-)
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.protos import (
+#     pipeline_pb2,
+# )
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.builder import (
     target_assigner_builder,
     voxel_builder,
