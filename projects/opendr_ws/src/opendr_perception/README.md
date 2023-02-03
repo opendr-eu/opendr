@@ -894,3 +894,4 @@ The following optional arguments are available:
    - `-d or --dataset_path DATASET_PATH`: path of the SemanticKITTI dataset to publish the point cloud 2 message (default=`./datasets/semantickitti`)
    - `-s or --split SPLIT`: split of the dataset to use, only (train, valid, test) are available (default=`valid`)
    - `-o or --output_point_cloud_2_topic OUTPUT_POINT_CLOUD_2_TOPIC`: topic name to publish the data (default=`/opendr/dataset_point_cloud2`)
+   - `-t or --test_data`: Add this argument if you want to only test this node with the test data available in our server

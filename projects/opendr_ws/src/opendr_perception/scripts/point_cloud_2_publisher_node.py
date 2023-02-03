@@ -92,12 +92,10 @@ if __name__ == "__main__":
                         help='topic for the output point cloud')
     parser.add_argument('-t', '--test_data', action='store_true',
                         help='Use uploaded test data on the FTP server')
-
     args = parser.parse_args()
-    print(args.dataset_path)
+
     if args.test_data:
         args.dataset_path = EfficientLpsLearner.download(args.dataset_path, mode="test_data", prepare_data=True)
-        print(args.dataset_path)
 
     dataset_node = PointCloud2DatasetNode(args.dataset_path, args.split, args.output_point_cloud_2_topic)
     dataset_node.start()
