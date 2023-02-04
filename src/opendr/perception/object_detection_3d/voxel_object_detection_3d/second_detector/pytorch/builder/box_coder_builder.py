@@ -1,7 +1,7 @@
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core.box_coders import (
-    BevBoxCoderTorch,
-    GroundBox3dCoderTorch,
-)
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.pytorch.core.box_coders import (
+#     BevBoxCoderTorch,
+#     GroundBox3dCoderTorch,
+# )
 
 
 def build(box_coder_config):
