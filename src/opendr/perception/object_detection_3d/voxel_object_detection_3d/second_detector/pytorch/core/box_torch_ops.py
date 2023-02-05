@@ -8,16 +8,16 @@ from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_dete
     torch_to_np_dtype
 )
 
-from numba.cuda.cudadrv.error import CudaSupportError
-try:
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
-        second_detector.core.non_max_suppression.nms_gpu import (nms_gpu as nms_gpu_or_cc)
-except (CudaSupportError, ValueError):
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
-        second_detector.core.non_max_suppression.nms_cpu import (nms_cc as nms_gpu_or_cc)
+# from numba.cuda.cudadrv.error import CudaSupportError
+# try:
+#     from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
+#         second_detector.core.non_max_suppression.nms_gpu import (nms_gpu as nms_gpu_or_cc)
+# except (CudaSupportError, ValueError):
+#     from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
+#         second_detector.core.non_max_suppression.nms_cpu import (nms_cc as nms_gpu_or_cc)
 
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_cpu import (
-    rotate_nms_cc, )
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms_cpu import (
+#     rotate_nms_cc, )
 
 
 def second_box_encode(boxes,
