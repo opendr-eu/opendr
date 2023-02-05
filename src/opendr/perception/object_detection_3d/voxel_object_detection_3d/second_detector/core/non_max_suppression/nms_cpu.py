@@ -1,34 +1,34 @@
 from pathlib import Path
 
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
-    load_pb11,
-)
-import numba
-import numpy as np
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.buildtools.pybind11_build import (
+#     load_pb11,
+# )
+# import numba
+# import numpy as np
 
-try:
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
-        non_max_suppression_cpu,
-        rotate_non_max_suppression_cpu,
-    )
-except:
-    current_dir = Path(__file__).resolve().parents[0]
-    load_pb11(
-        # ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
-        ["../cc/nms/nms_cpu_only.cc"],
-        current_dir / "nms.so",
-        current_dir,
-        # cuda=True,
-        cuda=False,
-    )
-    from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
-        non_max_suppression_cpu,
-        rotate_non_max_suppression_cpu,
-    )
+# try:
+#     from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
+#         non_max_suppression_cpu,
+#         rotate_non_max_suppression_cpu,
+#     )
+# except:
+#     current_dir = Path(__file__).resolve().parents[0]
+#     load_pb11(
+#         # ["../cc/nms/nms_kernel.cu.cc", "../cc/nms/nms.cc"],
+#         ["../cc/nms/nms_cpu_only.cc"],
+#         current_dir / "nms.so",
+#         current_dir,
+#         # cuda=True,
+#         cuda=False,
+#     )
+#     from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core.non_max_suppression.nms import (
+#         non_max_suppression_cpu,
+#         rotate_non_max_suppression_cpu,
+#     )
 
-from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
-    box_np_ops,
-)
+# from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.core import (
+#     box_np_ops,
+# )
 
 
 def nms_cc(dets, thresh):
