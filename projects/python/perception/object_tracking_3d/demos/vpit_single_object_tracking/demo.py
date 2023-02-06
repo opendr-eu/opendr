@@ -367,6 +367,7 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
             draw_dict(
                 frame,
                 {
+                    "Model FPS": 1 / predict_time,
                     "FPS": fps(),
                     "predict": str(int(predict_time * 100 / total_time)) + "%",
                     "get data": str(int(pc_time * 100 / total_time)) + "%",
