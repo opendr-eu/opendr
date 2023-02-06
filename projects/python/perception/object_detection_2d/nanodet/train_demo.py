@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", help="Dataset to train on", type=str, default="coco", choices=["voc", "coco"])
     parser.add_argument("--data-root", help="Dataset root folder", type=str)
-    parser.add_argument("--model", help="Model that config file will be used", type=str)
+    parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--batch-size", help="Batch size to use for training", type=int, default=6)
     parser.add_argument("--lr", help="Learning rate to use for training", type=float, default=5e-4)
@@ -34,18 +34,14 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.dataset == 'voc':
-        dataset = ExternalDataset(args.data_root, 'voc')
-        val_dataset = ExternalDataset(args.data_root, 'voc')
-    elif args.dataset == 'coco':
-        dataset = ExternalDataset(args.data_root, 'coco')
-        val_dataset = ExternalDataset(args.data_root, 'coco')
+    dataset = ExternalDataset(args.data_root, args.dataset)
+    val_dataset = ExternalDataset(args.data_root, args.dataset)
 
     nanodet = NanodetLearner(model_to_use=args.model, iters=args.n_epochs, lr=args.lr, batch_size=args.batch_size,
                              checkpoint_after_iter=args.checkpoint_freq, checkpoint_load_iter=args.resume_from,
                              device=args.device)
 
     nanodet.download("./predefined_examples", mode="pretrained")
-    nanodet.load("./predefined_examples/nanodet-{}/nanodet-{}.ckpt".format(args.model, args.model), verbose=True)
+    nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.fit(dataset, val_dataset)
     nanodet.save()
