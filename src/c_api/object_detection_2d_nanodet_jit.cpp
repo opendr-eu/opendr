@@ -103,9 +103,9 @@ std::vector<std::string> NanoDet::labels() const {
 }
 
 /**
- * Helper function to extract Arrays or vectors of integers from json files
- * @param json a string of json file
- * @param key the key of value to extract from json file
+ * Helper function to extract arrays or vectors of integers from JSON files
+ * @param json a string of JSON file
+ * @param key the key of value to extract from the JSON file
  * @return a vector of integers from extracted key values
  */
 std::vector<int> gestIntVectorFromJson(const char *json, const char *key) {
@@ -138,9 +138,9 @@ std::vector<int> gestIntVectorFromJson(const char *json, const char *key) {
 }
 
 /**
- * Helper function to extract Arrays or vectors of strings from json files
- * @param json a string of json file
- * @param key the key of value to extract from json file
+ * Helper function to extract arrays or vectors of strings from JSON files
+ * @param json a string of JSON file
+ * @param key the key of value to extract from the JSON file
  * @return a vector of integers from extracted key values
  */
 std::vector<std::string> getStringVectorFromJson(const char *json, const char *key) {

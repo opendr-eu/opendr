@@ -33,7 +33,7 @@ Releases the memory allocated for a skeleton based action recognition progressiv
 ```C
 void forwardPst(PstModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
-This function perform forward pass using a skeleton based action recognition progressive spatiotemporal gcn model (*model*) and an input tensor (*tensor*).
+This function performs a forward pass using a skeleton-based action recognition model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 

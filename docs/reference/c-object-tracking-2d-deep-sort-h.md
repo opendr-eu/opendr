@@ -1,7 +1,7 @@
 ## C_API: object_tracking_2d_deep_sort.h
 
 
-The *object_tracking_2d_deep_sort.h* header provides function definitions that can be used for accessing the OpenDR object tracking 2d deep sort tool.
+The *object_tracking_2d_deep_sort.h* header provides function definitions that can be used for accessing the OpenDR object tracking 2D DeepSORT tool.
 
 ### Struct *DeepSortModelT*
 ```C
@@ -33,7 +33,7 @@ Releases the memory allocated for an object tracking 2d deep sort model (*model*
 ```C
 void forwardDeepSort(DeepSortModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
-This function perform forward pass using an object tracking 2d deep sort model (*model*) and an input tensor (*tensor*).
+This function performs a forward pass using an object tracking 2D DeepSORT model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 

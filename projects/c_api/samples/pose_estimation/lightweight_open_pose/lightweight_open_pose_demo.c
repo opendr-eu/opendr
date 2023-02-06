@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   OpenDRTensorT input_tensor;
   initTensor(&input_tensor);
 
-  // Load an image and performance inference
+  // Load an image and perform inference
   OpenDRImageT image;
   loadImage("data/lightweight_open_pose/database/000000000785.jpg", &image);
   if (!image.data) {

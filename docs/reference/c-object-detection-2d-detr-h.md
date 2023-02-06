@@ -33,7 +33,7 @@ Releases the memory allocated for an object detection detr model (*model*).
 ```C
 void forwardDetr(DetrModelT *model, OpenDRTensorT *tensor, OpenDRTensorVectorT *vector);
 ```
-This function perform forward pass using an object detection detr model (*model*) and an input tensor (*tensor*).
+This function performs a forward pass using an object detection 2D DETR model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 

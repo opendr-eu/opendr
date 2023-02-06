@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
   buildDatabaseFaceRecognition("data/face_recognition/database", "data/face_recognition/database.dat", &model);
   loadDatabaseFaceRecognition("data/face_recognition/database.dat", &model);
 
-  // Load an image and performance inference
+  // Load an image and perform inference
   OpenDRImageT image;
   loadImage("data/face_recognition/database/1/1.jpg", &image);
   if (!image.data) {

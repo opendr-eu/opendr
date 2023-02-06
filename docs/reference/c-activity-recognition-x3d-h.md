@@ -33,7 +33,7 @@ Releases the memory allocated for an activity recognition x3d model (*model*).
 ```C
 void forwardX3d(X3dModelT *model, OpendrTensorT *tensor, OpendrTensorVectorT *vector);
 ```
-This function perform forward pass using an activity recognition x3d model (*model*) and an input tensor (*tensor*).
+This function performs a forward pass using an activity recognition X3D model (*model*) and an input tensor (*tensor*).
 The function saves the output to an OpenDR vector of tensors structure (*vector*).
 
 

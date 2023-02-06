@@ -27,8 +27,8 @@ extern "C" {
 /**
  * JSON parser to extract strings from OpenDR model files.
  * @param json a string of json file
- * @param key the key of value to extract from json file
- * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @param key the key of the value to extract from JSON file
+ * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return string with the value of the key
  */
 const char *jsonGetStringFromKey(const char *json, const char *key, const int index);
@@ -36,8 +36,8 @@ const char *jsonGetStringFromKey(const char *json, const char *key, const int in
 /**
  * JSON parser to extract floats from OpenDR model files.
  * @param json a string of json file
- * @param key the key of value to extract from json file
- * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @param key the key of the value to extract from JSON file
+ * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return float with the value of the key
  */
 float jsonGetFloatFromKey(const char *json, const char *key, const int index);
@@ -45,8 +45,8 @@ float jsonGetFloatFromKey(const char *json, const char *key, const int index);
 /**
  * JSON parser to extract bools as integers from OpenDR model files.
  * @param json a string of json file
- * @param key the key of value to extract from json file
- * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @param key the key of the value to extract from JSON file
+ * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return 0 if bool value is true, 1 if it is false and -1 if fails
  */
 int jsonGetBoolFromKey(const char *json, const char *key, const int index);
@@ -54,8 +54,8 @@ int jsonGetBoolFromKey(const char *json, const char *key, const int index);
 /**
  * JSON parser to extract strings from OpenDR model files inference_params key.
  * @param json a string of json file
- * @param key the key of value to extract from inference_params
- * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @param key the key of the value to extract from inference_params
+ * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return string with the value of the key
  */
 const char *jsonGetStringFromKeyInInferenceParams(const char *json, const char *key, const int index);
@@ -64,7 +64,7 @@ const char *jsonGetStringFromKeyInInferenceParams(const char *json, const char *
  * JSON parser to extract floats from OpenDR model files inference_params key.
  * @param json a string of json file
  * @param key the value to extract from inference_params
- * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return float with the value of the key
  */
 float jsonGetFloatFromKeyInInferenceParams(const char *json, const char *key, const int index);
@@ -73,7 +73,7 @@ float jsonGetFloatFromKeyInInferenceParams(const char *json, const char *key, co
  * JSON parser to extract bools as integers from OpenDR model files inference_params key.
  * @param json a string of json file
  * @param key the value to extract from inference_params
- * @param index the index to choose the value if it is an array, otherwise it is not be used
+ * @param index the index to choose the value if it is an array, otherwise it is not used
  * @return 0 if bool value is true, 1 if it is false and -1 if fails
  */
 int jsonGetBoolFromKeyInInferenceParams(const char *json, const char *key, const int index);
@@ -118,7 +118,7 @@ void freeDetectionsVector(OpenDRDetectionVectorTargetT *vector);
 void initTensor(OpenDRTensorT *tensor);
 
 /**
- * Load a OpenDR tensor
+ * Load an OpenDR tensor
  * @param tensor OpenDR tensor structure to be loaded
  * @param tensorData data pointer of a vector that holds tensors data to be loaded
  * @param batchSize batch size of tensor

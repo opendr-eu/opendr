@@ -99,7 +99,7 @@ A pointer (*vector*) to an OpenDR *OpenDRDetectionVectorTargetT* should be provi
 ```C
 void initTensor(OpenDRTensorT *tensor);
 ```
-The *initTensor()* function initialize the data of an OpenDR tensor (*tensor*) with zero values.
+The *initTensor()* function initializes the data of an OpenDR tensor (*tensor*) with zero values.
 A pointer (*tensor*) to an OpenDR *OpenDRTensorT* should be provided.
 
 ### Function *loadTensor()*
@@ -121,7 +121,7 @@ A pointer (*tensor*) to an OpenDR *OpenDRTensorT* should be provided.
 ```C
 void initTensorVector(OpenDRTensorVectorT *vector);
 ```
-The *initTensorVector()* function initialize the data of an OpenDR vector of tensors (*vector*) with zero values.
+The *initTensorVector()* function initializes the data of an OpenDR vector of tensors (*vector*) with zero values.
 A pointer (*vector*) to an OpenDR *OpenDRTensorVectorT* should be provided.
 
 ### Function *loadTensorVector()*
