@@ -851,7 +851,9 @@ class LightweightOpenPoseLearner(Learner):
         input_names = ['data']
         if self.num_refinement_stages == 2:
             output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs',
-                            'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs']
+                            'stage_1_output_1_heatmaps', 'stage_1_output_0_pafs',
+                            'stage_2_output_1_heatmaps', 'stage_2_output_0_pafs']
+
         else:
             output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs']
 
