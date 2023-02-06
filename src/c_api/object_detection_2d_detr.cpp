@@ -75,7 +75,7 @@ void loadDetrModel(const char *modelPath, DetrModelT *model) {
 
   std::ifstream inStream(modelJsonPath);
   if (!inStream.is_open()) {
-    std::cerr << "Cannot open JSON model file" << std::endl;
+    std::cerr << "Cannot open JSON model file." << std::endl;
     return;
   }
   std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());

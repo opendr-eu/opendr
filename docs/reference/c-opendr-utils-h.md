@@ -130,7 +130,7 @@ void loadTensorVector(OpenDRTensorVectorT *vector, OpenDRTensorT *tensorPtr, int
 ```
 The *loadTensorVector()* function allows for storing multiple OpenDR tensor structures in memory allocated by the OpenDR vector of tensors structure (*vector*).
 A pointer (*vector*) to an OpenDR *OpenDRTensorVectorT* along with the pointer into the memory of a vector or array of OpenDR tensors structure (*tensorPtr*) should be provided.
-Moreover, the number of tensors (*nTensors*) should be included, and it must be better than *1*.
+Moreover, the number of tensors (*nTensors*) should be included, and it must be equal or higher than *1*.
 
 ### Function *freeTensorVector()*
 ```C

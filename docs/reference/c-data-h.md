@@ -21,7 +21,7 @@ The *OpenDRImageT* structure has the following field:
 #### `void *data` field
 
 A pointer where image data are stored. 
-*OpenDRImageT* is using internally OpenCV images (*cv::Mat*) for storing images. 
+*OpenDRImageT* is internally using OpenCV images (*cv::Mat*) for storing images. 
 Therefore, only a pointer to the memory location of the corresponding *cv::Mat* is stored.
 Please note that the user is not expected to directly manipulate these data without first converting them into OpenCV data type or using the corresponding functions provided in *OpenDR_utils.h*.
 

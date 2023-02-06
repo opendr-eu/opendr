@@ -10,14 +10,14 @@ struct DeepSortModel {
 };
 typedef struct DeepSortModel DeepSortModelT;
 ```
-The *DeepSortModelT* structure keeps all the necessary information that are required by the OpenDR object tracking 2d deep sort tool (e.g., model weights, normalization information, ONNX session information, etc.).
+The *DeepSortModelT* structure keeps all the necessary information that are required by the OpenDR object tracking 2D DeepSORT tool (e.g., model weights, normalization information, ONNX session information, etc.).
 
 
 ### Function *loadDeepSortModel()*
 ```C
 void loadDeepSortModel(const char *modelPath, DeepSortModelT *model);
 ```
- Loads a deep sort object tracking model saved in the local filesystem (*modelPath*) in OpenDR format.
+ Loads a DeepSORT object tracking model saved in the local filesystem (*modelPath*) in OpenDR format.
  This function also initializes a CPU-based ONNX session for performing inference using this model.
  The pre-trained models should follow the OpenDR conventions.
  The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
@@ -26,7 +26,7 @@ void loadDeepSortModel(const char *modelPath, DeepSortModelT *model);
 ```C
 void freeDeepSortModel(DeepSortModelT *model);
 ```
-Releases the memory allocated for an object tracking 2d deep sort model (*model*).
+Releases the memory allocated for an object tracking 2D DeepSORT model (*model*).
 
 
 ### Function *forwardDeepSort()*
@@ -41,6 +41,6 @@ The function saves the output to an OpenDR vector of tensors structure (*vector*
 ```C
 void initRandomOpenDRTensorDs(OpenDRTensorT *tensor, DeepSortModelT *model);
 ```
-This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the object tracking deep sort model (*model*).
+This is used to initialize a random OpenDR tensor structure (*tensor*) with the appropriate dimensions for the object tracking DeepSORT model (*model*).
 The (*model*) keeps all the necessary information.
 
