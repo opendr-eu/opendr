@@ -312,12 +312,15 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
         image_size_y = 3000
         font_scale = 4
 
+    frame_id = -1
+
     while True:
         try:
 
             t = time.time()
 
             point_cloud, init_box = next(point_cloud_generator)
+            frame_id += 1
 
             pc_time = time.time() - t
 
@@ -338,7 +341,7 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
 
             if len(predictions) > 0:
                 print(
-                    "found", len(predictions), "objects",
+                    "found", len(predictions), "objects on frame", frame_id, end="\r"
                 )
 
             predict_time = time.time() - t
