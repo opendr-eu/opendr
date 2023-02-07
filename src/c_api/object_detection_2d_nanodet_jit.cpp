@@ -253,7 +253,7 @@ void preprocess(cv::Mat *src, cv::Mat *dst, cv::Size *dstSize, cv::Mat *warpMatr
 /**
  * Helper function to determine the device of jit model and tensors.
  */
-torch::DeviceType torchDevice(char *deviceName, int verbose = 0) {
+torch::DeviceType torchDevice(const char *deviceName, int verbose = 0) {
   torch::DeviceType device;
   if (std::string(deviceName) == "cuda") {
     if (verbose == 1)
@@ -267,7 +267,7 @@ torch::DeviceType torchDevice(char *deviceName, int verbose = 0) {
   return device;
 }
 
-void loadNanodetModel(char *modelPath, const char *modelName, char *device, float scoreThreshold, int height, int width,
+void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height, int width,
                       NanodetModelT *model) {
   // Initialize model
   model->scoreThreshold = scoreThreshold;
@@ -394,9 +394,9 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
   return detectionsVector;
 }
 
-void benchmarkNanodet(NanodetModelT *model, OpendrImageT *image, int repetitions, int warmup) {
+void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions, int warmup) {
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
-  OpendrDetectionVectorTargetT detectionsVector;
+  OpenDRDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
 
   cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
@@ -498,7 +498,7 @@ void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVector
   cv::waitKey(0);
 }
 
-void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectionVectorTargetT *detectionsVector, double fps) {
+void drawBboxesWithFps(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, double fps) {
   int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
@@ -510,8 +510,8 @@ void drawBboxesWithFps(OpendrImageT *image, NanodetModelT *model, OpendrDetectio
   }
 
   cv::Mat imageWithDetections = (*opencvImage).clone();
-  for (size_t i = 0; i < detectionsVector->size; i++) {
-    const OpendrDetectionTarget bbox = (detectionsVector->startingPointer)[i];
+  for (size_t i = 0; i < vector->size; i++) {
+    const OpenDRDetectionTarget bbox = (vector->startingPointer)[i];
     float score = bbox.score > 1 ? 1 : bbox.score;
     if (score > model->scoreThreshold) {
       cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);

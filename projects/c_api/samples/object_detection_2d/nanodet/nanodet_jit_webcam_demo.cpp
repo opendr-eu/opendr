@@ -27,34 +27,23 @@
 #include <opencv2/videoio.hpp>
 
 int main(int argc, char **argv) {
-  if (argc != 6) {
-    fprintf(stderr,
-            "usage: %s [model_path] [device] [images_path] [input_sizes].\n"
-            "model_path = path/to/your/libtorch/model.pth \ndevice = cuda or cpu \n"
-            "images_path = \"xxx/xxx.jpg\" \ninput_size = width height.\n",
-            argv[0]);
-    return -1;
-  }
-
   NanodetModelT model;
 
-  int height = atoi(argv[4]);
-  int width = atoi(argv[5]);
   printf("start init model\n");
-  loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
   cv::Mat frameCap;
   cv::Mat frame;
-  OpendrImageT opImage;
+  OpenDRImageT opImage;
   cv::VideoCapture cap(0);
   if (!cap.isOpened()) {
     std::cerr << "ERROR! Unable to open camera\n";
     return -1;
   }
 
-  // Initialize opendr detection target list;
-  OpendrDetectionVectorTargetT results;
+  // Initialize OpenDR detection target list;
+  OpenDRDetectionVectorTargetT results;
   initDetectionsVector(&results);
   double fps;
   double avg_fps = 0.0;

@@ -23,23 +23,14 @@
 #include <cstdlib>
 
 int main(int argc, char **argv) {
-  if (argc != 6) {
-    fprintf(stderr,
-            "usage: %s [model_path] [device] [input_sizes].\n"
-            "model_path = path/to/your/libtorch/model.pth \ndevice = cuda or cpu \n"
-            "\ninput_size = width height.\n",
-            argv[0]);
-    return -1;
-  }
-
   NanodetModelT model;
 
-  int height = atoi(argv[4]);
-  int width = atoi(argv[5]);
   printf("start init model\n");
-  loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
+  int height = 320;
+  int width = 320;
   std::srand(1);
   cv::Mat frame(height,width,CV_8UC3);
   for(int i = 0; i < frame.rows; i++) {
@@ -50,7 +41,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  OpendrImageT opImage;
+  OpenDRImageT opImage;
   // Add frame data to OpenDR Image
   if (frame.empty()) {
     opImage.data = NULL;
