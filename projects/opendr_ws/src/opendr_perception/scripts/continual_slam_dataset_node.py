@@ -65,7 +65,7 @@ class ContinualSlamDatasetNode:
     def _publish(self):
 
         rospy.loginfo("Start publishing dataset images")
-        i = 1550
+        i = 0
         length = len(self.dataset)-1
         while not rospy.is_shutdown() and i < length:
             # TODO: Delete this later or find it out

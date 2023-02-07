@@ -122,16 +122,18 @@ class ContinualSLAMLearner(Learner):
             if isinstance(model, torch.nn.DataParallel):
                 model = model.module
             to_save = model.state_dict()
-            if 'encoder' in model_name:
-                # ToDo: look into this
-                # Save the sizes - these are needed at prediction time
+            if 'encoder' in model_name and not self.is_ros:
                 to_save['height'] = Tensor(self.height)
                 to_save['width'] = Tensor(self.width)
             if not self.is_ros:
                 save_path = location / f'{model_name}.pth'
                 torch.save(to_save, save_path)
+            if self.is_ros:
+                save_dict[model_name] = to_save
 
         if self.is_ros:
+            # Here the idea is that to save the weights dictionary as binary encoded 
+            # and then latin decoded string so that we can publish the string as ros message
             save_dict = pickle.dumps(save_dict).decode('latin1')
             return save_dict
         else:
@@ -142,6 +144,8 @@ class ContinualSLAMLearner(Learner):
         Load the model weights from an binary-encoded string for ros message
         """
         if self.is_ros:
+            # Now we are encoding the latin decoded message to convert back to binary
+            # then we load the dictionary from this binary message
             load_dict = pickle.loads(bytes(message, encoding='latin1'))
             for model_name, model in self.predictor.models.items():
                 if model is None:
@@ -256,7 +260,8 @@ class ContinualSLAMLearner(Learner):
 # TODO: Delete this later since it is just for debugging and testing
 if __name__ == "__main__":
     local_path = Path(__file__).parent / 'configs'
-    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=False)
+    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=True)
+    predictor = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='predictor', ros=True)
 
     # Test the learner/predictor
     from opendr.perception.continual_slam.datasets.kitti import KittiDataset
@@ -271,6 +276,6 @@ if __name__ == "__main__":
         if i < 5:
             continue
         depth, odometry = learner.fit(batch)
-        # depth, odometry = predictor.infer(batch)
+        depth, odometry = predictor.infer(batch)
         message = learner.save()
-        # predictor.load(message)
+        predictor.load(message=message)

@@ -81,7 +81,7 @@ class ContinualSlamLearner:
         Creating a ContinualSLAMLearner instance with predictor and ros mode
         """
         try:
-            self.learner = ContinualSLAMLearner(self.path, mode="learner", ros=False)
+            self.learner = ContinualSLAMLearner(self.path, mode="learner", ros=True)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
@@ -115,7 +115,8 @@ class ContinualSlamLearner:
         if self.do_publish % self.publish_rate == 0:
             message = self.learner.save()
             rospy.loginfo(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
-            self.output_weights_publisher.publish(self.bridge.to_ros_string(message))
+            ros_message = self.bridge.to_ros_string(message)
+            self.output_weights_publisher.publish(ros_message)
         self.do_publish += 1
 
     def listen(self):
