@@ -350,6 +350,7 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
 
 OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image, double *outFps) {
 
+  auto start = std::chrono::steady_clock::now();
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpenDRDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
@@ -370,13 +371,13 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
   cv::Size originalSize(opencvImage->cols, opencvImage->rows);
 
   std::vector<torch::Tensor> outputs;
-  auto start = std::chrono::steady_clock::now();
+
   ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
 
   std::vector<OpenDRDetectionTarget> detections;
   // Postprocessing, find which outputs have better score than threshold and keep them.
 
-  auto end = std::chrono::steady_clock::now();
+
   for (int label = 0; label < outputs.size(); label++) {
     for (int box = 0; box < outputs[label].size(0); box++) {
 //      if (outputs[label][box][4].item<float>() > model->scoreThreshold) {
@@ -391,7 +392,7 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
 //      }
     }
   }
-
+  auto end = std::chrono::steady_clock::now();
   // Put vector detection as C pointer and size
   if (static_cast<int>(detections.size()) > 0)
     loadDetectionsVector(&detectionsVector, detections.data(), static_cast<int>(detections.size()));
