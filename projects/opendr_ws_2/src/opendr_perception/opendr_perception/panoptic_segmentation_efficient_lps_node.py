@@ -35,7 +35,7 @@ class EfficientLpsNode(Node):
     def __init__(self,
                  input_pcl_topic: str,
                  checkpoint: str,
-                 output_rgb_visualization_topic: Optional[str] = None
+                 output_heatmap_pointcloud_topic: Optional[str] = None
                  ):
         """
         Initialize the EfficientLPS ROS node and create an instance of the respective learner class.
@@ -43,14 +43,14 @@ class EfficientLpsNode(Node):
         :type input_pcl_topic: str
         :param checkpoint: The path to the checkpoint file or the name of the pre-trained model.
         :type checkpoint: str
-        :param output_rgb_visualization_topic: The name of the output RGB visualization topic.
-        :type output_rgb_visualization_topic: str
+        :param output_heatmap_pointcloud_topic: topic for the output 3D heatmap point cloud
+        :type output_heatmap_pointcloud_topic: Optional[str]
         """
         super().__init__('opendr_efficient_lps_node')
 
         self.input_pcl_topic = input_pcl_topic
         self.checkpoint = checkpoint
-        self.output_rgb_visualization_topic = output_rgb_visualization_topic
+        self.output_heatmap_pointcloud_topic = output_heatmap_pointcloud_topic
 
         # Initialize all ROS2 related things
         self._bridge = ROS2Bridge()
@@ -88,9 +88,9 @@ class EfficientLpsNode(Node):
         """
         Set up the publishers as requested by the user.
         """
-        if self.output_rgb_visualization_topic is not None:
+        if self.output_heatmap_pointcloud_topic is not None:
             self._visualization_publisher = self.create_publisher(ROS_PointCloud2,
-                                                                  self.output_rgb_visualization_topic,
+                                                                  self.output_heatmap_pointcloud_topic,
                                                                   10)
 
     def _init_subscriber(self):
@@ -159,13 +159,13 @@ def main(args=None):
                               point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node')
     parser.add_argument('-c', '--checkpoint', type=str, default='semantickitti',
                         help='Download pretrained models [semantickitti] or load from the provided path')
-    parser.add_argument('-o', '--output_rgb_visualization_topic', type=str, default="/opendr/panoptic",
-                        help='Publish the rgb visualization on this topic')
+    parser.add_argument('-o', '--output_heatmap_pointcloud_topic', type=str, default="/opendr/panoptic",
+                        help='Publish the output 3D heatmap point cloud on this topic')
 
     args = parser.parse_args()
     efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic,
                                           args.checkpoint,
-                                          args.output_rgb_visualization_topic)
+                                          args.output_heatmap_pointcloud_topic)
     efficient_lps_node.listen()
 
 
