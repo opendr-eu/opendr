@@ -7,7 +7,7 @@ Bases: `engine.learners.Learner`
 
 The *NanodetLearner* class is a wrapper of the Nanodet object detection algorithms based on the original
 [Nanodet implementation](https://github.com/RangiLyu/nanodet).
-It can be used to perform object detection on images (inference) and train All predefined Nanodet object detection models and new modular models from the user.
+It can be used to perform object detection on images (inference) and train all predefined Nanodet object detection models and new modular models from the user.
 
 The [NanodetLearner](../../src/opendr/perception/object_detection_2d/nanodet/nanodet_learner.py) class has the
 following public methods:
@@ -59,17 +59,17 @@ This method is used for training the algorithm on a train dataset and validating
 
 Parameters:
 
-- **dataset**: *ExternalDataset*\
+- **dataset**: *object*\
   Object that holds the training dataset.
-  Can be of type `ExternalDataset`.
-- **val_dataset** : *ExternalDataset, default=None*\
+  Can be of type `ExternalDataset` or `XMLBasedDataset`.
+- **val_dataset** : *object, default=None*\
   Object that holds the validation dataset.
-  Can be of type `ExternalDataset`.
+  Can be of type `ExternalDataset` or `XMLBasedDataset`.
 - **logging_path** : *str, default=''*\
   Subdirectory in temp_path to save log files and TensorBoard.
 - **verbose** : *bool, default=True*\
   Enables verbosity.
-- **logging** : *bool, default=True*\
+- **logging** : *bool, default=False*\
   Enables the maximum verbosity and the logger.
 - **seed** : *int, default=123*\
   Seed for repeatability.
@@ -86,8 +86,9 @@ Saves a txt logger file containing stats regarding evaluation.
 
 Parameters:
 
-- **dataset** : *ExternalDataset*\
+- **dataset** : *object*\
   Object that holds the evaluation dataset.
+  Can be of type `ExternalDataset` or `XMLBasedDataset`.
 - **verbose**: *bool, default=True*\
   Enables verbosity.
 - **logging**: *bool, default=False*\
@@ -97,23 +98,26 @@ Parameters:
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, input, thershold)
+NanodetLearner.infer(self, input, thershold, nms_max_num)
 ```
 
 This method is used to perform object detection on an image.
-Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes that are described by the left-top corner and
-its width and height, or returns an empty list if no detections were made of the image in input.
+Returns an `engine.target.BoundingBoxList` object, which contains bounding boxes that are described by the top-left corner and
+their width and height, or returns an empty list if no detections were made on the input image.
 
 Parameters:
-- **input** : *Image*\
-  Image type object to perform inference on it.
+- **input** : *object*\
+  Object of type engine.data.Image.
+  Image type object to perform inference on.
 - **threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
+- **nms_max_num**: *int, default=100*\
+  Determines the maximum number of bounding boxes that will be retained following the nms.
 
 #### `NanodetLearner.optimize`
 ```python
-NanodetLearner.optimize(self, export_path, initial_img, verbose, optimization)
+NanodetLearner.optimize(self, export_path, verbose, optimization, nms_max_num)
 ```
 
 This method is used to perform JIT or ONNX optimizations and save a trained model with its metadata.
@@ -130,12 +134,12 @@ Parameters:
 
 - **export_path**: *str*\
   Path to save or load the optimized model.
-- **initial_img**: *Image*, default=None\
-  If optimize is called for the first time a dummy OpenDR image is needed as input.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity.
 - **optimization**: *str, default="jit"*\
   It determines what kind of optimization is used, possible values are *jit* or *onnx*.
+- **nms_max_num**: *int, default=100*\
+  Determines the maximum number of bounding boxes that will be retained following the nms.
 
 #### `NanodetLearner.save`
 ```python
@@ -151,7 +155,7 @@ If optimization is performed, the optimized model is saved instead.
 Parameters:
 
 - **path**: *str, default=None*\
-  Path to save the model, if None it will be the `"temp_folder"` or the `"cfg.save_dir"` from learner.
+  Path to save the model, if None it will be `"temp_folder"` or `"cfg.save_dir"` from the learner.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity and logger.
 
@@ -185,7 +189,7 @@ Parameters:
 - **mode**: *{'pretrained', 'images', 'test_data'}, default='pretrained'*\
   If *'pretrained'*, downloads a pretrained detector model from the *model_to_use* architecture which was chosen at learner initialization.
   If *'images'*, downloads an image to perform inference on. If *'test_data'* downloads a dummy dataset for testing purposes.
-- **verbose**: *bool, default=False*\
+- **verbose**: *bool, default=True*\
   Enables the maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
@@ -193,10 +197,10 @@ Parameters:
 
 #### Tutorials and Demos
 
-A tutorial on performing inference is available.
-Furthermore, demos on performing [training](../../projects/perception/object_detection_2d/nanodet/train_demo.py),
-[evaluation](../../projects/perception/object_detection_2d/nanodet/eval_demo.py) and
-[inference](../../projects/perception/object_detection_2d/nanodet/inference_demo.py) are also available.
+A Jupyter notebook tutorial on performing inference is [available](../../projects/python/perception/object_detection_2d/nanodet/inference_tutorial.ipynb).
+Furthermore, demos on performing [training](../../projects/python/perception/object_detection_2d/nanodet/train_demo.py),
+[evaluation](../../projects/python/perception/object_detection_2d/nanodet/eval_demo.py) and
+[inference](../../projects/python/perception/object_detection_2d/nanodet/inference_demo.py) are also available.
 
 
 
@@ -211,7 +215,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
   All training parameters (optimizer, lr schedule, losses, model parameters etc.) can be changed in the model config file
   in [config directory](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config).
   You can find more information in [corresponding documentation](../../src/opendr/perception/object_detection_2d/nanodet/algorithm/config/config_file_detail.md).
-  For easier usage of the NanodetLearner, the user can overwrite the following parameters:
+  For easier usage of the NanodetLearner, you can overwrite the following parameters:
   (iters, lr, batch_size, checkpoint_after_iter, checkpoint_load_iter, temp_path, device, weight_decay, warmup_steps,
   warmup_ratio, lr_schedule_T_max, lr_schedule_eta_min, grad_clip)
 
@@ -303,7 +307,6 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
   This example shows how to perform optimization on a pretrained model, then run inference on an image and finally draw the resulting bounding boxes, using a nanodet model that is pretrained on the COCO dataset.
   In this example we use ONNX optimization, but JIT can also be used by changing *optimization* to *jit*.
-  With the *path* parameter you can define the image file to be used as dummy input for the optimization and inference.
   The optimized model will be saved in the `./optimization_models` folder
   ```python
   from opendr.engine.data import Image
@@ -316,7 +319,7 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
     # First read an OpenDR image from your dataset and run the optimizer:
     img = Image.open("./predefined_examples/000000000036.jpg")
-    nanodet.optimize("./onnx/nanodet_m/", img, optimization="onnx")
+    nanodet.optimize("./onnx/nanodet_m/", optimization="onnx")
 
     boxes = nanodet.infer(input=img)
 
@@ -326,88 +329,82 @@ Furthermore, demos on performing [training](../../projects/perception/object_det
 
 #### Performance Evaluation
 
-In terms of speed, the performance of Nanodet is summarized in the table below (in FPS).
+In terms of speed, the performance of Nanodet is summarized in the tables below (in FPS).
 The speed is measured from the start of the forward pass until the end of post-processing.
 
-For PyTorch inference.
+For PyTorch inference:
 
-| Method              {intput} | RTX 2070 | TX2   | NX    |
-|------------------------------|----------|-------|-------|
-| Efficient Lite0     {320}    | 48.63    | 9.38  | 14.48 |
-| Efficient Lite1     {416}    | 43.88    | 7.93  | 11.07 |
-| Efficient Lite2     {512}    | 40.51    | 6.44  | 8.84  |
-| RepVGG A0           {416}    | 33.4     | 9.21  | 12.3  |
-| Nanodet-g           {416}    | 51.32    | 9.57  | 15.75 |
-| Nanodet-m           {320}    | 48.36    | 8.56  | 14.08 |
-| Nanodet-m 0.5x      {320}    | 46.94    | 7.97  | 12.84 |
-| Nanodet-m 1.5x      {320}    | 47.41    | 8.8   | 13.98 |
-| Nanodet-m           {416}    | 47.3     | 8.34  | 13.15 |
-| Nanodet-m 1.5x      {416}    | 45.62    | 8.43  | 13.2  |
-| Nanodet-plue m      {320}    | 41.9     | 7.45  | 12.01 |
-| Nanodet-plue m 1.5x {320}    | 39.63    | 7.66  | 12.21 |
-| Nanodet-plue m      {416}    | 40.16    | 7.24  | 11.58 |
-| Nanodet-plue m 1.5x {416}    | 38.94    | 7.37  | 11.52 |
+| Method              {input} | RTX 2070 | TX2   | NX    |
+|-----------------------------|----------|-------|-------|
+| Efficient Lite0     {320}   | 48.63    | 9.38  | 14.48 |
+| Efficient Lite1     {416}   | 43.88    | 7.93  | 11.07 |
+| Efficient Lite2     {512}   | 40.51    | 6.44  | 8.84  |
+| RepVGG A0           {416}   | 33.4     | 9.21  | 12.3  |
+| Nanodet-g           {416}   | 51.32    | 9.57  | 15.75 |
+| Nanodet-m           {320}   | 48.36    | 8.56  | 14.08 |
+| Nanodet-m 0.5x      {320}   | 46.94    | 7.97  | 12.84 |
+| Nanodet-m 1.5x      {320}   | 47.41    | 8.8   | 13.98 |
+| Nanodet-m           {416}   | 47.3     | 8.34  | 13.15 |
+| Nanodet-m 1.5x      {416}   | 45.62    | 8.43  | 13.2  |
+| Nanodet-plus m      {320}   | 41.9     | 7.45  | 12.01 |
+| Nanodet-plus m 1.5x {320}   | 39.63    | 7.66  | 12.21 |
+| Nanodet-plus m      {416}   | 40.16    | 7.24  | 11.58 |
+| Nanodet-plus m 1.5x {416}   | 38.94    | 7.37  | 11.52 |
 
-For JIT optimization inference.
+For JIT optimization inference:
 
-| Method              {intput} | RTX 2070 | TX2   | NX    |
-|------------------------------|----------|-------|-------|
-| Efficient Lite0     {320}    | 69.06    | 12.94 | 17.78 |
-| Efficient Lite1     {416}    | 62.94    | 9.27  | 12.94 |
-| Efficient Lite2     {512}    | 65.46    | 7.46  | 10.32 |
-| RepVGG A0           {416}    | 41.44    | 11.16 | 14.89 |
-| Nanodet-g           {416}    | 76.3     | 12.94 | 20.52 |
-| Nanodet-m           {320}    | 75.66    | 12.22 | 20.67 |
-| Nanodet-m 0.5x      {320}    | 65.71    | 11.31 | 17.68 |
-| Nanodet-m 1.5x      {320}    | 66.23    | 12.46 | 19.99 |
-| Nanodet-m           {416}    | 79.91    | 12.08 | 19.28 |
-| Nanodet-m 1.5x      {416}    | 69.44    | 12.3  | 18.6  |
-| Nanodet-plue m      {320}    | 67.82    | 11.19 | 18.85 |
-| Nanodet-plue m 1.5x {320}    | 64.12    | 11.57 | 18.26 |
-| Nanodet-plue m      {416}    | 64.74    | 11.22 | 17.57 |
-| Nanodet-plue m 1.5x {416}    | 56.77    | 10.39 | 14.81 |
+| Method              {input} | RTX 2070 | TX2   | NX    |
+|-----------------------------|----------|-------|-------|
+| Efficient Lite0     {320}   | 69.06    | 12.94 | 17.78 |
+| Efficient Lite1     {416}   | 62.94    | 9.27  | 12.94 |
+| Efficient Lite2     {512}   | 65.46    | 7.46  | 10.32 |
+| RepVGG A0           {416}   | 41.44    | 11.16 | 14.89 |
+| Nanodet-g           {416}   | 76.3     | 12.94 | 20.52 |
+| Nanodet-m           {320}   | 75.66    | 12.22 | 20.67 |
+| Nanodet-m 0.5x      {320}   | 65.71    | 11.31 | 17.68 |
+| Nanodet-m 1.5x      {320}   | 66.23    | 12.46 | 19.99 |
+| Nanodet-m           {416}   | 79.91    | 12.08 | 19.28 |
+| Nanodet-m 1.5x      {416}   | 69.44    | 12.3  | 18.6  |
+| Nanodet-plus m      {320}   | 67.82    | 11.19 | 18.85 |
+| Nanodet-plus m 1.5x {320}   | 64.12    | 11.57 | 18.26 |
+| Nanodet-plus m      {416}   | 64.74    | 11.22 | 17.57 |
+| Nanodet-plus m 1.5x {416}   | 56.77    | 10.39 | 14.81 |
 
-For ONNX optimization inference.
+For ONNX optimization inference:
 
-In this case, the forward pass is performed in ONNX.
-The pre-processing steps were implemented in PyTorch.
-Results show that the performance on ONNX varies significantly among different architectures, with some achieving good performance while others performing poorly.
-Additionally, it was observed that the performance of ONNX on a TX2 device was generally good, although it was observed to have occasional spikes of long run times that made it difficult to accurately measure.
-Overall, the TX2 device demonstrated good performance with ONNX.
+| Method              {input} | RTX 2070  |
+|-----------------------------|-----------|
+| Efficient Lite0     {320}   | 33.12     |
+| Efficient Lite1     {416}   | 16.78     |
+| Efficient Lite2     {512}   | 10.35     |
+| RepVGG A0           {416}   | 27.89     |
+| Nanodet-g           {416}   | 103.22    |
+| Nanodet-m           {320}   | 98.73     |
+| Nanodet-m 0.5x      {320}   | 144.46    |
+| Nanodet-m 1.5x      {320}   | 75.82     |
+| Nanodet-m           {416}   | 73.09     |
+| Nanodet-m 1.5x      {416}   | 51.30     |
+| Nanodet-plus m      {320}   | 51.39     |
+| Nanodet-plus m 1.5x {320}   | 39.65     |
+| Nanodet-plus m      {416}   | 39.17     |
+| Nanodet-plus m 1.5x {416}   | 28.55     |
 
-| Method              {intput} | RTX 2070  | TX2 | NX     |
-|------------------------------|-----------|-----|--------|
-| Efficient Lite0     {320}    | 33.12     |     | 34.03  |
-| Efficient Lite1     {416}    | 16.78     |     | 17.35  |
-| Efficient Lite2     {512}    | 10.35     |     | 12.14  |
-| RepVGG A0           {416}    | 27.89     |     | 51.74  |
-| Nanodet-g           {416}    | 103.22    |     | 87.40  |
-| Nanodet-m           {320}    | 98.73     |     | 122.26 |
-| Nanodet-m 0.5x      {320}    | 144.46    |     | 208.19 |
-| Nanodet-m 1.5x      {320}    | 75.82     |     | 75.40  |
-| Nanodet-m           {416}    | 73.09     |     | 72.78  |
-| Nanodet-m 1.5x      {416}    | 51.30     |     | 51.78  |
-| Nanodet-plue m      {320}    | 51.39     |     | 50.67  |
-| Nanodet-plue m 1.5x {320}    | 39.65     |     | 40.62  |
-| Nanodet-plue m      {416}    | 39.17     |     | 36.98  |
-| Nanodet-plue m 1.5x {416}    | 28.55     |     | 27.20  |
+Finally, we measure the performance on the COCO dataset, using the corresponding metrics:
 
-Finally, we measure the performance on the COCO dataset, using the corresponding metrics.
-
-| Method              {intput} | coco2017 mAP |
-|------------------------------|--------------|
-| Efficient Lite0     {320}    | 24.4         |
-| Efficient Lite1     {416}    | 29.2         |
-| Efficient Lite2     {512}    | 32.4         |
-| RepVGG A0           {416}    | 25.5         |
-| Nanodet-g           {416}    | 22.7         |
-| Nanodet-m           {320}    | 20.2         |
-| Nanodet-m 0.5x      {320}    | 13.1         |
-| Nanodet-m 1.5x      {320}    | 23.1         |
-| Nanodet-m           {416}    | 23.5         |
-| Nanodet-m 1.5x      {416}    | 26.6         |
-| Nanodet-plue m      {320}    | 27.0         |
-| Nanodet-plue m 1.5x {320}    | 29.9         |
-| Nanodet-plue m      {416}    | 30.3         |
-| Nanodet-plue m 1.5x {416}    | 34.1         |
+| Method              {input} | coco2017 mAP |
+|-----------------------------|--------------|
+| Efficient Lite0     {320}   | 24.4         |
+| Efficient Lite1     {416}   | 29.2         |
+| Efficient Lite2     {512}   | 32.4         |
+| RepVGG A0           {416}   | 25.5         |
+| Nanodet-g           {416}   | 22.7         |
+| Nanodet-m           {320}   | 20.2         |
+| Nanodet-m 0.5x      {320}   | 13.1         |
+| Nanodet-m 1.5x      {320}   | 23.1         |
+| Nanodet-m           {416}   | 23.5         |
+| Nanodet-m 1.5x      {416}   | 26.6         |
+| Nanodet-plus m      {320}   | 27.0         |
+| Nanodet-plus m 1.5x {320}   | 29.9         |
+| Nanodet-plus m      {416}   | 30.3         |
+| Nanodet-plus m 1.5x {416}   | 34.1         |
  

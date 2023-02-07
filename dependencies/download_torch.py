@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
     parser.add_argument("--opendr_device", help="Target device for installation",
                         type=str, choices=["gpu", "cpu"], default="gpu")
-    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.13.1")
+    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.9.0")
     args = parser.parse_args()
 
     COMPATIBILITY_VERSIONS = {
@@ -82,14 +82,16 @@ if __name__ == '__main__':
                 version_line = version_file.readlines()
                 version_line = version_line[0].replace(".", "")
                 CUDA_VERSION = version_line[13:16]
+                version_file.close()
             elif version_file_type[0].endswith('.json'):
                 version_file = open(f"{CUDA_PATH}/version.json", mode='r')
                 version_dict = json.load(version_file)
                 CUDA_VERSION = version_dict["cuda"]["version"]
                 CUDA_VERSION = CUDA_VERSION.replace(".", "")
                 CUDA_VERSION = CUDA_VERSION[:3]
+                version_file.close()
             else:
-                warnings.warn("\033[93m Not CUDA version file found.")
+                warnings.warn("\033[93m No CUDA version file found.")
             DEVICE = f"cu{CUDA_VERSION}"
         except:
             warnings.warn("\033[93m No CUDA installation found.\n"

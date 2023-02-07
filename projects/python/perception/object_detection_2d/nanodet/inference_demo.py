@@ -36,7 +36,7 @@ if __name__ == '__main__':
     img = Image.open(args.path)
 
     if args.optimize != "":
-        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize, nms_max_num=50)
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize)
 
     boxes = nanodet.infer(input=img)
 

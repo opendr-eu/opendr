@@ -20,33 +20,22 @@
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
-  if (argc != 6) {
-    fprintf(stderr,
-            "usage: %s [model_path] [device] [images_path] [input_sizes].\n"
-            "model_path = path/to/your/libtorch/model.pth \ndevice = cuda or cpu \n"
-            "images_path = \"xxx/xxx/*.jpg\" \ninput_size = width height.\n",
-            argv[0]);
-    return -1;
-  }
-
   NanodetModelT model;
 
-  int height = atoi(argv[4]);
-  int width = atoi(argv[5]);
   printf("start init model\n");
-  loadNanodetModel(argv[1], argv[2], height, width, 0.35, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
-  OpendrImageT image;
+  OpenDRImageT image;
 
-  loadImage(argv[3], &image);
+  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
   }
 
-  // Initialize opendr detection target list;
-  OpendrDetectionVectorTargetT results;
+  // Initialize OpenDR detection target list;
+  OpenDRDetectionVectorTargetT results;
   initDetectionsVector(&results);
 
   results = inferNanodet(&model, &image);

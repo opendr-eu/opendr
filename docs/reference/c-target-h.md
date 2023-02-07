@@ -3,20 +3,20 @@
 
 The *target.h* header provides definitions of OpenDR targets (inference outputs) that can be used in the C API of OpenDR.
 
-### struct *OpendrCategoryTargetT*
+### struct *OpenDRCategoryTargetT*
 ```C
-struct OpendrCategoryTarget{
+struct OpenDRCategoryTarget{
     int data;
     float confidence;
 };
-typedef struct OpendrCategoryTarget OpendrCategoryTargetT;
+typedef struct OpenDRCategoryTarget OpenDRCategoryTargetT;
 ```
 
 
-The *OpendrCategoryTargetT* structure provides a data structure for storing inference outputs of classification models.
+The *OpenDRCategoryTargetT* structure provides a data structure for storing inference outputs of classification models.
 Every function in the C API that outputs a classification decision is expected to use this structure.
 
-The *OpendrCategoryTargetT* structure has the following fields:
+The *OpenDRCategoryTargetT* structure has the following fields:
 
 #### `int data` field
 
@@ -27,9 +27,9 @@ A numerical id of the category to which the input objects belongs to.
 The decision confidence (a value between 0 and 1).
 
 
-### struct *OpendrDetectionTargetT*
+### struct *OpenDRDetectionTargetT*
 ```C
-struct opendr_detection_target {
+struct OpenDRDetectionTarget {
   int name;
   float left;
   float top;
@@ -37,14 +37,14 @@ struct opendr_detection_target {
   float height;
   float score;
 };
-typedef struct OpendrDetectionTarget OpendrDetectionTargetT;
+typedef struct OpenDRDetectionTarget OpenDRDetectionTargetT;
 ```
 
 
-The *OpendrDetectionTargetT* structure provides a data structure for storing inference outputs of detection models.
+The *OpenDRDetectionTargetT* structure provides a data structure for storing inference outputs of detection models.
 Every function in the C API that outputs a detection decision is expected to use this structure or a vector of this structure.
 
-The *OpendrDetectionTargetT* structure has the following fields:
+The *OpenDRDetectionTargetT* structure has the following fields:
 
 #### `int name` field
 
@@ -71,24 +71,24 @@ A numerical value that corresponds to the height of a detection.
 The decision score (a value between 0 and 1).
 
 
-### struct *OpendrDetectionVectorTargetT*
+### struct *OpenDRDetectionVectorTargetT*
 ```C
-struct OpendrDetectionVectorTarget {
-  OpendrDetectionTargetT *startingPointer;
+struct OpenDRDetectionVectorTarget {
+  OpenDRDetectionTargetT *startingPointer;
   int size;
 };
-typedef struct OpendrDetectionVectorTarget OpendrDetectionVectorTargetT;
+typedef struct OpenDRDetectionVectorTarget OpenDRDetectionVectorTargetT;
 ```
 
 
-The *OpendrDetectionVectorTargetT* structure provides a data structure for storing multiple inference outputs of detection models.
-Every function in the C API that outputs a detection decision is expected to use this or a *OpendrDetectionTargetT* structure.
+The *OpenDRDetectionVectorTargetT* structure provides a data structure for storing multiple inference outputs of detection models.
+Every function in the C API that outputs a detection decision is expected to use this or a *OpenDRDetectionTargetT* structure.
 
-The *OpendrDetectionVectorTargetT* structure has the following fields:
+The *OpenDRDetectionVectorTargetT* structure has the following fields:
 
-#### `OpendrDetectionTargetT startingPointer` field
+#### `OpenDRDetectionTargetT startingPointer` field
 
-A pointer to a memory of multiple OpenDR detection targets.
+A pointer to multiple OpenDR detection targets.
 
 #### `int size` field
 

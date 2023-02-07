@@ -24,21 +24,39 @@ extern "C" {
 /***
  * OpenDR data type for representing images
  */
-struct OpendrImage {
+struct OpenDRImage {
   void *data;
 };
-typedef struct OpendrImage OpendrImageT;
+typedef struct OpenDRImage OpenDRImageT;
 
 /***
- * OpenDR data type for representing cameras
+ * OpenDR data type for representing tensors
  */
-struct OpendrCamera {
-  void* cap;
-  int cameraId;
+struct OpenDRTensor {
+  int batchSize;
+  int frames;
+  int channels;
   int width;
   int height;
+
+  float *data;
 };
-typedef struct OpendrCamera OpendrCameraT;
+typedef struct OpenDRTensor OpenDRTensorT;
+
+/***
+ * OpenDR data type for representing vectors of tensors
+ */
+struct OpenDRTensorVector {
+  int nTensors;
+  int *batchSizes;
+  int *frames;
+  int *channels;
+  int *widths;
+  int *heights;
+
+  float **datas;
+};
+typedef struct OpenDRTensorVector OpenDRTensorVectorT;
 
 #ifdef __cplusplus
 }

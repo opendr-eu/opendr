@@ -2,9 +2,9 @@
 
 if [[ -z "$TORCH_VERSION" ]];
 then
-  echo "Torch version not defined, version 1.13.1 will be installed."
+  echo "Torch version not defined, version 1.9.0 will be installed."
   echo "For a specific Torch version please define TORCH_VERSION with 'export TORCH_VERSION=x.x.x'"
-  TORCH_VERSION="1.13.1"
+  TORCH_VERSION="1.9.0"
 fi
 
 if [ ! -f /usr/local/lib/libtorchvision.so ]; then
@@ -14,7 +14,7 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   then
     echo "Downloading and installing LibTorch and torchvision (gpu support) ..."
     GPU="on"
-    DEVICE="cu"${CUDA_VERSION}
+    DEVICE="gpu"
     CUDA_COMPILER="/usr/local/cuda/bin/nvcc"
   else
     echo "Downloading and installing LibTorch and torchvision (cpu-only) ..."

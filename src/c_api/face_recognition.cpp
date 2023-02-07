@@ -47,28 +47,28 @@
 void preprocessFaceRecognition(cv::Mat *image, std::vector<float> &data, int resizeTarget = 128, int modelInputSize = 112,
                                float meanValue = 0.5, float stdValue = 0.5) {
   // Convert to RGB
-  cv::Mat img;
-  cv::cvtColor(*image, img, cv::COLOR_BGR2RGB);
+  cv::Mat normalizedImage;
+  cv::cvtColor(*image, normalizedImage, cv::COLOR_BGR2RGB);
 
   // Resize and then get a center crop
-  cv::resize(img, img, cv::Size(resizeTarget, resizeTarget));
+  cv::resize(normalizedImage, normalizedImage, cv::Size(resizeTarget, resizeTarget));
   int stride = (resizeTarget - modelInputSize) / 2;
   cv::Rect myROI(stride, stride, resizeTarget - stride, resizeTarget - stride);
-  img = img(myROI);
+  normalizedImage = normalizedImage(myROI);
 
   // Scale to 0...1
-  cv::Mat outImg;
-  img.convertTo(outImg, CV_32FC3, 1 / 255.0);
+  cv::Mat outputImage;
+  normalizedImage.convertTo(outputImage, CV_32FC3, 1 / 255.0);
   // Unfold the image into the appropriate format
   // This is certainly not the most efficient way to do this...
   // ... and is probably constantly leading to cache misses
   // ... but it works for now.
   for (unsigned int j = 0; j < modelInputSize; ++j) {
     for (unsigned int k = 0; k < modelInputSize; ++k) {
-      cv::Vec3f curPixel = outImg.at<cv::Vec3f>(j, k);
-      data[0 * modelInputSize * modelInputSize + j * modelInputSize + k] = (curPixel[0] - meanValue) / stdValue;
-      data[1 * modelInputSize * modelInputSize + j * modelInputSize + k] = (curPixel[0] - meanValue) / stdValue;
-      data[2 * modelInputSize * modelInputSize + j * modelInputSize + k] = (curPixel[0] - meanValue) / stdValue;
+      cv::Vec3f currentPixel = outputImage.at<cv::Vec3f>(j, k);
+      data[0 * modelInputSize * modelInputSize + j * modelInputSize + k] = (currentPixel[0] - meanValue) / stdValue;
+      data[1 * modelInputSize * modelInputSize + j * modelInputSize + k] = (currentPixel[1] - meanValue) / stdValue;
+      data[2 * modelInputSize * modelInputSize + j * modelInputSize + k] = (currentPixel[2] - meanValue) / stdValue;
     }
   }
 }
@@ -82,30 +82,30 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
 
   // Parse the model JSON file
   std::string modelJsonPath(modelPath);
-  std::size_t splitPos = modelJsonPath.find_last_of("/");
-  splitPos = splitPos > 0 ? splitPos + 1 : 0;
-  modelJsonPath = modelJsonPath + "/" + modelJsonPath.substr(splitPos) + ".json";
+  std::size_t splitPosition = modelJsonPath.find_last_of("/");
+  splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
+  modelJsonPath = modelJsonPath + "/" + modelJsonPath.substr(splitPosition) + ".json";
 
   std::ifstream inStream(modelJsonPath);
   if (!inStream.is_open()) {
-    std::cerr << "Cannot open JSON model file" << std::endl;
+    std::cerr << "Cannot open JSON model file." << std::endl;
     return;
   }
   std::string str((std::istreambuf_iterator<char>(inStream)), std::istreambuf_iterator<char>());
   const char *json = str.c_str();
 
-  std::string basepath = modelJsonPath.substr(0, splitPos);
-  splitPos = basepath.find_last_of("/");
-  splitPos = splitPos > 0 ? splitPos + 1 : 0;
-  if (splitPos < basepath.size())
-    basepath.resize(splitPos);
+  std::string basePath = modelJsonPath.substr(0, splitPosition);
+  splitPosition = basePath.find_last_of("/");
+  splitPosition = splitPosition > 0 ? splitPosition + 1 : 0;
+  if (splitPosition < basePath.size())
+    basePath.resize(splitPosition);
 
   // Parse JSON
-  std::string onnxModelPath = basepath + jsonGetKeyString(json, "model_paths", 0);
-  std::string modelFormat = jsonGetKeyString(json, "format", 0);
+  std::string onnxModelPath = basePath + jsonGetStringFromKey(json, "model_paths", 0);
+  std::string modelFormat = jsonGetStringFromKey(json, "format", 0);
 
   // Parse inference params
-  float threshold = jsonGetKeyFloatFromInferenceParams(json, "threshold", 0);
+  float threshold = jsonGetFloatFromKeyInInferenceParams(json, "threshold", 0);
   model->threshold = threshold;
 
   // Proceed only if the model is in onnx format
@@ -114,7 +114,7 @@ void loadFaceRecognitionModel(const char *modelPath, FaceRecognitionModelT *mode
     return;
   }
 
-  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "opendr_env");
+  Ort::Env *env = new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "OpenDR_env");
 
   Ort::SessionOptions *sessionOptions = new Ort::SessionOptions;
   sessionOptions->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
@@ -165,7 +165,7 @@ void freeFaceRecognitionModel(FaceRecognitionModelT *model) {
   }
 }
 
-void ffFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image, cv::Mat *features) {
+void ffFaceRecognition(FaceRecognitionModelT *model, OpenDRImageT *image, cv::Mat *features) {
   Ort::Session *session = static_cast<Ort::Session *>(model->onnxSession);
   if (!session) {
     std::cerr << "ONNX session not initialized." << std::endl;
@@ -204,14 +204,14 @@ void ffFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image, cv::Ma
   assert(outputTensors.size() == 1 && outputTensors.front().IsTensor());
 
   // Get the results back
-  float *floatarr = outputTensors.front().GetTensorMutableData<float>();
-  cv::Mat curFeatures(cv::Size(model->outputSize, 1), CV_32F, floatarr);
+  float *tensorData = outputTensors.front().GetTensorMutableData<float>();
+  cv::Mat currentFeatures(cv::Size(model->outputSize, 1), CV_32F, tensorData);
 
   // Perform l2 normalizaton
-  cv::Mat featuresSquare = curFeatures.mul(curFeatures);
-  float norm = sqrt(cv::sum(featuresSquare)[0]);
-  curFeatures = curFeatures / norm;
-  memcpy(features->data, curFeatures.data, sizeof(float) * model->outputSize);
+  cv::Mat featuresSquare = currentFeatures.mul(currentFeatures);
+  float normalizationValue = sqrt(cv::sum(featuresSquare)[0]);
+  currentFeatures = currentFeatures / normalizationValue;
+  memcpy(features->data, currentFeatures.data, sizeof(float) * model->outputSize);
 }
 
 void buildDatabaseFaceRecognition(const char *databaseFolder, const char *outputPath, FaceRecognitionModelT *model) {
@@ -231,12 +231,13 @@ void buildDatabaseFaceRecognition(const char *databaseFolder, const char *output
   for (auto personPath = directory_iterator(rootPath); personPath != directory_iterator(); personPath++) {
     // For each person in the database
     if (is_directory(personPath->path())) {
-      path curPersonPath(personPath->path());
+      path currentPersonPath(personPath->path());
       personNames.push_back(personPath->path().filename().string());
 
-      for (auto curImgPath = directory_iterator(curPersonPath); curImgPath != directory_iterator(); curImgPath++) {
-        OpendrImageT image;
-        loadImage(curImgPath->path().string().c_str(), &image);
+      for (auto currentImagePath = directory_iterator(currentPersonPath); currentImagePath != directory_iterator();
+           currentImagePath++) {
+        OpenDRImageT image;
+        loadImage(currentImagePath->path().string().c_str(), &image);
 
         cv::Mat features(cv::Size(model->outputSize, 1), CV_32F);
         ffFaceRecognition(model, &image, &features);
@@ -257,7 +258,7 @@ void buildDatabaseFaceRecognition(const char *databaseFolder, const char *output
   }
 
   // Make the array continuous
-  cv::Mat databaseOut = database.clone();
+  cv::Mat databaseOutput = database.clone();
 
   std::ofstream fout(outputPath, std::ios::out | std::ios::binary);
   if (!fout.is_open()) {
@@ -276,11 +277,11 @@ void buildDatabaseFaceRecognition(const char *databaseFolder, const char *output
     fout.write(personNames[i].c_str(), nameLength);
   }
 
-  cv::Size s = databaseOut.size();
+  cv::Size s = databaseOutput.size();
 
   fout.write(reinterpret_cast<char *>(&s.height), sizeof(int));
   fout.write(reinterpret_cast<char *>(&s.width), sizeof(int));
-  fout.write(reinterpret_cast<char *>(databaseOut.data), sizeof(float) * s.height * s.width);
+  fout.write(reinterpret_cast<char *>(databaseOutput.data), sizeof(float) * s.height * s.width);
   fout.write(reinterpret_cast<char *>(&databaseIds[0]), sizeof(int) * s.height);
   fout.flush();
   fout.close();
@@ -296,11 +297,11 @@ void loadDatabaseFaceRecognition(const char *databasePath, FaceRecognitionModelT
     std::cerr << "Cannot load database file (check that file exists and you have created the database)." << std::endl;
     return;
   }
-  int n;
-  fin.read(reinterpret_cast<char *>(&n), sizeof(int));
-  char **personNames = new char *[n];
+  int nPerson;
+  fin.read(reinterpret_cast<char *>(&nPerson), sizeof(int));
+  char **personNames = new char *[nPerson];
 
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < nPerson; i++) {
     personNames[i] = new char[512];
     // Read person name
     int nameLength;
@@ -330,13 +331,13 @@ void loadDatabaseFaceRecognition(const char *databasePath, FaceRecognitionModelT
   model->database = database;
   model->databaseIds = featuresIds;
   model->personNames = personNames;
-  model->nPersons = n;
+  model->nPersons = nPerson;
   model->nFeatures = height;
 }
 
-OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image) {
+OpenDRCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpenDRImageT *image) {
   cv::Mat features(cv::Size(model->outputSize, 1), CV_32F);
-  OpendrCategoryTargetT target;
+  OpenDRCategoryTargetT target;
   target.data = -1;
   target.confidence = 0;
 
@@ -351,24 +352,24 @@ OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrI
   // Calculate the distance between the extracted feature vector and database features
   cv::Mat featuresRepeated;
   cv::repeat(features, model->nFeatures, 1, featuresRepeated);
-  cv::Mat diff = featuresRepeated - *database;
-  diff = diff.mul(diff);
-  cv::Mat sqDists;
-  cv::reduce(diff, sqDists, 1, CV_REDUCE_SUM, CV_32F);
-  cv::Mat dists;
-  cv::sqrt(sqDists, dists);
+  cv::Mat differences = featuresRepeated - *database;
+  differences = differences.mul(differences);
+  cv::Mat squareRootDistances;
+  cv::reduce(differences, squareRootDistances, 1, CV_REDUCE_SUM, CV_32F);
+  cv::Mat distances;
+  cv::sqrt(squareRootDistances, distances);
 
-  double minDist, maxDist;
+  double minDistance, maxDistance;
   cv::Point minLoc, maxLoc;
-  cv::minMaxLoc(dists, &minDist, &maxDist, &minLoc, &maxLoc);
+  cv::minMaxLoc(distances, &minDistance, &maxDistance, &minLoc, &maxLoc);
 
   target.data = model->databaseIds[minLoc.y];
-  target.confidence = 1 - (minDist / model->threshold);
+  target.confidence = 1 - (minDistance / model->threshold);
 
   return target;
 }
 
-void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpendrCategoryTargetT category, char *personName) {
+void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpenDRCategoryTargetT category, char *personName) {
   if (category.data >= model->nPersons)
     return;
   strcpy(personName, model->personNames[category.data]);

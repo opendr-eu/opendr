@@ -416,6 +416,10 @@ class CoSTGCNLearner(Learner):
                 "seed": self.seed,
             },
         }
+
+        if self._ort_session:
+            meta_data["format"] = "onnx"
+
         with open(str(meta_path), "w", encoding="utf-8") as f:
             json.dump(meta_data, f, sort_keys=True, indent=4)
 
@@ -653,15 +657,15 @@ class CoSTGCNLearner(Learner):
         state0 = None
         with torch.no_grad():
             for i in range(model.receptive_field):
-                _, state0 = model._forward_step(self._example_input[:, :, i], state0)
-            _, state0 = model._forward_step(self._example_input[:, :, -1], state0)
+                _, state0 = model._forward_step(self._example_input[:, :, i].to("cpu"), state0)
+            _, state0 = model._forward_step(self._example_input[:, :, -1].to("cpu"), state0)
             state0 = co.utils.flatten(state0)
 
             # Export to ONNX
             logger.info(f"Saving model to ONNX format at {str(path)}")
             co.onnx.export(
                 model,
-                (self._example_input[:, :, -1], *state0),
+                (self._example_input[:, :, -1].to("cpu"), *state0),
                 path,
                 input_names=["input"],
                 output_names=["output"],
