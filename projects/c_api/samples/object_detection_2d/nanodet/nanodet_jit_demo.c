@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   NanodetModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/new_opt_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
   OpenDRImageT image;
@@ -38,7 +38,8 @@ int main(int argc, char **argv) {
   OpenDRDetectionVectorTargetT results;
   initDetectionsVector(&results);
 
-  results = inferNanodet(&model, &image);
+  double temp;
+  results = inferNanodet(&model, &image, &temp);
 
   drawBboxes(&image, &model, &results);
 

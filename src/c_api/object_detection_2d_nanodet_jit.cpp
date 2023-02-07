@@ -337,18 +337,19 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
 }
 
 void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, cv::Size *originalSize,
-               torch::Tensor *outputs) {
+               std::vector<torch::Tensor> *outputs) {
   // Make all the inputs as tensors to use in jit model
   torch::Tensor srcHeight = torch::tensor(originalSize->height);
   torch::Tensor srcWidth = torch::tensor(originalSize->width);
   torch::Tensor warpMat = torch::from_blob(warpMatrix->data, {3, 3});
 
   // Model inference
-  *outputs = (model->network()).forward({*inputTensor, srcWidth, srcHeight, warpMat}).toTensor();
-  *outputs = outputs->to(torch::Device(torch::kCPU, 0));
+  *outputs = (model->network()).forward({*inputTensor, srcWidth, srcHeight, warpMat}).toTensorVector();
+//  *outputs = outputs->to(torch::Device(torch::kCPU, 0));
 }
 
-OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image) {
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image, double *outFps) {
+
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpenDRDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
@@ -363,33 +364,40 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
   cv::Mat resizedImg;
   cv::Size dstSize = cv::Size(model->inputSizes[0], model->inputSizes[1]);
   cv::Mat warpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
+
   preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
   torch::Tensor input = networkPTR->preProcess(&resizedImg);
   cv::Size originalSize(opencvImage->cols, opencvImage->rows);
 
-  torch::Tensor outputs;
+  std::vector<torch::Tensor> outputs;
+  auto start = std::chrono::steady_clock::now();
   ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
 
   std::vector<OpenDRDetectionTarget> detections;
   // Postprocessing, find which outputs have better score than threshold and keep them.
-  for (int label = 0; label < outputs.size(0); label++) {
-    for (int box = 0; box < outputs.size(1); box++) {
-      if (outputs[label][box][4].item<float>() > model->scoreThreshold) {
+
+  auto end = std::chrono::steady_clock::now();
+  for (int label = 0; label < outputs.size(); label++) {
+    for (int box = 0; box < outputs[label].size(0); box++) {
+//      if (outputs[label][box][4].item<float>() > model->scoreThreshold) {
         OpenDRDetectionTargetT detection;
-        detection.name = label;
+        detection.name = outputs[label][box][5].item<int>();
         detection.left = outputs[label][box][0].item<float>();
         detection.top = outputs[label][box][1].item<float>();
         detection.width = outputs[label][box][2].item<float>() - outputs[label][box][0].item<float>();
         detection.height = outputs[label][box][3].item<float>() - outputs[label][box][1].item<float>();
         detection.score = outputs[label][box][4].item<float>();
         detections.push_back(detection);
-      }
+//      }
     }
   }
 
   // Put vector detection as C pointer and size
   if (static_cast<int>(detections.size()) > 0)
     loadDetectionsVector(&detectionsVector, detections.data(), static_cast<int>(detections.size()));
+
+
+  *outFps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
   return detectionsVector;
 }
@@ -405,16 +413,44 @@ void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions
   cv::Mat resizedImg;
   cv::Size dstSize = cv::Size(model->inputSizes[0], model->inputSizes[1]);
   cv::Mat warpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
-  double preTimings[repetitions];
+
   torch::Tensor input;
+  preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
+  input = networkPTR->preProcess(&resizedImg);
+
+  cv::Mat frame(model->inputSizes[1],model->inputSizes[0],CV_8UC3);
+  for(int i = 0; i < frame.rows; i++) {
+    for(int j = 0; j < frame.cols; j++) {
+      frame.at<cv::Vec3b>(i, j)[0] = rand() % 256;
+      frame.at<cv::Vec3b>(i, j)[1] = rand() % 256;
+      frame.at<cv::Vec3b>(i, j)[2] = rand() % 256;
+    }
+  }
+
+  OpenDRImageT opImage;
+  // Add frame data to OpenDR Image
+  if (frame.empty()) {
+    opImage.data = NULL;
+  } else {
+    cv::Mat *tempMatPtr = new cv::Mat(frame);
+    opImage.data = (void *)tempMatPtr;
+  }
+
+  cv::Mat *tempOpencvImage = static_cast<cv::Mat *>(image->data);
+  cv::Mat tempResizedImg;
+  cv::Size tempDstSize = cv::Size(model->inputSizes[0], model->inputSizes[1]);
+  cv::Mat tempWarpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
+  torch::Tensor tempInput;
+  double preTimings[repetitions];
     for (int i = 0; i < warmup; i++) {
-    preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
-    input = networkPTR->preProcess(&resizedImg);
+//    std::cout<<"before warmup preprocess\n";
+    preprocess(tempOpencvImage, &tempResizedImg, &tempDstSize, &tempWarpMatrix, model->keepRatio);
+    tempInput = networkPTR->preProcess(&tempResizedImg);
   }
   for (int i = 0; i < repetitions; i++) {
     auto start = std::chrono::steady_clock::now();
-    preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
-    input = networkPTR->preProcess(&resizedImg);
+    preprocess(tempOpencvImage, &tempResizedImg, &tempDstSize, &tempWarpMatrix, model->keepRatio);
+    tempInput = networkPTR->preProcess(&tempResizedImg);
     auto end = std::chrono::steady_clock::now();
     preTimings[i] = ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
   }
@@ -422,7 +458,7 @@ void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions
   cv::Size originalSize(opencvImage->cols, opencvImage->rows);
 
   double inferPostTimings[repetitions];
-  torch::Tensor outputs;
+  std::vector<torch::Tensor> outputs;
   for (int i = 0; i < warmup; i++) {
     ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
   }

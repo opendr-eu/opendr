@@ -359,13 +359,16 @@ class NanoDetPlusHead(nn.Module):
             pos_gt_bboxes = gt_bboxes[pos_assigned_gt_inds, :]
         return pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds
 
-    def post_process(self, preds, meta: Dict[str, Tensor], mode: str = "infer", nms_max_num: int = 100):
+    def post_process(self, preds, meta: Dict[str, Tensor], mode: str = "infer", conf_thresh: float = 0.05,
+                     iou_thresh: float = 0.6, nms_max_num: int = 100):
         """Prediction results postprocessing. Decode bboxes and rescale
         to original image size.
         Args:
             preds (Tensor): Prediction output.
             meta (dict): Meta info.
             mode (str): Determines if it uses batches and numpy or tensors for scripting.
+            conf_thresh (float): Determines the confidence threshold.
+            iou_thresh (float): Determines the iou threshold.
             nms_max_num (int): Determines the maximum number of bounding boxes that will be retained following the nms.
         """
         if mode == "eval" and not torch.jit.is_scripting():
@@ -376,34 +379,43 @@ class NanoDetPlusHead(nn.Module):
         cls_scores, bbox_preds = preds.split(
             [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
         )
-        results = self.get_bboxes(cls_scores, bbox_preds, meta["img"], nms_max_num=nms_max_num)
+        results = self.get_bboxes(cls_scores, bbox_preds, meta["img"], conf_threshold=conf_thresh,
+                                  iou_threshold=iou_thresh, nms_max_num=nms_max_num)
         (det_bboxes, det_labels) = results
 
-        det_bboxes[:, :4] = scriptable_warp_boxes(
-            det_bboxes[:, :4],
-            torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
-        )
+        # det_bboxes[:, :4] = scriptable_warp_boxes(
+        #     det_bboxes[:, :4],
+        #     torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
+        # )
 
-        # constant output of model every time for tracing
-        if torch.jit.is_scripting():
-            max_count = nms_max_num
-        else:
-            _, frequencies = torch.unique(det_labels, return_counts=True)
-            max_count = frequencies[torch.argmax(frequencies)].item()
-
-        det_result = torch.zeros((self.num_classes, max_count, 5))
+        det_result = []
+        labels = torch.arange(self.num_classes, device=det_bboxes.device).unsqueeze(1).unsqueeze(1)
         for i in range(self.num_classes):
             inds = det_labels == i
-            det = torch.cat((
-                det_bboxes[inds, :4],
-                det_bboxes[inds, 4:5]
-            ),
-                dim=1
-            )
 
-            pad = det.new_zeros((max_count - det.size(0), 5))
-            det = torch.cat([det, pad], dim=0)
-            det_result[i] = det
+            class_det_bboxes = det_bboxes[inds]
+            class_det_bboxes[:, :4] = scriptable_warp_boxes(
+                class_det_bboxes[:, :4],
+                torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
+            )
+            if class_det_bboxes.shape[0] != 0:
+                det = torch.cat((
+                    class_det_bboxes,
+                    labels[i].repeat(class_det_bboxes.shape[0], 1)
+                ), dim=1)
+                det_result.append(det)
+
+            # det = torch.cat((
+            #     det_bboxes[inds, :4],
+            #     det_bboxes[inds, 4:5]
+            # ), dim=1)
+            # if det.shape[0] != 0:
+            #     det = torch.cat((
+            #         det,
+            #         labels[i].repeat(det.shape[0], 1)
+            #     ), dim=1)
+            #     det_result.append(det)
+
         return det_result
 
     def _eval_post_process(self, preds, meta):
@@ -455,13 +467,16 @@ class NanoDetPlusHead(nn.Module):
             det_results[img_id] = det_result
         return det_results
 
-    def get_bboxes(self, cls_preds, reg_preds, input_img, mode: str = "infer", nms_max_num: int = 100):
+    def get_bboxes(self, cls_preds, reg_preds, input_img, mode: str = "infer", conf_threshold: float = 0.05,
+                   iou_threshold: float = 0.6, nms_max_num: int = 100):
         """Decode the outputs to bboxes.
         Args:
             cls_preds (Tensor): Shape (num_imgs, num_points, num_classes).
             reg_preds (Tensor): Shape (num_imgs, num_points, 4 * (regmax + 1)).
             input_img (Tensor): Input image to net.
             mode (str): Determines if it uses batches and numpy or tensors for scripting.
+            conf_threshold (float): Determines the confident threshold.
+            iou_threshold (float): Determines the iou threshold in nms.
             nms_max_num (int): Determines the maximum number of bounding boxes that will be retained following the nms.
         Returns:
             results_list (list[tuple]): List of detection bboxes and labels.
@@ -494,7 +509,8 @@ class NanoDetPlusHead(nn.Module):
             padding = score.new_zeros(score.shape[0], 1)
             score = torch.cat([score, padding], dim=1)
 
-            return multiclass_nms(bbox, score, score_thr=0.05, nms_cfg=dict(iou_threshold=0.6), max_num=nms_max_num)
+            return multiclass_nms(bbox, score, score_thr=conf_threshold, nms_cfg=dict(iou_threshold=iou_threshold),
+                                  max_num=nms_max_num)
 
         result_list = []
         for i in range(b):

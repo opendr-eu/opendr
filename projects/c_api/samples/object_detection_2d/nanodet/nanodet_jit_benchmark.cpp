@@ -26,29 +26,34 @@ int main(int argc, char **argv) {
   NanodetModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/new_opt_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
   int height = 320;
   int width = 320;
   std::srand(1);
-  cv::Mat frame(height,width,CV_8UC3);
-  for(int i = 0; i < frame.rows; i++) {
-    for(int j = 0; j < frame.cols; j++) {
-      frame.at<cv::Vec3b>(i, j)[0] = rand() % 256;
-      frame.at<cv::Vec3b>(i, j)[1] = rand() % 256;
-      frame.at<cv::Vec3b>(i, j)[2] = rand() % 256;
-    }
-  }
 
   OpenDRImageT opImage;
-  // Add frame data to OpenDR Image
-  if (frame.empty()) {
-    opImage.data = NULL;
-  } else {
-    cv::Mat *tempMatPtr = new cv::Mat(frame);
-    opImage.data = (void *)tempMatPtr;
-  }
+
+  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &opImage);
+
+//  cv::Mat frame(height,width,CV_8UC3);
+//  for(int i = 0; i < frame.rows; i++) {
+//    for(int j = 0; j < frame.cols; j++) {
+//      frame.at<cv::Vec3b>(i, j)[0] = rand() % 256;
+//      frame.at<cv::Vec3b>(i, j)[1] = rand() % 256;
+//      frame.at<cv::Vec3b>(i, j)[2] = rand() % 256;
+//    }
+//  }
+//
+//  OpenDRImageT opImage;
+//  // Add frame data to OpenDR Image
+//  if (frame.empty()) {
+//    opImage.data = NULL;
+//  } else {
+//    cv::Mat *tempMatPtr = new cv::Mat(frame);
+//    opImage.data = (void *)tempMatPtr;
+//  }
 
   int repetitions = 1000;
   int warmup = 100;

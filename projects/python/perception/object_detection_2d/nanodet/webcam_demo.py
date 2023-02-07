@@ -75,7 +75,7 @@ if __name__ == '__main__':
             start_time = time.perf_counter()
 
             # Perform inference
-            boxes = nanodet.infer(img, nms_max_num=20)
+            boxes = nanodet.infer(img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 

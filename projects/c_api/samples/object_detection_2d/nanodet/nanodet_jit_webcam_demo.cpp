@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   NanodetModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/new_opt_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
   cv::Mat frameCap;
@@ -64,18 +64,15 @@ int main(int argc, char **argv) {
     }
 
 
-    auto start = std::chrono::steady_clock::now();
-    results = inferNanodet(&model, &opImage);
-    auto end = std::chrono::steady_clock::now();
-    fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
+//    auto start = std::chrono::steady_clock::now();
+    results = inferNanodet(&model, &opImage, &fps);
+//    auto end = std::chrono::steady_clock::now();
+//    fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
     avg_fps = fps * 0.8 + avg_fps * 0.2;
-    if (count > 5.0) {
-      drawBboxesWithFps(&opImage, &model, &results, avg_fps);
-    }
-    count += 1;
 
-//    delete tempMatPtr;
+    drawBboxesWithFps(&opImage, &model, &results, avg_fps);
+
     if (cv::waitKey(1) >= 0)
       break;
   }

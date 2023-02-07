@@ -23,10 +23,12 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch 
 
 
 class Predictor(nn.Module):
-    def __init__(self, cfg, model, device="cuda", nms_max_num=100):
+    def __init__(self, cfg, model, device="cuda", conf_thresh=0.35, iou_thresh=0.6, nms_max_num=100):
         super(Predictor, self).__init__()
         self.cfg = cfg
         self.device = device
+        self.conf_thresh = conf_thresh
+        self.iou_thresh = iou_thresh
         self.nms_max_num = nms_max_num
         if self.cfg.model.arch.backbone.name == "RepVGG":
             deploy_config = self.cfg.model
@@ -83,5 +85,6 @@ class Predictor(nn.Module):
     def postprocessing(self, preds, input, height, width, warp_matrix):
         meta = {"height": height, "width": width, 'img': input, 'warp_matrix': warp_matrix}
         meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
-        res = self.model.head.post_process(preds, meta, nms_max_num=self.nms_max_num)
+        res = self.model.head.post_process(preds, meta, conf_thresh=self.conf_thresh, iou_thresh=self.iou_thresh,
+                                           nms_max_num=self.nms_max_num)
         return res

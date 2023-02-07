@@ -63,7 +63,7 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image);
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image, double *outFps);
 
 /**
  * Releases the memory allocated for a nanodet object detection model.
