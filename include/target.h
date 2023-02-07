@@ -23,16 +23,16 @@ extern "C" {
 /***
  * OpenDR data type for representing classification targets
  */
-struct OpendrCategoryTarget {
+struct OpenDRCategoryTarget {
   int data;
   float confidence;
 };
-typedef struct OpendrCategoryTarget OpendrCategoryTargetT;
+typedef struct OpenDRCategoryTarget OpenDRCategoryTargetT;
 
 /***
  * OpenDR data type for representing detection targets
  */
-struct OpendrDetectionTarget {
+struct OpenDRDetectionTarget {
   int name;
   float left;
   float top;
@@ -40,16 +40,16 @@ struct OpendrDetectionTarget {
   float height;
   float score;
 };
-typedef struct OpendrDetectionTarget OpendrDetectionTargetT;
+typedef struct OpenDRDetectionTarget OpenDRDetectionTargetT;
 
 /***
- * OpenDR data type for representing a structure of detection targets
+ * OpenDR data type for representing vectors of detections targets
  */
-struct OpendrDetectionVectorTarget {
-  OpendrDetectionTargetT *startingPointer;
+struct OpenDRDetectionVectorTarget {
+  OpenDRDetectionTargetT *startingPointer;
   int size;
 };
-typedef struct OpendrDetectionVectorTarget OpendrDetectionVectorTargetT;
+typedef struct OpenDRDetectionVectorTarget OpenDRDetectionVectorTargetT;
 
 #ifdef __cplusplus
 }

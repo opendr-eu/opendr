@@ -14,7 +14,7 @@ if [ ! -f /usr/local/lib/libtorchvision.so ]; then
   then
     echo "Downloading and installing LibTorch and torchvision (gpu support) ..."
     GPU="on"
-    DEVICE="cu"${CUDA_VERSION}
+    DEVICE="gpu"
     CUDA_COMPILER="/usr/local/cuda/bin/nvcc"
   else
     echo "Downloading and installing LibTorch and torchvision (cpu-only) ..."

@@ -21,9 +21,9 @@
 
 START_TEST(image_load_test) {
   // Load an image and performance inference
-  OpendrImageT image;
+  OpenDRImageT image;
   // An example of an image that exist
-  loadImage("data/database/1/1.jpg", &image);
+  loadImage("data/face_recognition/database/1/1.jpg", &image);
   ck_assert(image.data);
   // An example of an image that does not exist
   loadImage("images/not_existant/1.jpg", &image);
@@ -34,7 +34,66 @@ START_TEST(image_load_test) {
 }
 END_TEST
 
-Suite *opendr_utilities_suite(void) {
+START_TEST(detection_vector_init_load_test) {
+  // Initialize a detection target vector
+  OpenDRDetectionVectorTargetT detection_vector;
+  // init functions uses load internally
+  initDetectionsVector(&detection_vector);
+  ck_assert(detection_vector.startingPointer);
+  // Free the resources
+  freeDetectionsVector(&detection_vector);
+  ck_assert(detection_vector.startingPointer == NULL);
+}
+END_TEST
+
+START_TEST(tensor_init_load_test) {
+  // Initialize a detection target vector
+  OpenDRTensorT OpenDR_tensor;
+  // init functions uses load internally
+  initTensor(&OpenDR_tensor);
+  ck_assert(OpenDR_tensor.data == NULL);
+
+  void *tensor_data = malloc(1 * sizeof(float));
+  loadTensor(&OpenDR_tensor, tensor_data, 1, 1, 1, 1, 1);
+  ck_assert(OpenDR_tensor.data);
+  // Free the resources
+  free(tensor_data);
+  freeTensor(&OpenDR_tensor);
+  ck_assert(OpenDR_tensor.data == NULL);
+}
+END_TEST
+
+START_TEST(tensor_vector_init_load_test) {
+  // Initialize a detection target vector
+  OpenDRTensorVectorT tensor_vector;
+  // init functions uses load internally
+  initTensorVector(&tensor_vector);
+
+  ck_assert(tensor_vector.batchSizes == NULL);
+  ck_assert(tensor_vector.frames == NULL);
+  ck_assert(tensor_vector.channels == NULL);
+  ck_assert(tensor_vector.widths == NULL);
+  ck_assert(tensor_vector.heights == NULL);
+  ck_assert(tensor_vector.datas == NULL);
+
+  OpenDRTensorT tensor[1];
+  initTensor(&(tensor[0]));
+
+  void *tensor_data = malloc(1 * sizeof(float));
+  loadTensor(&(tensor[0]), tensor_data, 1, 1, 1, 1, 1);
+
+  loadTensorVector(&tensor_vector, tensor, 1);
+  ck_assert(tensor_vector.datas);
+  // Free the resources
+  free(tensor_data);
+  freeTensor(&(tensor[0]));
+
+  freeTensorVector(&tensor_vector);
+  ck_assert(tensor_vector.datas == NULL);
+}
+END_TEST
+
+Suite *OpenDR_utilities_suite(void) {
   Suite *s;
   TCase *tc_core;
 
@@ -42,6 +101,9 @@ Suite *opendr_utilities_suite(void) {
   tc_core = tcase_create("Core");
 
   tcase_add_test(tc_core, image_load_test);
+  tcase_add_test(tc_core, detection_vector_init_load_test);
+  tcase_add_test(tc_core, tensor_init_load_test);
+  tcase_add_test(tc_core, tensor_vector_init_load_test);
   suite_add_tcase(s, tc_core);
 
   return s;
@@ -52,7 +114,7 @@ int main() {
   Suite *s;
   SRunner *runner;
 
-  s = opendr_utilities_suite();
+  s = OpenDR_utilities_suite();
   runner = srunner_create(s);
 
   srunner_run_all(runner, CK_NORMAL);
