@@ -24,20 +24,20 @@ int main(int argc, char *argv[]) {
   // Create a face recognition model
   FaceRecognitionModelT model;
   // Load a pretrained model (see instructions for downloading the data)
-  loadFaceRecognitionModel("data/optimized_model", &model);
+  loadFaceRecognitionModel("data/face_recognition/optimized_model", &model);
 
   // Build and load the database
-  buildDatabaseFaceRecognition("data/database", "data/database.dat", &model);
-  loadDatabaseFaceRecognition("data/database.dat", &model);
+  buildDatabaseFaceRecognition("data/face_recognition/database", "data/face_recognition/database.dat", &model);
+  loadDatabaseFaceRecognition("data/face_recognition/database.dat", &model);
 
-  // Load an image and performance inference
-  OpendrImageT image;
-  loadImage("data/database/1/1.jpg", &image);
+  // Load an image and perform inference
+  OpenDRImageT image;
+  loadImage("data/face_recognition/database/1/1.jpg", &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
   }
-  OpendrCategoryTargetT res = inferFaceRecognition(&model, &image);
+  OpenDRCategoryTargetT res = inferFaceRecognition(&model, &image);
   // Free the image resources
   freeImage(&image);
 

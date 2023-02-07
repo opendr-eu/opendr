@@ -16,36 +16,32 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "object_detection_2d_nanodet_jit.h"
 #include "opendr_utils.h"
+#include "skeleton_based_action_recognition_pst.h"
 
 int main(int argc, char **argv) {
-  NanodetModelT model;
+  PstModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadPstModel("data/skeleton_based_action_recognition/progressive_spatiotemporal_gcn/optimized_model/onnx_model.onnx", &model);
   printf("success\n");
 
-  OpenDRImageT image;
+  // Initialize OpenDR tensor for input
+  OpenDRTensorT input_tensor;
+  initTensor(&input_tensor);
 
-  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
-  if (!image.data) {
-    printf("Image not found!");
-    return 1;
-  }
+  initRandomOpenDRTensorPst(&input_tensor, &model);
 
-  // Initialize OpenDR detection target list;
-  OpenDRDetectionVectorTargetT results;
-  initDetectionsVector(&results);
+  // Initialize OpenDR tensor vector for output
+  OpenDRTensorVectorT output_tensor_vector;
+  initTensorVector(&output_tensor_vector);
 
-  results = inferNanodet(&model, &image);
-
-  drawBboxes(&image, &model, &results);
+  forwardPst(&model, &input_tensor, &output_tensor_vector);
 
   // Free the memory
-  freeDetectionsVector(&results);
-  freeImage(&image);
-  freeNanodetModel(&model);
+  freeTensor(&input_tensor);
+  freeTensorVector(&output_tensor_vector);
+  freePstModel(&model);
 
   return 0;
 }

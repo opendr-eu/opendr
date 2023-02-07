@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,20 @@
 #include "opendr_utils.h"
 
 START_TEST(model_creation_test) {
-  // Create a nanodet libtorch model
+  // Create a nanodet model
   NanodetModelT model;
   // Load a pretrained model
-  loadNanodetModel("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, &model);
   ck_assert_msg(model.network != 0, "net is NULL");
 
   // Release the resources
   freeNanodetModel(&model);
 
+  // Load a model that does not exist
+  loadNanodetModel("./data/optimized_model_not_existant", "m", "cpu", 0.35, 0, 0, &model);
+
   // Check if memory steel exist
-  ck_assert_msg(model.network, "net is NULL");
+  ck_assert_msg(!model.network, "net is not NULL");
 }
 END_TEST
 
@@ -40,12 +43,12 @@ START_TEST(inference_creation_test) {
   NanodetModelT model;
 
   // Load a pretrained model
-  loadNanodetModel("data/object_detection_2d/nanodet/optimized_model/nanodet_m.pth", "cpu", 320, 320, 0.35, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, &model);
 
   // Load an image and performance inference
-  OpendrImageT image;
+  OpenDRImageT image;
   loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
-  OpendrDetectionVectorTargetT res = inferNanodet(&model, &image);
+  OpenDRDetectionVectorTargetT res = inferNanodet(&model, &image);
   freeImage(&image);
 
   ck_assert(res.size != 0);
@@ -63,6 +66,7 @@ Suite *nanodet_suite(void) {
   s = suite_create("Nanodet");
   tc_core = tcase_create("Core");
 
+  tcase_set_timeout(tc_core, 60.0);
   tcase_add_test(tc_core, model_creation_test);
   tcase_add_test(tc_core, inference_creation_test);
   suite_add_tcase(s, tc_core);

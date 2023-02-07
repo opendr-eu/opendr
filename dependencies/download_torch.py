@@ -82,12 +82,14 @@ if __name__ == '__main__':
                 version_line = version_file.readlines()
                 version_line = version_line[0].replace(".", "")
                 CUDA_VERSION = version_line[13:16]
+                version_file.close()
             elif version_file_type[0].endswith('.json'):
                 version_file = open(f"{CUDA_PATH}/version.json", mode='r')
                 version_dict = json.load(version_file)
                 CUDA_VERSION = version_dict["cuda"]["version"]
                 CUDA_VERSION = CUDA_VERSION.replace(".", "")
                 CUDA_VERSION = CUDA_VERSION[:3]
+                version_file.close()
             else:
                 warnings.warn("\033[93m No CUDA version file found.")
             DEVICE = f"cu{CUDA_VERSION}"
