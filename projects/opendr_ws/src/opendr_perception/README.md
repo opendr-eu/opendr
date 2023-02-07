@@ -790,7 +790,7 @@ and additional information about EfficientLPS [here](../../../../src/opendr/perc
    - `-h, --help`: show a help message and exit
    - `-i or --input_point_cloud_2_topic INPUT_POINTCLOUD2_TOPIC` : Point Cloud 2 topic provided by either a point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node (default=`/opendr/dataset_point_cloud2`)
    - `-c or --checkpoint CHECKPOINT` : download pretrained models [semantickitti] or load from the provided path (default=`semantickitti`)
-   - `-o or --output_rgb_visualization_topic OUTPUT_RGB_VISUALIZATION_TOPIC`: publish the RGB visualization on this topic on `OUTPUT_RGB_VISUALIZATION_TOPIC` (default=`/opendr/panoptic`)
+   - `-o or --output_heatmap_pointcloud_topic OUTPUT_HEATMAP_POINTCLOUD_TOPIC`: publish the 3D heatmap pointcloud on `OUTPUT_HEATMAP_POINTCLOUD_TOPIC` (default=`/opendr/panoptic`)
  
 3. Default output topics:
    - Detection messages: `/opendr/panoptic`
