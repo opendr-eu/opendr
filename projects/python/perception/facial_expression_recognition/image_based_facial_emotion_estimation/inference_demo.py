@@ -142,7 +142,6 @@ def webcam(learner, camera_id, display, frames):
                            "\nCheck whether a webcam is working or not.")
 
     image_processing.set_fps(frames)
-    avg_fps = 0
     try:
         # Loop to process each frame from a VideoCapture object.
         while image_processing.is_video_capture_open():
@@ -155,8 +154,7 @@ def webcam(learner, camera_id, display, frames):
 
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
-            avg_fps = 0.8 * fps + 0.2 * fps
-            img = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (10, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
+            img = cv2.putText(img, "FPS: %.2f" % (fps,), (10, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
                               cv2.LINE_AA)
 
             if display and img is not None:
