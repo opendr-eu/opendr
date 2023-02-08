@@ -54,7 +54,7 @@ typedef struct NanodetModel NanodetModelT;
  * @param width the width of model input, if set to zero the trained width will be used instead
  * @param model the model to be loaded
  */
-void loadNanodetModel(char *modelPath, const char *modelName, char *device, float scoreThreshold, int height, int width,
+void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height, int width,
                       NanodetModelT *model);
 
 /**
@@ -63,7 +63,7 @@ void loadNanodetModel(char *modelPath, const char *modelName, char *device, floa
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image);
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image, double *outFps);
 
 /**
  * Releases the memory allocated for a nanodet object detection model.
@@ -79,6 +79,9 @@ void freeNanodetModel(NanodetModelT *model);
  */
 void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector);
 
+void drawBboxesWithFps(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, double fps);
+
+void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions, int warmup);
 #ifdef __cplusplus
 }
 #endif

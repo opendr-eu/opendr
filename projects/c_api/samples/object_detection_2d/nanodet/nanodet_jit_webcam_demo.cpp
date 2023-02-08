@@ -16,8 +16,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <chrono>
 #include "object_detection_2d_nanodet_jit.h"
 #include "opendr_utils.h"
+
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
 
 int main(int argc, char **argv) {
   NanodetModelT model;
@@ -26,26 +33,52 @@ int main(int argc, char **argv) {
   loadNanodetModel("./data/object_detection_2d/nanodet/new_opt_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
-  OpenDRImageT image;
-
-  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
-  if (!image.data) {
-    printf("Image not found!");
-    return 1;
+  cv::Mat frameCap;
+  cv::Mat frame;
+  OpenDRImageT opImage;
+  cv::VideoCapture cap(0);
+  if (!cap.isOpened()) {
+    std::cerr << "ERROR! Unable to open camera\n";
+    return -1;
   }
 
   // Initialize OpenDR detection target list;
   OpenDRDetectionVectorTargetT results;
   initDetectionsVector(&results);
+  double fps;
+  double avg_fps = 0.0;
+  int count = 0;
 
-  double temp;
-  results = inferNanodet(&model, &image, &temp);
+  clock_t start_time, end_time;
+  while (count > -1) {
+    cap >> frameCap;
 
-  drawBboxes(&image, &model, &results);
+    cv::resize(frameCap, frame, cv::Size(640, 640), 0, 0, cv::INTER_CUBIC);
+
+    // Add frame data to OpenDR Image
+    if (frame.empty()) {
+      opImage.data = NULL;
+    } else {
+      cv::Mat *tempMatPtr = new cv::Mat(frame);
+      opImage.data = (void *)tempMatPtr;
+    }
+
+
+//    auto start = std::chrono::steady_clock::now();
+    results = inferNanodet(&model, &opImage, &fps);
+//    auto end = std::chrono::steady_clock::now();
+//    fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
+
+    avg_fps = fps * 0.8 + avg_fps * 0.2;
+
+    drawBboxesWithFps(&opImage, &model, &results, avg_fps);
+
+    if (cv::waitKey(1) >= 0)
+      break;
+  }
 
   // Free the memory
   freeDetectionsVector(&results);
-  freeImage(&image);
   freeNanodetModel(&model);
 
   return 0;

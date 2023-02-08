@@ -19,6 +19,9 @@
 #include "object_detection_2d_nanodet_jit.h"
 #include "opendr_utils.h"
 
+#include <opencv2/opencv.hpp>
+#include <cstdlib>
+
 int main(int argc, char **argv) {
   NanodetModelT model;
 
@@ -26,26 +29,36 @@ int main(int argc, char **argv) {
   loadNanodetModel("./data/object_detection_2d/nanodet/new_opt_model", "m", "cuda", 0.35, 0, 0, &model);
   printf("success\n");
 
-  OpenDRImageT image;
+  int height = 320;
+  int width = 320;
+  std::srand(1);
 
-  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
-  if (!image.data) {
-    printf("Image not found!");
-    return 1;
-  }
+  OpenDRImageT opImage;
 
-  // Initialize OpenDR detection target list;
-  OpenDRDetectionVectorTargetT results;
-  initDetectionsVector(&results);
+  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &opImage);
 
-  double temp;
-  results = inferNanodet(&model, &image, &temp);
+//  cv::Mat frame(height,width,CV_8UC3);
+//  for(int i = 0; i < frame.rows; i++) {
+//    for(int j = 0; j < frame.cols; j++) {
+//      frame.at<cv::Vec3b>(i, j)[0] = rand() % 256;
+//      frame.at<cv::Vec3b>(i, j)[1] = rand() % 256;
+//      frame.at<cv::Vec3b>(i, j)[2] = rand() % 256;
+//    }
+//  }
+//
+//  OpenDRImageT opImage;
+//  // Add frame data to OpenDR Image
+//  if (frame.empty()) {
+//    opImage.data = NULL;
+//  } else {
+//    cv::Mat *tempMatPtr = new cv::Mat(frame);
+//    opImage.data = (void *)tempMatPtr;
+//  }
 
-  drawBboxes(&image, &model, &results);
-
+  int repetitions = 1000;
+  int warmup = 100;
+  benchmarkNanodet(&model, &opImage, repetitions, warmup);
   // Free the memory
-  freeDetectionsVector(&results);
-  freeImage(&image);
   freeNanodetModel(&model);
 
   return 0;

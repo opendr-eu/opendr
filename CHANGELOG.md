@@ -1,7 +1,8 @@
 # OpenDR Toolkit Change Log
 
 ## Version 2.1.0
-Released on XX, XX, 2023.
+- New Features:
+    - Added YOLOv5 as an inference-only tool ([#360](https://github.com/opendr-eu/opendr/pull/360)).
 
   - New Features:
     - Added Efficient LiDAR Panoptic Segmentation ([#359](https://github.com/opendr-eu/opendr/pull/359)).

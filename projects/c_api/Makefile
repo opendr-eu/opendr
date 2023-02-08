@@ -31,7 +31,7 @@ LD =  -L/usr/lib/ -L/usr/local/lib/ -lstdc++ -lm -lonnxruntime `pkg-config --lib
 OPENDR_INC = -I$(OPENDR_HOME)/include
 OPENDR_LD = -L$(OPENDR_HOME)/lib -lopendr
 
-all: download demos
+all: demos download
 
 demos: x3d face_recognition open_pose detr nanodet deep_sort skeleton_based_action_recognition_pst
 
@@ -39,7 +39,10 @@ x3d: $(BUILD_DIR)/activity_recognition/x3d_demo
 face_recognition: $(BUILD_DIR)/face_recognition/face_recognition_demo
 open_pose: $(BUILD_DIR)/pose_estimation/lightweight_open_pose/lightweight_open_pose_demo
 detr: $(BUILD_DIR)/object_detection_2d/detr_demo
-nanodet: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
+nanodet_demo: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
+nanodet_webcam: $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo
+nanodet_benchmark: $(BUILD_DIR)/object_detection_2d/nanodet_jit_benchmark
+nanodet: nanodet_demo nanodet_webcam nanodet_benchmark
 deep_sort: $(BUILD_DIR)/object_tracking_2d/deep_sort_demo
 skeleton_based_action_recognition_pst: $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo
 face: $(BUILD_DIR)/face_recognition_demo
@@ -115,6 +118,21 @@ $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo:
 	$(MKDIR_P) $(BUILD_DIR)/skeleton_based_action_recognition
 	@+echo "Building skeleton based action recognition progressive spatiotemporal demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo samples/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+$(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
+	@+echo "Building nanodet object detection demo..."
+	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+$(BUILD_DIR)/object_detection_2d/nanodet_jit_benchmark:
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
+	@+echo "Building nanodet object detection demo..."
+	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_benchmark samples/object_detection_2d/nanodet/nanodet_jit_benchmark.cpp $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
+$(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
+	@+echo "Building nanodet object detection demo..."
+	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo samples/object_detection_2d/nanodet/nanodet_jit_webcam_demo.cpp $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."

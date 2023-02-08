@@ -18,9 +18,8 @@ import cv2
 import time
 
 from opendr.engine.data import Image
-from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
+from opendr.perception.object_detection_2d import CenterNetDetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
-
 
 class VideoReader(object):
     def __init__(self, file_name):
@@ -45,17 +44,16 @@ class VideoReader(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cpu", "cuda"])
-    parser.add_argument("--model", help="Model to use", type=str, default="yolov5s6",
-                        choices=['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
-                                 'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom'])
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
 
-    yolo_detector = YOLOv5DetectorLearner(model_name=args.model, device=args.device)
+    centernet = CenterNetDetectorLearner(device=args.device)
+    centernet.download(".", mode="pretrained")
+    centernet.load("./centernet_default", verbose=True)
 
     # Use the first camera available on the system
     image_provider = VideoReader(0)
-    fps = -1.0
+
     try:
         counter, avg_fps = 0, 0
         for img in image_provider:
@@ -65,7 +63,7 @@ if __name__ == '__main__':
             start_time = time.perf_counter()
 
             # Perform inference
-            detections = yolo_detector.infer(img)
+            boxes = centernet.infer(img)
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
@@ -74,16 +72,16 @@ if __name__ == '__main__':
 
             img = img.opencv()
 
-            if detections:
-                draw_bounding_boxes(img, detections, yolo_detector.classes, line_thickness=3)
+            if boxes:
+                img = draw_bounding_boxes(img, boxes, class_names=centernet.classes)
 
             # Wait a few frames for FPS to stabilize
             if counter > 5:
-                img = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                                  1, (255, 0, 0), 2, cv2.LINE_AA)
+                image = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, (255, 0, 0), 2, cv2.LINE_AA)
 
             cv2.imshow('Result', img)
             cv2.waitKey(1)
             counter += 1
     except:
-        print("Inference fps: ", round(fps))
+        print("Average inference fps: ", avg_fps)
