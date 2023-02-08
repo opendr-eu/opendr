@@ -354,11 +354,12 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
 An [image dataset node](#image-dataset-ros-node) is also provided to be used along these nodes.
 Make sure to change the default input topic of the tracking node if you are not using the USB cam node.
 
-### Panoptic Segmentation ROS Node
+### Vision Based Panoptic Segmentation ROS Node
+A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientps-efficient-panoptic-segmentation) network.
 
-You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps_node.py) to inspect the code and modify it as you wish to fit your needs.
+You can find the vision based panoptic segmentation (EfficientPS) ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md)
-and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
+and additional information about EfficientPS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
 
 #### Instructions for basic usage:
 
@@ -371,18 +372,16 @@ and additional information about Efficient PS [here](../../../../src/opendr/perc
     ```
 
     The following optional arguments are available:
-   - `-h or --help`: show a help message and exit
+   - `-h, --help`: show a help message and exit
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
-   - `-oh --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance`, `None` to stop the node from publishing on this topic (default=`/opendr/panoptic`)
-   - `-ov --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the panoptic segmentation map as an RGB image on this topic or a more detailed overview if using the `--detailed_visualization` flag, `None` to stop the node from publishing on this topic (default=`opendr/panoptic/rgb_visualization`)
-   - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
    - `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
+   - `-oh or --output_heatmap_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendr/panoptic`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
+   - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
 
 3. Default output topics:
    - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`
    - Detection messages: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`
-
-   For viewing the output, refer to the [notes above.](#notes)
 
 ### Semantic Segmentation ROS Node
 
@@ -766,6 +765,36 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 
    For viewing the output, refer to the [notes above.](#notes)
 
+
+### LiDAR Based Panoptic Segmentation ROS Node
+A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientlps-efficient-lidar-panoptic-segmentation) network.
+
+You can find the lidar based panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_lps_node.py). You can further also find the point cloud 2 publisher ROS node python script [here](./scripts/point_cloud_2_publisher_node.py), and more explanation [here](#point-cloud-2-publisher-ros-node).You can inspect the codes and make changes as you wish to fit your needs.
+The EfficientLPS node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_lps/efficient_lps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-lps.md)
+and additional information about EfficientLPS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
+
+#### Instructions for basic usage:
+
+1.  First one needs to download SemanticKITTI dataset into POINTCLOUD_LOCATION as it is described in the [Panoptic Segmentation Datasets](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md). Then, once the SPLIT type is specified (train, test or "valid", default "valid"), the point **Point Cloud 2 Publisher** can be started using the following line:
+
+- ```shell
+  rosrun opendr_perception point_cloud_2_publisher_node.py -d POINTCLOUD_LOCATION -s SPLIT
+  ```
+2. After starting the **PointCloud2 Publisher**, one can start **EfficientLPS Node** using the following line:
+
+- ```shell
+  rosrun opendr_perception panoptic_segmentation_efficient_lps_node.py /opendr/dataset_point_cloud2
+  ```
+
+  The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_point_cloud_2_topic INPUT_POINTCLOUD2_TOPIC` : Point Cloud 2 topic provided by either a point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node (default=`/opendr/dataset_point_cloud2`)
+   - `-c or --checkpoint CHECKPOINT` : download pretrained models [semantickitti] or load from the provided path (default=`semantickitti`)
+   - `-o or --output_heatmap_pointcloud_topic OUTPUT_HEATMAP_POINTCLOUD_TOPIC`: publish the 3D heatmap pointcloud on `OUTPUT_HEATMAP_POINTCLOUD_TOPIC` (default=`/opendr/panoptic`)
+ 
+3. Default output topics:
+   - Detection messages: `/opendr/panoptic`
+
 ----
 ## Biosignal input
 
@@ -847,3 +876,22 @@ The following optional arguments are available:
    - `-f or --fps FPS`: data fps (default=`10`)
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
+
+### Point Cloud 2 Publisher ROS Node
+
+The point cloud 2 dataset publisher, publishes point cloud 2 messages from pre-downloaded dataset SemanticKITTI. It is currently being used by the ROS node [LiDAR Based Panoptic Segmentation ROS Node](#lidar-based-panoptic-segmentation-ros-node).
+
+You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements,
+to use alongside other nodes and datasets.
+You can inspect [the node](./scripts/point_cloud_2_publisher_node.py) and modify it to your needs for other point cloud datasets.
+
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_2_publisher_node.py` node as:
+```shell
+rosrun opendr_perception point_cloud_2_publisher_node.py
+```
+The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-d or --dataset_path DATASET_PATH`: path of the SemanticKITTI dataset to publish the point cloud 2 message (default=`./datasets/semantickitti`)
+   - `-s or --split SPLIT`: split of the dataset to use, only (train, valid, test) are available (default=`valid`)
+   - `-o or --output_point_cloud_2_topic OUTPUT_POINT_CLOUD_2_TOPIC`: topic name to publish the data (default=`/opendr/dataset_point_cloud2`)
+   - `-t or --test_data`: Add this argument if you want to only test this node with the test data available in our server
