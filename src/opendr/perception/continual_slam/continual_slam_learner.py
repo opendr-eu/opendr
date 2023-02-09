@@ -208,7 +208,8 @@ class ContinualSLAMLearner(Learner):
             # Convert the prediction to opendr format
             return self._output_formatter(prediction)
 
-    def _input_formatter(self, batch: Tuple[Dict, None]) -> Dict[Any, Tensor]:
+    @staticmethod
+    def _input_formatter(batch: Tuple[Dict, None]) -> Dict[Any, Tensor]:
         """
         Format the input for the prediction
         :param batch: tuple of (input, target)
