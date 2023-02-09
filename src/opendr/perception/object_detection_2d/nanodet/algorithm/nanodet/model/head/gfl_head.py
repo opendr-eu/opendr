@@ -558,11 +558,6 @@ class GFLHead(nn.Module):
                                   iou_threshold=iou_thresh, nms_max_num=nms_max_num)
         (det_bboxes, det_labels) = results
 
-        # det_bboxes[:, :4] = scriptable_warp_boxes(
-        #     det_bboxes[:, :4],
-        #     torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
-        # )
-
         det_result = []
         labels = torch.arange(self.num_classes, device=det_bboxes.device).unsqueeze(1).unsqueeze(1)
         for i in range(self.num_classes):
@@ -580,16 +575,6 @@ class GFLHead(nn.Module):
                 ), dim=1)
                 det_result.append(det)
 
-            # det = torch.cat((
-            #     det_bboxes[inds, :4],
-            #     det_bboxes[inds, 4:5]
-            # ), dim=1)
-            # if det.shape[0] != 0:
-            #     det = torch.cat((
-            #         det,
-            #         labels[i].repeat(det.shape[0], 1)
-            #     ), dim=1)
-            #     det_result.append(det)
 
         return det_result
 
