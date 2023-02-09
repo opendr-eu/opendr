@@ -1,4 +1,4 @@
-from feature_extractor import create_feature_extractor
-from encoder import FeatureEncoder
+from .encoder import FeatureEncoder
+from .replay_buffer import ReplayBuffer
 
-__all__ = ['create_feature_extractor', 'FeatureEncoder']
+__all__ = ['FeatureEncoder', 'ReplayBuffer']

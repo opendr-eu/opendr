@@ -12,6 +12,7 @@ import torch.nn.functional as F
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer.encoder import FeatureEncoder
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
+from opendr.perception.continual_slam.datasets.config import Dataset
 
 
 
@@ -20,11 +21,10 @@ class ReplayBuffer(TorchDataset):
                  buffer_size: int,
                  save_memory: bool,
                  device: torch.device,
+                 dataset_config: Dataset,
                  save_state_path: Optional[Path] = None,
                  load_state_path: Optional[Path] = None,
                  local_save_path: Optional[Path] = None,
-                 height: int = 480,
-                 width: int = 640,
                  num_workers: int = 1,
                  cosine_similarity_threshold: float = 0.9,
                  num_features: int = 576,
@@ -41,8 +41,9 @@ class ReplayBuffer(TorchDataset):
         self.save_state_path = save_state_path
         self.load_state_path = load_state_path
         self.local_save_path = local_save_path
-        self.height = height
-        self.width = width
+        self.dataset_config = dataset_config
+        self.height = self.dataset_config.height
+        self.width = self.dataset_config.width
         self.num_workers = num_workers
         self.cosine_similarity_threshold = cosine_similarity_threshold
         self.num_features = num_features
@@ -56,7 +57,7 @@ class ReplayBuffer(TorchDataset):
 
         if self.save_memory:
             # Create image buffer tensor with shape (buffer_size, 3, 3, height, width)
-            self.image_buffer = torch.zeros((buffer_size, 3, 3, height, width), dtype=torch.float32, device=self.device)
+            self.image_buffer = torch.zeros((buffer_size, 3, 3, self.height, self.width), dtype=torch.float32, device=self.device)
             self.feature_vector_buffer = torch.zeros((buffer_size, num_features), dtype=torch.float32, device=self.device)
             # Create distance buffer tensor with shape (buffer_size, 3)
             self.distance_buffer = torch.zeros((buffer_size, 3), dtype=torch.float32, device=self.device)
@@ -77,7 +78,7 @@ class ReplayBuffer(TorchDataset):
         data = ContinualSLAMLearner._input_formatter(data)
         if self.count < self.buffer_size:
             if self.save_memory:
-                for i in range(self.frame_ids):
+                for i in range(len(self.frame_ids)):
                     self.image_buffer[self.count, i] = data[(self.frame_ids[i], 'image')]
                     self.distance_buffer[self.count, i] = data[(self.frame_ids[i], 'distance')]
 
@@ -99,7 +100,7 @@ class ReplayBuffer(TorchDataset):
                 # Throw away a random image from the buffer
                 random_index = random.randint(0, self.buffer_size - 1)
                 if self.save_memory:
-                    for i in range(self.frame_ids):
+                    for i in range(len(self.frame_ids)):
                         self.image_buffer[random_index, i] = data[(self.frame_ids[i], 'image')]
                         self.distance_buffer[random_index, i] = data[(self.frame_ids[i], 'distance')]
                         self.feature_vector_buffer[random_index] = new_image_feature
