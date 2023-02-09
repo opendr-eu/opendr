@@ -41,8 +41,7 @@ open_pose: $(BUILD_DIR)/pose_estimation/lightweight_open_pose/lightweight_open_p
 detr: $(BUILD_DIR)/object_detection_2d/detr_demo
 nanodet_demo: $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo
 nanodet_webcam: $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo
-nanodet_benchmark: $(BUILD_DIR)/object_detection_2d/nanodet_jit_benchmark
-nanodet: nanodet_demo nanodet_webcam nanodet_benchmark
+nanodet: nanodet_demo nanodet_webcam
 deep_sort: $(BUILD_DIR)/object_tracking_2d/deep_sort_demo
 skeleton_based_action_recognition_pst: $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo
 face: $(BUILD_DIR)/face_recognition_demo
@@ -123,11 +122,6 @@ $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
 	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
 	@+echo "Building nanodet object detection demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
-
-$(BUILD_DIR)/object_detection_2d/nanodet_jit_benchmark:
-	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
-	@+echo "Building nanodet object detection demo..."
-	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_benchmark samples/object_detection_2d/nanodet/nanodet_jit_benchmark.cpp $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
 	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d

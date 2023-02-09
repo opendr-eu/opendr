@@ -63,7 +63,7 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image, double *outFps);
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image);
 
 /**
  * Releases the memory allocated for a nanodet object detection model.
@@ -73,15 +73,13 @@ void freeNanodetModel(NanodetModelT *model);
 
 /**
  * Draw the bounding boxes from detections in the given image.
- * @param image image that has been used for inference
+ * @param image image that has been used for inference, detections will saved in it
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
+ * @param show if the value given is zero, the image will be displayed until a key is pressed
  */
-void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector);
+void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show);
 
-void drawBboxesWithFps(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, double fps);
-
-void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions, int warmup);
 #ifdef __cplusplus
 }
 #endif

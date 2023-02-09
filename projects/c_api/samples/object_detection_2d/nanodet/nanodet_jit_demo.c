@@ -38,10 +38,9 @@ int main(int argc, char **argv) {
   OpenDRDetectionVectorTargetT results;
   initDetectionsVector(&results);
 
-  double temp;
-  results = inferNanodet(&model, &image, &temp);
+  results = inferNanodet(&model, &image);
 
-  drawBboxes(&image, &model, &results);
+  drawBboxes(&image, &model, &results, 0);
 
   // Free the memory
   freeDetectionsVector(&results);

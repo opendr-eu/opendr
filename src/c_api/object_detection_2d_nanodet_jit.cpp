@@ -14,7 +14,6 @@
 
 #include "object_detection_2d_nanodet_jit.h"
 
-#include <chrono>
 #include <document.h>
 #include <torch/script.h>
 #include <torchvision/vision.h>
@@ -270,6 +269,7 @@ torch::DeviceType torchDevice(const char *deviceName, int verbose = 0) {
 void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height, int width,
                       NanodetModelT *model) {
   // Initialize model
+  model->network == NULL;
   model->scoreThreshold = scoreThreshold;
   model->keepRatio = 0;
 
@@ -345,12 +345,10 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
 
   // Model inference
   *outputs = (model->network()).forward({*inputTensor, srcWidth, srcHeight, warpMat}).toTensorVector();
-//  *outputs = outputs->to(torch::Device(torch::kCPU, 0));
 }
 
-OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image, double *outFps) {
+OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image) {
 
-  auto start = std::chrono::steady_clock::now();
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpenDRDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
@@ -375,30 +373,22 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
   ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
 
   std::vector<OpenDRDetectionTarget> detections;
-  // Postprocessing, find which outputs have better score than threshold and keep them.
-
 
   for (int label = 0; label < outputs.size(); label++) {
     for (int box = 0; box < outputs[label].size(0); box++) {
-//      if (outputs[label][box][4].item<float>() > model->scoreThreshold) {
-        OpenDRDetectionTargetT detection;
-        detection.name = outputs[label][box][5].item<int>();
-        detection.left = outputs[label][box][0].item<float>();
-        detection.top = outputs[label][box][1].item<float>();
-        detection.width = outputs[label][box][2].item<float>() - outputs[label][box][0].item<float>();
-        detection.height = outputs[label][box][3].item<float>() - outputs[label][box][1].item<float>();
-        detection.score = outputs[label][box][4].item<float>();
-        detections.push_back(detection);
-//      }
+      OpenDRDetectionTargetT detection;
+      detection.name = outputs[label][box][5].item<int>();
+      detection.left = outputs[label][box][0].item<float>();
+      detection.top = outputs[label][box][1].item<float>();
+      detection.width = outputs[label][box][2].item<float>() - outputs[label][box][0].item<float>();
+      detection.height = outputs[label][box][3].item<float>() - outputs[label][box][1].item<float>();
+      detection.score = outputs[label][box][4].item<float>();
+      detections.push_back(detection);
     }
   }
-  auto end = std::chrono::steady_clock::now();
   // Put vector detection as C pointer and size
   if (static_cast<int>(detections.size()) > 0)
     loadDetectionsVector(&detectionsVector, detections.data(), static_cast<int>(detections.size()));
-
-
-  *outFps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
   return detectionsVector;
 }
@@ -489,7 +479,7 @@ void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions
 
 }
 
-void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector) {
+void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show) {
   int **colorList = model->colorList;
 
   std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
@@ -500,13 +490,12 @@ void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVector
     return;
   }
 
-  cv::Mat imageWithDetections = (*opencvImage).clone();
   for (size_t i = 0; i < vector->size; i++) {
     const OpenDRDetectionTarget bbox = (vector->startingPointer)[i];
     float score = bbox.score > 1 ? 1 : bbox.score;
     if (score > model->scoreThreshold) {
       cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
-      cv::rectangle(imageWithDetections,
+      cv::rectangle(*opencvImage,
                     cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))),
                     color);
 
@@ -521,69 +510,20 @@ void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVector
       int y = (int)bbox.top;
       if (y < 0)
         y = 0;
-      if (x + labelSize.width > imageWithDetections.cols)
-        x = imageWithDetections.cols - labelSize.width;
+      if (x + labelSize.width > opencvImage->cols)
+        x = opencvImage->cols - labelSize.width;
 
-      cv::rectangle(imageWithDetections, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)),
+      cv::rectangle(*opencvImage, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)),
                     color, -1);
-      cv::putText(imageWithDetections, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
+      cv::putText(*opencvImage, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
                   cv::Scalar(255, 255, 255));
     }
   }
 
-  cv::imshow("image", imageWithDetections);
-  cv::waitKey(0);
-}
-
-void drawBboxesWithFps(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, double fps) {
-  int **colorList = model->colorList;
-
-  std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
-
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  if (!opencvImage) {
-    std::cerr << "Cannot load image for inference." << std::endl;
-    return;
+  if (show == 0) {
+    cv::imshow("image", *opencvImage);
+    cv::waitKey(0);
   }
-
-  cv::Mat imageWithDetections = (*opencvImage).clone();
-  for (size_t i = 0; i < vector->size; i++) {
-    const OpenDRDetectionTarget bbox = (vector->startingPointer)[i];
-    float score = bbox.score > 1 ? 1 : bbox.score;
-    if (score > model->scoreThreshold) {
-      cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
-      cv::rectangle(imageWithDetections,
-                    cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))),
-                    color);
-
-      char text[256];
-
-      sprintf(text, "%s %.1f%%", (classNames)[bbox.name].c_str(), score * 100);
-
-      int baseLine = 0;
-      cv::Size labelSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
-
-      int x = (int)bbox.left;
-      int y = (int)bbox.top;
-      if (y < 0)
-        y = 0;
-      if (x + labelSize.width > imageWithDetections.cols)
-        x = imageWithDetections.cols - labelSize.width;
-
-      cv::rectangle(imageWithDetections, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)),
-                    color, -1);
-      cv::putText(imageWithDetections, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
-                  cv::Scalar(255, 255, 255));
-
-      // Put fps counter
-      std::string fpsText = "FPS: " + std::to_string(fps);
-      cv::putText(imageWithDetections, fpsText, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1,
-                  cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
-    }
-  }
-
-  cv::imshow("image", imageWithDetections);
-  cv::waitKey(1);
 }
 
 void freeNanodetModel(NanodetModelT *model) {

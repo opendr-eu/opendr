@@ -64,15 +64,21 @@ int main(int argc, char **argv) {
     }
 
 
-//    auto start = std::chrono::steady_clock::now();
-    results = inferNanodet(&model, &opImage, &fps);
-//    auto end = std::chrono::steady_clock::now();
-//    fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
+    auto start = std::chrono::steady_clock::now();
+    results = inferNanodet(&model, &opImage);
+    auto end = std::chrono::steady_clock::now();
+    fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
     avg_fps = fps * 0.8 + avg_fps * 0.2;
 
-    drawBboxesWithFps(&opImage, &model, &results, avg_fps);
+    drawBboxes(&opImage, &model, &results, 1);
+    cv::Mat *opencvImage = static_cast<cv::Mat *>(opImage.data);
 
+    // Put fps counter
+    std::string fpsText = "FPS: " + std::to_string(fps);
+    cv::putText(*opencvImage, fpsText, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1,
+                cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
+    cv::imshow("live view", *opencvImage);
     if (cv::waitKey(1) >= 0)
       break;
   }

@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument("--path", help="Path to the image that is used for inference", type=str,
                         default="./predefined_examples/000000000036.jpg")
     parser.add_argument("--optimize", help="If specified will determine the optimization to be used (onnx, jit)",
-                        type=str, default="", choices=["", "onnx", "jit"])
+                        type=str, default="onnx", choices=["", "onnx", "jit"])
     args = parser.parse_args()
 
     nanodet = NanodetLearner(model_to_use=args.model, device=args.device)
@@ -33,10 +33,10 @@ if __name__ == '__main__':
     nanodet.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
     nanodet.download("./predefined_examples", mode="images")
 
-    img = Image.open(args.path)
-
     if args.optimize != "":
         nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize)
+
+    img = Image.open(args.path)
 
     boxes = nanodet.infer(input=img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
 
