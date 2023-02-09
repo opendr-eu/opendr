@@ -64,7 +64,8 @@ if __name__ == '__main__':
     image_provider = VideoReader(0)
 
     if args.optimize != "":
-        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize, nms_max_num=20)
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize,
+                         conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
 
     try:
         counter, avg_fps = 0, 0
