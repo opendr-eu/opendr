@@ -90,7 +90,7 @@ class XMLBasedDataset(DetectionDataset):
             label = self._read_annotation_file(annot_file)
 
         if self._image_transform is not None:
-            img = self._image_transform(img)
+            img = self._image_transform(img_np)
 
         if self._target_transform is not None:
             label = self._target_transform(label)
