@@ -98,7 +98,7 @@ Parameters:
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, input, thershold, nms_max_num)
+NanodetLearner.infer(self, input, conf_threshold, iou_threshold, nms_max_num)
 ```
 
 This method is used to perform object detection on an image.
@@ -109,15 +109,17 @@ Parameters:
 - **input** : *object*\
   Object of type engine.data.Image.
   Image type object to perform inference on.
-- **threshold**: *float, default=0.35*\
+- **conf_threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
+- **iou_threshold**: *float, default=0.6*\
+  Specifies the iou threshold for nms in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 
 #### `NanodetLearner.optimize`
 ```python
-NanodetLearner.optimize(self, export_path, verbose, optimization, nms_max_num)
+NanodetLearner.optimize(self, export_path, verbose, optimization, conf_threshold, iou_threshold, nms_max_num)
 ```
 
 This method is used to perform JIT or ONNX optimizations and save a trained model with its metadata.
@@ -138,6 +140,11 @@ Parameters:
   Enables the maximum verbosity.
 - **optimization**: *str, default="jit"*\
   It determines what kind of optimization is used, possible values are *jit* or *onnx*.
+- **conf_threshold**: *float, default=0.35*\
+  Specifies the threshold for object detection inference.
+  An object is detected if the confidence of the output is higher than the specified threshold.
+- **iou_threshold**: *float, default=0.6*\
+  Specifies the iou threshold for nms in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 
