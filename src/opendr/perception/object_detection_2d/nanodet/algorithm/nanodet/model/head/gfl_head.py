@@ -575,7 +575,6 @@ class GFLHead(nn.Module):
                 ), dim=1)
                 det_result.append(det)
 
-
         return det_result
 
     def most_common_tensor(self, tensor):

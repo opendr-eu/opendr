@@ -392,7 +392,7 @@ class NanodetLearner(Learner):
         metadata = {"model_paths": ["nanodet_{}.onnx".format(self.cfg.check_point_name)], "framework": "pytorch",
                     "format": "onnx", "has_data": False, "optimized": True, "optimizer_info": {},
                     "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
-                                         "conf_threshold": conf_threshold ,"iou_threshold": iou_threshold}}
+                                         "conf_threshold": conf_threshold, "iou_threshold": iou_threshold}}
 
         with open(os.path.join(onnx_path, "nanodet_{}.json".format(self.cfg.check_point_name)),
                   'w', encoding='utf-8') as f:
@@ -427,7 +427,8 @@ class NanodetLearner(Learner):
         self.ort_session = ort.InferenceSession(onnx_path)
 
     def _save_jit(self, jit_path, verbose=True, conf_threshold=0.35, iou_threshold=0.6,
-                   nms_max_num=100):
+                  nms_max_num=100):
+
         if not self.predictor:
             self.predictor = Predictor(self.cfg, self.model, device=self.device, conf_thresh=conf_threshold,
                                        iou_thresh=iou_threshold, nms_max_num=nms_max_num)
@@ -444,7 +445,7 @@ class NanodetLearner(Learner):
             metadata = {"model_paths": ["nanodet_{}.pth".format(self.cfg.check_point_name)], "framework": "pytorch",
                         "format": "pth", "has_data": False, "optimized": True, "optimizer_info": {},
                         "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
-                                             "conf_threshold": conf_threshold ,"iou_threshold": iou_threshold}}
+                                             "conf_threshold": conf_threshold, "iou_threshold": iou_threshold}}
             model_traced.save(export_path)
 
             with open(os.path.join(jit_path, "nanodet_{}.json".format(self.cfg.check_point_name)),

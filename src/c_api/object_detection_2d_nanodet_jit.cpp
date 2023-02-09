@@ -266,10 +266,10 @@ torch::DeviceType torchDevice(const char *deviceName, int verbose = 0) {
   return device;
 }
 
-void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height, int width,
-                      NanodetModelT *model) {
+void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height,
+                      int width, NanodetModelT *model) {
   // Initialize model
-  model->network == NULL;
+  model->network = NULL;
   model->scoreThreshold = scoreThreshold;
   model->keepRatio = 0;
 
@@ -348,7 +348,7 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
 }
 
 OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image) {
-
+  //
   NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
   OpenDRDetectionVectorTargetT detectionsVector;
   initDetectionsVector(&detectionsVector);
@@ -427,8 +427,7 @@ void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVector
       if (x + labelSize.width > opencvImage->cols)
         x = opencvImage->cols - labelSize.width;
 
-      cv::rectangle(*opencvImage, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)),
-                    color, -1);
+      cv::rectangle(*opencvImage, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)), color, -1);
       cv::putText(*opencvImage, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
                   cv::Scalar(255, 255, 255));
     }

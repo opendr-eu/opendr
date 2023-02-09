@@ -21,6 +21,7 @@ from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
+
 class VideoReader(object):
     def __init__(self, file_name):
         self.file_name = file_name
