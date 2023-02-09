@@ -344,7 +344,7 @@ void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, 
   torch::Tensor warpMat = torch::from_blob(warpMatrix->data, {3, 3});
 
   // Model inference
-  *outputs = (model->network()).forward({*inputTensor, srcWidth, srcHeight, warpMat}).toTensorVector();
+  *outputs = (model->network()).forward({*inputTensor, srcHeight, srcWidth, warpMat}).toTensorVector();
 }
 
 OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image) {
@@ -391,92 +391,6 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
     loadDetectionsVector(&detectionsVector, detections.data(), static_cast<int>(detections.size()));
 
   return detectionsVector;
-}
-
-void benchmarkNanodet(NanodetModelT *model, OpenDRImageT *image, int repetitions, int warmup) {
-  NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
-  OpenDRDetectionVectorTargetT detectionsVector;
-  initDetectionsVector(&detectionsVector);
-
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-
-  // Preprocess image and keep values as input in jit model
-  cv::Mat resizedImg;
-  cv::Size dstSize = cv::Size(model->inputSizes[0], model->inputSizes[1]);
-  cv::Mat warpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
-
-  torch::Tensor input;
-  preprocess(opencvImage, &resizedImg, &dstSize, &warpMatrix, model->keepRatio);
-  input = networkPTR->preProcess(&resizedImg);
-
-  cv::Mat frame(model->inputSizes[1],model->inputSizes[0],CV_8UC3);
-  for(int i = 0; i < frame.rows; i++) {
-    for(int j = 0; j < frame.cols; j++) {
-      frame.at<cv::Vec3b>(i, j)[0] = rand() % 256;
-      frame.at<cv::Vec3b>(i, j)[1] = rand() % 256;
-      frame.at<cv::Vec3b>(i, j)[2] = rand() % 256;
-    }
-  }
-
-  OpenDRImageT opImage;
-  // Add frame data to OpenDR Image
-  if (frame.empty()) {
-    opImage.data = NULL;
-  } else {
-    cv::Mat *tempMatPtr = new cv::Mat(frame);
-    opImage.data = (void *)tempMatPtr;
-  }
-
-  cv::Mat *tempOpencvImage = static_cast<cv::Mat *>(image->data);
-  cv::Mat tempResizedImg;
-  cv::Size tempDstSize = cv::Size(model->inputSizes[0], model->inputSizes[1]);
-  cv::Mat tempWarpMatrix = cv::Mat::eye(3, 3, CV_32FC1);
-  torch::Tensor tempInput;
-  double preTimings[repetitions];
-    for (int i = 0; i < warmup; i++) {
-//    std::cout<<"before warmup preprocess\n";
-    preprocess(tempOpencvImage, &tempResizedImg, &tempDstSize, &tempWarpMatrix, model->keepRatio);
-    tempInput = networkPTR->preProcess(&tempResizedImg);
-  }
-  for (int i = 0; i < repetitions; i++) {
-    auto start = std::chrono::steady_clock::now();
-    preprocess(tempOpencvImage, &tempResizedImg, &tempDstSize, &tempWarpMatrix, model->keepRatio);
-    tempInput = networkPTR->preProcess(&tempResizedImg);
-    auto end = std::chrono::steady_clock::now();
-    preTimings[i] = ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
-  }
-
-  cv::Size originalSize(opencvImage->cols, opencvImage->rows);
-
-  double inferPostTimings[repetitions];
-  std::vector<torch::Tensor> outputs;
-  for (int i = 0; i < warmup; i++) {
-    ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
-  }
-
-  for (int i = 0; i < repetitions; i++) {
-    auto start = std::chrono::steady_clock::now();
-    ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
-    auto end = std::chrono::steady_clock::now();
-    inferPostTimings[i] = ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
-  }
-  // Measure mean time
-  double meanInferPostTiming = 0.0;
-  double meanPreTiming = 0.0;
-  for (int i = 0; i < repetitions; i++) {
-    meanInferPostTiming += inferPostTimings[i];
-    meanPreTiming += preTimings[i];
-  }
-
-  meanInferPostTiming /= repetitions;
-  meanPreTiming /= repetitions;
-
-  std::cout<<"C\n\n"
-             "=== JIT measurements === \n"
-             "preprocessing  fps = "<< (1000000000.0/meanPreTiming) <<" evn/s\n"
-             "infer + postpr fps = "<< (1000000000.0/meanInferPostTiming) <<" evn/s\n\n";
-
-
 }
 
 void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show) {
