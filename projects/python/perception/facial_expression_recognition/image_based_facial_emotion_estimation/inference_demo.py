@@ -103,27 +103,36 @@ def recognize_facial_expression(learner, image, display):
     estimation.
     :param image: (ndarray) input image.
     """
-
+    start_time = time.perf_counter()
     # Detect face
     face_coordinates = detect_face(image)
+    end_time = time.perf_counter()
+    detect_fps = 1.0 / (end_time - start_time)
+    img = cv2.putText(image, "Detection FPS: %.2f" % (detect_fps,), (10, image.shape[1]-280), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+
+
 
     if face_coordinates is None:
         print("No face detected.")
     else:
+        start_time = time.perf_counter()
         face = image[face_coordinates[0][1]:face_coordinates[1][1], face_coordinates[0][0]:face_coordinates[1][0], :]
         # Pre_process detected face
         input_face = _pre_process_input_image(face)
         # Recognize facial expression
         emotion, affect = _predict(learner, input_face=input_face)
+        end_time = time.perf_counter()
+        model_fps = 1.0 / (end_time - start_time)
+        img = cv2.putText(image, "Model FPS: %.2f" % (model_fps,), (10, image.shape[1]-240), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
 
         # display
         if display:
             image = cv2.putText(image, "Valence: %.2f" % affect[0], (10, 40 + 0 * 30), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (0, 255, 255), 2, )
+                                1, (0, 255, 0), 2, )
             image = cv2.putText(image, "Arousal: %.2f" % affect[1], (10, 40 + 1 * 30), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (0, 255, 255), 2, )
-            image = cv2.putText(image, emotion.description, (10, 40 + 2 * 30), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (0, 255, 255), 2, )
+                                1, (0, 255, 0), 2, )
+            image = cv2.putText(image, "Expression: " + emotion.description, (10, 40 + 2 * 30), cv2.FONT_HERSHEY_SIMPLEX,
+                                1, (255, 0, 0), 2, )
         else:
             print('emotion:', emotion)
             print('valence, arousal:', affect)
@@ -142,6 +151,7 @@ def webcam(learner, camera_id, display, frames):
                            "\nCheck whether a webcam is working or not.")
 
     image_processing.set_fps(frames)
+
     try:
         # Loop to process each frame from a VideoCapture object.
         while image_processing.is_video_capture_open():
@@ -153,9 +163,8 @@ def webcam(learner, camera_id, display, frames):
             img = None if (img is None) else recognize_facial_expression(learner, img, display)
 
             end_time = time.perf_counter()
-            fps = 1.0 / (end_time - start_time)
-            img = cv2.putText(img, "FPS: %.2f" % (fps,), (10, 160), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2,
-                              cv2.LINE_AA)
+            total_fps = 1.0 / (end_time - start_time)
+            img = cv2.putText(img, "Total FPS: %.2f" % (total_fps,), (10, img.shape[1]-200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
 
             if display and img is not None:
                 cv2.imshow('Result', img)
@@ -246,7 +255,8 @@ def main():
     learner = FacialEmotionLearner(device=args.device, ensemble_size=args.ensemble_size, dimensional_finetune=False,
                                    categorical_train=False)
     learner.init_model(num_branches=args.ensemble_size)
-    model_path = learner.download(mode="pretrained")
+    # model_path = learner.download(mode="pretrained")
+    model_path = "./esr_9"
     learner.load(args.ensemble_size, path_to_saved_network=model_path)
 
     # Calls to main methods
@@ -258,6 +268,7 @@ def main():
                 raise RuntimeError("Error: 'input' is not valid. The argument 'input' is a mandatory "
                                    "field when image or video mode is chosen.")
             image(learner, args.input, args.display)
+
         except RuntimeError as e:
             print(e)
     elif args.mode == "video":
