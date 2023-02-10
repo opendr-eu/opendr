@@ -66,7 +66,7 @@ $BLENDER_PATH/blender -P src/generate_models.py
 
 **Note:** FBX models must have been previously generated
 
-Finally, instructions for setting a demo project in Webots are provided. In the project, one the SMPL+D models in FBX format can perform an animation from  [AMASS](https://smpl.is.tue.mpg.de/).
+Finally, instructions for setting a demo project in Webots are provided. In the project, the SMPL+D models (in the FBX format) can perform animations from  [AMASS](https://smpl.is.tue.mpg.de/).
 
 -  Download ACCAD database from AMASS (https://amass.is.tue.mpg.de/download.php)
 
