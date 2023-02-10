@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional, List
 
 import torch
 import pickle
@@ -71,7 +71,7 @@ class ContinualSLAMLearner(Learner):
             raise ValueError('Mode should be either predictor or learner')
 
     def fit(self,
-            batch: Tuple[Dict, None],
+            batch: List,
             return_losses: bool = False,
             ) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
         """
@@ -85,7 +85,8 @@ class ContinualSLAMLearner(Learner):
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         if self.mode == 'learner':
-            return self._fit(batch, return_losses)
+            for item in batch:
+                return self._fit(item, return_losses)
         else:
             raise ValueError('Fit is only available in learner mode')
 
@@ -270,13 +271,14 @@ if __name__ == "__main__":
     dataset_path = dataset_config.dataset_path
     dataset = KittiDataset(str(dataset_path), dataset_config)
 
-    from PIL import Image as imgg 
-    import time
+    from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
+    device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = torch.device(device_type)
+    replay_buffer = ReplayBuffer(3, save_memory=False, device=device, dataset_config=dataset_config, local_save_path="./replay_buffer_save/")
 
     for i, batch in enumerate(dataset):
-        if i < 5:
-            continue
-        depth, odometry = learner.fit(batch)
-        depth, odometry = predictor.infer(batch)
-        message = learner.save()
-        predictor.load(message=message)
+        replay_buffer.add(batch)
+        if i >3:
+            get_batch = replay_buffer.get()
+            print(get_batch)
+        

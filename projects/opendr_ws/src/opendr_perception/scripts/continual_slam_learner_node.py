@@ -22,6 +22,7 @@ import rospy
 
 from opendr_bridge import ROSBridge
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
+from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
 
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
@@ -34,12 +35,13 @@ class ContinualSlamLearner:
                  input_image_topic : str,
                  input_distance_topic : str,
                  output_weights_topic : str,
-                 fps : int = 10,
                  publish_rate : int = 20,
+                 buffer_size : int = 1000,
+                 save_memory : bool = True,
+                 sample_size : int = 3,
                  ) -> None:
         
         self.bridge = ROSBridge()
-        self.delay = 1.0 / fps
         self.publish_rate = publish_rate
 
         self.input_image_topic = input_image_topic
@@ -51,6 +53,9 @@ class ContinualSlamLearner:
         self.sequence = None
 
         self.do_publish = 0
+        self.sample_size = sample_size
+
+        self._init_replay_buffer(buffer_size, save_memory)
 
         # Create caches
         self._image_cache = []
@@ -88,6 +93,22 @@ class ContinualSlamLearner:
             rospy.logerr(e)
             return False
 
+    def _init_replay_buffer(self, buffer_size, save_memory):
+        """
+        Creating a replay buffer instance
+        """
+        try:
+            self.replay_buffer = ReplayBuffer(buffer_size=buffer_size,
+                                              save_memory=save_memory,
+                                              dataset_config_path=self.path,
+                                              sample_size=self.sample_size)
+            return True
+        except Exception as e:
+            rospy.logerr("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
+            rospy.logerr(e)
+            return False
+
+
     def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
         """
         Callback method of predictor node.
@@ -109,8 +130,10 @@ class ContinualSlamLearner:
 
         self._cache_arriving_data(image, distance, frame_id)
         batch = self._convert_cache_into_batch()
-        if len(batch) < 3:
+        self.replay_buffer.add(batch)
+        if len(self.replay_buffer) < self.sample_size:
             return
+        batch = self.replay_buffer.sample()
         self.learner.fit(batch)
         if self.do_publish % self.publish_rate == 0:
             message = self.learner.save()
@@ -161,15 +184,25 @@ def main():
     parser.add_argument('--input_image_topic', type=str, default='/cl_slam/image')
     parser.add_argument('--input_distance_topic', type=str, default='/cl_slam/distance')
     parser.add_argument('--output_weights_topic', type=str, default='/cl_slam/update')
+    parser.add_argument('--config_path', type=str, default='singlegpu_kitti.yaml')
+    parser.add_argument('--publish_rate', type=int, default=10)
+    parser.add_argument('--buffer_size', type=int, default=500)
+    parser.add_argument('--sample_size', type=int, default=3)
+    parser.add_argument('--save_memory', type=bool, default=True)
+    parser.add_argument('--sample_size', type=int, default=3)
     args = parser.parse_args()
 
     local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
     path = local_path / 'singlegpu_kitti.yaml'
 
     node = ContinualSlamLearner(path, 
-                                  args.input_image_topic,
-                                  args.input_distance_topic, 
-                                  args.output_weights_topic)
+                                args.input_image_topic,
+                                args.input_distance_topic,
+                                args.output_weights_topic,
+                                args.publish_rate,
+                                args.buffer_size,
+                                args.save_memory,
+                                args.sample_size)
     node.listen()
 
 if __name__ == '__main__':
