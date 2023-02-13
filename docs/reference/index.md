@@ -69,6 +69,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [semantic_segmentation Module](semantic-segmentation.md)
         - panoptic segmentation:
             - [efficient_ps Module](efficient-ps.md)
+            - [efficient_lps Module](efficient-lps.md)
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
             - [attention_neural_bag_of_feature_learner Module](attention-neural-bag-of-feature-learner.md)
@@ -136,6 +137,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [siamrpn Demo](/projects/python/perception/object_tracking_2d/demos/siamrpn)
         - panoptic segmentation:
             - [efficient_ps Demo](/projects/python/perception/panoptic_segmentation/efficient_ps)
+            - [efficient_lps Demo](/projects/python/perception/panoptic_segmentation/efficient_lps)
         - semantic segmentation:
             - [bisnet Demo](/projects/python/perception/semantic_segmentation/bisenet)
         - action recognition:
