@@ -4,7 +4,7 @@ The file [example_usage](./example_usage.py) contains code snippets explaining t
 
 1. Download the provided pre-trained model weights.
 
-2. Prepare the supported datasets (Cityscapes, KITTI) after having downloaded the raw files. See the [datasets' readme](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md) for further details.
+2. Prepare the supported datasets (Cityscapes, KITTI) after having downloaded the raw files. See the [datasets' readme](../../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md) for further details.
 
 3. Train the model.
 

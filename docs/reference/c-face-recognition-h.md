@@ -32,17 +32,17 @@ Releases the memory allocated for a face recognition model (*model*).
 
 ### Function *inferFaceRecognition()*
 ```C
-OpendrCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpendrImageT *image);
+OpenDRCategoryTargetT inferFaceRecognition(FaceRecognitionModelT *model, OpenDRImageT *image);
 ```
-This function perform inference using a face recognition model (*model*) and an input image (*image*).
+This function performs inference using a face recognition model (*model*) and an input image (*image*).
 The function returns an OpenDR category structure with the inference results.
 
 
 ### Function *decodeCategoryFaceRecognition()*
 ```C
-void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpendrCategoryTargetT category, char *personName);
+void decodeCategoryFaceRecognition(FaceRecognitionModelT *model, OpenDRCategoryTargetT category, char *personName);
 ```
-Returns the name of a recognized person by decoding the category id into a string (this function uses the information from the built person database).
+Returns the name of a recognized person by decoding the category ID into a string (this function uses the information from the built person database).
 
 
 ### Function *buildDatabaseFaceRecognition()*

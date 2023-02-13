@@ -245,6 +245,9 @@ class X3DLearner(Learner):
                 "seed": self.seed,
             },
         }
+        if self._ort_session:
+            meta_data["format"] = "onnx"
+
         with open(str(meta_path), "w", encoding="utf-8") as f:
             json.dump(meta_data, f, sort_keys=True, indent=4)
 

@@ -9,6 +9,11 @@ Make sure that you have downloaded the necessary resources before running the de
 
 ## Supported tools
 Currently, the following tools are exposing a C API:
-1. Face recognition
-2. Object detection 2D Nanodet
+1. Activity recognition (X3D)
+2. Face recognition
+3. Pose estimation (Lightweight OpenPose)
+3. Object detection 2D (DETR)
+4. Object detection 2D (NanoDet)
+5. Object tracking 2D (DeepSort)
+6. Skeleton-based action recognition (Progressive Spatiotemporal GCN)
 
