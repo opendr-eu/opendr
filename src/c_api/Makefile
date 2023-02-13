@@ -34,10 +34,6 @@ LIBTORCH_DIR = /usr/local/libtorch
 TORCHSCRIPT_INC = -I$(LIBTORCH_DIR)/include -I$(LIBTORCH_DIR)/include/torch/csrc/api/include
 TORCHSCRIPT_LD = -L$(LIBTORCH_DIR)/lib -L$(LIBTORCH_DIR)/share -ltorchvision -ltorch
 
-LIBTORCH_DIR = /usr/local/libtorch
-TORCHSCRIPT_INC = -I$(LIBTORCH_DIR)/include -I$(LIBTORCH_DIR)/include/torch/csrc/api/include
-TORCHSCRIPT_LD = -L$(LIBTORCH_DIR)/lib -L$(LIBTORCH_DIR)/share -ltorchvision -ltorch
-
 all: libopendr
 
 libopendr: $(OPENDR_HOME)/lib/libopendr.so
