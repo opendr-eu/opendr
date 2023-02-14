@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch.jit
 import torch.nn as nn
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.activation import act_layers
@@ -128,6 +129,7 @@ class TransformerBlock(nn.Module):
         ]
         self.encoders = nn.Sequential(*encoders)
 
+    @torch.jit.unused
     def forward(self, x, pos_embed):
         b, _, h, w = x.shape
         x = self.conv(x)

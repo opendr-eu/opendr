@@ -73,11 +73,11 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 5. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros-nodes)
 6. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros-node)
 7. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros-nodes)
-8. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros-node)
+8. [Vision Based Panoptic Segmentation](src/opendr_perception/README.md#vision-based-panoptic-segmentation-ros-node)
 9. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros-node)
 10. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros-node)
 11. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros-node)
-12. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-node)
+12. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-nodes)
 13. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros-node)
 ## RGB + Infrared input
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#2d-object-detection-gem-ros-node)
@@ -90,5 +90,6 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros-node)
+3. [LiDAR Based Panoptic Segmentation](src/opendr_perception/README.md#lidar-based-panoptic-segmentation-ros-node)
 ## Biosignal input
 1. [Heart Anomaly Detection](src/opendr_perception/README.md#heart-anomaly-detection-ros-node)
