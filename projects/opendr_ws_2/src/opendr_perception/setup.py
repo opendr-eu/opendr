@@ -51,6 +51,8 @@ setup(
             'facial_emotion_estimation = opendr_perception.facial_emotion_estimation_node:main',
             'skeleton_based_action_recognition = opendr_perception.skeleton_based_action_recognition_node:main',
             'binary_high_resolution = opendr_perception.binary_high_resolution_node:main',
+            'continual_skeleton_based_action_recognition = \
+            opendr_perception.continual_skeleton_based_action_recognition_node:main',
         ],
     },
 )
