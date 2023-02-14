@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     img = Image.open(image_path)
 
-    poses = pose_estimator.infer(img)
+    poses, _, _, _, _, _ = pose_estimator.infer(img)
 
     img_cv = img.opencv()
     for pose in poses:

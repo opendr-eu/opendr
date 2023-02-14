@@ -1,4 +1,4 @@
-# Copyright 2020-2023 OpenDR European Project
+# Copyright 2020-2022 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
 # limitations under the License."""
 
 # General imports
+
 import torchvision.transforms
 import os
 import cv2
@@ -68,6 +69,12 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         self.second_pass_height = second_pass_height
         self.perc = percentage_arround_crop
         self.threshold = heatmap_threshold
+        self.xmin = None
+        self.ymin = None
+        self.xmax = None
+        self.ymax = None
+        self.counter = 0
+        self.prev_heatmap = np.array([])
 
     def __first_pass(self, img):
         """
@@ -90,7 +97,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().cpu()
 
         stages_output = self.model(tensor_img)
-
+        # stages_output = self.model(img)
         stage2_pafs = stages_output[-1]
         pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
         return pafs
@@ -153,8 +160,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
         return heatmaps, pafs, scale, pad
 
-    @staticmethod
-    def __pooling(img, kernel):  # Pooling on input image for dimension reduction
+    def __pooling(self, img, kernel):  # Pooling on input image for dimension reduction
         """This method applies a pooling filter on an input image in order to resize it in a fixed shape
 
          :param img: input image for resizing
@@ -163,6 +169,10 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
          :type kernel: int
          """
         pool_img = torchvision.transforms.ToTensor()(img)
+        if 'cuda' in self.device:
+            pool_img = pool_img.cuda()
+            if self.half:
+                pool_img = pool_img.half()
         pool_img = pool_img.unsqueeze(0)
         pool_img = torch.nn.functional.avg_pool2d(pool_img, kernel)
         pool_img = pool_img.squeeze(0).permute(1, 2, 0).cpu().float().numpy()
@@ -221,7 +231,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 """
 
         data = super(HighResolutionPoseEstimationLearner,  # NOQA
-                     self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
+self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
                                                                             subset_name="val_subset.json",
                                                                             subset_size=subset_size,
                                                                             images_folder_default_name=images_folder_name,
@@ -439,81 +449,204 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                     if no detections were made.
                 :rtype: list of engine.target.Pose objects
                 """
+
         current_poses = []
-
         offset = 0
-
         num_keypoints = Pose.num_kpts
-
         if not isinstance(img, Image):
             img = Image(img)
 
         # Bring image into the appropriate format for the implementation
         img = img.convert(format='channels_last', channel_order='bgr')
-
         h, w, _ = img.shape
         max_width = w
+        xmin, ymin = 0, 0
+        ymax, xmax, _ = img.shape
 
-        kernel = int(h / self.first_pass_height)
-        if kernel > 0:
-            pool_img = self.__pooling(img, kernel)
+        if self.counter % 5 == 0:
+            kernel = int(h / self.first_pass_height)
+            if kernel > 0:
+                pool_img = self.__pooling(img, kernel)
+
+            else:
+                pool_img = torchvision.transforms.ToTensor()(img)
+                pool_img = pool_img.unsqueeze(0)
+                if 'cuda' in self.device:
+                    pool_img = pool_img.cuda()
+
+            # # ------- Heatmap Generation -------
+            avg_pafs = self.__first_pass(pool_img)
+            avg_pafs = avg_pafs.astype(np.float32)
+            pafs_map = cv2.blur(avg_pafs, (5, 5))
+
+            pafs_map[pafs_map < self.threshold] = 0
+
+            heatmap = pafs_map.sum(axis=2)
+            heatmap = heatmap * 100
+            heatmap = heatmap.astype(np.uint8)
+            heatmap = cv2.blur(heatmap, (5, 5))
+
+            self.prev_heatmap = heatmap
+
+            contours, hierarchy = cv2.findContours(heatmap, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+            count = []
+
+            if len(contours) > 0:
+                for x in contours:
+                    count.append(x)
+                xdim = []
+                ydim = []
+
+                for j in range(len(count)):  # Loop for every human (every contour)
+                    for i in range(len(count[j])):
+                        xdim.append(count[j][i][0][0])
+                        ydim.append(count[j][i][0][1])
+
+                h, w, _ = pool_img.shape
+
+                xmin = int(np.floor(min(xdim))) * int((w / heatmap.shape[1])) * kernel
+                xmax = int(np.floor(max(xdim))) * int((w / heatmap.shape[1])) * kernel
+                ymin = int(np.floor(min(ydim))) * int((h / heatmap.shape[0])) * kernel
+                ymax = int(np.floor(max(ydim))) * int((h / heatmap.shape[0])) * kernel
+
+                if self.xmin is None:
+                    self.xmin = xmin
+                    self.ymin = ymin
+                    self.xmax = xmax
+                    self.ymax = ymax
+                else:
+                    a = 0.2
+                    self.xmin = a * xmin + (1 - a) * self.xmin
+                    self.ymin = a * ymin + (1 - a) * self.ymin
+                    self.ymax = a * ymax + (1 - a) * self.ymax
+                    self.xmax = a * xmax + (1 - a) * self.xmax
+
+                extra_pad_x = int(self.perc * (self.xmax - self.xmin))  # Adding an extra pad around cropped image
+                extra_pad_y = int(self.perc * (self.ymax - self.ymin))
+
+                if self.xmin - extra_pad_x > 0:
+                    xmin = self.xmin - extra_pad_x
+                else:
+                    xmin = self.xmin
+                if self.xmax + extra_pad_x < img.shape[1]:
+                    xmax = self.xmax + extra_pad_x
+                else:
+                    xmax = self.xmax
+
+                if self.ymin - extra_pad_y > 0:
+                    ymin = self.ymin - extra_pad_y
+                else:
+                    ymin = self.ymin
+                if self.ymax + extra_pad_y < img.shape[0]:
+                    ymax = self.ymax + extra_pad_y
+                else:
+                    ymax = self.ymax
+
+                # print("xmin:" ,xmin, "ymin:" ,ymin, "xmax", xmax, "ymax" ,ymax)
+
+                if (xmax - xmin) > 40 and (ymax - ymin) > 40:
+                    crop_img = img[int(ymin):int(ymax), int(xmin):int(xmax)]
+                else:
+                    crop_img = img[offset:img.shape[0], offset:img.shape[1]]
+
+                h, w, _ = crop_img.shape
+                if crop_img.shape[0] < self.second_pass_height:
+                    second_pass_height = crop_img.shape[0]
+                else:
+                    second_pass_height = self.second_pass_height
+
+                # ------- Second pass of the image, inference for pose estimation -------
+                avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img, second_pass_height,
+                                                                        max_width, self.stride, upsample_ratio)
+
+                total_keypoints_num = 0
+                all_keypoints_by_type = []
+                for kpt_idx in range(18):
+                    total_keypoints_num += extract_keypoints(avg_heatmaps[:, :, kpt_idx], all_keypoints_by_type,
+                                                             total_keypoints_num)
+
+                pose_entries, all_keypoints = group_keypoints(all_keypoints_by_type, avg_pafs)
+
+                for kpt_id in range(all_keypoints.shape[0]):
+                    all_keypoints[kpt_id, 0] = (all_keypoints[kpt_id, 0] * self.stride / upsample_ratio - pad[
+                        1]) / scale
+                    all_keypoints[kpt_id, 1] = (all_keypoints[kpt_id, 1] * self.stride / upsample_ratio - pad[
+                        0]) / scale
+
+                for i in range(all_keypoints.shape[0]):
+                    for j in range(all_keypoints.shape[1]):
+                        if j == 0:  # Adjust offset if needed for evaluation on our HR datasets
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)
+                        if j == 1:  # Adjust offset if needed for evaluation on our HR datasets
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)
+
+                current_poses = []
+                for n in range(len(pose_entries)):
+                    if len(pose_entries[n]) == 0:
+                        continue
+                    pose_keypoints = np.ones((num_keypoints, 2), dtype=np.int32) * -1
+                    for kpt_id in range(num_keypoints):
+                        if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
+                            pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
+                            pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
+
+                    # pose = Pose(pose_keypoints, pose_entries[n][18])
+                    # current_poses.append(pose)
+                    if np.count_nonzero(pose_keypoints == -1) < 26:
+                        pose = Pose(pose_keypoints, pose_entries[n][18])
+                        current_poses.append(pose)
+
+            else:
+                if self.xmin is None:
+                    self.xmin = xmin
+                    self.ymin = ymin
+                    self.xmax = xmax
+                    self.ymax = ymax
+                else:
+                    a = 0.2
+                    self.xmin = a * xmin + (1 - a) * self.xmin
+                    self.ymin = a * ymin + (1 - a) * self.ymin
+                    self.ymax = a * ymax + (1 - a) * self.ymax
+                    self.xmax = a * xmax + (1 - a) * self.xmax
+
         else:
-            pool_img = img
 
-        # ------- Heatmap Generation -------
-        avg_pafs = self.__first_pass(pool_img)
-        avg_pafs = avg_pafs.astype(np.float32)
-        pafs_map = cv2.blur(avg_pafs, (5, 5))
+            extra_pad_x = int(self.perc * (self.xmax - self.xmin))  # Adding an extra pad around cropped image
+            extra_pad_y = int(self.perc * (self.ymax - self.ymin))
 
-        pafs_map[pafs_map < self.threshold] = 0
+            if self.xmin - extra_pad_x > 0:
+                xmin = self.xmin - extra_pad_x
+            else:
+                xmin = self.xmin
+            if self.xmax + extra_pad_x < img.shape[1]:
+                xmax = self.xmax + extra_pad_x
+            else:
+                xmax = self.xmax
 
-        heatmap = pafs_map.sum(axis=2)
-        heatmap = heatmap * 100
-        heatmap = heatmap.astype(np.uint8)
-        heatmap = cv2.blur(heatmap, (5, 5))
-
-        contours, hierarchy = cv2.findContours(heatmap, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        count = []
-
-        if len(contours) > 0:
-            for x in contours:
-                count.append(x)
-            xdim = []
-            ydim = []
-
-            for j in range(len(count)):  # Loop for every human (every contour)
-                for i in range(len(count[j])):
-                    xdim.append(count[j][i][0][0])
-                    ydim.append(count[j][i][0][1])
-
-            h, w, _ = pool_img.shape
-            xmin = int(np.floor(min(xdim))) * int((w / heatmap.shape[1])) * kernel
-            xmax = int(np.floor(max(xdim))) * int((w / heatmap.shape[1])) * kernel
-            ymin = int(np.floor(min(ydim))) * int((h / heatmap.shape[0])) * kernel
-            ymax = int(np.floor(max(ydim))) * int((h / heatmap.shape[0])) * kernel
-
-            extra_pad_x = int(self.perc * (xmax - xmin))  # Adding an extra pad around cropped image
-            extra_pad_y = int(self.perc * (ymax - ymin))
-
-            if xmin - extra_pad_x > 0:
-                xmin = xmin - extra_pad_x
-            if xmax + extra_pad_x < img.shape[1]:
-                xmax = xmax + extra_pad_x
-            if ymin - extra_pad_y > 0:
-                ymin = ymin - extra_pad_y
-            if ymax + extra_pad_y < img.shape[0]:
-                ymax = ymax + extra_pad_y
+            if self.ymin - extra_pad_y > 0:
+                ymin = self.ymin - extra_pad_y
+            else:
+                ymin = self.ymin
+            if self.ymax + extra_pad_y < img.shape[0]:
+                ymax = self.ymax + extra_pad_y
+            else:
+                ymax = self.ymax
 
             if (xmax - xmin) > 40 and (ymax - ymin) > 40:
-                crop_img = img[ymin:ymax, xmin:xmax]
+                crop_img = img[int(ymin):int(ymax), int(xmin):int(xmax)]
             else:
                 crop_img = img[offset:img.shape[0], offset:img.shape[1]]
 
             h, w, _ = crop_img.shape
+            if crop_img.shape[0] < self.second_pass_height:
+                second_pass_height = crop_img.shape[0]
+            else:
+                second_pass_height = self.second_pass_height
 
             # ------- Second pass of the image, inference for pose estimation -------
-            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img, self.second_pass_height,
-                                                                    max_width, stride, upsample_ratio)
+            avg_heatmaps, avg_pafs, scale, pad = self.__second_pass(crop_img, second_pass_height,
+                                                                    max_width, self.stride, upsample_ratio)
 
             total_keypoints_num = 0
             all_keypoints_by_type = []
@@ -524,8 +657,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             pose_entries, all_keypoints = group_keypoints(all_keypoints_by_type, avg_pafs)
 
             for kpt_id in range(all_keypoints.shape[0]):
-                all_keypoints[kpt_id, 0] = (all_keypoints[kpt_id, 0] * stride / upsample_ratio - pad[1]) / scale
-                all_keypoints[kpt_id, 1] = (all_keypoints[kpt_id, 1] * stride / upsample_ratio - pad[0]) / scale
+                all_keypoints[kpt_id, 0] = (all_keypoints[kpt_id, 0] * self.stride / upsample_ratio - pad[1]) / scale
+                all_keypoints[kpt_id, 1] = (all_keypoints[kpt_id, 1] * self.stride / upsample_ratio - pad[0]) / scale
 
             for i in range(all_keypoints.shape[0]):
                 for j in range(all_keypoints.shape[1]):
@@ -543,10 +676,21 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                     if pose_entries[n][kpt_id] != -1.0:  # keypoint was found
                         pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
                         pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
-                pose = Pose(pose_keypoints, pose_entries[n][18])
-                current_poses.append(pose)
 
-        return current_poses
+                if np.count_nonzero(pose_keypoints == -1) < 26:
+                    pose = Pose(pose_keypoints, pose_entries[n][18])
+                    current_poses.append(pose)
+                # pose = Pose(pose_keypoints, pose_entries[n][18])
+                # current_poses.append(pose)
+            if np.any(self.prev_heatmap) is False:
+                heatmap = np.zeros((int(img.shape[0] / (int((img.shape[0] / self.first_pass_height))) / 8),
+                                    int(img.shape[1] / (int((img.shape[0] / self.first_pass_height))) / 8)),
+                                   dtype=np.uint8)
+            else:
+                heatmap = self.prev_heatmap
+        self.counter += 1
+
+        return current_poses, xmin, ymin, xmax, ymax, heatmap
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/",

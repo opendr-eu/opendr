@@ -103,9 +103,9 @@ if __name__ == '__main__':
         image_provider = VideoReader(0)
     elif input == 'ip':
         image_provider = VideoReader('http://155.207.108.144:8081/video')   # use a local ip for an ip camera
-                                                                            # e.g mobiel application  "IP Camera Lite"
+        # e.g mobile application  "IP Camera Lite"
 
-    # comment out and change path for saving the video
+    # un-comment and change path for saving the video
     # fourcc = cv2.VideoWriter_fourcc(*'XVID')
     # out = cv2.VideoWriter('/home/thodoris/Desktop/odr_video_demo/clean/webcam_output' + str(base_height1) + '_' + str(
     #     base_height2) + '.avi', fourcc, 20.0, (1280, int(720 / 2)))
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
         output_image = cv2.hconcat([img_copy, img])
         output_image = cv2.resize(output_image, (1280, int(720 / 2)))
-        # comment out next line for saving video
+        # uncomment next line for saving video
         # out.write(output_image)
 
         cv2.imshow('Result', output_image)
