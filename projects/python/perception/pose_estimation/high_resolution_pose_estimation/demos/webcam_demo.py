@@ -14,9 +14,7 @@
 
 import cv2
 import time
-# from opendr.perception.pose_estimation import LightweightOpenPoseLearner
-# from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
-# from opendr.perception.pose_estimation import draw
+
 from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw
