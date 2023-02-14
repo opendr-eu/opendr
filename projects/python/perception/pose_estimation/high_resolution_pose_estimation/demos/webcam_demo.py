@@ -85,7 +85,7 @@ if __name__ == '__main__':
                                                             mobilenet_use_stride=stride, half_precision=half_precision,
                                                             first_pass_height=base_height1,
                                                             second_pass_height=base_height2,
-                                                            percentage_arround_crop=0.1)
+                                                            percentage_around_crop=0.1)
     hr_pose_estimator.download(path=".", verbose=True)
     hr_pose_estimator.load("openpose_default")
 
