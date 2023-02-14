@@ -523,40 +523,58 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 
    For viewing the output, refer to the [notes above.](#notes)
 
-### Skeleton-based Human Action Recognition ROS2 Node
+### Skeleton-based Human Action Recognition ROS2 Nodes
 
-A ROS2 node for performing skeleton-based human action recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
-The human body poses of the image are first extracted by the lightweight OpenPose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
+A ROS2 node for performing skeleton-based human action recognition is provided, one using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
+Another ROS2 node for performing continual skeleton-based human action recognition is provided, using the CoSTGCN method. 
+The human body poses of the image are first extracted by the lightweight OpenPose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition methods to be categorized.
 
-You can find the skeleton-based human action recognition ROS2 node python script [here](./opendr_perception/skeleton_based_action_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's skeleton-based human action recognition tool which can be found [here for ST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py)
-and [here for PST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py)
-whose documentation can be found [here](../../../../docs/reference/skeleton-based-action-recognition.md).
+You can find the skeleton-based human action recognition ROS2 node python script [here](./opendr_perception/skeleton_based_action_recognition_node.py) 
+and the continual skeleton-based human action recognition ROS2 node python script [here](./opendr_perception/continual_skeleton_based_action_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The latter makes use of the toolkit's skeleton-based human action recognition tool which can be found [here for ST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py)
+and [here for PST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py) and the former makes use
+of the toolkit's continual skeleton-based human action recognition tool which can be found [here](../../../../src/opendr/perception/skeleton_based_action_recognition/continual_stgcn_learner.py).
+Their documentation can be found [here](../../../../docs/reference/skeleton-based-action-recognition.md).
 
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
 2. You are then ready to start the skeleton-based human action recognition node:
+   1. Skeleton-based action recognition node
+      ```shell
+      ros2 run opendr_perception skeleton_based_action_recognition_node.py
+      ```
+      The following optional argument is available for the skeleton-based action recognition node:
+      - `--model` MODEL: model to use, options are `stgcn` or `pstgcn`, (default=`stgcn`)
+      - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/skeleton_recognized_action"`)
+      - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/skeleton_recognized_action_description`)
 
-    ```shell
-    ros2 run opendr_perception skeleton_based_action_recognition
-    ```
-    The following optional arguments are available:
+   2. Continual skeleton-based action recognition node
+      ```shell
+      ros2 run opendr_perception continual_skeleton_based_action_recognition_node.py
+      ```
+      The following optional argument is available for the continual skeleton-based action recognition node:
+      - `--model` MODEL: model to use, options are `costgcn`, (default=`costgcn`)
+      - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/continual_skeleton_recognized_action"`)
+      - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/continual_skeleton_recognized_action_description`)
+
+    The following optional arguments are available for all nodes:
    - `-h or --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output pose-annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-p or --pose_annotations_topic POSE_ANNOTATIONS_TOPIC`: topic name for pose annotations, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
-   - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/skeleton_recognized_action"`)
-   - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/skeleton_recognized_action_description`)
-   - `--model`: model to use, options are `stgcn` or `pstgcn`, (default=`stgcn`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
-   - Detection messages: `/opendr/skeleton_based_action_recognition`, `/opendr/skeleton_based_action_recognition_description`, `/opendr/poses`
-   - Output images: `/opendr/image_pose_annotated`
+   1. Skeleton-based action recognition node:
+      - Detection messages: `/opendr/skeleton_based_action_recognition`, `/opendr/skeleton_based_action_recognition_description`, `/opendr/poses`
+      - Output images: `/opendr/image_pose_annotated`
+   2. Continual skeleton-based action recognition node:
+      - Detection messages: `/opendr/continual_skeleton_recognized_action`, `/opendr/continual_skeleton_recognized_action_description`, `/opendr/poses`
+      - Output images: `/opendr/image_pose_annotated`
 
-   For viewing the output, refer to the [notes above.](#notes)
+      For viewing the output, refer to the [notes above.](#notes)
 
 ### Video Human Activity Recognition ROS2 Node
 
