@@ -17,7 +17,6 @@ from opendr.perception.continual_slam.continual_slam_learner import ContinualSLA
 from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 
 
-
 class ReplayBuffer(TorchDataset):
     def __init__(self,
                  buffer_size: int,
@@ -179,9 +178,10 @@ class ReplayBuffer(TorchDataset):
                         self.distance_buffer[random_index] = distance_path
 
                     self.feature_vector_buffer[random_index] = new_image_feature
+        if self.count % 20 == 0 and self.count != self.buffer_size:
+            print(f"Replay buffer size: {self.count}")
 
-
-    def sample(self) -> Dict[str, Any]:
+    def sample(self) -> List:
         """
         This method returns a random sample of images from the replay buffer.
         """

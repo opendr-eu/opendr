@@ -129,12 +129,16 @@ class ContinualSlamLearner:
         distance = distance[0]
 
         self._cache_arriving_data(image, distance, frame_id)
-        batch = self._convert_cache_into_batch()
-        self.replay_buffer.add(batch)
+        if len(self._image_cache) < 3:
+            return
+        item = self._convert_cache_into_batch()
+        self.replay_buffer.add(item)
         if len(self.replay_buffer) < self.sample_size:
             return
         batch = self.replay_buffer.sample()
-        self.learner.fit(batch)
+        item = ContinualSLAMLearner._input_formatter(item)
+        batch.insert(0, item)
+        self.learner.fit(batch, replay_buffer=True)
         if self.do_publish % self.publish_rate == 0:
             message = self.learner.save()
             rospy.loginfo(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
@@ -185,11 +189,10 @@ def main():
     parser.add_argument('--input_distance_topic', type=str, default='/cl_slam/distance')
     parser.add_argument('--output_weights_topic', type=str, default='/cl_slam/update')
     parser.add_argument('--config_path', type=str, default='singlegpu_kitti.yaml')
-    parser.add_argument('--publish_rate', type=int, default=10)
+    parser.add_argument('--publish_rate', type=int, default=100)
     parser.add_argument('--buffer_size', type=int, default=500)
     parser.add_argument('--sample_size', type=int, default=3)
     parser.add_argument('--save_memory', type=bool, default=True)
-    parser.add_argument('--sample_size', type=int, default=3)
     args = parser.parse_args()
 
     local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
