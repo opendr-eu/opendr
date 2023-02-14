@@ -69,7 +69,6 @@ class TestBinaryHighResolutionLearner(unittest.TestCase):
         self.assertIsNotNone(results,
                              msg="Eval results dictionary not returned.")
 
-    #
     def test_infer(self):
         img = cv2.imread(os.path.join(self.dataset_path, "test_img.png"))
         self.assertIsNotNone(self.learner.infer(img),

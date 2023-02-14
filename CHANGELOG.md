@@ -1,9 +1,6 @@
 # OpenDR Toolkit Change Log
 
 ## Version 2.1.0
-  - New Features:
-    - Added Binary High Resolution Analysis tool ([#402](https://github.com/opendr-eu/opendr/pull/402)).
-
 Released on XX, XX, 2023.
 
   - New Features:
@@ -15,6 +12,7 @@ Released on XX, XX, 2023.
     - Added C API implementations of forward pass of Lightweight OpenPose, Pose Estimator tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
     - Added C API implementations of forward pass of X3D 2D Activity Recognition tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
     - Added C API implementations of forward pass of Progressive Spatiotemporal GCN Skeleton-based Action Recognition tool ([#383](https://github.com/opendr-eu/opendr/pull/383)).
+    - Added Binary High Resolution Analysis tool ([#402](https://github.com/opendr-eu/opendr/pull/402)).
   - Enhancements:
     - Added support in C API for detection target structure and vector of detections ([#352](https://github.com/opendr-eu/opendr/pull/352))
     - Added support in C API for tensor structure and vector of tensors ([#383](https://github.com/opendr-eu/opendr/pull/383))

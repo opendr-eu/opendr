@@ -1,10 +1,11 @@
 ## binary_high_resolution module
 
-The *binary high resolution* module contains the *BinaryHighResolutionLearner* class, which inherit from the abstract class *Learner*.
+The *binary high resolution* module contains the *BinaryHighResolutionLearner* class, which inherits from the abstract class *Learner*.
 
-With this module one can train a fast convolutional model for binary classification of a single class. 
-The model outputs a segmentation mask based on the confidence of the detection. 
-The model is trained on VOC2012 format datasets. A test dataset can be downloaded using the tool's `download` method.
+With this module one can train a fast convolutional model for binary classification of a single class.
+The model outputs a segmentation mask based on the confidence of the detection.
+The model is trained on VOC2012 format datasets.
+A test dataset can be downloaded using the tool's `download` method.
 To create a custom dataset easily, [`labelImg`](https://github.com/heartexlabs/labelImg) is a good choice.
 Refer to the train example [below](#examples) and the corresponding [demo](../../projects/python/perception/binary_high_resolution/train_eval_demo.py).
 
@@ -29,12 +30,12 @@ Constructor parameters:
   - **batch_size**: *int, default=512*\
     Dataloader batch size. Defaults to 1.
   - **optimizer**: *str, default="adam"*\
-    Name of optimizer to use ("sgd" ,"rmsprop", or "adam").
+    Name of optimizer to use ("sgd", "rmsprop", or "adam").
   - **temp_path**: *str, default=''*\
     Path in which to store temporary files.
   - **device**: *str, default="cpu"*\
     Name of computational device ("cpu" or "cuda").
-  - **weight_decay**: *float, default=1e-4*\
+  - **weight_decay**: *float, default=1e-5*\
     Weight decay used for optimization.
   - **momentum**: *float, default=0.9*\
     Momentum used for optimization.
@@ -52,6 +53,7 @@ BinaryHighResolutionLearner.fit(self, dataset, silent, verbose)
 This method is used for training the algorithm on a train dataset.
 
 Parameters:
+
   - **dataset**: *Dataset*\
     Training dataset.
   - **silent**: *bool, default=False*\
@@ -64,10 +66,12 @@ Parameters:
 ```python
 BinaryHighResolutionLearner.eval(self, dataset, silent, verbose)
 ```
+
 This method is used to evaluate a trained model on an evaluation dataset.
-Returns a dictionary containing stats regarding evaluation.
+Returns a dictionary containing statistics regarding evaluation.
 
 Parameters:
+
   - **dataset**: *Dataset*\
     Dataset on which to evaluate model.
   - **silent**: *bool, default=False*\
@@ -85,6 +89,7 @@ This method is used to perform segmentation on an image.
 Returns a `engine.target.Heatmap` object.
 
 Parameters:
+
   - **img**: *Image*\
     Image to predict a heatmap.
 
@@ -97,6 +102,7 @@ BinaryHighResolutionLearner.download(self, path, verbose, url)
 Download pretrained models and testing images to path.
 
 Parameters:
+
 - **path**: *str, default="./demo_dataset"*\
   Path to where the test data folder will be saved.
 - **verbose**: *bool, default=False*\
@@ -111,12 +117,11 @@ BinaryHighResolutionLearner.save(self, path, verbose)
 ```
 
 This method is used to save a trained model.
-Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name
-of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
-If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it
-from the self.temp_path it was saved previously during conversion.
+Provided with the path, absolute or relative, including a *folder* name, it creates a directory with the name of the *folder* provided and saves the model inside with a proper format and a .json file with metadata.
+If self.optimize was ran previously, it saves the optimized ONNX model in a similar fashion, by copying it from the self.temp_path it was saved previously during conversion.
 
 Parameters:
+
 - **path**: *str*\
   Directory in which to save model weights and metadata.
 - **verbose**: *bool, default=False*\
@@ -131,6 +136,7 @@ BinaryHighResolutionLearner.load(self, path, verbose)
 Loads the model from inside the path provided, based on the metadata .json file included.
 
 Parameters:
+
 - **path**: *str*\
   Local path to save the files.
 - **verbose**: *bool, default=False*\
@@ -141,36 +147,37 @@ Parameters:
 BinaryHighResolutionLearner.optimize(self, do_constant_folding)
 ```
 
-Optimize method converts the model to ONNX format and saves the
-model in the parent directory defined by self.temp_path. The ONNX model is then loaded and can be used for inference.
+Optimize method converts the model to ONNX format and saves the model in the parent directory defined by self.temp_path.
+The ONNX model is then loaded and can be used for inference.
 
 Parameters:
 - **do_constant_folding**: *bool, default=False*
   ONNX format optimization.
-  If True, the constant-folding optimization is applied to the model during export. Constant-folding optimization will replace some of the ops that have all constant inputs with pre-computed constant nodes.
+  If True, the constant-folding optimization is applied to the model during export.
+  Constant-folding optimization will replace some of the ops that have all constant inputs with pre-computed constant nodes.
 
 
 #### Examples
 
 * **Training and evaluation example on test_dataset.**
-  ```python  
+  ```python
   from opendr.perception.binary_high_resolution import BinaryHighResolutionLearner, visualize
   from opendr.engine.datasets import ExternalDataset
-  
-  
+
+
   if __name__ == '__main__':
-      learner = BinaryHighResolutionLearner(')
+      learner = BinaryHighResolutionLearner()
       # Download dataset
       learner.download(verbose=True)
       # Prepare the dataset loader
       dataset = ExternalDataset("./demo_dataset", "VOC2012")
-  
+
       learner.fit(dataset)
       learner.save("test_model")
       # Visualize the results
       visualize(learner, "./demo_dataset/test_img.png")
       print("Evaluation results = ", learner.eval(dataset))
-  
+
   ```
 
 * **Inference example on a single test image using a pretrained model.**
@@ -184,7 +191,7 @@ Parameters:
     # Visualize the results
     visualize(learner, "./demo_dataset/test_img.png")
   ```
-  
+
 #### Platform Compatibility
 
 The platform compatibility evaluation is also reported below:
