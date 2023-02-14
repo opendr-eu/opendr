@@ -28,26 +28,25 @@ from opendr_interface.msg import OpenDRPose2D
 from opendr.engine.data import Image
 from opendr.perception.pose_estimation import draw
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
-from opendr.perception.skeleton_based_action_recognition import SpatioTemporalGCNLearner
-from opendr.perception.skeleton_based_action_recognition import ProgressiveSpatioTemporalGCNLearner
+from opendr.perception.skeleton_based_action_recognition import CoSTGCNLearner
 
 
-class SkeletonActionRecognitionNode(Node):
+class CoSkeletonActionRecognitionNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw",
                  output_rgb_image_topic="/opendr/image_pose_annotated",
                  pose_annotations_topic="/opendr/poses",
-                 output_category_topic="/opendr/skeleton_recognized_action",
-                 output_category_description_topic="/opendr/skeleton_recognized_action_description",
-                 device="cuda", model='stgcn'):
+                 output_category_topic="/opendr/continual_skeleton_recognized_action",
+                 output_category_description_topic="/opendr/continual_skeleton_recognized_action_description",
+                 device="cuda", model='costgcn'):
         """
-        Creates a ROS2 Node for skeleton-based action recognition
+        Creates a ROS2 Node for continual skeleton-based action recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
-        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not publishing
-        annotated image)
+        :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, we are not
+        publishing annotated image)
         :type output_rgb_image_topic: str
-        :param pose_annotations_topic: Topic to which we are publishing the annotations (if None, we are not publishing
+        :param pose_annotations_topic: Topic to which we are publishing the pose annotations (if None, we are not publishing
         annotated pose annotations)
         :type pose_annotations_topic:  str
         :param output_category_topic: Topic to which we are publishing the recognized action category info
@@ -59,10 +58,10 @@ class SkeletonActionRecognitionNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model:  model to use for skeleton-based action recognition.
-         (Options: 'stgcn', 'pstgcn')
+         (Options: "costgcn")
         :type model: str
         """
-        super().__init__('opendr_skeleton_based_action_recognition_node')
+        super().__init__('opendr_continual_skeleton_based_action_recognition_node')
         # Set up ROS topics and bridge
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
@@ -98,26 +97,18 @@ class SkeletonActionRecognitionNode(Node):
         self.pose_estimator.load("openpose_default")
 
         # Initialize the skeleton_based action recognition
-        if model == 'stgcn':
-            self.action_classifier = SpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv',
-                                                              method_name=model, in_channels=2, num_point=18,
-                                                              graph_type='openpose')
-        elif model == 'pstgcn':
-            self.action_classifier = ProgressiveSpatioTemporalGCNLearner(device=device, dataset_name='nturgbd_cv',
-                                                                         topology=[5, 4, 5, 2, 3, 4, 3, 4],
-                                                                         in_channels=2, num_point=18,
-                                                                         graph_type='openpose')
+        self.action_classifier = CoSTGCNLearner(device=device, backbone=model, in_channels=2, num_point=18,
+                                                graph_type='openpose')
 
-        model_saved_path = self.action_classifier.download(path="./pretrained_models/"+model,
-                                                           method_name=model, mode="pretrained",
-                                                           file_name=model+'_ntu_cv_lw_openpose')
-        self.action_classifier.load(model_saved_path, model+'_ntu_cv_lw_openpose')
-
+        model_saved_path = self.action_classifier.download(method_name='stgcn/stgcn_ntu_cv_lw_openpose',
+                                                           mode="pretrained",
+                                                           file_name="stgcn_ntu_cv_lw_openpose.pt")
+        self.action_classifier.load(model_saved_path)
         self.get_logger().info("Skeleton-based action recognition node initialized.")
 
     def callback(self, data):
         """
-        Callback that process the input data and publishes to the corresponding topics
+        Callback that process the input data and publishes to the corresponding topics.
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
@@ -128,32 +119,31 @@ class SkeletonActionRecognitionNode(Node):
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
         if len(poses) > 2:
-            # select two poses with highest energy
+            # select two poses with the highest energy
             poses = _select_2_poses(poses)
 
-        # Get an OpenCV image back
-        image = image.opencv()
-        #  Annotate image and publish results
-        for pose in poses:
-            if self.pose_publisher is not None:
-                ros_pose = self.bridge.to_ros_pose(pose)
-                self.pose_publisher.publish(ros_pose)
-                # We get can the data back using self.bridge.from_ros_pose(ros_pose)
-                # e.g., opendr_pose = self.bridge.from_ros_pose(ros_pose)
-                draw(image, pose)
+        #  Publish detections in ROS message
+        if self.pose_publisher is not None:
+            for pose in poses:
+                # Convert OpenDR pose to ROS2 pose message using bridge and publish it
+                self.pose_publisher.publish(self.bridge.to_ros_pose(pose))
 
         if self.image_publisher is not None:
-            message = self.bridge.to_ros_image(Image(image), encoding='bgr8')
-            self.image_publisher.publish(message)
+            # Get an OpenCV image back
+            image = image.opencv()
+            # Annotate image with poses
+            for pose in poses:
+                draw(image, pose)
+            # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
+            self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
-        num_frames = 300
-        poses_list = []
-        for _ in range(num_frames):
-            poses_list.append(poses)
+        num_frames = 1
+        poses_list = [poses]
         skeleton_seq = _pose2numpy(num_frames, poses_list)
 
         # Run action recognition
-        category = self.action_classifier.infer(skeleton_seq)
+        result = self.action_classifier.infer(skeleton_seq)  # input_size: BxCxTxVxS
+        category = result[0]
         category.confidence = float(category.confidence.max())
 
         if self.hypothesis_publisher is not None:
@@ -178,14 +168,13 @@ def _select_2_poses(poses):
 
 def _pose2numpy(num_current_frames, poses_list):
     C = 2
-    T = 300
     V = 18
     M = 2  # num_person_in
-    skeleton_seq = np.zeros((1, C, T, V, M))
+    skeleton_seq = np.zeros((1, C, num_current_frames, V, M))
     for t in range(num_current_frames):
         for m in range(len(poses_list[t])):
             skeleton_seq[0, 0:2, t, :, m] = np.transpose(poses_list[t][m].data)
-    return skeleton_seq
+    return torch.tensor(skeleton_seq)
 
 
 def main(args=None):
@@ -202,15 +191,15 @@ def main(args=None):
                         default="/opendr/poses")
     parser.add_argument("-c", "--output_category_topic", help="Topic name for recognized action category",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/skeleton_recognized_action")
+                        default="/opendr/continual_skeleton_recognized_action")
     parser.add_argument("-d", "--output_category_description_topic", help="Topic name for description of the "
                                                                           "recognized action category",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/skeleton_recognized_action_description")
+                        default="/opendr/continual_skeleton_recognized_action_description")
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model", help="Model to use, either \"stgcn\" or \"pstgcn\"",
-                        type=str, default="stgcn", choices=["stgcn", "pstgcn"])
+    parser.add_argument("--model", help="Model to use, either \"costgcn\"",
+                        type=str, default="costgcn", choices=["costgcn"])
 
     args = parser.parse_args()
 
@@ -227,21 +216,17 @@ def main(args=None):
         print("Using CPU.")
         device = "cpu"
 
-    skeleton_action_recognition_node = \
-        SkeletonActionRecognitionNode(input_rgb_image_topic=args.input_rgb_image_topic,
-                                      output_rgb_image_topic=args.output_rgb_image_topic,
-                                      pose_annotations_topic=args.pose_annotations_topic,
-                                      output_category_topic=args.output_category_topic,
-                                      output_category_description_topic=args.output_category_description_topic,
-                                      device=device,
-                                      model=args.model)
+    continual_skeleton_action_recognition_node = \
+        CoSkeletonActionRecognitionNode(input_rgb_image_topic=args.input_rgb_image_topic,
+                                        output_rgb_image_topic=args.output_rgb_image_topic,
+                                        pose_annotations_topic=args.pose_annotations_topic,
+                                        output_category_topic=args.output_category_topic,
+                                        output_category_description_topic=args.output_category_description_topic,
+                                        device=device,
+                                        model=args.model)
 
-    rclpy.spin(skeleton_action_recognition_node)
-
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
-    skeleton_action_recognition_node.destroy_node()
+    rclpy.spin(continual_skeleton_action_recognition_node)
+    continual_skeleton_action_recognition_node.destroy_node()
     rclpy.shutdown()
 
 

@@ -56,10 +56,15 @@ class CoModelBase(pl.LightningModule, co.Sequential):
         self.num_classes = num_classes
         self.loss_name = loss_name
         self.input_shape = (in_channels, sequence_len, num_point, num_person)
-        if graph_type == "ntu" or num_point == 25:
+        if graph_type == "ntu" and num_point == 25:
             self.graph = NTUGraph()
-        elif graph_type == "openpose" or num_point == 18:
+        elif graph_type == "openpose" and num_point == 18:
             self.graph = KineticsGraph()
+        else:
+            raise ValueError(
+                self.graph_type + "and" + num_point + "do not match. The valid num_point for ntu is 25 and for "
+                                                      "openpose is 18"
+            )
 
         co.Sequential.__init__(self)
 
