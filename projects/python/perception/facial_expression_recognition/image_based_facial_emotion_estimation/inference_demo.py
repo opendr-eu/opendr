@@ -255,8 +255,7 @@ def main():
     learner = FacialEmotionLearner(device=args.device, ensemble_size=args.ensemble_size, dimensional_finetune=False,
                                    categorical_train=False)
     learner.init_model(num_branches=args.ensemble_size)
-    # model_path = learner.download(mode="pretrained")
-    model_path = "./esr_9"
+    model_path = learner.download(mode="pretrained")
     learner.load(args.ensemble_size, path_to_saved_network=model_path)
 
     # Calls to main methods
