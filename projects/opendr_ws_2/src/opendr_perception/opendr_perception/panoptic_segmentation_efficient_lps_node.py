@@ -23,7 +23,7 @@ from rclpy.node import Node
 import matplotlib
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.panoptic_segmentation import EfficientLpsLearner
 
 # Avoid having a matplotlib GUI in a separate thread in the visualize() function

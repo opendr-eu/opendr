@@ -20,7 +20,7 @@ import time
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
-from opendr_ros2_bridge import ROS2Bridge
+from opendr_bridge import ROS2Bridge
 
 from opendr.perception.panoptic_segmentation import SemanticKittiDataset
 from opendr.perception.panoptic_segmentation import EfficientLpsLearner
@@ -48,9 +48,9 @@ class PointCloud2DatasetNode(Node):
         self._ros2_bridge = ROS2Bridge()
 
         if output_point_cloud_2_topic is not None:
-            self.output_point_cloud_2_publisher = self.create_publisher(
-                output_point_cloud_2_topic, ROS_PointCloud2, queue_size=10
-            )
+            self.output_point_cloud_2_publisher = self.create_publisher(ROS_PointCloud2,
+                                                                        output_point_cloud_2_topic,
+                                                                        10)
 
     def start(self):
         """
@@ -67,7 +67,7 @@ class PointCloud2DatasetNode(Node):
             message = self._ros2_bridge.to_ros_point_cloud2(point_cloud,
                                                             self.get_clock().now().to_msg(),
                                                             ROS_PointCloud2)
-            self.point_cloud_2_publisher.publish(message)
+            self.output_point_cloud_2_publisher.publish(message)
             i += 1
 
             time.sleep(0.1)

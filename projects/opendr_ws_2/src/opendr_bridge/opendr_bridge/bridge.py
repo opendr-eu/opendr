@@ -37,7 +37,7 @@ from geometry_msgs.msg import (
     Point
 )
 from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
-from sensor_msgs import point_cloud2 as pc2
+from sensor_msgs_py import point_cloud2 as pc2
 
 
 class ROS2Bridge:
