@@ -21,8 +21,8 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     iou_2d,
     tracking_boxes_to_lidar,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
-    VoxelBofObjectTracking3DLearner,
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.vpit_object_tracking_3d_learner import (
+    VpitObjectTracking3DLearner,
 )
 from opendr.perception.object_detection_3d.datasets.kitti import (
     KittiDataset,
@@ -245,7 +245,7 @@ def test_eval_detection():
     print("Eval", name, "start", file=sys.stderr)
     model_path = model_paths[name]
 
-    learner = VoxelBofObjectTracking3DLearner(model_config_path=config, device=DEVICE)
+    learner = VpitObjectTracking3DLearner(model_config_path=config, device=DEVICE)
     learner.load(model_path)
     mAPbbox, mAPbev, mAP3d, mAPaos = learner.eval(dataset_detection)
 
@@ -387,7 +387,7 @@ def test_draw_tracking_aabb():
 def test_pp_infer_tracking():
     print("Eval", name, "start", file=sys.stderr)
 
-    learner = VoxelBofObjectTracking3DLearner(model_config_path=config, device=DEVICE)
+    learner = VpitObjectTracking3DLearner(model_config_path=config, device=DEVICE)
     learner.load(model_path)
 
     for q in range(lq):  # range(len(dataset_tracking)):\
@@ -402,7 +402,7 @@ def test_pp_infer_tracking():
 def test_pp_infer_detection():
     print("Eval", name, "start", file=sys.stderr)
 
-    learner = VoxelBofObjectTracking3DLearner(model_config_path=config, device=DEVICE)
+    learner = VpitObjectTracking3DLearner(model_config_path=config, device=DEVICE)
     learner.load(model_path)
 
     for q in range(lq):  # range(len(dataset_tracking)):\
@@ -417,7 +417,7 @@ def test_pp_infer_detection():
 def test_tanet_infer_tracking():
     print("Eval", tanet_name, "start", file=sys.stderr)
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=tanet_config, device=DEVICE
     )
 
@@ -450,7 +450,7 @@ def test_pp_siamese_fit(
     print("Fit", name, "start", file=sys.stderr)
     print("Using device:", device)
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
         lr=lr,
@@ -559,7 +559,7 @@ def test_pp_siamese_fit_siamese_training(
         ],
     )
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
         lr=lr,
@@ -629,7 +629,7 @@ def test_pp_siamese_fit_siamese_triplet_training(
         ],
     )
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
         lr=lr,
@@ -700,7 +700,7 @@ def test_rotated_pp_siamese_infer(
     import pygifsicle
     import imageio
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
         backbone=backbone,
@@ -1231,7 +1231,7 @@ def test_rotated_pp_siamese_eval(
     import pygifsicle
     import imageio
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
         backbone=backbone,
@@ -2699,7 +2699,7 @@ def test_realtime_rotated_pp_siamese_eval(
     import pygifsicle
     import imageio
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=backbone_configs[backbone],
         device=device,
         backbone=backbone,

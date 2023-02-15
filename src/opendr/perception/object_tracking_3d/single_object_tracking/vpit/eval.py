@@ -7,8 +7,8 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     iou_2d,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.test import label_to_AABB, tracking_boxes_to_camera, tracking_boxes_to_lidar
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.voxel_bof_object_tracking_3d_learner import (
-    VoxelBofObjectTracking3DLearner,
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.vpit_object_tracking_3d_learner import (
+    VpitObjectTracking3DLearner,
 )
 from opendr.perception.object_detection_3d.datasets.kitti import (
     KittiDataset,
@@ -112,7 +112,7 @@ def test_rotated_pp_siamese_eval(draw=True, iou_min=0.0, classes=["Car", "Van", 
     import pygifsicle
     import imageio
 
-    learner = VoxelBofObjectTracking3DLearner(
+    learner = VpitObjectTracking3DLearner(
         model_config_path=config,
         device=DEVICE,
         lr=0.001,
