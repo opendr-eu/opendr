@@ -20,7 +20,7 @@ The following files located in `algorithm/igibson` are slight modifications of f
 
 The following files located in `algorithm/SB3` are slight modifications of files originally provided by the following stable-baseline3 packages:
 - `algorithm/SB3/buffer.py`: [SB3 buffer class](https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/common)
-- `algorithm/SB3/policy.py`: [SB3 policy class]https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/common)
+- `algorithm/SB3/policy.py`: [SB3 policy class](https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/common)
 - `algorithm/SB3/ppo.py`: [SB3 ppo class](https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/common)
 - `algorithm/SB3/torch_layers.py`: [SB3 torch_layers class](https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/common)
 - `algorithm/SB3/type_aliases.py`: [SB3 type_aliases class](https://github.com/DLR-RM/stable-baselines3/tree/master/stable_baselines3/common)
