@@ -97,7 +97,6 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float().cpu()
 
         stages_output = self.model(tensor_img)
-        # stages_output = self.model(img)
         stage2_pafs = stages_output[-1]
         pafs = np.transpose(stage2_pafs.squeeze().cpu().data.numpy(), (1, 2, 0))
         return pafs
@@ -231,7 +230,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 """
 
         data = super(HighResolutionPoseEstimationLearner,  # NOQA
-self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
+                     self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
                                                                             subset_name="val_subset.json",
                                                                             subset_size=subset_size,
                                                                             images_folder_default_name=images_folder_name,

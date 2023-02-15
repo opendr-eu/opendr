@@ -56,16 +56,16 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=True,
                         action="store_true")
-    parser.add_argument("--height1", help="Base height of resizing in first inference", default=420)
-    parser.add_argument("--height2", help="Base height of resizing in second inference", default=360)
-    parser.add_argument("--input", help="use cam for webcam input or ip for moblie phone input", default='cam')
+    parser.add_argument("--height1", help="Base height of resizing in first inference, defaults to 420", default=420)
+    parser.add_argument("--height2", help="Base height of resizing in second inference, defaults to 360", default=360)
+    parser.add_argument("--input", help="use 'cam' for local webcam input or 'ip' for ip camera input, "
+                                        "such as mobile phone with an appropriate application, defaults to 'cam'", 
+                        default='cam')
     args = parser.parse_args()
 
-    onnx, device = args.onnx, args.device
-    accelerate = args.accelerate
+    onnx, device, accelerate = args.onnx, args.device, args.accelerate
+    base_height1, base_height2, input_ = args.height1, args.height2, args.input
 
-    onnx, device, accelerate, base_height1, base_height2, input = args.onnx, args.device, args.accelerate, \
-        args.height1, args.height2, args.input
     if accelerate:
         stride = True
         stages = 1
@@ -96,10 +96,10 @@ if __name__ == '__main__':
         lw_pose_estimator.optimize()
 
     # Use the first camera available on the system
-    if input == 'cam':
+    if input_ == 'cam':
         image_provider = VideoReader(0)
-    elif input == 'ip':
-        image_provider = VideoReader('http://155.207.108.144:8081/video')   # use a local ip for an ip camera
+    elif input_ == 'ip':
+        image_provider = VideoReader('http://192.168.1.1:8080/video')  # use a local ip for an ip camera
         # e.g mobile application  "IP Camera Lite"
 
     hr_avg_fps = 0
