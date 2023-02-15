@@ -22,23 +22,23 @@ from pathlib import Path
 import torch.nn.functional as F
 from opendr.engine.data import PointCloud
 from opendr.engine.target import TrackingAnnotation3DList
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.box_np_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.box_np_ops import (
     box_camera_to_lidar,
     center_to_corner_box3d,
 )
 
-import opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.kitti_common as kitti
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
+import opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.kitti_common as kitti
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.preprocess import (
     merge_second_batch,
 )
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.utils.eval import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.utils.eval import (
     get_official_eval_result,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.utils.progress_bar import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.utils.progress_bar import (
     ProgressBar,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.logger import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.logger import (
     Logger,
 )
 from PIL import Image as PilImage

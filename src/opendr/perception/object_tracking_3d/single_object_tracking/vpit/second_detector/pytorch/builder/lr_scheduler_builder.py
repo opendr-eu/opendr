@@ -15,7 +15,7 @@
 
 """Functions to build DetectionModel training optimizers."""
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.\
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.\
     second_detector.torchplus_tanet.train import learning_schedules
 
 

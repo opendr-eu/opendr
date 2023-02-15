@@ -1,6 +1,6 @@
 import torch
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import one_hot
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core import box_torch_ops
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn import one_hot
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.core import box_torch_ops
 from enum import Enum
 
 PI = 3.141592653589793

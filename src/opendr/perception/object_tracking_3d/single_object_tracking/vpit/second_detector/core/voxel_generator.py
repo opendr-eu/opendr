@@ -1,5 +1,5 @@
 import numpy as np
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.point_cloud.point_cloud_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.point_cloud.point_cloud_ops import (
     points_to_voxel,
 )
 

@@ -1,12 +1,12 @@
 import pickle
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder import (
     preprocess_builder,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.preprocess import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.preprocess import (
     DataBasePreprocessor,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.sample_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.sample_ops import (
     DataBaseSamplerV2,
 )
 

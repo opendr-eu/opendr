@@ -2,10 +2,10 @@ import abc
 from collections import OrderedDict
 import numpy as np
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     box_np_ops,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.geometry import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.geometry import (
     points_in_convex_polygon_3d_jit,
     points_in_convex_polygon_jit,
 )

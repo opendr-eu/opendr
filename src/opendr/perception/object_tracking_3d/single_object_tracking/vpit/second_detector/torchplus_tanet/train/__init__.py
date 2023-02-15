@@ -1,4 +1,4 @@
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.train.checkpoint import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.train.checkpoint import (
     latest_checkpoint,
     restore,
     restore_latest_checkpoints,
@@ -7,10 +7,10 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     save_models,
     try_restore_latest_checkpoints,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.train.common import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.train.common import (
     create_folder,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.train.optim import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.train.optim import (
     MixedPrecisionWrapper,
 )
 

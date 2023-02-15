@@ -1,14 +1,14 @@
 import numba
 from pathlib import Path
 import numpy as np
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.utils.buildtools.pybind11_build import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.utils.buildtools.pybind11_build import (
     load_pb11, )
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.geometry import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.geometry import (
     points_in_convex_polygon_3d_jit, )
 
 try:
-    from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+    from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
         box_ops_cc, )
 except:
     current_dir = Path(__file__).resolve().parents[0]

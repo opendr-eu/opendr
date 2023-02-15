@@ -3,13 +3,13 @@ from functools import reduce
 
 import numpy as np
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     preprocess as prep, )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     box_np_ops, )
 import copy
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.utils.check import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.utils.check import (
     shape_mergeable, )
 
 

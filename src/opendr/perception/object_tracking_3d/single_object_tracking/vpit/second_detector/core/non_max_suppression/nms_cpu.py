@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.utils.buildtools.pybind11_build import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.utils.buildtools.pybind11_build import (
     load_pb11,
 )
 import numba
 import numpy as np
 
 try:
-    from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.non_max_suppression.nms import (
+    from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.non_max_suppression.nms import (
         non_max_suppression_cpu,
         rotate_non_max_suppression_cpu,
     )
@@ -21,12 +21,12 @@ except:
         # cuda=True,
         cuda=False,
     )
-    from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.non_max_suppression.nms import (
+    from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.non_max_suppression.nms import (
         non_max_suppression_cpu,
         rotate_non_max_suppression_cpu,
     )
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     box_np_ops,
 )
 

@@ -6,43 +6,43 @@ import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.bof import BoFConfig, LBoF
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.bof import BoFConfig, LBoF
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn import (
     one_hot as tp_one_hot,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet import (
     metrics,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn import (
     Empty,
     GroupNorm,
     Sequential,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.ops.array_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.ops.array_ops import (
     scatter_nd,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.tools import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.tools import (
     change_default_args,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.core import (
     box_torch_ops,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core.losses import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.core.losses import (
     WeightedSoftmaxClassificationLoss,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.pointpillars import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.pointpillars import (
     PillarFeatureNet,
     PointPillarsScatter,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.tanet import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.tanet import (
     PillarFeature_TANet,
     PSA,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.loss_utils import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.loss_utils import (
     create_refine_loss,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.utils import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.utils import (
     get_paddings_indicator,
 )
 

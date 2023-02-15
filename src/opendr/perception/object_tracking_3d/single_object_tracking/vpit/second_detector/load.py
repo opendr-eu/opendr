@@ -18,23 +18,23 @@ from torch.nn import functional
 
 from google.protobuf import text_format
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.protos import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.protos import (
     pipeline_pb2,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder import (
     target_assigner_builder,
     voxel_builder,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.builder import (
     box_coder_builder,
     lr_scheduler_builder,
     optimizer_builder,
     second_builder,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.train import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.train import (
     MixedPrecisionWrapper,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.siamese import SiameseConvNet
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.siamese import SiameseConvNet
 
 
 class BCEWeightedLoss(nn.Module):

@@ -3,11 +3,11 @@ import os
 import torch
 from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import d3_box_overlap
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.run import (
     iou_2d,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.test import label_to_AABB, tracking_boxes_to_camera, tracking_boxes_to_lidar
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.vpit_object_tracking_3d_learner import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.test import label_to_AABB, tracking_boxes_to_camera, tracking_boxes_to_lidar
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.vpit_object_tracking_3d_learner import (
     VpitObjectTracking3DLearner,
 )
 from opendr.perception.object_detection_3d.datasets.kitti import (
@@ -18,13 +18,13 @@ from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
     KittiTrackingDatasetIterator,
     LabeledTrackingPointCloudsDatasetIterator,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.draw import (
     draw_point_cloud_bev,
     draw_point_cloud_projected_2,
 )
 from PIL import Image as PilImage
 import numpy as np
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.box_np_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.box_np_ops import (
     box_camera_to_lidar,
     camera_to_lidar,
     center_to_corner_box3d,
@@ -48,10 +48,10 @@ temp_dir = os.path.join(
     "voxel_object_detection_3d_temp",
 )
 
-config_tanet_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/tanet/car/xyres_16.proto"
-config_tanet_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/tanet/ped_cycle/xyres_16.proto"
-config_pointpillars_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/pointpillars/car/xyres_16.proto"
-config_pointpillars_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/voxel_bof/second_detector/configs/pointpillars/ped_cycle/xyres_16.proto"
+config_tanet_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/car/xyres_16.proto"
+config_tanet_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/ped_cycle/xyres_16.proto"
+config_pointpillars_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/car/xyres_16.proto"
+config_pointpillars_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/ped_cycle/xyres_16.proto"
 
 subsets_path = os.path.join(
     ".",

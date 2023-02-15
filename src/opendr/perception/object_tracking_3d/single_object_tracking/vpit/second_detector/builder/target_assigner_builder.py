@@ -1,13 +1,13 @@
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.target_assigner import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.target_assigner import (
     TargetAssigner,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.protos import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.protos import (
     target_pb2,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder import (
     similarity_calculator_builder,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder import (
     anchor_generator_builder,
 )
 

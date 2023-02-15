@@ -4,19 +4,19 @@ import time
 
 import numpy as np
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     box_np_ops,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     preprocess as prep,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.geometry import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.geometry import (
     points_in_convex_polygon_3d_jit,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.point_cloud.bev_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.point_cloud.bev_ops import (
     points_to_bev,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data import (
     kitti_common as kitti,
 )
 

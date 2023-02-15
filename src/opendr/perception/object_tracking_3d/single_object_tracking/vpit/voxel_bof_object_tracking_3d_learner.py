@@ -32,17 +32,17 @@ from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import
     SiameseTrackingDatasetIterator,
     SiameseTripletTrackingDatasetIterator,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.draw import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.draw import (
     stack_images,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.regressor.vertical import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.regressor.vertical import (
     create_vertical_position_regressor,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.load import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.load import (
     create_model as second_create_model,
     load_from_checkpoint,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.run import (
     compute_lidar_kitti_output,
     create_lidar_aabb_from_target,
     create_multi_rotate_searches,
@@ -66,23 +66,23 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     tracking_boxes_to_lidar,
     train,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.builder import (
     input_reader_builder,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.logger import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.logger import (
     Logger,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.models.tanet import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.tanet import (
     set_tanet_config,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.preprocess import (
     _prep_v9,
     _prep_v9_infer,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder.dataset_builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder.dataset_builder import (
     create_prep_func,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.preprocess import (
     merge_second_batch,
 )
 from opendr.engine.target import (
@@ -96,7 +96,7 @@ import warnings
 from numba import errors
 from PIL import Image as PilImage
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.siamese import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.siamese import (
     SiameseConvNet,
 )
 

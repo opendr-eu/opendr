@@ -1,4 +1,4 @@
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     region_similarity,
 )
 

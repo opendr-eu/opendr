@@ -1,4 +1,4 @@
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.pytorch.core.box_coders import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.core.box_coders import (
     BevBoxCoderTorch,
     GroundBox3dCoderTorch,
 )

@@ -1,10 +1,10 @@
 import pickle
 from functools import partial
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core import (
     box_np_ops,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.preprocess import (
     _read_and_prep_v9,
 )
 

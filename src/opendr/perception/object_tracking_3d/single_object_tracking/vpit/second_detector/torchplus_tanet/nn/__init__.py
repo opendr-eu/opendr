@@ -1,11 +1,11 @@
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn.functional import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn.functional import (
     one_hot
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.torchplus_tanet.nn.modules.common import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn.modules.common import (
     Empty,
     Sequential
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.\
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.\
     second_detector.torchplus_tanet.nn.modules.normalization import (
         GroupNorm
     )

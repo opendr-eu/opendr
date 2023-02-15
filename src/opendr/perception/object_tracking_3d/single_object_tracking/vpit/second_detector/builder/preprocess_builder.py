@@ -1,4 +1,4 @@
-import opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.preprocess as prep
+import opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.preprocess as prep
 
 
 def build_db_preprocess(db_prep_config):

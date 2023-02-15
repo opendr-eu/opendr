@@ -4,7 +4,7 @@ import torch
 import fire
 from multiprocessing import Process, set_start_method, get_context
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.test import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.test import (
     test_pp_siamese_fit,
     test_pp_siamese_fit_siamese_training,
     test_pp_siamese_fit_siamese_triplet_training,

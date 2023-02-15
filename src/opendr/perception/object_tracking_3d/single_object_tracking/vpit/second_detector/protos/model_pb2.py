@@ -7,7 +7,7 @@ from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.protos import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.protos import (
     second_pb2 as second_dot_protos_dot_second__pb2,
 )
 

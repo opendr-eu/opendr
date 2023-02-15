@@ -22,16 +22,16 @@ Detection configuration framework, they should define their own builder function
 that wraps the build function.
 """
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.protos import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.protos import (
     input_reader_pb2,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.dataset import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.dataset import (
     KittiDataset,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.preprocess import (
     prep_pointcloud,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.builder import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder import (
     dbsampler_builder,
 )
 from functools import partial

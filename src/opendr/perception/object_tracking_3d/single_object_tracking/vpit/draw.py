@@ -3,7 +3,7 @@ import numpy as np
 import math
 from PIL import Image, ImageDraw, ImageFont
 
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.core.box_np_ops import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.box_np_ops import (
     center_to_corner_box3d,
 )
 
