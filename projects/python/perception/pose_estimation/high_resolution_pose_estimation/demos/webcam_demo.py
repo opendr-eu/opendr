@@ -102,10 +102,6 @@ if __name__ == '__main__':
         image_provider = VideoReader('http://155.207.108.144:8081/video')   # use a local ip for an ip camera
         # e.g mobile application  "IP Camera Lite"
 
-    # un-comment and change path for saving the video
-    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    # out = cv2.VideoWriter('/home/thodoris/Desktop/odr_video_demo/clean/webcam_output' + str(base_height1) + '_' + str(
-    #     base_height2) + '.avi', fourcc, 20.0, (1280, int(720 / 2)))
     hr_avg_fps = 0
     lw_avg_fps = 0
 
@@ -119,7 +115,7 @@ if __name__ == '__main__':
 
         # Perform inference
         start_time = time.perf_counter()
-        hr_poses, xmin, ymin, xmax, ymax, heatmap = hr_pose_estimator.infer(img)
+        hr_poses, heatmap = hr_pose_estimator.infer(img)
         hr_time = time.perf_counter() - start_time
 
         # Perform inference
@@ -156,9 +152,6 @@ if __name__ == '__main__':
 
         output_image = cv2.hconcat([img_copy, img])
         output_image = cv2.resize(output_image, (1280, int(720 / 2)))
-        # uncomment next line for saving video
-        # out.write(output_image)
-
         cv2.imshow('Result', output_image)
 
         key = cv2.waitKey(1)

@@ -110,8 +110,9 @@ HighResolutionPoseEstimation.infer(self, img, upsample_ratio, stride, track, smo
 ```
 
 This method is used to perform pose estimation on an image.
-Returns a list of `engine.target.Pose` objects, where each holds a pose, or returns an empty list if no detection were made.
-
+Returns a list of engine.target.Pose objects, where each holds a pose 
+and a heatmap that contains human silhouettes of the input image. 
+If no detections were made returns an empty list for poses and a black frame for heatmap.
 Parameters:
 
 - **img**: *object***\

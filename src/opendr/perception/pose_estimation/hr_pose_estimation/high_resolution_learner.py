@@ -425,31 +425,32 @@ self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_s
                 print("Evaluation ended with no detections.")
             return {"average_precision": [0.0 for _ in range(5)], "average_recall": [0.0 for _ in range(5)]}
 
-    def infer(self, img, upsample_ratio=4, stride=8, track=True, smooth=True,
-              multiscale=False):
+    def infer(self, img, upsample_ratio=4, stride=8, track=True, smooth=True, multiscale=False):
         """
-                This method is used to perform pose estimation on an image.
+            This method is used to perform pose estimation on an image.
 
-                :param img: image to run inference on
-                :rtype img: engine.data.Image class object
-                :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs
-                    when resizing,defaults to 4
-                :type upsample_ratio: int, optional
-                :param stride: Defines the stride value for creating a padded image
-                :type stride: int,optional
-                :param track: If True, infer propagates poses ids from previous frame results to track poses,
-                    defaults to 'True'
-                :type track: bool, optional
-                :param smooth: If True, smoothing is performed on pose keypoints between frames, defaults to 'True'
-                :type smooth: bool, optional
-                :param multiscale: Specifies whether evaluation will run in the predefined multiple scales setup or not.
-                :type multiscale: bool,optional
+            :param img: image to run inference on
+            :rtype img: engine.data.Image class object
+            :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs
+                when resizing,defaults to 4
+            :type upsample_ratio: int, optional
+            :param stride: Defines the stride value for creating a padded image
+            :type stride: int,optional
+            :param track: If True, infer propagates poses ids from previous frame results to track poses,
+                defaults to 'True'
+            :type track: bool, optional
+            :param smooth: If True, smoothing is performed on pose keypoints between frames, defaults to 'True'
+            :type smooth: bool, optional
+            :param multiscale: Specifies whether evaluation will run in the predefined multiple scales setup or not.
+            :type multiscale: bool,optional
 
-                :return: Returns a list of engine.target.Pose objects, where each holds a pose, or returns an empty list
-                    if no detections were made.
-                :rtype: list of engine.target.Pose objects
-                """
+            :return: Returns a list of engine.target.Pose objects, where each holds a pose
+            and a heatmap that contains human silhouettes of the input image.
+            If no detections were made returns an empty list for poses and a black frame for heatmap.
 
+            :rtype: poses -> list of engine.target.Pose objects
+                    heatmap -> np.array()
+        """
         current_poses = []
         offset = 0
         num_keypoints = Pose.num_kpts
@@ -589,7 +590,6 @@ self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_s
                             pose_keypoints[kpt_id, 0] = int(all_keypoints[int(pose_entries[n][kpt_id]), 0])
                             pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
 
-
                     if np.count_nonzero(pose_keypoints == -1) < 26:
                         pose = Pose(pose_keypoints, pose_entries[n][18])
                         current_poses.append(pose)
@@ -686,7 +686,7 @@ self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_s
                 heatmap = self.prev_heatmap
         self.counter += 1
 
-        return current_poses, xmin, ymin, xmax, ymax, heatmap
+        return current_poses, heatmap
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "perception/pose_estimation/lightweight_open_pose/",
