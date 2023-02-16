@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
-import os
 import rospy
 import time
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from opendr_bridge import ROSBridge
-
 from pathlib import Path
-from opendr.engine.datasets import DatasetIterator
+
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 
@@ -31,25 +28,27 @@ from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 class ContinualSlamDatasetNode:
 
     def __init__(self, 
-                 Dataset: DatasetIterator,
+                 dataset_path: str,
+                 config_file_path: str,
                  output_image_topic: str = "/opendr/dataset/image",
-                 output_distance_topic: str = "opendr/distance",
+                 output_distance_topic: str = "/opendr/imu/distance",
                  dataset_fps: float = 0.1):
         """
         Creates a ROS Node for publishing dataset images
-        :param Dataset: DatasetIterator object
-        :type Dataset: DatasetIterator
-        :param output_image_topic: ROS topic to publish images
+        :param dataset_path: Path to the dataset
+        :type dataset_path: str
+        :param config_file_path: Path to the config file
+        :type config_file_path: str
+        :param output_image_topic: Topic to publish images to
         :type output_image_topic: str
-        :param output_velocity_topic: ROS topic to publish velocities
-        :type output_velocity_topic: str
-        :param output_distance_topic: ROS topic to publish distances
+        :param output_distance_topic: Topic to publish distance to
         :type output_distance_topic: str
-        :param dataset_fps: Dataset frame rate
-        :type dataset_fps: int
+        :param dataset_fps: Dataset FPS
+        :type dataset_fps: float
         """
 
-        self.dataset = Dataset
+        self.dataset_path = dataset_path
+        self.config_file_path = config_file_path
         self.bridge = ROSBridge()
         self.delay = 1.0 / dataset_fps
 
@@ -58,12 +57,24 @@ class ContinualSlamDatasetNode:
 
     def _init_publisher(self):
 
-        self.output_image_publisher = rospy.Publisher(
-            self.output_image_topic, ROS_Image, queue_size=10)
-        self.output_distance_publisher = rospy.Publisher( self.output_distance_topic, ROS_Vector3Stamped, queue_size=10)
+        self.output_image_publisher = rospy.Publisher(self.output_image_topic,
+                                                      ROS_Image,
+                                                      queue_size=10)
+        self.output_distance_publisher = rospy.Publisher(self.output_distance_topic,
+                                                         ROS_Vector3Stamped,
+                                                         queue_size=10)
+
+    def _init_dataset(self):
+        if not Path(self.config_file_path).exists():
+            raise FileNotFoundError("Config file not found")
+        try:
+            self.dataset = KittiDataset(Path(self.dataset_path), self.config_file_path)
+            return True
+        except FileNotFoundError:
+            rospy.logerr("Dataset path is incorrect. Please check the path")
+            return False
 
     def _publish(self):
-
         rospy.loginfo("Start publishing dataset images")
         i = 0
         length = len(self.dataset)-1
@@ -72,10 +83,8 @@ class ContinualSlamDatasetNode:
             if i == length-1:
                 break
             data = self.dataset[i][0] 
-            # data is in format of {"image_id" : (image, velocity, distance)} for 3 past frames
-            # Get the image_id's
+            # Data is in format of {"image_id" : (image, velocity, distance)} for 3 past frames
             image_ids = list(data.keys())
-            # Get the image, velocity and distance
             if len(data) < 3:
                 i += 1 
                 continue
@@ -95,17 +104,21 @@ class ContinualSlamDatasetNode:
             i += 1
             time.sleep(self.delay)
 
-    def run(self):
-            
-            rospy.init_node("continual_slam_dataset_node", anonymous=True)
-            self._init_publisher()
+    def start(self):
+        """
+        Runs the node
+        """
+        rospy.init_node("continual_slam_dataset_node", anonymous=True)
+        self._init_publisher()
+        if self._init_dataset():
             self._publish()
-
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default="/home/canakcia/Desktop/kitti_dset/",
                         help="Path to the dataset")
+    parser.add_argument("--config_file_path", type=str, default="/src/opendr/perception/continual_slam/configs/config.yaml",
+                        help="Path to the config file")
     parser.add_argument("--output_image_topic", type=str, default="/cl_slam/image",
                         help="ROS topic to publish images")
     parser.add_argument("--output_distance_topic", type=str, default="/cl_slam/distance",
@@ -114,19 +127,13 @@ def main():
                         help="Dataset frame rate")
     args = parser.parse_args()
 
-    local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
-    config_path = local_path / 'singlegpu_kitti.yaml'
-    config_file = ConfigParser(config_path).dataset
-    dataset = KittiDataset(args.dataset_path, config_file)
-    node = ContinualSlamDatasetNode(dataset, 
-                                    args.output_image_topic,  
-                                    args.output_distance_topic, 
+    node = ContinualSlamDatasetNode(args.dataset_path,
+                                    args.config_file_path,
+                                    args.output_image_topic,
+                                    args.output_distance_topic,
                                     args.dataset_fps)
-    node.run()
+    node.start()
+
 
 if __name__ == "__main__":
     main()
-
-
-
-

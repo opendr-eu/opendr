@@ -1,4 +1,5 @@
-# Copyright 2020-2022 OpenDR European Project
+#!/usr/bin/env python3
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
-import numpy as np
-import time
 from pathlib import Path
 import message_filters
 import rospy
@@ -31,7 +29,7 @@ from opendr_bridge import ROSBridge
 
 class ContinualSlamLearner:
     def __init__(self,
-                 path: Path,
+                 path: str,
                  input_image_topic : str,
                  input_distance_topic : str,
                  output_weights_topic : str,
@@ -40,9 +38,30 @@ class ContinualSlamLearner:
                  save_memory : bool = True,
                  sample_size : int = 3,
                  ) -> None:
-        
+        """
+        Continual SLAM learner node. This node is responsible for training and updating the predictor.
+        :param path: Path to the folder where the model will be saved.
+        :type path: str
+        :param input_image_topic: ROS topic where the input images are published.
+        :type input_image_topic: str
+        :param input_distance_topic: ROS topic where the input distances are published.
+        :type input_distance_topic: str
+        :param output_weights_topic: ROS topic where the output weights are published.
+        :type output_weights_topic: str
+        :param publish_rate: Rate at which the output weights are published.
+        :type publish_rate: int
+        :param buffer_size: Size of the replay buffer.
+        :type buffer_size: int
+        :param save_memory: If True, the replay buffer will be saved to memory.
+        :type save_memory: bool
+        :param sample_size: Number of samples (triplets from replay buffer) that will be used for training.
+        :type sample_size: int
+        """
         self.bridge = ROSBridge()
         self.publish_rate = publish_rate
+        self.buffer_size = buffer_size
+        self.save_memory = save_memory
+        self.sample_size = sample_size
 
         self.input_image_topic = input_image_topic
         self.input_distance_topic = input_distance_topic
@@ -53,16 +72,11 @@ class ContinualSlamLearner:
         self.sequence = None
 
         self.do_publish = 0
-        self.sample_size = sample_size
-
-        self._init_replay_buffer(buffer_size, save_memory)
 
         # Create caches
-        self._image_cache = []
-        self._distance_cache = []
-        self._id_cache = []
-        self._marker_position_cache = []
-        self._marker_frame_id_cache = []
+        self.cache = {"image": [],
+                      "distance": [],
+                      "id": []}
 
     def _init_subscribers(self):
         """
@@ -93,13 +107,13 @@ class ContinualSlamLearner:
             rospy.logerr(e)
             return False
 
-    def _init_replay_buffer(self, buffer_size, save_memory):
+    def _init_replay_buffer(self):
         """
         Creating a replay buffer instance
         """
         try:
-            self.replay_buffer = ReplayBuffer(buffer_size=buffer_size,
-                                              save_memory=save_memory,
+            self.replay_buffer = ReplayBuffer(buffer_size=self.buffer_size,
+                                              save_memory=self.save_memory,
                                               dataset_config_path=self.path,
                                               sample_size=self.sample_size)
             return True
@@ -108,6 +122,40 @@ class ContinualSlamLearner:
             rospy.logerr(e)
             return False
 
+    def _clean_cache(self):
+        """
+        Clearing the cache.
+        """
+        self.cache["image"].clear()
+        self.cache["distance"].clear()
+        self.cache["id"].clear()
+
+    def _cache_arriving_data(self, image, distance, frame_id):
+        """
+        Caching the arriving data.
+        :param image: Input image as a ROS message
+        :type ROS_Image
+        :param distance: Distance to the object as a ROS message
+        :type ROS_Vector3Stamped
+        :param frame_id: Frame id of the arriving data
+        :type int
+        """
+        self.cache["image"].append(image)
+        self.cache["distance"].append(distance)
+        self.cache["id"].append(frame_id)
+        if len(self.cache['image']) > 3:
+            self.cache["image"].pop(0)
+            self.cache["distance"].pop(0)
+            self.cache["id"].pop(0)
+
+    def _convert_cache_into_triplet(self):
+        """
+        Converting the cache into a triplet.
+        """
+        triplet = {}
+        for i in range(len(self.cache["image"])):
+            triplet[self.cache['id'][i]] = (self.cache["image"][i], self.cache["distance"][i])
+        return triplet
 
     def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
         """
@@ -120,25 +168,35 @@ class ContinualSlamLearner:
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
         incoming_sequence = frame_id.split("_")[0]
+        distance = distance[0]
+
+        # Clear cache if new sequence is detected
         if self.sequence is None:
             self.sequence = incoming_sequence
         if self.sequence != incoming_sequence:
-            # Now we do cleaning
             self._clean_cache()
             self.sequence = incoming_sequence
-        distance = distance[0]
 
         self._cache_arriving_data(image, distance, frame_id)
-        if len(self._image_cache) < 3:
+
+        # If cache is not full, return
+        if len(self.cache['image']) < 3:
             return
-        item = self._convert_cache_into_batch()
+
+        # Add triplet to replay buffer and sample
+        item = self._convert_cache_into_triplet()
         self.replay_buffer.add(item)
+        item = ContinualSLAMLearner._input_formatter(item)
         if len(self.replay_buffer) < self.sample_size:
             return
         batch = self.replay_buffer.sample()
-        item = ContinualSLAMLearner._input_formatter(item)
+        # Concatenate the current triplet with the sampled batch
         batch.insert(0, item)
+
+        # Train learner
         self.learner.fit(batch, replay_buffer=True)
+
+        # Publish new weights
         if self.do_publish % self.publish_rate == 0:
             message = self.learner.save()
             rospy.loginfo(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
@@ -152,53 +210,58 @@ class ContinualSlamLearner:
         try to process input images without being in a trained state.
         """
         rospy.init_node('opendr_continual_slam_node', anonymous=True)
-        rospy.loginfo("Continual SLAM node started.")
-        if self._init_learner():
+        if self._init_learner() and self._init_replay_buffer():
+            rospy.loginfo("Continual SLAM node started.")
             self._init_publisher()
             self._init_subscribers()
             rospy.spin()
 
-    def _clean_cache(self):
-        self._image_cache = []
-        self._distance_cache = []
-        self._id_cache = []
-        self._marker_position_cache = []
-        self._marker_frame_id_cache = []
-        self.odometry = None
-
-    def _cache_arriving_data(self, image, distance, frame_id):
-        # Cache the arriving last 3 data
-        self._image_cache.append(image)
-        self._distance_cache.append(distance)
-        self._id_cache.append(frame_id)
-
-        if len(self._image_cache) > 3:
-            self._image_cache.pop(0)
-            self._distance_cache.pop(0)
-            self._id_cache.pop(0)
-
-    def _convert_cache_into_batch(self):
-        batch = {}
-        for i in range(len(self._image_cache)):
-            batch[self._id_cache[i]] = (self._image_cache[i], self._distance_cache[i])
-        return batch
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_image_topic', type=str, default='/cl_slam/image')
-    parser.add_argument('--input_distance_topic', type=str, default='/cl_slam/distance')
-    parser.add_argument('--output_weights_topic', type=str, default='/cl_slam/update')
-    parser.add_argument('--config_path', type=str, default='singlegpu_kitti.yaml')
-    parser.add_argument('--publish_rate', type=int, default=100)
-    parser.add_argument('--buffer_size', type=int, default=500)
-    parser.add_argument('--sample_size', type=int, default=3)
-    parser.add_argument('--save_memory', type=bool, default=True)
+    parser.add_argument('-c',
+                        '--config_path',
+                        type=str,
+                        default='src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml',
+                        help='Path to the config file')
+    parser.add_argument('-it',
+                        '--input_image_topic',
+                        type=str,
+                        default='/cl_slam/image',
+                        help='Input image topic, listened from Continual SLAM Dataset Node')
+    parser.add_argument('-dt',
+                        '--input_distance_topic',
+                        type=str,
+                        default='/cl_slam/distance',
+                        help='Input distance topic, listened from Continual SLAM Dataset Node')
+    parser.add_argument('-ot',
+                        '--output_weights_topic',
+                        type=str,
+                        default='/cl_slam/update',
+                        help='Output weights topic, published to Continual SLAM Predictor Node')
+    parser.add_argument('-pr',
+                        '--publish_rate',
+                        type=int,
+                        default=100,
+                        help='Publish rate of the weights')
+    parser.add_argument('-bs',
+                        '--buffer_size',
+                        type=int,
+                        default=500,
+                        help='Size of the replay buffer')
+    parser.add_argument('-ss',   
+                        '--sample_size',
+                        type=int,
+                        default=3,
+                        help='Sample size of the replay buffer')
+    parser.add_argument('-sm',
+                        '--save_memory',
+                        type=bool,
+                        default=True,
+                        help='Whether to save memory or not. If True, the replay buffer will be saved to memory')
     args = parser.parse_args()
 
-    local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
-    path = local_path / 'singlegpu_kitti.yaml'
-
-    node = ContinualSlamLearner(path, 
+    node = ContinualSlamLearner(args.config_path, 
                                 args.input_image_topic,
                                 args.input_distance_topic,
                                 args.output_weights_topic,

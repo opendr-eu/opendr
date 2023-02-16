@@ -1,3 +1,17 @@
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import os
 import re
@@ -22,6 +36,9 @@ class KittiDataset(ExternalDataset, DatasetIterator):
     def __init__(self, path: Union[str, Path, PathLike], config: Dataset):
         super().__init__(path, dataset_type='kitti')
 
+        if not path.exists():
+            print(f'Given path {path} does not exist. Using path from config file...')
+            path = config.dataset_path
         self._path = Path(os.path.join(path, 'sequences'))
 
         # ========================================================
@@ -30,7 +47,6 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.width = config.width
         self.scales = config.scales
         self.valid_sequences = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
-        self.sequences = os.listdir(self._path)
 
         if self.sequences is None:
             raise FileNotFoundError(f'No sequences found in {self._path}')

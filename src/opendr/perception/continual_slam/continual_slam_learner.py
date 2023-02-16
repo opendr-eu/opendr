@@ -58,7 +58,6 @@ class ContinualSLAMLearner(Learner):
         self.mode = mode
 
         if self.mode == 'predictor':
-            # Create the predictor object
             self.predictor = DepthPoseModule(self.model_config, self.dataset_config, use_online=False, mode=mode)
             self.predictor.load_model(load_optimizer=True)
         elif self.mode == 'learner':
@@ -257,29 +256,3 @@ class ContinualSLAMLearner(Learner):
         colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3]*255).astype(np.uint8)
         colormapped_img = cv2.cvtColor(colormapped_img, cv2.COLOR_RGB2BGR)
         return Image(colormapped_img)
-
-    # ================================================================================================
-
-# TODO: Delete this later since it is just for debugging and testing
-if __name__ == "__main__":
-    local_path = Path(__file__).parent / 'configs'
-    learner = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='learner', ros=True)
-    predictor = ContinualSLAMLearner(local_path / 'singlegpu_kitti.yaml', mode='predictor', ros=True)
-
-    # Test the learner/predictor
-    from opendr.perception.continual_slam.datasets.kitti import KittiDataset
-    dataset_config = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset
-    dataset_path = dataset_config.dataset_path
-    dataset = KittiDataset(str(dataset_path), dataset_config)
-
-    from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
-    device_type = 'cuda' if torch.cuda.is_available() else 'cpu'
-    device = torch.device(device_type)
-    replay_buffer = ReplayBuffer(3, save_memory=False, device=device, dataset_config_path=local_path / 'singlegpu_kitti.yaml', local_save_path="./replay_buffer_save/")
-
-    for i, batch in enumerate(dataset):
-        replay_buffer.add(batch)
-        if i >3:
-            get_batch = replay_buffer.sample()
-            print(get_batch)
-        
