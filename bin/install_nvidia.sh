@@ -302,7 +302,8 @@ pip3 install git+https://github.com/mapillary/inplace_abn.git
 pip3 install git+https://github.com/facebookresearch/detectron2.git@4841e70ee48da72c32304f9ebf98138c2a70048d
 pip3 install git+https://github.com/cidl-auth/DCNv2
 pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS
-pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS/efficientNet
+pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS
+pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/efficientNet
 pip3 cache purge
 
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
