@@ -38,16 +38,10 @@ class VideoReader(object):
         return self
 
     def __next__(self):
-        was_read, img = self.cap.read()
+        was_read, img_ = self.cap.read()
         if not was_read:
             raise StopIteration
-        return img
-
-    def getsize(self):
-        cap = cv2.VideoCapture(self.file_name)
-        w = cap.get(3)
-        h = cap.get(4)
-        return w, h
+        return img_
 
 
 if __name__ == '__main__':
@@ -60,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument("--height2", help="Base height of resizing in second inference, defaults to 360", default=360)
     parser.add_argument("--input", help="use 'cam' for local webcam input or 'ip' for ip camera input, "
                                         "such as mobile phone with an appropriate application, defaults to 'cam'", 
-                        default='cam')
+                        default='ip')
     args = parser.parse_args()
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
@@ -106,12 +100,21 @@ if __name__ == '__main__':
     lw_avg_fps = 0
 
     image_provider = iter(image_provider)
+
+    height = image_provider.cap.get(4)
+    width = image_provider.cap.get(3)
+    if width / height == 16 / 9:
+        size = (1280, int(720 / 2))
+    elif width / height == 4 / 3:
+        size = (1024, int(768 / 2))
+    else:
+        size = (width, int(height / 2))
+
     while True:
         img = next(image_provider)
 
         total_time0 = time.time()
         img_copy = np.copy(img)
-        height, width, _ = img.shape
 
         # Perform inference
         start_time = time.perf_counter()
@@ -136,14 +139,19 @@ if __name__ == '__main__':
         hr_avg_fps = 0.95 * hr_avg_fps + 0.05 * hr_fps
         lw_avg_fps = 0.95 * lw_avg_fps + 0.05 * lw_fps
 
-        cv2.putText(img=img, text='OpenDR High Resolution Pose Estimation ', org=(20, 50),
+        cv2.putText(img=img, text="OpenDR High Resolution", org=(20, int(height / 10)),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                    fontScale=1, color=(200, 0, 0), thickness=1)
+                    fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
+                    thickness=int(np.ceil(height / 600)))
+        cv2.putText(img=img, text="Pose Estimation", org=(20, int(height / 10) + 50),
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
+                    thickness=int(np.ceil(height / 600)))
 
-        cv2.putText(img=img_copy, text='Lightweight OpenPose ', org=(20, 50),
+        cv2.putText(img=img_copy, text='Lightweight OpenPose ', org=(20, int(height / 10)),
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                    fontScale=1,
-                    color=(200, 0, 0), thickness=1)
+                    fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
+                    thickness=int(np.ceil(height / 600)))
 
         heatmap = heatmap * 5
         heatmap = cv2.cvtColor(heatmap, cv2.COLOR_GRAY2BGR)
@@ -151,7 +159,7 @@ if __name__ == '__main__':
         img[(img.shape[0] - heatmap.shape[0]):img.shape[0], 0:heatmap.shape[1]] = heatmap
 
         output_image = cv2.hconcat([img_copy, img])
-        output_image = cv2.resize(output_image, (1280, int(720 / 2)))
+        output_image = cv2.resize(output_image, size)
         cv2.imshow('Result', output_image)
 
         key = cv2.waitKey(1)

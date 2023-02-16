@@ -119,8 +119,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             defaults to 4
         :type upsample_ratio: int, optional
 
-         :returns: the heatmap of human figures, the part affinity filed (pafs), the scale of the resized image compred
-            to the initial and the pad arround the image
+         :returns: the heatmap of human figures, the part affinity filed (pafs), the scale of the resized image compared
+            to the initial and the pad around the image
          :rtype: heatmap, pafs -> numpy.ndarray
                  scale -> float
                  pad = -> list
@@ -469,10 +469,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 pool_img = self.__pooling(img, kernel)
 
             else:
-                pool_img = torchvision.transforms.ToTensor()(img)
-                pool_img = pool_img.unsqueeze(0)
-                if 'cuda' in self.device:
-                    pool_img = pool_img.cuda()
+                pool_img = img
 
             # # ------- Heatmap Generation -------
             avg_pafs = self.__first_pass(pool_img)
