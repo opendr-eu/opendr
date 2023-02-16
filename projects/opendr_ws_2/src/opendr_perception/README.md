@@ -457,6 +457,41 @@ On the table below you can find the detectable classes and their corresponding I
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
 
+### Binary High Resolution ROS2 Node
+
+You can find the binary high resolution ROS2 node python script [here](./opendr_perception/binary_high_resolution_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [binary high resolution tool](../../../../src/opendr/perception/binary_high_resolution/binary_high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/binary_high_resolution.md).
+
+#### Instructions for basic usage:
+
+0. Before running this node it is required to train a model for a specific binary classification task. 
+   Refer to the tool's [documentation](../../../../docs/reference/binary_high_resolution.md) for more information.
+   To test the node out, run [train_eval_demo.py](../../../python/perception/binary_high_resolution/train_eval_demo.py)
+   to download the test dataset provided and to train a test model. 
+   You would then need to move the model folder in `opendr_ws_2` so the node can load it using the default `model_path` argument.
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the binary high resolution node:
+
+    ```shell
+    ros2 run opendr_perception binary_high_resolution
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
+   - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS2 image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap_visualization`)
+   - `-m or --model_path MODEL_PATH`: path to the directory of the trained model (default=`test_model`)
+   - `-a or --architecture ARCHITECTURE`: architecture used for the trained model, either `VGG_720p` or `VGG_1080p` (default=`VGG_720p`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/binary_hr_heatmap`, `/opendr/binary_hr_heatmap_visualization`
+   - Detection messages: `/opendr/binary_hr_heatmap`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
 ### Image-based Facial Emotion Estimation ROS2 Node
 
 You can find the image-based facial emotion estimation ROS2 node python script [here](./opendr_perception/facial_emotion_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
