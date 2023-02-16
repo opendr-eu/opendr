@@ -14,16 +14,15 @@
 # limitations under the License.
 
 import argparse
-import rospy
 import time
-from sensor_msgs.msg import Image as ROS_Image
-from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
-from opendr_bridge import ROSBridge
 from pathlib import Path
 
-from opendr.perception.continual_slam.datasets.kitti import KittiDataset
-from opendr.perception.continual_slam.configs.config_parser import ConfigParser
+import rospy
+from opendr_bridge import ROSBridge
+from sensor_msgs.msg import Image as ROS_Image
+from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 
+from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 
 class ContinualSlamDatasetNode:
 

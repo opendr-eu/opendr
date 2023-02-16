@@ -16,12 +16,11 @@
 import argparse
 import numpy as np
 from pathlib import Path
-import message_filters
-import rospy
 
-from opendr_bridge import ROSBridge
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 
+import message_filters
+import rospy
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from visualization_msgs.msg import MarkerArray as ROS_MarkerArray
@@ -36,8 +35,7 @@ class ContinualSlamPredictor:
                  output_depth_topic : str,
                  output_pose_topic : str,
                  update_topic : str,
-                 fps : int = 10,
-                 ) -> None:
+                 fps : int = 10):
         
         self.bridge = ROSBridge()
         self.delay = 1.0 / fps
@@ -97,14 +95,23 @@ class ContinualSlamPredictor:
             return False
                 
     def _clean_cache(self):
-        self.cache['image'].clear()
-        self.cache['distance'].clear()
-        self.cache['id'].clear()
-        self.cache['marker_position'].clear()
-        self.cache['marker_frame_id'].clear()
+        """
+        Cleaning the cache
+        """
+        for key in self.cache.keys():
+            self.cache[key].clear()
         self.odometry = None
 
     def _cache_arriving_data(self, image, distance, frame_id):
+        """
+        Caching arriving data
+        :param image: Input image
+        :type image: np.ndarray
+        :param distance: Distance to the object
+        :type distance: float
+        :param frame_id: Frame id
+        :type frame_id: str
+        """
         # Cache the arriving last 3 data
         self.cache['image'].append(image)
         self.cache['distance'].append(distance)
@@ -114,7 +121,7 @@ class ContinualSlamPredictor:
             self.cache['distance'].pop(0)
             self.cache['id'].pop(0)
 
-    def _convert_cache_into_triplet(self):
+    def _convert_cache_into_triplet(self) -> dict:
         triplet = {}
         for i in range(len(self._image_cache)):
             triplet[self.cache['id'][i]] = (self.cache['image'][i], self.cache['distance'][i])
@@ -132,7 +139,6 @@ class ContinualSlamPredictor:
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
         incoming_sequence = frame_id.split("_")[0]
         distance = distance[0]
-        frame = frame_id
 
         # If new sequence is detected, clean the cache
         if self.sequence is None:
@@ -156,21 +162,17 @@ class ContinualSlamPredictor:
         else:
             self.odometry = self.odometry @ new_odometry
         translation = self.odometry[0][:3, 3]
-        x = -translation[0]
-        y = 0
-        z = -translation[2]
-        position = [x, y, z]
+        position = [-translation[0], 0, -translation[2]]
 
-        frame_id = "map"
         self.cache["marker_position"].append(position)
-        self.cache["marker_frame_id"].append(frame_id)
+        self.cache["marker_frame_id"].append("map")
         if self.color is None:
             self.color = [255, 0, 0]
         rgba = (self.color[0], self.color[1], self.color[2], 1.0)
-        marker_list = self.bridge.to_ros_marker_array(self._marker_position_cache, self._marker_frame_id_cache, rgba)
+        marker_list = self.bridge.to_ros_marker_array(self.cache['marker_position'], self.cache['marker_frame_id'], rgba)
         depth = self.bridge.to_ros_image(depth)
 
-        rospy.loginfo(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {frame}")
+        rospy.loginfo(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {frame_id}")
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
 

@@ -36,8 +36,7 @@ class ContinualSlamLearner:
                  publish_rate : int = 20,
                  buffer_size : int = 1000,
                  save_memory : bool = True,
-                 sample_size : int = 3,
-                 ) -> None:
+                 sample_size : int = 3):
         """
         Continual SLAM learner node. This node is responsible for training and updating the predictor.
         :param path: Path to the folder where the model will be saved.
@@ -126,9 +125,8 @@ class ContinualSlamLearner:
         """
         Clearing the cache.
         """
-        self.cache["image"].clear()
-        self.cache["distance"].clear()
-        self.cache["id"].clear()
+        for key in self.cache.keys():
+            self.cache[key].clear()
 
     def _cache_arriving_data(self, image, distance, frame_id):
         """
@@ -148,7 +146,7 @@ class ContinualSlamLearner:
             self.cache["distance"].pop(0)
             self.cache["id"].pop(0)
 
-    def _convert_cache_into_triplet(self):
+    def _convert_cache_into_triplet(self) -> dict:
         """
         Converting the cache into a triplet.
         """
