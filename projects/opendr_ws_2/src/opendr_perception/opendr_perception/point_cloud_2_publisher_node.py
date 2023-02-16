@@ -58,19 +58,19 @@ class PointCloud2DatasetNode(Node):
         """
         if self._init_dataset():
             self.get_logger().info("Starting point cloud 2 dataset node")
-        i = 0
-        print("Starting point cloud 2 publisher")
-        while rclpy.ok():
-            print("Publishing point cloud 2 message")
-            point_cloud = self.dataset[i % len(self.dataset)][0]
-            self.get_logger().info("Publishing point_cloud_2 [" + str(i) + "]")
-            message = self._ros2_bridge.to_ros_point_cloud2(point_cloud,
-                                                            self.get_clock().now().to_msg(),
-                                                            ROS_PointCloud2)
-            self.output_point_cloud_2_publisher.publish(message)
-            i += 1
+            i = 0
+            print("Starting point cloud 2 publisher")
+            while rclpy.ok():
+                print("Publishing point cloud 2 message")
+                point_cloud = self.dataset[i % len(self.dataset)][0]
+                self.get_logger().info("Publishing point_cloud_2 [" + str(i) + "]")
+                message = self._ros2_bridge.to_ros_point_cloud2(point_cloud,
+                                                                self.get_clock().now().to_msg(),
+                                                                ROS_PointCloud2)
+                self.output_point_cloud_2_publisher.publish(message)
+                i += 1
 
-            time.sleep(0.1)
+                time.sleep(0.1)
 
     def _init_dataset(self):
         try:
