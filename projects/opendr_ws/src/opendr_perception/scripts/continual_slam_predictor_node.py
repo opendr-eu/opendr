@@ -1,4 +1,5 @@
-# Copyright 2020-2022 OpenDR European Project
+#!/usr/bin/env python3
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import argparse
 import numpy as np
-import time
 from pathlib import Path
 import message_filters
 import rospy
@@ -55,11 +54,12 @@ class ContinualSlamPredictor:
         self.color = None
 
         # Create caches
-        self._image_cache = []
-        self._distance_cache = []
-        self._id_cache = []
-        self._marker_position_cache = []
-        self._marker_frame_id_cache = []
+        self.cache = {
+            "image": [],
+            "distance": [],
+            "id": [],
+            "marker_position": [],
+            "marker_frame_id": []}
         self.odometry = None
 
     def _init_subscribers(self):
@@ -95,6 +95,30 @@ class ContinualSlamPredictor:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
             rospy.logerr(e)
             return False
+                
+    def _clean_cache(self):
+        self.cache['image'].clear()
+        self.cache['distance'].clear()
+        self.cache['id'].clear()
+        self.cache['marker_position'].clear()
+        self.cache['marker_frame_id'].clear()
+        self.odometry = None
+
+    def _cache_arriving_data(self, image, distance, frame_id):
+        # Cache the arriving last 3 data
+        self.cache['image'].append(image)
+        self.cache['distance'].append(distance)
+        self.cache['id'].append(frame_id)
+        if len(self.cache['image']) > 3:
+            self.cache['image'].pop(0)
+            self.cache['distance'].pop(0)
+            self.cache['id'].pop(0)
+
+    def _convert_cache_into_triplet(self):
+        triplet = {}
+        for i in range(len(self._image_cache)):
+            triplet[self.cache['id'][i]] = (self.cache['image'][i], self.cache['distance'][i])
+        return triplet
 
     def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
         """
@@ -107,21 +131,26 @@ class ContinualSlamPredictor:
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
         incoming_sequence = frame_id.split("_")[0]
+        distance = distance[0]
+        frame = frame_id
+
+        # If new sequence is detected, clean the cache
         if self.sequence is None:
             self.sequence = incoming_sequence
             self.color = list(np.random.choice(range(256), size=3))
         if self.sequence != incoming_sequence:
-            # Now we do cleaning
             self._clean_cache()
             self.sequence = incoming_sequence
             self.color = list(np.random.choice(range(256), size=3))
-        distance = distance[0]
-        temp = frame_id
+
+        # Cache incoming data
         self._cache_arriving_data(image, distance, frame_id)
-        batch = self._convert_cache_into_batch()
-        if len(batch) < 3:
+        triplet = self._convert_cache_into_triplet()
+        if len(triplet) < 3:
             return
-        depth, new_odometry = self.predictor.infer(batch)
+
+        # Infer depth and pose
+        depth, new_odometry = self.predictor.infer(triplet)
         if self.odometry is None:
             self.odometry = new_odometry
         else:
@@ -133,15 +162,15 @@ class ContinualSlamPredictor:
         position = [x, y, z]
 
         frame_id = "map"
-        self._marker_position_cache.append(position)
-        self._marker_frame_id_cache.append(frame_id)
+        self.cache["marker_position"].append(position)
+        self.cache["marker_frame_id"].append(frame_id)
         if self.color is None:
             self.color = [255, 0, 0]
         rgba = (self.color[0], self.color[1], self.color[2], 1.0)
         marker_list = self.bridge.to_ros_marker_array(self._marker_position_cache, self._marker_frame_id_cache, rgba)
         depth = self.bridge.to_ros_image(depth)
 
-        rospy.loginfo(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {temp}")
+        rospy.loginfo(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {frame}")
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
 
@@ -161,57 +190,55 @@ class ContinualSlamPredictor:
         try to process input images without being in a trained state.
         """
         rospy.init_node('opendr_continual_slam_node', anonymous=True)
-        rospy.loginfo("Continual SLAM node started.")
         if self._init_predictor():
+            rospy.loginfo("Continual SLAM node started.")
             self._init_publisher()
             self._init_subscribers()
             rospy.spin()
-    
-    def _clean_cache(self):
-        self._image_cache = []
-        self._distance_cache = []
-        self._id_cache = []
-        self._marker_position_cache = []
-        self._marker_frame_id_cache = []
-        self.odometry = None
 
-    def _cache_arriving_data(self, image, distance, frame_id):
-        # Cache the arriving last 3 data
-        self._image_cache.append(image)
-        self._distance_cache.append(distance)
-        self._id_cache.append(frame_id)
-
-        if len(self._image_cache) > 3:
-            self._image_cache.pop(0)
-            self._distance_cache.pop(0)
-            self._id_cache.pop(0)
-
-    def _convert_cache_into_batch(self):
-        batch = {}
-        for i in range(len(self._image_cache)):
-            batch[self._id_cache[i]] = (self._image_cache[i], self._distance_cache[i])
-        return batch
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_image_topic', type=str, default='/cl_slam/image')
-    parser.add_argument('--input_distance_topic', type=str, default='/cl_slam/distance')
-    parser.add_argument('--output_depth_topic', type=str, default='/opendr/predicted/image')
-    parser.add_argument('--output_pose_topic', type=str, default='/opendr/predicted/pose')
-    parser.add_argument('--update_topic', type=str, default='/cl_slam/update')
+    
+    parser.add_argument('-c',
+                        '--config_path',
+                        type=str,
+                        default='src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml',
+                        help='Path to the config file')
+    parser.add_argument('-it',
+                        '--input_image_topic',
+                        type=str,
+                        default='/cl_slam/image',
+                        help='Input image topic, listened from Continual SLAM Dataset Node')
+    parser.add_argument('-dt',
+                        '--input_distance_topic',
+                        type=str,
+                        default='/cl_slam/distance',
+                        help='Input distance topic, listened from Continual SLAM Dataset Node')
+    parser.add_argument('-odt',
+                        '--output_depth_topic',
+                        type=str,
+                        default='/opendr/predicted/image',
+                        help='Output depth topic, published to Continual SLAM Dataset Node')
+    parser.add_argument('-opt',
+                        '--output_pose_topic',
+                        type=str,
+                        default='/opendr/predicted/pose',
+                        help='Output pose topic, published to Continual SLAM Dataset Node')
+    parser.add_argument('-ut',
+                        '--update_topic',
+                        type=str,
+                        default='/cl_slam/update',
+                        help='Update topic, listened from Continual SLAM Dataset Node')
     args = parser.parse_args()
 
-    local_path = Path(__file__).parent.parent.parent.parent.parent.parent / 'src/opendr/perception/continual_slam/configs'
-    path = local_path / 'singlegpu_kitti.yaml'
-
-    node = ContinualSlamPredictor(path, 
+    node = ContinualSlamPredictor(args.config_path,
                                   args.input_image_topic,
-                                  args.input_distance_topic, 
-                                  args.output_depth_topic, 
+                                  args.input_distance_topic,
+                                  args.output_depth_topic,
                                   args.output_pose_topic,
                                   args.update_topic)
     node.listen()
 
 if __name__ == '__main__':
     main()
-
