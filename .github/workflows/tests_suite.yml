@@ -69,6 +69,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -177,6 +178,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -262,6 +264,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -365,6 +368,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
