@@ -21,6 +21,9 @@ import os
 import sys
 from configparser import ConfigParser
 
+global flag_efficientNet
+flag_efficientNet = ''
+
 python_prerequisites_file = "python_prerequisites.txt"
 python_file = "python_dependencies.txt"
 linux_file = "linux_dependencies.txt"
@@ -37,12 +40,25 @@ def read_ini(path):
             dependencies = parser.get(section, key)
             if dependencies:
                 for package in dependencies.split('\n'):
+                    if 'efficientNet' in package:
+                        efficientNetTrick(package)
+                        continue
                     with open(summary_file, "a") as f:
                         f.write(os.path.expandvars(package) + '\n')
     read_ini_key('python-dependencies', python_prerequisites_file)
     read_ini_key('python', python_file)
     read_ini_key('linux', linux_file)
 
+
+def efficientNetTrick(package):
+    global flag_efficientNet
+    if 'EfficientLPS' in package:
+        flag_efficientNet = package
+    # EfficientPS works with both versions of efficientNet but EfficientLPS works 
+    # only with EfficientLPS version
+    elif 'EfficientPS' in package and 'EfficientLPS' not in flag_efficientNet:
+        flag_efficientNet = package
+    
 
 # Parse arguments
 section = "runtime"
@@ -70,3 +86,5 @@ if not global_dependencies:
             for filename in files:
                 if filename == 'dependencies.ini':
                     read_ini(os.path.join(subdir, filename))
+with open(python_file, "a") as f:
+    f.write(os.path.expandvars(flag_efficientNet) + '\n')
