@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import struct
 import numpy as np
 from opendr.engine.data import Image, PointCloud, Timeseries
 from opendr.engine.target import (
@@ -20,7 +21,10 @@ from opendr.engine.target import (
 )
 from cv_bridge import CvBridge
 from std_msgs.msg import String, ColorRGBA, Header
-from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg
+from sensor_msgs.msg import (
+    Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg,
+    PointField as PointFieldMsg, PointCloud2 as PointCloud2Msg
+)
 from vision_msgs.msg import (
     Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,
     Detection3D, Detection3DArray, BoundingBox3D as BoundingBox3DMsg,
@@ -33,6 +37,7 @@ from geometry_msgs.msg import (
     Point
 )
 from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
+from sensor_msgs_py import point_cloud2 as pc2
 
 
 class ROS2Bridge:
@@ -361,6 +366,77 @@ class ROS2Bridge:
         ros_point_cloud.channels = channels
 
         return ros_point_cloud
+
+    def from_ros_point_cloud2(self, point_cloud: PointCloud2Msg):
+        """
+        Converts a ROS PointCloud2 message into an OpenDR PointCloud
+        :param point_cloud: ROS PointCloud2 to be converted
+        :type point_cloud: sensor_msgs.msg.PointCloud2
+        :return: OpenDR PointCloud
+        :rtype: engine.data.PointCloud
+        """
+
+        points = pc2.read_points_list(point_cloud, field_names=[f.name for f in point_cloud.fields])
+        result = PointCloud(points)
+
+        return result
+
+    def to_ros_point_cloud2(self, point_cloud: PointCloud, timestamp: str, channels: str=None):
+
+        """
+        Converts an OpenDR PointCloud message into a ROS PointCloud2
+        :param: OpenDR PointCloud
+        :type: engine.data.PointCloud
+        :param: channels to be included in the PointCloud2 message. Available channels names are ["rgb", "rgba"]
+        :type: str
+        :return message: ROS PointCloud2
+        :rtype message: sensor_msgs.msg.PointCloud2
+        """
+
+        header = Header()
+        header.stamp = timestamp
+        header.frame_id = "base_link"
+
+        channel_count = point_cloud.data.shape[-1] - 3
+
+        fields = [PointFieldMsg(name="x", offset=0, datatype=PointFieldMsg.FLOAT32, count=1),
+                  PointFieldMsg(name="y", offset=4, datatype=PointFieldMsg.FLOAT32, count=1),
+                  PointFieldMsg(name="z", offset=8, datatype=PointFieldMsg.FLOAT32, count=1)]
+        if channels == 'rgb' or channels == 'rgba':
+            fields.append(PointFieldMsg(name="rgba", offset=12, datatype=PointFieldMsg.UINT32, count=1))
+        else:
+            for i in range(channel_count):
+                fields.append(PointFieldMsg(name="channel_" + str(i),
+                                            offset=12 + i * 4,
+                                            datatype=PointFieldMsg.FLOAT32,
+                                            count=1))
+
+        points = []
+
+        for point in point_cloud.data:
+            pt = [point[0], point[1], point[2]]
+            for channel in range(channel_count):
+                if channels == 'rgb' or channels == 'rgba':
+                    r = int(point[3])
+                    g = int(point[4])
+                    b = int(point[5])
+
+                    if channels == 'rgb':
+                        a = 255
+                    else:
+                        a = int(point[6])
+
+                    rgba = struct.unpack('I', struct.pack('BBBB', b, g, r, a))[0]
+                    pt.append(rgba)
+                    break
+
+                else:
+                    pt.append(point[3 + channel])
+            points.append(pt)
+
+        ros_point_cloud2 = pc2.create_cloud(header, fields, points)
+
+        return ros_point_cloud2
 
     def from_ros_boxes_3d(self, ros_boxes_3d):
         """

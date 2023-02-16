@@ -67,7 +67,7 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 6. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros2-nodes)
 7. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros2-node)
 8. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
-9. [Panoptic Segmentation](src/opendr_perception/README.md#panoptic-segmentation-ros2-node)
+9. [Vision Based Panoptic Segmentation](src/opendr_perception/README.md#vision-based-panoptic-segmentation-ros2-node)
 10. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
 11. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros2-node)
 12. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
@@ -86,5 +86,6 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros2-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros2-node)
+3. [LiDAR Based Panoptic Segmentation](src/opendr_perception/README.md#lidar-based-panoptic-segmentation-ros2-node)
 ## Biosignal input
 1. [Heart Anomaly Detection](src/opendr_perception/README.md#heart-anomaly-detection-ros2-node)
