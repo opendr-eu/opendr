@@ -5,7 +5,6 @@ import torch
 import numpy as np
 from torch import nn, optim, Tensor
 import torch.nn.functional as F
-from torchvision.transforms import ToPILImage
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module.networks import (
     ResnetEncoder,

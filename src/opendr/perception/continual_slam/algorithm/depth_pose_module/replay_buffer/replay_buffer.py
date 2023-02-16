@@ -9,7 +9,6 @@ import torch
 from PIL import Image
 from torch import Tensor
 from torch.utils.data import Dataset as TorchDataset
-from torchvision import transforms
 import torch.nn.functional as F
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer.encoder import FeatureEncoder

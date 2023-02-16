@@ -109,9 +109,3 @@ class ConfigParser():
             string += f'----- {config_type_name} --- END -------\n'
         string = string[:-1]
         return string
-
-
-if __name__ == '__main__':
-    local_path = Path(__file__).parent
-    config = ConfigParser(local_path / 'singlegpu_kitti.yaml')
-    print(config)

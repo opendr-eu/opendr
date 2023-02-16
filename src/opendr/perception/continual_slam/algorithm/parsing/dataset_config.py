@@ -7,4 +7,3 @@ class DatasetConfig:
     dataset_path : Path
     height : int
     width : int
-

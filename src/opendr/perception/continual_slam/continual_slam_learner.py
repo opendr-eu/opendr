@@ -13,9 +13,10 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional, List, Union
 
 import torch
+import cv2
 import pickle
 import numpy as np
 import matplotlib as mpl
@@ -35,7 +36,7 @@ class ContinualSLAMLearner(Learner):
     This class implements the CL-SLAM algorithm, which is a continual learning approach for SLAM.
     """
     def __init__(self,
-                 config_file: Path,
+                 config_file: Union[str, Path],
                  mode: str = 'predictor',
                  ros: bool = False
                  ):
@@ -249,7 +250,9 @@ class ContinualSLAMLearner(Learner):
         return depth, odometry
 
     def _colorize_depth(self, depth):
-        import cv2
+        """
+        Colorize the depth map
+        """
         vmax = np.percentile(depth, 95)
         normalizer = mpl.colors.Normalize(vmin=depth.min(), vmax=vmax)
         mapper = plt.cm.ScalarMappable(norm=normalizer, cmap="magma")

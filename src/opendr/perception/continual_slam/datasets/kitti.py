@@ -265,13 +265,3 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: int
         """
         return len(self.images)
-
-# TODO: For debugging purposes only
-if __name__ == '__main__':
-    local_path = Path(__file__).parent.parent / 'configs'
-    from opendr.perception.continual_slam.configs.config_parser import ConfigParser
-    dataset_config = ConfigParser(local_path / 'singlegpu_kitti.yaml').dataset
-    dataset_path = dataset_config.dataset_path
-    dataset = KittiDataset(str(dataset_path), dataset_config)
-    for i in range(len(dataset)):
-        print(dataset[i][0].keys())
