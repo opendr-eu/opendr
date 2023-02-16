@@ -32,7 +32,7 @@ from opendr.perception.semantic_segmentation import BisenetLearner
 
 class BisenetNode(Node):
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", output_heatmap_topic="/opendr/heatmap",
+    def __init__(self, input_rgb_image_topic="/image_raw", output_heatmap_topic="/opendr/heatmap",
                  output_rgb_image_topic="/opendr/heatmap_visualization", device="cuda"):
         """
         Creates a ROS2 Node for semantic segmentation with Bisenet.
