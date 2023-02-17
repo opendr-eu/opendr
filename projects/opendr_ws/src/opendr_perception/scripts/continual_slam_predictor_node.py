@@ -16,6 +16,7 @@
 import argparse
 import numpy as np
 from pathlib import Path
+import os
 
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 
@@ -86,8 +87,10 @@ class ContinualSlamPredictor:
         """
         Creating a ContinualSLAMLearner instance with predictor and ros mode
         """
+        env = os.getenv('OPENDR_HOME')
+        path = os.path.join(env, self.path)
         try:
-            self.predictor = ContinualSLAMLearner(self.path, mode="predictor", ros=True)
+            self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=True)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
@@ -123,7 +126,7 @@ class ContinualSlamPredictor:
 
     def _convert_cache_into_triplet(self) -> dict:
         triplet = {}
-        for i in range(len(self._image_cache)):
+        for i in range(len(self.cache['image'])):
             triplet[self.cache['id'][i]] = (self.cache['image'][i], self.cache['distance'][i])
         return triplet
 

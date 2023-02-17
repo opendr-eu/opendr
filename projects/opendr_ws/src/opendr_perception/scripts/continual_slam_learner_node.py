@@ -17,6 +17,7 @@ import argparse
 from pathlib import Path
 import message_filters
 import rospy
+import os
 
 from opendr_bridge import ROSBridge
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
@@ -98,8 +99,11 @@ class ContinualSlamLearner:
         """
         Creating a ContinualSLAMLearner instance with predictor and ros mode
         """
+        env = os.getenv('OPENDR_HOME')
+        path = os.path.join(env, self.path)
+        print(path)
         try:
-            self.learner = ContinualSLAMLearner(self.path, mode="learner", ros=True)
+            self.learner = ContinualSLAMLearner(path, mode="learner", ros=True)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
@@ -110,10 +114,12 @@ class ContinualSlamLearner:
         """
         Creating a replay buffer instance
         """
+        env = os.getenv('OPENDR_HOME')
+        path = os.path.join(env, self.path)
         try:
             self.replay_buffer = ReplayBuffer(buffer_size=self.buffer_size,
                                               save_memory=self.save_memory,
-                                              dataset_config_path=self.path,
+                                              dataset_config_path=path,
                                               sample_size=self.sample_size)
             return True
         except Exception as e:
@@ -192,7 +198,7 @@ class ContinualSlamLearner:
         batch.insert(0, item)
 
         # Train learner
-        self.learner.fit(batch, replay_buffer=True)
+        self.learner.fit(batch, learner=True)
 
         # Publish new weights
         if self.do_publish % self.publish_rate == 0:

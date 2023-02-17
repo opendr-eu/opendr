@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import argparse
 import time
 from pathlib import Path
@@ -64,10 +65,14 @@ class ContinualSlamDatasetNode:
                                                          queue_size=10)
 
     def _init_dataset(self):
-        if not Path(self.config_file_path).exists():
+        env = os.getenv("OPENDR_HOME")
+        print(env)
+        config_file_path = os.path.join(env, self.config_file_path)
+        print(config_file_path)
+        if not Path(config_file_path).exists():
             raise FileNotFoundError("Config file not found")
         try:
-            self.dataset = KittiDataset(Path(self.dataset_path), self.config_file_path)
+            self.dataset = KittiDataset(self.dataset_path, config_file_path)
             return True
         except FileNotFoundError:
             rospy.logerr("Dataset path is incorrect. Please check the path")
@@ -116,7 +121,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_path", type=str, default="/home/canakcia/Desktop/kitti_dset/",
                         help="Path to the dataset")
-    parser.add_argument("--config_file_path", type=str, default="/src/opendr/perception/continual_slam/configs/config.yaml",
+    parser.add_argument("--config_file_path", type=str,
+                        default="src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml",
                         help="Path to the config file")
     parser.add_argument("--output_image_topic", type=str, default="/cl_slam/image",
                         help="ROS topic to publish images")

@@ -73,7 +73,8 @@ class ContinualSLAMLearner(Learner):
     def fit(self,
             batch: List,
             return_losses: bool = False,
-            replay_buffer: bool = False) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+            replay_buffer: bool = False,
+            learner: bool = False) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
         """
         In the context of CL-SLAM, we implemented fit method as adapt method, which updates the weights of learner
         based on coming input. Only works in learner mode.
@@ -85,8 +86,7 @@ class ContinualSLAMLearner(Learner):
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         if self.mode == 'learner':
-            for item in batch:
-                return self._fit(item, return_losses, replay_buffer)
+            return self._fit(batch, return_losses, replay_buffer, learner=learner)
         else:
             raise ValueError('Fit is only available in learner mode')
 
@@ -168,25 +168,29 @@ class ContinualSLAMLearner(Learner):
 
     # Private methods ================================================================================
     def _fit(self,
-             batch: Tuple[Dict, None],
+             batch: List,
              return_losses: bool = False,
-             replay_buffer: bool = False) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+             replay_buffer: bool = False,
+             learner: bool = False) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
         """
-        :param batch: tuple of (input, target)
-        :type batch: Tuple[Dict, None]
+        :param batch: list of tuples of (input, target)
+        :type batch: List[Tuple[Dict, None]]
         :param return_losses: whether to return the losses
         :type return_losses: bool
+        :param replay_buffer: whether to use replay buffer
+        :type replay_buffer: bool
+        :param learner: whether to use learner
+        :type learner: bool
         :return: tuple of (prediction, loss)
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
-        input_dict = self._input_formatter(batch, replay_buffer)
+        batch_size = len(batch)
+        input_dict = self._input_formatter(batch, replay_buffer, learner=learner, height=self.height, width=self.width)
         # Adapt
         if return_losses:
-            prediction, losses = self.learner.adapt(input_dict, steps=5, return_loss=return_losses)
-            return self._output_formatter(prediction), losses
+            prediction, losses = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, use_expert=False, batch_size=batch_size)
         else:
-            prediction = self.learner.adapt(input_dict, steps=5, return_loss=return_losses)
-            return self._output_formatter(prediction), None
+            prediction = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, use_expert=False, batch_size=batch_size)
 
     def _predict(self,
                  batch: Tuple[Dict, None],
@@ -210,14 +214,44 @@ class ContinualSLAMLearner(Learner):
             return self._output_formatter(prediction)
 
     @staticmethod
-    def _input_formatter(batch: Tuple[Dict, None], replay_buffer: bool = False) -> Dict[Any, Tensor]:
+    def _input_formatter(batch: Tuple[Dict, None],
+                         replay_buffer: bool = False,
+                         learner: bool = False,
+                         height: int = None,
+                         width: int = None,)-> Union[List, Dict[Any, Tensor]]:
         """
         Format the input for the prediction
         :param batch: tuple of (input, target)
         :type batch: Tuple[Dict, None]
-        :return: dictionary of input
-        :rtype: Dict[Any, Tensor]
+        :return: Either a list of input dicts or a single dictionary of input tensors
+        :rtype: Union[List, Dict[Any, Tensor]]
         """
+        if learner:
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            if not (height and width):
+                raise ValueError('Height and width must be provided for learner')
+            input_dict = {
+            (-1, 'image') : torch.zeros(size = (len(batch), 3, height, width), device=device),
+            (-1, 'distance'): torch.zeros(size = (len(batch), 1), device=device),
+            (0, 'image') : torch.zeros(size = (len(batch), 3, height, width), device=device),
+            (0, 'distance'): torch.zeros(size = (len(batch), 1), device=device),
+            (1, 'image') : torch.zeros(size = (len(batch), 3, height, width), device=device),
+            (1, 'distance'): torch.zeros(size = (len(batch), 1), device=device),
+            }
+            for i, input in enumerate(batch):
+                for frame_id in ([-1, 0, 1]):
+                    image = input[(frame_id, 'image')]
+                    distance = input[(frame_id, 'distance')]
+                    if image.is_cuda and not torch.cuda.is_available():
+                        image = image.cpu()
+                        distance = distance.cpu()
+                    if not image.is_cuda and torch.cuda.is_available():
+                        image = image.cuda()
+                        distance = distance.cuda()
+                    input_dict[(frame_id, 'image')][i] = image
+                    input_dict[(frame_id, 'distance')][i] = distance
+            return input_dict
+
         if isinstance(batch, dict):
             inputs = batch
         else:
@@ -259,3 +293,22 @@ class ContinualSLAMLearner(Learner):
         colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3]*255).astype(np.uint8)
         colormapped_img = cv2.cvtColor(colormapped_img, cv2.COLOR_RGB2BGR)
         return Image(colormapped_img)
+
+
+if __name__ == '__main__':
+    import os
+    env = os.getenv('OPENDR_HOME')
+    config_file = os.path.join(env, 'src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml')
+    learner = ContinualSLAMLearner(config_file=config_file, mode='learner', ros=False)
+
+    from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
+    replay_buffer = ReplayBuffer(4, True, sample_size=3, dataset_config_path=config_file)
+    from opendr.perception.continual_slam.datasets.kitti import KittiDataset
+    dataset = KittiDataset(path = '/home/canakcia/Desktop/kitti_dset/', config_file_path=config_file)
+    for item in dataset:
+        replay_buffer.add(item)
+        item = ContinualSLAMLearner._input_formatter(item)
+        if len(replay_buffer) > 3:
+            sample = replay_buffer.sample()
+            sample.insert(0, item)
+            learner.fit(sample, learner=True)

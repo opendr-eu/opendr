@@ -25,7 +25,7 @@ from typing import Tuple, Union, Any, List
 
 from opendr.engine.data import Image
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
-from opendr.perception.continual_slam.datasets.config import Dataset
+from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 
 from torchvision.transforms import Resize, InterpolationMode
 from PIL import Image as PILImage
@@ -33,10 +33,10 @@ from PIL import Image as PILImage
 
 class KittiDataset(ExternalDataset, DatasetIterator):
 
-    def __init__(self, path: Union[str, Path, PathLike], config: Dataset):
+    def __init__(self, path: Union[str, Path, PathLike], config_file_path: str):
         super().__init__(path, dataset_type='kitti')
-
-        if not path.exists():
+        config = ConfigParser(config_file_path).dataset
+        if not Path(path).exists():
             print(f'Given path {path} does not exist. Using path from config file...')
             path = config.dataset_path
         self._path = Path(os.path.join(path, 'sequences'))
@@ -47,7 +47,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         self.width = config.width
         self.scales = config.scales
         self.valid_sequences = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
-
+        self.sequences = os.listdir(self._path)
         if self.sequences is None:
             raise FileNotFoundError(f'No sequences found in {self._path}')
         # ========================================================

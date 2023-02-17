@@ -28,7 +28,7 @@ DepthPosePrediction:
   scales: [ 0, 1, 2, 3 ]  # Network size
   learning_rate: 1e-4
   scheduler_step_size: 15
-  batch_size: 1
+  batch_size: 4
   num_workers: 12
   num_epochs: 25
   min_depth: .1

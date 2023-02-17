@@ -66,7 +66,8 @@ class DepthPoseModule:
               online_loss_weight: Optional[float] = None,
               use_expert: bool = True,
               do_adapt: bool = True,
-              return_loss: bool = False
+              return_loss: bool = False,
+              batch_size: int = None,
               ) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
         """
         Adapt the model to a new task.
@@ -87,6 +88,8 @@ class DepthPoseModule:
         :return: A tuple containing the outputs and the loss.
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
+        if batch_size is not None:
+            self.batch_size = batch_size
         if online_loss_weight is None:
             loss_weights = None
         elif self.batch_size == 1:
