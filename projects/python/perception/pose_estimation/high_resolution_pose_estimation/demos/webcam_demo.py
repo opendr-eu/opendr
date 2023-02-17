@@ -52,14 +52,11 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference, defaults to 420", default=420)
     parser.add_argument("--height2", help="Base height of resizing in second inference, defaults to 360", default=360)
-    parser.add_argument("--input", help="use 'cam' for local webcam input or 'ip' for ip camera input, "
-                                        "such as mobile phone with an appropriate application, defaults to 'cam'", 
-                        default='ip')
+
     args = parser.parse_args()
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
-    base_height1, base_height2, input_ = args.height1, args.height2, args.input
-
+    base_height1, base_height2 = args.height1, args.height2
     if accelerate:
         stride = True
         stages = 1
@@ -89,16 +86,10 @@ if __name__ == '__main__':
     if onnx:
         lw_pose_estimator.optimize()
 
-    # Use the first camera available on the system
-    if input_ == 'cam':
-        image_provider = VideoReader(0)
-    elif input_ == 'ip':
-        image_provider = VideoReader('http://192.168.1.1:8080/video')  # use a local ip for an ip camera
-        # e.g mobile application  "IP Camera Lite"
-
     hr_avg_fps = 0
     lw_avg_fps = 0
-
+    # Use the first camera available on the system
+    image_provider = VideoReader(0)
     image_provider = iter(image_provider)
 
     height = image_provider.cap.get(4)
