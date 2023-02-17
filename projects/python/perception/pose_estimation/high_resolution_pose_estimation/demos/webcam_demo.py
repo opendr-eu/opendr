@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument("--height2", help="Base height of resizing in second inference, defaults to 360", default=360)
     parser.add_argument("--input", help="use 'cam' for local webcam input or 'ip' for ip camera input, "
                                         "such as mobile phone with an appropriate application, defaults to 'cam'", 
-                        default='ip')
+                        default='cam')
     args = parser.parse_args()
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
