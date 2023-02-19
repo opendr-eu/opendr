@@ -275,7 +275,8 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
 
   // Parse the model JSON file
   std::string basePath(modelPath);
-  std::string modelJsonPath = basePath + "/nanodet_" + *modelName + ".json";
+  std::string modelNameString(modelName);
+  std::string modelJsonPath = basePath + "/nanodet_" + modelNameString + ".json";
   std::ifstream inStream(modelJsonPath);
   if (!inStream.is_open()) {
     std::cerr << "Cannot open JSON model file." << std::endl;
