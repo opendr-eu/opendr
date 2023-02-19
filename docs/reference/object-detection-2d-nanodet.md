@@ -113,7 +113,7 @@ Parameters:
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
 - **iou_threshold**: *float, default=0.6*\
-  Specifies the iou threshold for nms in inference.
+  Specifies the IOU threshold for NMS in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 
@@ -144,7 +144,7 @@ Parameters:
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
 - **iou_threshold**: *float, default=0.6*\
-  Specifies the iou threshold for nms in inference.
+  Specifies the IOU threshold for NMS in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 
