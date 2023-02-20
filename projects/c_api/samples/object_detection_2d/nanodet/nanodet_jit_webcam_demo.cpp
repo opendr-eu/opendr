@@ -81,6 +81,6 @@ int main(int argc, char **argv) {
   // Free the memory
   freeDetectionsVector(&results);
   freeNanodetModel(&model);
-
+  free(opImage.data);
   return 0;
 }
