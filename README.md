@@ -22,6 +22,8 @@ ______________________________________________________________________
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Test Suite (master)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml/badge.svg)](https://github.com/opendr-eu/opendr/actions/workflows/tests_suite.yml)
 [![Test Packages](https://github.com/opendr-eu/opendr/actions/workflows/test_packages.yml/badge.svg)](https://github.com/opendr-eu/opendr/actions/workflows/test_packages.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7540781.svg)](https://doi.org/10.5281/zenodo.7540781)
+
 </div>
 
 ## About
