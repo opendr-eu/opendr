@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
       opImage.data = NULL;
     } else {
       cv::Mat *tempMatPtr = new cv::Mat(frame);
-      opImage.data = static_cast<void *>tempMatPtr;
+      opImage.data = reinterpret_cast<void *>(tempMatPtr);
     }
 
 
