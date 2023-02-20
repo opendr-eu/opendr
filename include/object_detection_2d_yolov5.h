@@ -40,7 +40,6 @@ struct Yolov5Model {
   // Model parameters
   int inputSizes[2];
   int isDynamicInputShape;
-
 };
 typedef struct Yolov5Model Yolov5ModelT;
 
@@ -70,15 +69,6 @@ OpenDRDetectionVectorTargetT inferYolov5(Yolov5ModelT *model, OpenDRImageT *imag
  * @param model model to be de-allocated
  */
 void freeYolov5Model(Yolov5ModelT *model);
-
-///**
-// * Draw the bounding boxes from detections in the given image.
-// * @param image image that has been used for inference
-// * @param model yolov5 model that has been used for inference
-// * @param vector output of the inference
-// * @param show if the value given is zero, the image will be displayed until a key is pressed
-// */
-//void drawBboxesYolov5(OpenDRImageT *image, Yolov5ModelT *model, OpenDRDetectionVectorTargetT *vector, int show);
 
 #ifdef __cplusplus
 }

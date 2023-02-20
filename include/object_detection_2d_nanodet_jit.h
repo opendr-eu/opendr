@@ -72,15 +72,6 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
  */
 void freeNanodetModel(NanodetModelT *model);
 
-///**
-// * Draw the bounding boxes from detections in the given image.
-// * @param image image that has been used for inference
-// * @param model nanodet model that has been used for inference
-// * @param detectionsVector output of the inference
-// * @param show if the value given is zero, the image will be displayed until a key is pressed
-// */
-//void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show);
-
 #ifdef __cplusplus
 }
 #endif

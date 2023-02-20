@@ -30,7 +30,7 @@ extern "C" {
  * @param key the key of value to extract from the JSON file
  * @param output OpenDRIntsVector to save the integers
  */
-void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVectorT *output) ;
+void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVectorT *output);
 
 /**
  * JSON parser to extract arrays or vectors of strings from JSON files
@@ -135,7 +135,8 @@ void freeDetectionsVector(OpenDRDetectionVectorTargetT *vector);
  * @param colorList an array like structure of integer to represent the drawn colors of its class
  * @param show if the value given is zero, the image will be displayed until a key is pressed
  */
-void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenDRStringsVectorT *labels, int **colorList, int show);
+void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenDRStringsVectorT *labels, int **colorList,
+                int show);
 
 /**
  * Initialize an empty OpenDR tensor

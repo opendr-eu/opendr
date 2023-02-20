@@ -17,15 +17,15 @@
 #include "data.h"
 
 #include <opencv2/core.hpp>
-#include <opencv2/opencv.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 
 #include <document.h>
 #include <stringbuffer.h>
 #include <writer.h>
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
 void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVector *output) {
   rapidjson::Document doc;
@@ -35,7 +35,7 @@ void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVector *
   if (!doc.HasMember(key)) {
     if (doc.HasMember("inference_params")) {
       const rapidjson::Value &inferenceParams = doc["inference_params"];
-      if (!inferenceParams.HasMember(key)){
+      if (!inferenceParams.HasMember(key)) {
         std::cout << key << " is not a member of json" << std::endl;
         return;
       }
@@ -50,8 +50,7 @@ void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVector *
       for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++)
         items.push_back(inferenceParams[key][i].GetInt());
     }
-  }
-  else {
+  } else {
     if (!doc[key].IsArray()) {
       std::cout << key << " is not an Array" << std::endl;
       return;
@@ -71,7 +70,7 @@ void getStringVectorFromJson(const char *json, const char *key, OpenDRStringsVec
   rapidjson::Document doc;
   doc.Parse(json);
 
-  std::vector<const char*> items;
+  std::vector<const char *> items;
   if (!doc.HasMember(key)) {
     if (doc.HasMember("inference_params")) {
       const rapidjson::Value &inferenceParams = doc["inference_params"];
@@ -90,8 +89,7 @@ void getStringVectorFromJson(const char *json, const char *key, OpenDRStringsVec
       for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++)
         items.push_back(inferenceParams[key][i].GetString());
     }
-  }
-  else {
+  } else {
     if (!doc[key].IsArray()) {
       std::cout << key << " is not an Array" << std::endl;
       return;
@@ -104,11 +102,6 @@ void getStringVectorFromJson(const char *json, const char *key, OpenDRStringsVec
       items.push_back(doc[key][i].GetString());
   }
 
-//  char **data = new char *[items.size()];
-//  for (int i = 0; i < items.size(); i++) {
-//    data[i] = new char[items[i].size() + 1];
-//    strcpy(data[i], items[i].c_str());
-//  }
   loadOpenDRStringsVector(output, items.data(), items.size());
 }
 
@@ -274,20 +267,7 @@ void freeImage(OpenDRImageT *image) {
 
 void initDetectionsVector(OpenDRDetectionVectorTargetT *vector) {
   vector->startingPointer = NULL;
-
-  std::vector<OpenDRDetectionTarget> detections;
-  OpenDRDetectionTargetT detection;
-
-  detection.name = -1;
-  detection.left = 0.0;
-  detection.top = 0.0;
-  detection.width = 0.0;
-  detection.height = 0.0;
-  detection.score = 0.0;
-
-  detections.push_back(detection);
-
-  loadDetectionsVector(vector, detections.data(), static_cast<int>(detections.size()));
+  vector->size = 0;
 }
 
 void loadDetectionsVector(OpenDRDetectionVectorTargetT *vector, OpenDRDetectionTargetT *detectionPtr, int vectorSize) {
@@ -306,7 +286,8 @@ void freeDetectionsVector(OpenDRDetectionVectorTargetT *vector) {
   }
 }
 
-void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenDRStringsVector *labels, int **colorList, int show) {
+void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenDRStringsVector *labels, int **colorList,
+                int show) {
   cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
   if (!opencvImage) {
     std::cerr << "Cannot load image for inference." << std::endl;
@@ -318,7 +299,8 @@ void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenD
     float score = detection.score > 1 ? 1 : detection.score;
 
     cv::Scalar color = cv::Scalar(colorList[detection.name][0], colorList[detection.name][1], colorList[detection.name][2]);
-    cv::Rect box(cv::Point(detection.left, detection.top), cv::Point((detection.left + detection.width), (detection.top + detection.height)));
+    cv::Rect box(cv::Point(detection.left, detection.top),
+                 cv::Point((detection.left + detection.width), (detection.top + detection.height)));
     cv::rectangle(*opencvImage, box, color, 2);
 
     int x = (int)detection.left;
@@ -461,26 +443,6 @@ void initOpenDRStringsVector(OpenDRStringsVector *vector) {
 void loadOpenDRStringsVector(OpenDRStringsVector *vector, const char **data, int size) {
   freeStringsVector(vector);
 
-//  // Compute the total size of the strings in the data array
-//  size_t total_size = 0;
-//  for (int i = 0; i < size; i++) {
-//    total_size += strlen(data[i]) + 1;
-//  }
-//
-//  // Allocate memory for the output data
-//  vector->size = size;
-//  vector->data = new char *[size];
-//  char *strings = new char[total_size];
-//  char *strings_ptr = strings;
-//
-//  // Copy the strings to the output data and update the char* pointers
-//  for (int i = 0; i < size; i++) {
-//    size_t str_size = strlen(data[i]) + 1;
-//    memcpy(strings_ptr, data[i], str_size);
-//    vector->data[i] = strings_ptr;
-//    strings_ptr += str_size;
-//  }
-
   std::vector<std::string> items;
   for (int i = 0; i < size; i++) {
     items.push_back(std::string(data[i]));
@@ -513,7 +475,7 @@ void loadOpenDRIntsVector(OpenDRIntsVector *vector, int *data, int size) {
 
   vector->size = size;
   int sizeOfOutput = (size) * sizeof(int);
-  vector->data = static_cast<int*>(malloc(sizeOfOutput));
+  vector->data = static_cast<int *>(malloc(sizeOfOutput));
   std::memcpy(vector->data, data, sizeOfOutput);
 }
 

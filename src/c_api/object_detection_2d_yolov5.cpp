@@ -16,11 +16,11 @@
 #include "data.h"
 #include "target.h"
 
+#include <document.h>
+#include <onnxruntime_cxx_api.h>
 #include <codecvt>
 #include <fstream>
-#include <onnxruntime_cxx_api.h>
 #include <opencv2/opencv.hpp>
-#include <document.h>
 
 #include <boost/filesystem.hpp>
 #include <cstring>
@@ -46,7 +46,6 @@ void letterbox(cv::Mat &image, cv::Mat &outImage, const cv::Size &newShape = cv:
   if (!scaleUp)
     r = std::min(r, 1.0f);
 
-  float ratio[2]{r, r};
   int newUnpad[2]{(int)std::round((float)shape.width * r), (int)std::round((float)shape.height * r)};
 
   auto dw = (float)(newShape.width - newUnpad[0]);
@@ -60,8 +59,6 @@ void letterbox(cv::Mat &image, cv::Mat &outImage, const cv::Size &newShape = cv:
     dh = 0.0f;
     newUnpad[0] = newShape.width;
     newUnpad[1] = newShape.height;
-    ratio[0] = (float)newShape.width / (float)shape.width;
-    ratio[1] = (float)newShape.height / (float)shape.height;
   }
 
   dw /= 2.0f;
@@ -78,6 +75,10 @@ void letterbox(cv::Mat &image, cv::Mat &outImage, const cv::Size &newShape = cv:
   cv::copyMakeBorder(outImage, outImage, top, bottom, left, right, cv::BORDER_CONSTANT, color);
 }
 
+template<typename T> T clip(const T &n, const T &lower, const T &upper) {
+  return std::max(lower, std::min(n, upper));
+}
+
 void scaleCoords(const cv::Size &imageShape, cv::Rect &coords, const cv::Size &imageOriginalShape) {
   float gain = std::min((float)imageShape.height / (float)imageOriginalShape.height,
                         (float)imageShape.width / (float)imageOriginalShape.width);
@@ -92,14 +93,10 @@ void scaleCoords(const cv::Size &imageShape, cv::Rect &coords, const cv::Size &i
   coords.height = (int)std::round(((float)coords.height / gain));
 
   // // clip coords, should be modified for width and height
-  // coords.x = utils::clip(coords.x, 0, imageOriginalShape.width);
-  // coords.y = utils::clip(coords.y, 0, imageOriginalShape.height);
-  // coords.width = utils::clip((coords.width + coords.x), 0, imageOriginalShape.width) - coords.x;
-  // coords.height = utils::clip((coords.height + coords.y), 0, imageOriginalShape.height) - coords.y;
-}
-
-template<typename T> T clip(const T &n, const T &lower, const T &upper) {
-  return std::max(lower, std::min(n, upper));
+  coords.x = clip(coords.x, 0, imageOriginalShape.width);
+  coords.y = clip(coords.y, 0, imageOriginalShape.height);
+  coords.width = clip((coords.width + coords.x), 0, imageOriginalShape.width) - coords.x;
+  coords.height = clip((coords.height + coords.y), 0, imageOriginalShape.height) - coords.y;
 }
 
 void getBestClassInfo(std::vector<float>::iterator it, const int &numClasses, float &bestConf, int &bestClassId) {
@@ -197,8 +194,6 @@ void loadYolov5Model(const char *modelPath, const char *modelName, const char *d
   OpenDRStringsVector labels;
   initOpenDRStringsVector(&labels);
   getStringVectorFromJson(json, "classes", &labels);
-  // const std::vector<std::string> labels = getStringVectorFromJso(json, "classes");
-
 
   int **colorList = new int *[labels.size];
   for (int i = 0; i < labels.size; i++) {
@@ -345,7 +340,8 @@ void ffYolov5(Yolov5ModelT *model, std::vector<float> &inputTensorValues, size_t
   inputTensors.push_back(Ort::Value::CreateTensor<float>(memoryInfo, inputTensorValues.data(), inputTensorSize,
                                                          inputTensorShape.data(), inputTensorShape.size()));
 
-  outputTensors = session->Run(Ort::RunOptions{nullptr}, inputNodeNames.data(), inputTensors.data(), 1, outputNodeNames.data(), 1);
+  outputTensors =
+    session->Run(Ort::RunOptions{nullptr}, inputNodeNames.data(), inputTensors.data(), 1, outputNodeNames.data(), 1);
 }
 
 OpenDRDetectionVectorTargetT inferYolov5(Yolov5ModelT *model, OpenDRImageT *image) {
@@ -370,8 +366,8 @@ OpenDRDetectionVectorTargetT inferYolov5(Yolov5ModelT *model, OpenDRImageT *imag
   ffYolov5(model, inputTensorValues, inputTensorSize, inputTensorShape, outputTensors);
 
   cv::Size resizedShape = cv::Size((int)inputTensorShape[3], (int)inputTensorShape[2]);
-  postprocessYolov5(resizedShape, opencvImage->size(), outputTensors,
-                    model->confThreshold, model->iouThreshold, detectionsVector);
+  postprocessYolov5(resizedShape, opencvImage->size(), outputTensors, model->confThreshold, model->iouThreshold,
+                    detectionsVector);
 
   delete[] blob;
 
@@ -398,9 +394,7 @@ void freeYolov5Model(Yolov5ModelT *model) {
     freeStringsVector(&(model->labels));
   }
 
-  for (int i = 0; i < model->numberOfClasses; i++) {
+  for (int i = 0; i < model->numberOfClasses; i++)
     delete[] model->colorList[i];
-  }
   delete[] model->colorList;
-
 }
