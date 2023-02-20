@@ -25,6 +25,22 @@ extern "C" {
 #endif
 
 /**
+ * JSON parser to extract arrays or vectors of ints from JSON files
+ * @param json a string of JSON file
+ * @param key the key of value to extract from the JSON file
+ * @param output OpenDRIntsVector to save the integers
+ */
+void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVectorT *output) ;
+
+/**
+ * JSON parser to extract arrays or vectors of strings from JSON files
+ * @param json a string of JSON file
+ * @param key the key of value to extract from the JSON file
+ * @param output OpenDRStringsVector to save the strings
+ */
+void getStringVectorFromJson(const char *json, const char *key, OpenDRStringsVectorT *output);
+
+/**
  * JSON parser to extract strings from OpenDR model files.
  * @param json a string of json file
  * @param key the key of the value to extract from JSON file
@@ -112,6 +128,16 @@ void loadDetectionsVector(OpenDRDetectionVectorTargetT *vector, OpenDRDetectionT
 void freeDetectionsVector(OpenDRDetectionVectorTargetT *vector);
 
 /**
+ * Draw the bounding boxes from detections in the given image.
+ * @param image image that has been used for inference
+ * @param vector OpenDR detections vector to be drawn
+ * @param labels labels to map the detections class
+ * @param colorList an array like structure of integer to represent the drawn colors of its class
+ * @param show if the value given is zero, the image will be displayed until a key is pressed
+ */
+void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenDRStringsVectorT *labels, int **colorList, int show);
+
+/**
  * Initialize an empty OpenDR tensor
  * @param tensor OpenDR tensor to initialize
  */
@@ -162,6 +188,13 @@ void freeTensorVector(OpenDRTensorVectorT *vector);
  * @param index the index of tensor that is wanted from OpenDR vector
  */
 void iterTensorVector(OpenDRTensorT *tensor, OpenDRTensorVectorT *vector, int index);
+
+void initOpenDRStringsVector(OpenDRStringsVectorT *vector);
+void loadOpenDRStringsVector(OpenDRStringsVectorT *vector, const char **data, int size);
+void freeStringsVector(OpenDRStringsVectorT *vector);
+void initOpenDRIntsVector(OpenDRIntsVectorT *vector);
+void loadOpenDRIntsVector(OpenDRIntsVectorT *vector, int *data, int size);
+void freeIntsVector(OpenDRIntsVectorT *vector);
 
 #ifdef __cplusplus
 }

@@ -33,25 +33,22 @@ private:
   std::vector<std::string> mLabels;
 
 public:
-  NanoDet(torch::jit::script::Module network, torch::Tensor meanValues, torch::Tensor stdValues, torch::DeviceType device,
-          std::vector<std::string> labels);
+  NanoDet(torch::jit::script::Module network, torch::Tensor meanValues, torch::Tensor stdValues, torch::DeviceType device);
   ~NanoDet();
 
   torch::Tensor preProcess(cv::Mat *image);
   torch::jit::script::Module network() const;
   torch::Tensor meanTensor() const;
   torch::Tensor stdTensor() const;
-  std::vector<std::string> labels() const;
   std::vector<OpenDRDetectionTarget> outputs;
 };
 
 NanoDet::NanoDet(torch::jit::script::Module network, torch::Tensor meanValues, torch::Tensor stdValues,
-                 torch::DeviceType device, const std::vector<std::string> labels) {
+                 torch::DeviceType device) {
   this->mDevice = device;
   this->mNetwork = network;
   this->mMeanTensor = meanValues.clone().to(device);
   this->mStdTensor = stdValues.clone().to(device);
-  this->mLabels = labels;
 }
 
 NanoDet::~NanoDet() {
@@ -95,82 +92,75 @@ torch::Tensor NanoDet::stdTensor() const {
   return this->mStdTensor;
 }
 
-/**
- * Getter of labels
- */
-std::vector<std::string> NanoDet::labels() const {
-  return this->mLabels;
-}
-
-/**
- * Helper function to extract arrays or vectors of integers from JSON files
- * @param json a string of JSON file
- * @param key the key of value to extract from the JSON file
- * @return a vector of integers from extracted key values
- */
-std::vector<int> gestIntVectorFromJson(const char *json, const char *key) {
-  rapidjson::Document doc;
-  doc.Parse(json);
-
-  std::vector<int> items;
-  if (!doc.HasMember(key)) {
-    if (doc.HasMember("inference_params")) {
-      const rapidjson::Value &inferenceParams = doc["inference_params"];
-      if (inferenceParams.HasMember(key) && inferenceParams[key].IsArray()) {
-        for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++) {
-          if (inferenceParams[key][i].IsInt())
-            items.push_back(inferenceParams[key][i].GetInt());
-        }
-        return items;
-      }
-    }
-    std::cout << key << " is not a member of json or inference_params" << std::endl;
-  }
-  if (doc[key].IsArray()) {
-    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++) {
-      if (doc[key][i].IsInt())
-        items.push_back(doc[key][i].GetInt());
-    }
-    return items;
-  }
-  std::cout << key << " is not a member of json or it is not an array" << std::endl;
-  return items;
-}
-
-/**
- * Helper function to extract arrays or vectors of strings from JSON files
- * @param json a string of JSON file
- * @param key the key of value to extract from the JSON file
- * @return a vector of integers from extracted key values
- */
-std::vector<std::string> getStringVectorFromJson(const char *json, const char *key) {
-  rapidjson::Document doc;
-  doc.Parse(json);
-
-  std::vector<std::string> items;
-  if (!doc.HasMember(key)) {
-    if (doc.HasMember("inference_params")) {
-      const rapidjson::Value &inferenceParams = doc["inference_params"];
-      if (inferenceParams.HasMember(key) && inferenceParams[key].IsArray()) {
-        for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++) {
-          if (inferenceParams[key][i].IsString())
-            items.push_back(inferenceParams[key][i].GetString());
-        }
-        return items;
-      }
-    }
-    std::cout << key << " is not a member of json or inference_params" << std::endl;
-  }
-  if (doc[key].IsArray()) {
-    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++) {
-      if (doc[key][i].IsString())
-        items.push_back(doc[key][i].GetString());
-    }
-    return items;
-  }
-  std::cout << key << " is not a member of json or it is not an array" << std::endl;
-  return items;
-}
+///**
+// * Helper function to extract arrays or vectors of integers from JSON files
+// * @param json a string of JSON file
+// * @param key the key of value to extract from the JSON file
+// * @return a vector of integers from extracted key values
+// */
+//std::vector<int> gestIntVectorFromJson(const char *json, const char *key) {
+//  rapidjson::Document doc;
+//  doc.Parse(json);
+//
+//  std::vector<int> items;
+//  if (!doc.HasMember(key)) {
+//    if (doc.HasMember("inference_params")) {
+//      const rapidjson::Value &inferenceParams = doc["inference_params"];
+//      if (inferenceParams.HasMember(key) && inferenceParams[key].IsArray()) {
+//        for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++) {
+//          if (inferenceParams[key][i].IsInt())
+//            items.push_back(inferenceParams[key][i].GetInt());
+//        }
+//        return items;
+//      }
+//    }
+//    std::cout << key << " is not a member of json or inference_params" << std::endl;
+//  }
+//  if (doc[key].IsArray()) {
+//    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++) {
+//      if (doc[key][i].IsInt())
+//        items.push_back(doc[key][i].GetInt());
+//    }
+//    return items;
+//  }
+//  std::cout << key << " is not a member of json or it is not an array" << std::endl;
+//  return items;
+//}
+//
+///**
+// * Helper function to extract arrays or vectors of strings from JSON files
+// * @param json a string of JSON file
+// * @param key the key of value to extract from the JSON file
+// * @return a vector of integers from extracted key values
+// */
+//std::vector<std::string> getStringVectorFromJson(const char *json, const char *key) {
+//  rapidjson::Document doc;
+//  doc.Parse(json);
+//
+//  std::vector<std::string> items;
+//  if (!doc.HasMember(key)) {
+//    if (doc.HasMember("inference_params")) {
+//      const rapidjson::Value &inferenceParams = doc["inference_params"];
+//      if (inferenceParams.HasMember(key) && inferenceParams[key].IsArray()) {
+//        for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++) {
+//          if (inferenceParams[key][i].IsString())
+//            items.push_back(inferenceParams[key][i].GetString());
+//        }
+//        return items;
+//      }
+//    }
+//    std::cout << key << " is not a member of json or inference_params" << std::endl;
+//  }
+//  if (doc[key].IsArray()) {
+//    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++) {
+//      if (doc[key][i].IsString())
+//        items.push_back(doc[key][i].GetString());
+//    }
+//    return items;
+//  }
+//  std::cout << key << " is not a member of json or it is not an array" << std::endl;
+//  return items;
+//}
 
 /**
  * Helper function to calculate the final shape of the model input relative to size ratio of input image.
@@ -297,16 +287,18 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
   }
 
   // Parse inference params
-  const std::vector<int> jsonSize = gestIntVectorFromJson(json, "input_size");
-  const std::vector<std::string> labels = getStringVectorFromJson(json, "classes");
+  OpenDRIntsVector jsonSize;
+  OpenDRStringsVector labels;
+  gestIntVectorFromJson(json, "input_size", &jsonSize);
+  getStringVectorFromJson(json, "classes", &labels);
 
-  int **colorList = new int *[labels.size()];
-  for (int i = 0; i < labels.size(); i++) {
+  int **colorList = new int *[labels.size];
+  for (int i = 0; i < labels.size; i++) {
     colorList[i] = new int[3];
   }
   // seed the random number generator
   std::srand(1);
-  for (int i = 0; i < labels.size(); i++) {
+  for (int i = 0; i < labels.size; i++) {
     for (int j = 0; j < 3; j++) {
       colorList[i][j] = std::rand() % 256;
     }
@@ -321,14 +313,15 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
   torch::jit::script::Module network = torch::jit::load(jitModelPath.c_str(), initDevice);
   network.eval();
 
-  NanoDet *detector = new NanoDet(network, meanTensor, stdValues, initDevice, labels);
+  NanoDet *detector = new NanoDet(network, meanTensor, stdValues, initDevice);
 
   model->network = static_cast<void *>(detector);
+  model->labels = labels;
   model->colorList = colorList;
-  model->numberOfClasses = labels.size();
+  model->numberOfClasses = labels.size;
 
-  model->inputSizes[0] = jsonSize[0];
-  model->inputSizes[1] = jsonSize[1];
+  model->inputSizes[0] = jsonSize.data[0];
+  model->inputSizes[1] = jsonSize.data[1];
 
   if (width != 0)
     model->inputSizes[0] = width;
@@ -393,57 +386,61 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
   return detectionsVector;
 }
 
-void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show) {
-  int **colorList = model->colorList;
-
-  std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
-
-  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
-  if (!opencvImage) {
-    std::cerr << "Cannot load image for inference." << std::endl;
-    return;
-  }
-
-  for (size_t i = 0; i < vector->size; i++) {
-    const OpenDRDetectionTarget bbox = (vector->startingPointer)[i];
-    float score = bbox.score > 1 ? 1 : bbox.score;
-    if (score > model->scoreThreshold) {
-      cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
-      cv::rectangle(*opencvImage,
-                    cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))),
-                    color);
-
-      char text[256];
-
-      sprintf(text, "%s %.1f%%", (classNames)[bbox.name].c_str(), score * 100);
-
-      int baseLine = 0;
-      cv::Size labelSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
-
-      int x = (int)bbox.left;
-      int y = (int)bbox.top;
-      if (y < 0)
-        y = 0;
-      if (x + labelSize.width > opencvImage->cols)
-        x = opencvImage->cols - labelSize.width;
-
-      cv::rectangle(*opencvImage, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)), color, -1);
-      cv::putText(*opencvImage, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
-                  cv::Scalar(255, 255, 255));
-    }
-  }
-
-  if (show == 0) {
-    cv::imshow("image", *opencvImage);
-    cv::waitKey(0);
-  }
-}
+//void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show) {
+//  int **colorList = model->colorList;
+//
+//  std::vector<std::string> classNames = (static_cast<NanoDet *>(model->network))->labels();
+//
+//  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+//  if (!opencvImage) {
+//    std::cerr << "Cannot load image for inference." << std::endl;
+//    return;
+//  }
+//
+//  for (size_t i = 0; i < vector->size; i++) {
+//    const OpenDRDetectionTarget bbox = (vector->startingPointer)[i];
+//    float score = bbox.score > 1 ? 1 : bbox.score;
+//    if (score > model->scoreThreshold) {
+//      cv::Scalar color = cv::Scalar(colorList[bbox.name][0], colorList[bbox.name][1], colorList[bbox.name][2]);
+//      cv::rectangle(*opencvImage,
+//                    cv::Rect(cv::Point(bbox.left, bbox.top), cv::Point((bbox.left + bbox.width), (bbox.top + bbox.height))),
+//                    color);
+//
+//      char text[256];
+//
+//      sprintf(text, "%s %.1f%%", (classNames)[bbox.name].c_str(), score * 100);
+//
+//      int baseLine = 0;
+//      cv::Size labelSize = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.4, 1, &baseLine);
+//
+//      int x = (int)bbox.left;
+//      int y = (int)bbox.top;
+//      if (y < 0)
+//        y = 0;
+//      if (x + labelSize.width > opencvImage->cols)
+//        x = opencvImage->cols - labelSize.width;
+//
+//      cv::rectangle(*opencvImage, cv::Rect(cv::Point(x, y), cv::Size(labelSize.width, labelSize.height + baseLine)), color, -1);
+//      cv::putText(*opencvImage, text, cv::Point(x, y + labelSize.height), cv::FONT_HERSHEY_SIMPLEX, 0.4,
+//                  cv::Scalar(255, 255, 255));
+//    }
+//  }
+//
+//  if (show == 0) {
+//    cv::imshow("image", *opencvImage);
+//    cv::waitKey(0);
+//  }
+//}
 
 void freeNanodetModel(NanodetModelT *model) {
   if (model->network) {
     NanoDet *networkPTR = static_cast<NanoDet *>(model->network);
     delete networkPTR;
     model->network = NULL;
+  }
+
+  if (model->labels.data) {
+    freeStringsVector(&(model->labels));
   }
 
   for (int i = 0; i < model->numberOfClasses; i++) {

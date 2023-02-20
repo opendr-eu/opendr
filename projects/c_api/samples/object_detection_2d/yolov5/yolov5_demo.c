@@ -17,19 +17,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "object_detection_2d_nanodet_jit.h"
+#include "object_detection_2d_yolov5.h"
 #include "opendr_utils.h"
 
 int main(int argc, char **argv) {
-  NanodetModelT model;
+  Yolov5ModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadYolov5Model("./data/object_detection_2d/yolov5/optimized_model", "s", "cpu", 0, 0, 0, 0, &model);
   printf("success\n");
 
   OpenDRImageT image;
 
-  loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
+  loadImage("data/object_detection_2d/yolov5/database/zidane.jpg", &image);
   if (!image.data) {
     printf("Image not found!");
     return 1;
@@ -39,14 +39,14 @@ int main(int argc, char **argv) {
   OpenDRDetectionVectorTargetT results;
   initDetectionsVector(&results);
 
-  results = inferNanodet(&model, &image);
+  results = inferYolov5(&model, &image);
 
   drawBboxes(&image, &results, &model.labels, model.colorList, 0);
 
   // Free the memory
   freeDetectionsVector(&results);
+  freeYolov5Model(&model);
   freeImage(&image);
-  freeNanodetModel(&model);
 
   return 0;
 }

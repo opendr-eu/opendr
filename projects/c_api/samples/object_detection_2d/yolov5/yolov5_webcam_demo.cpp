@@ -15,20 +15,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <chrono>
-#include "object_detection_2d_nanodet_jit.h"
+#include "object_detection_2d_yolov5.h"
 #include "opendr_utils.h"
 
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
-#include <opencv2/opencv.hpp>
 #include <opencv2/videoio.hpp>
 
 int main(int argc, char **argv) {
-  NanodetModelT model;
+  Yolov5ModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadYolov5Model("./data/object_detection_2d/yolov5/optimized_model", "s", "cuda", 0, 0, 0, 0, &model);
   printf("success\n");
 
   cv::Mat frameCap;
@@ -55,11 +55,12 @@ int main(int argc, char **argv) {
       opImage.data = NULL;
     } else {
       cv::Mat *tempMatPtr = new cv::Mat(frame);
-      opImage.data = static_cast<void *>(tempMatPtr);
+      opImage.data = (void *)tempMatPtr;
     }
 
+
     auto start = std::chrono::steady_clock::now();
-    results = inferNanodet(&model, &opImage);
+    results = inferYolov5(&model, &opImage);
     auto end = std::chrono::steady_clock::now();
     double fps = 1000000000.0 / ((double)(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()));
 
@@ -70,7 +71,8 @@ int main(int argc, char **argv) {
 
     // Put fps counter
     std::string fpsText = "FPS: " + std::to_string(fps);
-    cv::putText(*opencvImage, fpsText, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
+    cv::putText(*opencvImage, fpsText, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1,
+                cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
     cv::imshow("live view", *opencvImage);
     if (cv::waitKey(1) >= 0)
       break;
@@ -78,7 +80,7 @@ int main(int argc, char **argv) {
 
   // Free the memory
   freeDetectionsVector(&results);
-  freeNanodetModel(&model);
+  freeYolov5Model(&model);
   freeImage(&opImage);
 
   return 0;

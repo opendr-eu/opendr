@@ -60,10 +60,10 @@ class Predictor(nn.Module):
             return self.script_model(img, height, width, warp_matrix)
         # In tracing (Jit and Onnx optimizations) we must first run the pipeline before the graf,
         # cv2 is needed, and it is installed with abi cxx11 but torch is in cxx<11
-        meta = {"img": img}
-        meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
+        img = divisible_padding(img, divisible=torch.tensor(32))
         with torch.no_grad():
-            results = self.model.inference(meta)
+            # with torch.autocast(self.device, dtype=torch.float16):
+            results = self.model(img)
         return results
 
     def preprocessing(self, img):

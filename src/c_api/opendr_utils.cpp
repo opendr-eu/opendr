@@ -17,12 +17,100 @@
 #include "data.h"
 
 #include <opencv2/core.hpp>
+#include <opencv2/opencv.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
 #include <document.h>
 #include <stringbuffer.h>
 #include <writer.h>
+#include <iostream>
+#include <cstring>
+
+void gestIntVectorFromJson(const char *json, const char *key, OpenDRIntsVector *output) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+
+  std::vector<int> items;
+  if (!doc.HasMember(key)) {
+    if (doc.HasMember("inference_params")) {
+      const rapidjson::Value &inferenceParams = doc["inference_params"];
+      if (!inferenceParams.HasMember(key)){
+        std::cout << key << " is not a member of json" << std::endl;
+        return;
+      }
+      if (!inferenceParams[key].IsArray()) {
+        std::cout << key << " is not an Array" << std::endl;
+        return;
+      }
+      if (!inferenceParams[key][0].IsInt()) {
+        std::cout << key << " is not an integer" << std::endl;
+        return;
+      }
+      for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++)
+        items.push_back(inferenceParams[key][i].GetInt());
+    }
+  }
+  else {
+    if (!doc[key].IsArray()) {
+      std::cout << key << " is not an Array" << std::endl;
+      return;
+    }
+    if (!doc[key][0].IsInt()) {
+      std::cout << key << " is not an integer" << std::endl;
+      return;
+    }
+    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++)
+      items.push_back(doc[key][i].GetInt());
+  }
+
+  loadOpenDRIntsVector(output, items.data(), items.size());
+}
+
+void getStringVectorFromJson(const char *json, const char *key, OpenDRStringsVector *output) {
+  rapidjson::Document doc;
+  doc.Parse(json);
+
+  std::vector<const char*> items;
+  if (!doc.HasMember(key)) {
+    if (doc.HasMember("inference_params")) {
+      const rapidjson::Value &inferenceParams = doc["inference_params"];
+      if (!inferenceParams.HasMember(key)) {
+        std::cout << key << " is not a member of json" << std::endl;
+        return;
+      }
+      if (!inferenceParams[key].IsArray()) {
+        std::cout << key << " is not an Array" << std::endl;
+        return;
+      }
+      if (!inferenceParams[key][0].IsString()) {
+        std::cout << key << " is not an string" << std::endl;
+        return;
+      }
+      for (rapidjson::SizeType i = 0; i < inferenceParams[key].Size(); i++)
+        items.push_back(inferenceParams[key][i].GetString());
+    }
+  }
+  else {
+    if (!doc[key].IsArray()) {
+      std::cout << key << " is not an Array" << std::endl;
+      return;
+    }
+    if (!doc[key][0].IsString()) {
+      std::cout << key << " is not an string" << std::endl;
+      return;
+    }
+    for (rapidjson::SizeType i = 0; i < doc[key].Size(); i++)
+      items.push_back(doc[key][i].GetString());
+  }
+
+//  char **data = new char *[items.size()];
+//  for (int i = 0; i < items.size(); i++) {
+//    data[i] = new char[items[i].size() + 1];
+//    strcpy(data[i], items[i].c_str());
+//  }
+  loadOpenDRStringsVector(output, items.data(), items.size());
+}
 
 const char *jsonGetStringFromKey(const char *json, const char *key, const int index) {
   rapidjson::Document doc;
@@ -218,6 +306,40 @@ void freeDetectionsVector(OpenDRDetectionVectorTargetT *vector) {
   }
 }
 
+void drawBboxes(OpenDRImageT *image, OpenDRDetectionVectorTargetT *vector, OpenDRStringsVector *labels, int **colorList, int show) {
+  cv::Mat *opencvImage = static_cast<cv::Mat *>(image->data);
+  if (!opencvImage) {
+    std::cerr << "Cannot load image for inference." << std::endl;
+    return;
+  }
+
+  for (size_t i = 0; i < vector->size; i++) {
+    const OpenDRDetectionTarget detection = (vector->startingPointer)[i];
+    float score = detection.score > 1 ? 1 : detection.score;
+
+    cv::Scalar color = cv::Scalar(colorList[detection.name][0], colorList[detection.name][1], colorList[detection.name][2]);
+    cv::Rect box(cv::Point(detection.left, detection.top), cv::Point((detection.left + detection.width), (detection.top + detection.height)));
+    cv::rectangle(*opencvImage, box, color, 2);
+
+    int x = (int)detection.left;
+    int y = (int)detection.top;
+
+    int conf = (int)std::round(detection.score * 100);
+    std::string labelName(labels->data[detection.name]);
+    std::string label = labelName + " 0." + std::to_string(conf);
+
+    int baseLine = 0;
+    cv::Size size = cv::getTextSize(label, cv::FONT_ITALIC, 0.8, 2, &baseLine);
+    cv::rectangle(*opencvImage, cv::Point(x, y - 25), cv::Point(x + size.width, y), color, -1);
+    cv::putText(*opencvImage, label, cv::Point(x, y - 3), cv::FONT_ITALIC, 0.8, cv::Scalar(255, 255, 255), 2);
+  }
+
+  if (show == 0) {
+    cv::imshow("image", *opencvImage);
+    cv::waitKey(0);
+  }
+}
+
 void initTensor(OpenDRTensorT *tensor) {
   tensor->batchSize = 0;
   tensor->frames = 0;
@@ -329,4 +451,75 @@ void freeTensorVector(OpenDRTensorVectorT *vector) {
 void iterTensorVector(OpenDRTensorT *tensor, OpenDRTensorVectorT *vector, int index) {
   loadTensor(tensor, static_cast<void *>((vector->datas)[index]), (vector->batchSizes)[index], (vector->frames)[index],
              (vector->channels)[index], (vector->widths)[index], (vector->heights)[index]);
+}
+
+void initOpenDRStringsVector(OpenDRStringsVector *vector) {
+  vector->data = NULL;
+  vector->size = 0;
+}
+
+void loadOpenDRStringsVector(OpenDRStringsVector *vector, const char **data, int size) {
+  freeStringsVector(vector);
+
+//  // Compute the total size of the strings in the data array
+//  size_t total_size = 0;
+//  for (int i = 0; i < size; i++) {
+//    total_size += strlen(data[i]) + 1;
+//  }
+//
+//  // Allocate memory for the output data
+//  vector->size = size;
+//  vector->data = new char *[size];
+//  char *strings = new char[total_size];
+//  char *strings_ptr = strings;
+//
+//  // Copy the strings to the output data and update the char* pointers
+//  for (int i = 0; i < size; i++) {
+//    size_t str_size = strlen(data[i]) + 1;
+//    memcpy(strings_ptr, data[i], str_size);
+//    vector->data[i] = strings_ptr;
+//    strings_ptr += str_size;
+//  }
+
+  std::vector<std::string> items;
+  for (int i = 0; i < size; i++) {
+    items.push_back(std::string(data[i]));
+  }
+
+  vector->size = size;
+  vector->data = new char *[size];
+  for (int i = 0; i < size; i++) {
+    vector->data[i] = new char[items[i].size() + 1];
+    strcpy(vector->data[i], items[i].c_str());
+  }
+}
+
+void freeStringsVector(OpenDRStringsVector *vector) {
+  if (vector->data != NULL) {
+    for (int i = 0; i < vector->size; i++) {
+      delete[] vector->data[i];
+    }
+    delete[] vector->data;
+  }
+}
+
+void initOpenDRIntsVector(OpenDRIntsVector *vector) {
+  vector->data = NULL;
+  vector->size = 0;
+}
+
+void loadOpenDRIntsVector(OpenDRIntsVector *vector, int *data, int size) {
+  freeIntsVector(vector);
+
+  vector->size = size;
+  int sizeOfOutput = (size) * sizeof(int);
+  vector->data = static_cast<int*>(malloc(sizeOfOutput));
+  std::memcpy(vector->data, data, sizeOfOutput);
+}
+
+void freeIntsVector(OpenDRIntsVector *vector) {
+  if (vector->data != NULL) {
+    free(vector->data);
+    vector->data = NULL;
+  }
 }

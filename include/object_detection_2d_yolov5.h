@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef C_API_NANODET_H
-#define C_API_NANODET_H
+#ifndef C_API_YOLOV5_H
+#define C_API_YOLOV5_H
 
 #include "opendr_utils.h"
 #include "target.h"
@@ -24,30 +24,29 @@
 extern "C" {
 #endif
 
-struct NanodetModel {
-  // Jit cpp class holder
-  void *network;
+struct Yolov5Model {
+  // ONNX session objects
+  void *onnxSession;
+  void *env;
+  void *sessionOptions;
 
-  // Device to be used
-  char *device;
+  // Inference parameters
+  float confThreshold;
+  float iouThreshold;
   OpenDRStringsVectorT labels;
   int **colorList;
   int numberOfClasses;
 
-  // Recognition threshold
-  float scoreThreshold;
-
-  // Model input size
+  // Model parameters
   int inputSizes[2];
+  int isDynamicInputShape;
 
-  // Keep ratio flag
-  int keepRatio;
 };
-typedef struct NanodetModel NanodetModelT;
+typedef struct Yolov5Model Yolov5ModelT;
 
 /**
- * Loads a nanodet object detection model saved in libtorch format.
- * @param modelPath path to the libtorch nanodet model (as exported using OpenDR)
+ * Loads a yolov5 object detection model saved in libtorch format.
+ * @param modelPath path to the libtorch yolov5 model (as exported using OpenDR)
  * @param modelName name of the model to be loaded
  * @param device the device that will be used for inference
  * @param scoreThreshold confidence threshold
@@ -55,34 +54,34 @@ typedef struct NanodetModel NanodetModelT;
  * @param width the width of model input, if set to zero the trained width will be used instead
  * @param model the model to be loaded
  */
-void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height,
-                      int width, NanodetModelT *model);
+void loadYolov5Model(const char *modelPath, const char *modelName, const char *device, float confThreshold, float iouThreshold,
+                     int height, int width, Yolov5ModelT *model);
 
 /**
- * This function performs inference using a nanodet object detection model and an input image.
- * @param model nanodet model to be used for inference
+ * This function performs inference using a yolov5 object detection model and an input image.
+ * @param model yolov5 model to be used for inference
  * @param image OpenDR image
  * @return OpenDR detection vector target containing the detections of the recognized objects
  */
-OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image);
+OpenDRDetectionVectorTargetT inferYolov5(Yolov5ModelT *model, OpenDRImageT *image);
 
 /**
- * Releases the memory allocated for a nanodet object detection model.
+ * Releases the memory allocated for a yolov5 object detection model.
  * @param model model to be de-allocated
  */
-void freeNanodetModel(NanodetModelT *model);
+void freeYolov5Model(Yolov5ModelT *model);
 
 ///**
 // * Draw the bounding boxes from detections in the given image.
 // * @param image image that has been used for inference
-// * @param model nanodet model that has been used for inference
-// * @param detectionsVector output of the inference
+// * @param model yolov5 model that has been used for inference
+// * @param vector output of the inference
 // * @param show if the value given is zero, the image will be displayed until a key is pressed
 // */
-//void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show);
+//void drawBboxesYolov5(OpenDRImageT *image, Yolov5ModelT *model, OpenDRDetectionVectorTargetT *vector, int show);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // C_API_NANODET_H
+#endif  // C_API_YOLOV5_H

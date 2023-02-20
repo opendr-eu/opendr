@@ -58,6 +58,24 @@ struct OpenDRTensorVector {
 };
 typedef struct OpenDRTensorVector OpenDRTensorVectorT;
 
+/***
+ * OpenDR data type for representing vectors of strings
+ */
+struct OpenDRStringsVector {
+  char **data;
+  int size;
+};
+typedef struct OpenDRStringsVector OpenDRStringsVectorT;
+
+/***
+ * OpenDR data type for representing vectors of integers
+ */
+struct OpenDRIntsVector {
+  int *data;
+  int size;
+};
+typedef struct OpenDRIntsVector OpenDRIntsVectorT;
+
 #ifdef __cplusplus
 }
 #endif
