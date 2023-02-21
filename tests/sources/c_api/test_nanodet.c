@@ -25,7 +25,7 @@ START_TEST(model_creation_test) {
   NanodetModelT model;
   // Load a pretrained model
   loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, &model);
-  ck_assert_msg(model.network != 0, "net is NULL");
+  ck_assert(model.network);
 
   // Release the resources
   freeNanodetModel(&model);
@@ -34,7 +34,7 @@ START_TEST(model_creation_test) {
   loadNanodetModel("./data/optimized_model_not_existant", "m", "cpu", 0.35, 0, 0, &model);
 
   // Check if memory steel exist
-  ck_assert_msg(!model.network, "net is not NULL");
+  ck_assert(!model.network);
 }
 END_TEST
 
@@ -50,7 +50,6 @@ START_TEST(inference_creation_test) {
   loadImage("data/object_detection_2d/nanodet/database/000000000036.jpg", &image);
   OpenDRDetectionVectorTargetT res = inferNanodet(&model, &image);
   freeImage(&image);
-
   ck_assert(res.size != 0);
 
   // Free the model resources

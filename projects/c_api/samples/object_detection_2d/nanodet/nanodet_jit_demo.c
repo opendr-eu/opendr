@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "object_detection_2d_nanodet_jit.h"
@@ -40,7 +41,7 @@ int main(int argc, char **argv) {
 
   results = inferNanodet(&model, &image);
 
-  drawBboxes(&image, &model, &results);
+  drawBboxes(&image, &model, &results, 0);
 
   // Free the memory
   freeDetectionsVector(&results);
