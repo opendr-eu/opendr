@@ -1,7 +1,8 @@
 import torch
+from typing import Tuple
 
 
-def distance2bbox(points, distance, max_shape=None):
+def distance2bbox(points, distance, max_shape: Tuple[int, int]=(0, 0)):
     """Decode distance prediction to bounding box.
 
     Args:
@@ -17,7 +18,7 @@ def distance2bbox(points, distance, max_shape=None):
     y1 = points[..., 1] - distance[..., 1]
     x2 = points[..., 0] + distance[..., 2]
     y2 = points[..., 1] + distance[..., 3]
-    if max_shape is not None:
+    if max_shape != (0, 0):
         x1 = x1.clamp(min=0, max=max_shape[1])
         y1 = y1.clamp(min=0, max=max_shape[0])
         x2 = x2.clamp(min=0, max=max_shape[1])

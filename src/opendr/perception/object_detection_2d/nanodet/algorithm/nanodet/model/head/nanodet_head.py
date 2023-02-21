@@ -14,6 +14,8 @@
 
 import torch
 import torch.nn as nn
+from torch import Tensor
+from typing import List
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule, DepthwiseConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
@@ -135,15 +137,14 @@ class NanoDetHead(GFLHead):
             normal_init(self.gfl_reg[i], std=0.01)
         print("Finish initialize NanoDet Head.")
 
-    def forward(self, feats):
-        if torch.onnx.is_in_onnx_export():
-            return self._forward_onnx(feats)
+    @torch.jit.unused
+    def forward(self, feats: List[Tensor]):
         outputs = []
-        for x, cls_convs, reg_convs, gfl_cls, gfl_reg in zip(
-            feats, self.cls_convs, self.reg_convs, self.gfl_cls, self.gfl_reg
-        ):
-            cls_feat = x
-            reg_feat = x
+        for idx, (cls_convs, reg_convs, gfl_cls, gfl_reg) in enumerate(zip(
+            self.cls_convs, self.reg_convs, self.gfl_cls, self.gfl_reg
+        )):
+            cls_feat = feats[idx]
+            reg_feat = feats[idx]
             for cls_conv in cls_convs:
                 cls_feat = cls_conv(cls_feat)
             for reg_conv in reg_convs:
@@ -155,31 +156,6 @@ class NanoDetHead(GFLHead):
                 bbox_pred = gfl_reg(reg_feat)
                 output = torch.cat([cls_score, bbox_pred], dim=1)
             outputs.append(output.flatten(start_dim=2))
+
         outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
         return outputs
-
-    def _forward_onnx(self, feats):
-        """only used for onnx export"""
-        outputs = []
-        for x, cls_convs, reg_convs, gfl_cls, gfl_reg in zip(
-            feats, self.cls_convs, self.reg_convs, self.gfl_cls, self.gfl_reg
-        ):
-            cls_feat = x
-            reg_feat = x
-            for cls_conv in cls_convs:
-                cls_feat = cls_conv(cls_feat)
-            for reg_conv in reg_convs:
-                reg_feat = reg_conv(reg_feat)
-            if self.share_cls_reg:
-                output = gfl_cls(cls_feat)
-                cls_pred, reg_pred = output.split(
-                    [self.num_classes, 4 * (self.reg_max + 1)], dim=1
-                )
-            else:
-                cls_pred = gfl_cls(cls_feat)
-                reg_pred = gfl_reg(reg_feat)
-
-            cls_pred = cls_pred.sigmoid()
-            out = torch.cat([cls_pred, reg_pred], dim=1)
-            outputs.append(out.flatten(start_dim=2))
-        return torch.cat(outputs, dim=2).permute(0, 2, 1)

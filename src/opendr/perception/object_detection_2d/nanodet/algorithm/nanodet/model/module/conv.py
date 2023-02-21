@@ -115,9 +115,10 @@ class ConvModule(nn.Module):
         # Use msra init by default
         self.init_weights()
 
+    @torch.jit.unused
     @property
     def norm(self):
-        if self.norm_name:
+        if self.norm_name is not None:
             return getattr(self, self.norm_name)
         else:
             return None
@@ -131,13 +132,14 @@ class ConvModule(nn.Module):
         if self.with_norm:
             constant_init(self.norm, 1, bias=0)
 
-    def forward(self, x, norm=True):
+    @torch.jit.unused
+    def forward(self, x, norm: bool = True):
         for layer in self.order:
             if layer == "conv":
                 x = self.conv(x)
-            elif layer == "norm" and norm and self.with_norm:
+            elif layer == "norm" and (norm is not None) and (self.with_norm is not None) and (self.norm is not None):
                 x = self.norm(x)
-            elif layer == "act" and self.activation:
+            elif layer == "act" and (self.activation is not None):
                 x = self.act(x)
         return x
 
@@ -211,7 +213,6 @@ class DepthwiseConvModule(nn.Module):
             # norm layer is after conv layer
             _, self.dwnorm = build_norm_layer(norm_cfg, in_channels)
             _, self.pwnorm = build_norm_layer(norm_cfg, out_channels)
-
         # build activation layer
         if self.activation:
             self.act = act_layers(self.activation)
@@ -230,12 +231,17 @@ class DepthwiseConvModule(nn.Module):
             constant_init(self.dwnorm, 1, bias=0)
             constant_init(self.pwnorm, 1, bias=0)
 
-    def forward(self, x, norm=True):
+    def forward(self, x):
         for layer_name in self.order:
-            if layer_name != "act":
-                layer = self.__getattr__(layer_name)
-                x = layer(x)
-            elif layer_name == "act" and self.activation:
+            if layer_name == "depthwise":
+                x = self.depthwise(x)
+            elif layer_name == "pointwise":
+                x = self.pointwise(x)
+            elif layer_name == "dwnorm" and (self.dwnorm is not None):
+                x = self.dwnorm(x)
+            elif layer_name == "pwnorm" and (self.pwnorm is not None):
+                x = self.pwnorm(x)
+            elif layer_name == "act" and (self.activation is not None):
                 x = self.act(x)
         return x
 

@@ -88,6 +88,34 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
    For viewing the output, refer to the [notes above.](#notes)
 
+### High Resolution Pose Estimation ROS Node
+
+You can find the high resolution pose estimation ROS node python script [here](./scripts/hr_pose_estimation_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [high resolution pose estimation tool](../../../../src/opendr/perception/pose_estimation/hr_pose_estimation/high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/high-resolution-pose-estimation.md).
+The node publishes the detected poses in [OpenDR's 2D pose message format](../opendr_bridge/msg/OpenDRPose2D.msg), which saves a list of [OpenDR's keypoint message format](../opendr_bridge/msg/OpenDRPose2DKeypoint.msg).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the high resolution pose detection node:
+    ```shell
+    rosrun opendr_perception hr_pose_estimation_node.py
+    ```
+    The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
+
+3. Default output topics:
+   - Output images: `/opendr/image_pose_annotated`
+   - Detection messages: `/opendr/poses`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
 ### Fall Detection ROS Node
 
 You can find the fall detection ROS node python script [here](./scripts/fall_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
@@ -354,11 +382,12 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
 An [image dataset node](#image-dataset-ros-node) is also provided to be used along these nodes.
 Make sure to change the default input topic of the tracking node if you are not using the USB cam node.
 
-### Panoptic Segmentation ROS Node
+### Vision Based Panoptic Segmentation ROS Node
+A ROS node for performing panoptic segmentation on a specified RGB image stream using the [EfficientPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientps-efficient-panoptic-segmentation) network.
 
-You can find the panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps_node.py) to inspect the code and modify it as you wish to fit your needs.
+You can find the vision based panoptic segmentation (EfficientPS) ROS node python script [here](./scripts/panoptic_segmentation_efficient_ps_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-ps.md)
-and additional information about Efficient PS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
+and additional information about EfficientPS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
 
 #### Instructions for basic usage:
 
@@ -371,18 +400,16 @@ and additional information about Efficient PS [here](../../../../src/opendr/perc
     ```
 
     The following optional arguments are available:
-   - `-h or --help`: show a help message and exit
+   - `-h, --help`: show a help message and exit
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
-   - `-oh --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance`, `None` to stop the node from publishing on this topic (default=`/opendr/panoptic`)
-   - `-ov --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the panoptic segmentation map as an RGB image on this topic or a more detailed overview if using the `--detailed_visualization` flag, `None` to stop the node from publishing on this topic (default=`opendr/panoptic/rgb_visualization`)
-   - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
    - `--checkpoint CHECKPOINT` : download pretrained models [cityscapes, kitti] or load from the provided path (default=`cityscapes`)
+   - `-oh or --output_heatmap_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendr/panoptic`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
+   - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
 
 3. Default output topics:
    - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`
    - Detection messages: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`
-
-   For viewing the output, refer to the [notes above.](#notes)
 
 ### Semantic Segmentation ROS Node
 
@@ -418,6 +445,41 @@ On the table below you can find the detectable classes and their corresponding I
 | Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
+
+### Binary High Resolution ROS Node
+
+You can find the binary high resolution ROS node python script [here](./scripts/binary_high_resolution_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [binary high resolution tool](../../../../src/opendr/perception/binary_high_resolution/binary_high_resolution_learner.py) whose documentation can be found [here](../../../../docs/reference/binary_high_resolution.md).
+
+#### Instructions for basic usage:
+
+0. Before running this node it is required to first train a model for a specific binary classification task. 
+   Refer to the tool's [documentation](../../../../docs/reference/binary_high_resolution.md) for more information.
+   To test the node out, run [train_eval_demo.py](../../../python/perception/binary_high_resolution/train_eval_demo.py) 
+   to download the test dataset provided and to train a test model. 
+   You would then need to move the model folder in `opendr_ws` so the node can load it using the default `model_path` argument.
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the binary high resolution node:
+
+    ```shell
+    ros2 run opendr_perception binary_high_resolution
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS2 image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap_visualization`)
+   - `-m or --model_path MODEL_PATH`: path to the directory of the trained model (default=`test_model`)
+   - `-a or --architecture ARCHITECTURE`: architecture used for the trained model, either `VGG_720p` or `VGG_1080p` (default=`VGG_720p`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+
+3. Default output topics:
+   - Output images: `/opendr/binary_hr_heatmap`, `/opendr/binary_hr_heatmap_visualization`
+   - Detection messages: `/opendr/binary_hr_heatmap`
+
+   For viewing the output, refer to the [notes above.](#notes)
 
 ### Image-based Facial Emotion Estimation ROS Node
 
@@ -487,40 +549,58 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
 
    For viewing the output, refer to the [notes above.](#notes)
 
-### Skeleton-based Human Action Recognition ROS Node
+### Skeleton-based Human Action Recognition ROS Nodes
 
-A ROS node for performing skeleton-based human action recognition using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
-The human body poses of the image are first extracted by the lightweight OpenPose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition method to be categorized.
+A ROS node for performing skeleton-based human action recognition is provided, one using either ST-GCN or PST-GCN models pretrained on NTU-RGBD-60 dataset.
+Another ROS node for performing continual skeleton-based human action recognition is provided, using the CoSTGCN method. 
+The human body poses of the image are first extracted by the lightweight OpenPose method which is implemented in the toolkit, and they are passed to the skeleton-based action recognition methods to be categorized.
 
-You can find the skeleton-based human action recognition ROS node python script [here](./scripts/skeleton_based_action_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's skeleton-based human action recognition tool which can be found [here for ST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py)
-and [here for PST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py)
-whose documentation can be found [here](../../../../docs/reference/skeleton-based-action-recognition.md).
+You can find the skeleton-based human action recognition ROS node python script [here](./scripts/skeleton_based_action_recognition_node.py) 
+and the continual skeleton-based human action recognition ROS node python script [here](./scripts/continual_skeleton_based_action_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The latter makes use of the toolkit's skeleton-based human action recognition tool which can be found [here for ST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/spatio_temporal_gcn_learner.py)
+and [here for PST-GCN](../../../../src/opendr/perception/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_learner.py) and the former makes use
+of the toolkit's continual skeleton-based human action recognition tool which can be found [here](../../../../src/opendr/perception/skeleton_based_action_recognition/continual_stgcn_learner.py).
+Their documentation can be found [here](../../../../docs/reference/skeleton-based-action-recognition.md).
 
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
 2. You are then ready to start the skeleton-based human action recognition node:
+   1. Skeleton-based action recognition node
+      ```shell
+      rosrun opendr_perception skeleton_based_action_recognition_node.py
+      ```
+      The following optional argument is available for the skeleton-based action recognition node:
+      - `--model` MODEL: model to use, options are `stgcn` or `pstgcn`, (default=`stgcn`)
+      - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/skeleton_recognized_action"`)
+      - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/skeleton_recognized_action_description`)
 
-    ```shell
-    rosrun opendr_perception skeleton_based_action_recognition_node.py
-    ```
-    The following optional arguments are available:
+   2. Continual skeleton-based action recognition node
+      ```shell
+      rosrun opendr_perception continual_skeleton_based_action_recognition_node.py
+      ```
+      The following optional argument is available for the continual skeleton-based action recognition node:
+      - `--model` MODEL: model to use, options are `costgcn`, (default=`costgcn`)
+      - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/continual_skeleton_recognized_action"`)
+      - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/continual_skeleton_recognized_action_description`)
+
+    The following optional arguments are available for all nodes:
    - `-h or --help`: show a help message and exit
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output pose-annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-p or --pose_annotations_topic POSE_ANNOTATIONS_TOPIC`: topic name for pose annotations, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
-   - `-c or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic name for recognized action category, `None` to stop the node from publishing on this topic (default=`"/opendr/skeleton_recognized_action"`)
-   - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic name for description of the recognized action category, `None` to stop the node from publishing on this topic (default=`/opendr/skeleton_recognized_action_description`)
-   - `--model`: model to use, options are `stgcn` or `pstgcn`, (default=`stgcn`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
-   - Detection messages: `/opendr/skeleton_based_action_recognition`, `/opendr/skeleton_based_action_recognition_description`, `/opendr/poses`
-   - Output images: `/opendr/image_pose_annotated`
+   1. Skeleton-based action recognition node:
+      - Detection messages: `/opendr/skeleton_based_action_recognition`, `/opendr/skeleton_based_action_recognition_description`, `/opendr/poses`
+      - Output images: `/opendr/image_pose_annotated`
+   2. Continual skeleton-based action recognition node:
+      - Detection messages: `/opendr/continual_skeleton_recognized_action`, `/opendr/continual_skeleton_recognized_action_description`, `/opendr/poses`
+      - Output images: `/opendr/image_pose_annotated`
 
-   For viewing the output, refer to the [notes above.](#notes)
+      For viewing the output, refer to the [notes above.](#notes)
 
 ### Video Human Activity Recognition ROS Node
 
@@ -766,6 +846,36 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 
    For viewing the output, refer to the [notes above.](#notes)
 
+
+### LiDAR Based Panoptic Segmentation ROS Node
+A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientlps-efficient-lidar-panoptic-segmentation) network.
+
+You can find the lidar based panoptic segmentation ROS node python script [here](./scripts/panoptic_segmentation_efficient_lps_node.py). You can further also find the point cloud 2 publisher ROS node python script [here](./scripts/point_cloud_2_publisher_node.py), and more explanation [here](#point-cloud-2-publisher-ros-node).You can inspect the codes and make changes as you wish to fit your needs.
+The EfficientLPS node makes use of the toolkit's [panoptic segmentation tool](../../../../src/opendr/perception/panoptic_segmentation/efficient_lps/efficient_lps_learner.py) whose documentation can be found [here](../../../../docs/reference/efficient-lps.md)
+and additional information about EfficientLPS [here](../../../../src/opendr/perception/panoptic_segmentation/README.md).
+
+#### Instructions for basic usage:
+
+1.  First one needs to download SemanticKITTI dataset into POINTCLOUD_LOCATION as it is described in the [Panoptic Segmentation Datasets](../../../../src/opendr/perception/panoptic_segmentation/datasets/README.md). Then, once the SPLIT type is specified (train, test or "valid", default "valid"), the point **Point Cloud 2 Publisher** can be started using the following line:
+
+- ```shell
+  rosrun opendr_perception point_cloud_2_publisher_node.py -d POINTCLOUD_LOCATION -s SPLIT
+  ```
+2. After starting the **PointCloud2 Publisher**, one can start **EfficientLPS Node** using the following line:
+
+- ```shell
+  rosrun opendr_perception panoptic_segmentation_efficient_lps_node.py /opendr/dataset_point_cloud2
+  ```
+
+  The following optional arguments are available:
+   - `-h, --help`: show a help message and exit
+   - `-i or --input_point_cloud_2_topic INPUT_POINTCLOUD2_TOPIC` : Point Cloud 2 topic provided by either a point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node (default=`/opendr/dataset_point_cloud2`)
+   - `-c or --checkpoint CHECKPOINT` : download pretrained models [semantickitti] or load from the provided path (default=`semantickitti`)
+   - `-o or --output_heatmap_pointcloud_topic OUTPUT_HEATMAP_POINTCLOUD_TOPIC`: publish the 3D heatmap pointcloud on `OUTPUT_HEATMAP_POINTCLOUD_TOPIC` (default=`/opendr/panoptic`)
+ 
+3. Default output topics:
+   - Detection messages: `/opendr/panoptic`
+
 ----
 ## Biosignal input
 
@@ -847,3 +957,22 @@ The following optional arguments are available:
    - `-f or --fps FPS`: data fps (default=`10`)
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
+
+### Point Cloud 2 Publisher ROS Node
+
+The point cloud 2 dataset publisher, publishes point cloud 2 messages from pre-downloaded dataset SemanticKITTI. It is currently being used by the ROS node [LiDAR Based Panoptic Segmentation ROS Node](#lidar-based-panoptic-segmentation-ros-node).
+
+You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements,
+to use alongside other nodes and datasets.
+You can inspect [the node](./scripts/point_cloud_2_publisher_node.py) and modify it to your needs for other point cloud datasets.
+
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_2_publisher_node.py` node as:
+```shell
+rosrun opendr_perception point_cloud_2_publisher_node.py
+```
+The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-d or --dataset_path DATASET_PATH`: path of the SemanticKITTI dataset to publish the point cloud 2 message (default=`./datasets/semantickitti`)
+   - `-s or --split SPLIT`: split of the dataset to use, only (train, valid, test) are available (default=`valid`)
+   - `-o or --output_point_cloud_2_topic OUTPUT_POINT_CLOUD_2_TOPIC`: topic name to publish the data (default=`/opendr/dataset_point_cloud2`)
+   - `-t or --test_data`: Add this argument if you want to only test this node with the test data available in our server
