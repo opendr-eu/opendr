@@ -87,7 +87,7 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
 
         img = Image.open(os.path.join(self.temp_dir, "dataset", "image", "000000000785_1080.jpg"))
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
-        self.assertGreater(len(self.pose_estimator.infer(img)[0].data), 0,
+        self.assertGreater(len(self.pose_estimator.infer(img)[0][0].data), 0,
                            msg="Returned pose must have non-zero number of keypoints.")
 
 
