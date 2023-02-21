@@ -107,6 +107,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/detr/algorithm',
             'src/opendr/perception/object_detection_2d/nanodet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
+            'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/algorithm',
             'src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/algorithm',
             'projects/python/perception/facial_expression_recognition/image_based_facial_emotion_estimation',

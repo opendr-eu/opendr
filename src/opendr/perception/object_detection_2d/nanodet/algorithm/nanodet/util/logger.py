@@ -22,15 +22,15 @@ from pytorch_lightning.loggers.base import rank_zero_experiment
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.cloud_io import get_filesystem
 
+
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.path import mkdir
 
 
 class Logger:
     def __init__(self, local_rank, save_dir="./", use_tensorboard=True):
-        # mkdir(local_rank, save_dir)
-        mkdir(save_dir)
+        mkdir(local_rank, save_dir)
         self.rank = local_rank
-        fmt = ("[%(name)s] [%(asctime)s] %(levelname)s: %(message)s")
+        fmt = "[%(name)s] [%(asctime)s] %(levelname)s: %(message)s"
         logging.basicConfig(
             level=logging.INFO,
             filename=os.path.join(save_dir, "logs.txt"),
@@ -58,6 +58,10 @@ class Logger:
                 self.writer = SummaryWriter(log_dir=self.log_dir)
 
     def log(self, string):
+        if self.rank < 1:
+            logging.info(string)
+
+    def info(self, string):
         if self.rank < 1:
             logging.info(string)
 
@@ -173,8 +177,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
         # set console formatter
-
-        c_fmt = ("[%(name)s] [%(asctime)s] %(levelname)s: %(message)s")
+        c_fmt = "[%(name)s] [%(asctime)s] %(levelname)s: %(message)s"
         console_formatter = logging.Formatter(c_fmt, datefmt="%m-%d %H:%M:%S")
         ch.setFormatter(console_formatter)
 

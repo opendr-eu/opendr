@@ -1,9 +1,15 @@
 import torch
 from torchvision.ops import nms
+from typing import Dict
 
 
 def multiclass_nms(
-    multi_bboxes, multi_scores, score_thr, nms_cfg, max_num=-1, score_factors=None
+    multi_bboxes,
+    multi_scores,
+    score_thr: float,
+    nms_cfg: Dict[str, float],
+    max_num: int = -1,
+    score_factors: torch.Tensor = torch.empty(0)
 ):
     """NMS for multi-class bboxes.
 
@@ -13,7 +19,7 @@ def multiclass_nms(
             contains scores of the background class, but this will be ignored.
         score_thr (float): bbox threshold, bboxes with scores lower than it
             will not be considered.
-        nms_thr (float): NMS IoU threshold
+        nms_cfg (dictionary): dictionary of the type and threshold of IoU
         max_num (int): if there are more than max_num bboxes after NMS,
             only top max_num will be kept.
         score_factors (Tensor): The factors multiplied to scores before
@@ -40,20 +46,19 @@ def multiclass_nms(
     bboxes = torch.masked_select(
         bboxes, torch.stack((valid_mask, valid_mask, valid_mask, valid_mask), -1)
     ).view(-1, 4)
-    if score_factors is not None:
+    if not (score_factors.numel() == 0):
         scores = scores * score_factors[:, None]
     scores = torch.masked_select(scores, valid_mask)
-    labels = valid_mask.nonzero(as_tuple=False)[:, 1]
+
+    # for scripting
+    labels = torch.tensor(0).to(valid_mask.device).long()
+    torch.nonzero(valid_mask, out=labels)
+    # labels = valid_mask.nonzero(as_tuple=False)#[:, 1]
+    labels = labels[:, 1]
 
     if bboxes.numel() == 0:
         bboxes = multi_bboxes.new_zeros((0, 5))
         labels = multi_bboxes.new_zeros((0,), dtype=torch.long)
-
-        if torch.onnx.is_in_onnx_export():
-            raise RuntimeError(
-                "[ONNX Error] Can not record NMS "
-                "as it has not been executed this time"
-            )
         return bboxes, labels
 
     dets, keep = batched_nms(bboxes, scores, labels, nms_cfg)
@@ -65,7 +70,7 @@ def multiclass_nms(
     return dets, labels[keep]
 
 
-def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
+def batched_nms(boxes, scores, idxs, nms_cfg: Dict[str, float], class_agnostic: bool = False):
     """Performs non-maximum suppression in a batched fashion.
     Modified from https://github.com/pytorch/vision/blob
     /505cd6957711af790211896d32b40291bea1bc21/torchvision/ops/boxes.py#L39.
@@ -94,27 +99,32 @@ def batched_nms(boxes, scores, idxs, nms_cfg, class_agnostic=False):
         tuple: kept dets and indice.
     """
     nms_cfg_ = nms_cfg.copy()
-    class_agnostic = nms_cfg_.pop("class_agnostic", class_agnostic)
     if class_agnostic:
         boxes_for_nms = boxes
     else:
         max_coordinate = boxes.max()
         offsets = idxs.to(boxes) * (max_coordinate + 1)
         boxes_for_nms = boxes + offsets[:, None]
-    nms_cfg_.pop("type", "nms")
-    split_thr = nms_cfg_.pop("split_thr", 10000)
-    if len(boxes_for_nms) < split_thr:
-        keep = nms(boxes_for_nms, scores, **nms_cfg_)
+    split_thr = nms_cfg_.pop("split_thr", 10000.0)
+    if boxes_for_nms.shape[0] < split_thr:
+        keep = nms(boxes_for_nms, scores, nms_cfg_["iou_threshold"])
         boxes = boxes[keep]
         scores = scores[keep]
     else:
         total_mask = scores.new_zeros(scores.size(), dtype=torch.bool)
         for id in torch.unique(idxs):
-            mask = (idxs == id).nonzero(as_tuple=False).view(-1)
-            keep = nms(boxes_for_nms[mask], scores[mask], **nms_cfg_)
+            mask = (idxs == id)
+            mask_out = torch.tensor(0).to(mask.device).long()
+            torch.nonzero(mask, out=mask_out)
+            mask = mask_out.view(-1)
+            # mask = (idxs == id).nonzero(as_tuple=False).view(-1)
+            keep = nms(boxes_for_nms[mask], scores[mask], nms_cfg_["iou_threshold"])
             total_mask[mask[keep]] = True
 
-        keep = total_mask.nonzero(as_tuple=False).view(-1)
+        keep_out = torch.tensor(0).to(total_mask.device).long()
+        torch.nonzero(total_mask, out=keep_out)
+        keep = keep_out.view(-1)
+        # keep = total_mask.nonzero(as_tuple=False).view(-1)
         keep = keep[scores[keep].argsort(descending=True)]
         boxes = boxes[keep]
         scores = scores[keep]

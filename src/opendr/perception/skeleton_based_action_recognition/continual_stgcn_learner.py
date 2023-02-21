@@ -21,6 +21,7 @@ import onnxruntime as ort
 import pytorch_lightning as pl
 import torch.nn.functional as F
 
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from opendr.engine.target import Category
@@ -29,6 +30,8 @@ from opendr.engine.helper.io import bump_version
 from opendr.engine.datasets import Dataset
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.datasets import ExternalDataset, DatasetIterator
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.ntu_gendata import NTU60_CLASSES
+from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_gendata import KINETICS400_CLASSES
 from urllib.request import urlretrieve
 
 from logging import getLogger
@@ -54,6 +57,11 @@ from opendr.perception.skeleton_based_action_recognition.algorithm.models.co_str
 _MODEL_NAMES = {"costgcn", "costr", "coagcn"}
 
 logger = getLogger(__name__)
+
+
+class KeyDict(defaultdict):
+    def __missing__(self, key):
+        return str(key)
 
 
 class CoSTGCNLearner(Learner):
@@ -149,6 +157,13 @@ class CoSTGCNLearner(Learner):
             raise ValueError(
                 self.backbone + f"is not a valid dataset name. Supported methods: {_MODEL_NAMES}"
             )
+
+        if "ntu" in self.graph_type:
+            self.classes_dict = NTU60_CLASSES
+        elif "openpose" in self.graph_type:
+            self.classes_dict = KINETICS400_CLASSES
+        else:
+            self.classes_dict = KeyDict()
 
         pl.seed_everything(self.seed)
         self.init_model()
@@ -295,7 +310,8 @@ class CoSTGCNLearner(Learner):
             self._ort_state = {k: v for k, v in zip(self._ort_state.keys(), next_state)}
         else:
             self.model.eval()
-            results = self.model.forward_steps(batch)
+            with torch.no_grad():
+                results = self.model.forward_steps(batch)
             if results is None:
                 print("Warming model up prior to inference")
                 _ = self.model.forward_steps(
@@ -303,11 +319,19 @@ class CoSTGCNLearner(Learner):
                 )
                 results = self.model.forward_steps(batch)
 
-        results = [
-            Category(prediction=int(r.argmax(dim=0)), confidence=F.softmax(r, dim=-1))
-            for r in results
-        ]
-        return results
+        categories = []
+        for r in results:
+            class_ind = int(r.argmax(dim=0))
+            class_description = self.classes_dict[class_ind]
+            categories.append(
+                Category(
+                    prediction=class_ind,
+                    confidence=F.softmax(r, dim=-1),
+                    description=class_description,
+                )
+            )
+
+        return categories
 
     def _load_model_weights(self, weights_path: Union[str, Path]):
         """Load pretrained model weights
@@ -321,6 +345,7 @@ class CoSTGCNLearner(Learner):
         assert weights_path.is_file() and weights_path.suffix in {
             ".pyth",
             ".pth",
+            ".pt",
             ".onnx",
             ".ckpt",
         }, (
@@ -351,6 +376,10 @@ class CoSTGCNLearner(Learner):
         self.model.load_state_dict(to_load, strict=False)
 
         names_not_loaded = set(new_model_state.keys()) - set(to_load.keys())
+
+        # Exclude adjacency matrix from checks - it's defined based on model arguments
+        names_not_loaded = set([k for k in names_not_loaded if not k.endswith(".A")])
+
         if len(names_not_loaded) > 0:
             logger.warning(f"Some model weight could not be loaded: {names_not_loaded}")
         self.model.to(self.device)
@@ -416,6 +445,10 @@ class CoSTGCNLearner(Learner):
                 "seed": self.seed,
             },
         }
+
+        if self._ort_session:
+            meta_data["format"] = "onnx"
+
         with open(str(meta_path), "w", encoding="utf-8") as f:
             json.dump(meta_data, f, sort_keys=True, indent=4)
 
@@ -433,7 +466,7 @@ class CoSTGCNLearner(Learner):
         path = Path(path)
 
         # Allow direct loading of weights, omitting the metadata file
-        if path.suffix in {".pyth", ".pth", ".onnx", ".ckpt"}:
+        if path.suffix in {".pyth", ".pth", ".pt", ".onnx", ".ckpt"}:
             self._load_model_weights(path)
             return self
         if path.is_dir():
@@ -653,15 +686,15 @@ class CoSTGCNLearner(Learner):
         state0 = None
         with torch.no_grad():
             for i in range(model.receptive_field):
-                _, state0 = model._forward_step(self._example_input[:, :, i], state0)
-            _, state0 = model._forward_step(self._example_input[:, :, -1], state0)
+                _, state0 = model._forward_step(self._example_input[:, :, i].to("cpu"), state0)
+            _, state0 = model._forward_step(self._example_input[:, :, -1].to("cpu"), state0)
             state0 = co.utils.flatten(state0)
 
             # Export to ONNX
             logger.info(f"Saving model to ONNX format at {str(path)}")
             co.onnx.export(
                 model,
-                (self._example_input[:, :, -1], *state0),
+                (self._example_input[:, :, -1].to("cpu"), *state0),
                 path,
                 input_names=["input"],
                 output_names=["output"],

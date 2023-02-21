@@ -14,11 +14,11 @@ model_urls = {
 
 def channel_shuffle(x, groups):
     # type: (torch.Tensor, int) -> torch.Tensor
-    batchsize, num_channels, height, width = x.data.size()
-    channels_per_group = num_channels // groups
+    batchsize, num_channels, height, width = x.size()
+    channels_per_group = int(num_channels/groups)
 
     # reshape
-    x = x.view(batchsize, groups, channels_per_group, height, width)
+    x = x.view([batchsize, groups, channels_per_group, height, width])
 
     x = torch.transpose(x, 1, 2).contiguous()
 
@@ -173,6 +173,7 @@ class ShuffleNetV2(nn.Module):
             self.stage4.add_module("conv5", conv5)
         self._initialize_weights(pretrain)
 
+    @torch.jit.unused
     def forward(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
@@ -182,7 +183,7 @@ class ShuffleNetV2(nn.Module):
             x = stage(x)
             if i in self.out_stages:
                 output.append(x)
-        return tuple(output)
+        return output
 
     def _initialize_weights(self, pretrain=True):
         print("init weights...")
