@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import torch.jit
 import torch.nn.functional as F
+from torch import Tensor
+from typing import List
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.fpn.fpn import FPN
 
@@ -61,7 +64,8 @@ class PAN(FPN):
         )
         self.init_weights()
 
-    def forward(self, inputs):
+    @torch.jit.unused
+    def forward(self, inputs: List[Tensor]):
         """Forward function."""
         assert len(inputs) == len(self.in_channels)
 
@@ -74,8 +78,8 @@ class PAN(FPN):
         # build top-down path
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
-            laterals[i - 1] += F.interpolate(
-                laterals[i], scale_factor=2, mode="bilinear"
+            laterals[i - 1] = laterals[i - 1] + F.interpolate(
+                laterals[i], scale_factor=2.0, mode="bilinear"
             )
 
         # build outputs
@@ -84,11 +88,10 @@ class PAN(FPN):
 
         # part 2: add bottom-up path
         for i in range(0, used_backbone_levels - 1):
-            inter_outs[i + 1] += F.interpolate(
+            inter_outs[i + 1] = inter_outs[i + 1] + F.interpolate(
                 inter_outs[i], scale_factor=0.5, mode="bilinear"
             )
 
-        outs = []
-        outs.append(inter_outs[0])
+        outs = [inter_outs[0]]
         outs.extend([inter_outs[i] for i in range(1, used_backbone_levels)])
-        return tuple(outs)
+        return outs

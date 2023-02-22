@@ -106,7 +106,7 @@ class FallDetectionNode(Node):
         fallen_pose_id = 0
         for detection in detections:
             fallen = detection[0].data
-            pose = detection[2]
+            pose = detection[1]
             x, y, w, h = get_bbox(pose)
 
             if fallen == 1:

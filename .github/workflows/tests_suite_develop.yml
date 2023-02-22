@@ -19,10 +19,8 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
+        os: [ubuntu-20.04, macos-10.15]
         include:
-          - os: ubuntu-18.04
-            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
           - os: macos-10.15
@@ -70,6 +68,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -87,6 +86,7 @@ jobs:
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
+          - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -180,6 +180,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -197,6 +198,7 @@ jobs:
           #- control/mobile_manipulation
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
+          #- control/multi_object_search
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -268,6 +270,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -285,6 +288,7 @@ jobs:
           #- control/mobile_manipulation
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
+          #- control/multi_object_search
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -374,6 +378,7 @@ jobs:
           - perception/skeleton_based_action_recognition/stgcn
           - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
@@ -391,6 +396,7 @@ jobs:
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
+          - control/multi_object_search
     runs-on: ubuntu-20.04
     steps:
     - name: Download artifact

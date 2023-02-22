@@ -22,7 +22,7 @@ from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 from opendr.perception.pose_estimation import draw, get_bbox
 
 
-def fall_detection_on_img(img, draw_pose=False, draw_fall_detection_lines=False):
+def fall_detection_on_img(img, draw_pose=False):
     detections = fall_detector.infer(img)
     img = img.opencv()
 
@@ -35,8 +35,7 @@ def fall_detection_on_img(img, draw_pose=False, draw_fall_detection_lines=False)
     else:
         for detection in detections:
             fallen = detection[0].data
-            keypoints = detection[1]
-            pose = detection[2]
+            pose = detection[1]
             print("- Detected person.")
             if fallen == 1:
                 print("  Detected fallen person.")
@@ -48,21 +47,19 @@ def fall_detection_on_img(img, draw_pose=False, draw_fall_detection_lines=False)
             if draw_pose:
                 draw(img, pose)
 
-            color = (255, 255, 255)
             if fallen == 1:
                 color = (0, 0, 255)
                 x, y, w, h = get_bbox(pose)
                 cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
                 cv2.putText(img, "Detected fallen person", (5, 12), cv2.FONT_HERSHEY_SIMPLEX,
                             0.5, color, 1, cv2.LINE_AA)
+            elif fallen == -1:
+                color = (0, 255, 0)
+                x, y, w, h = get_bbox(pose)
+                cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                cv2.putText(img, "Detected standing person", (5, 12), cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5, color, 1, cv2.LINE_AA)
 
-            if draw_fall_detection_lines:
-                if keypoints[0].data[0] != -1:
-                    cv2.line(img, (int(keypoints[0].x), int(keypoints[0].y)),
-                             (int(keypoints[1].x), int(keypoints[1].y)), color, 4)
-                if keypoints[2].data[0] != -1:
-                    cv2.line(img, (int(keypoints[1].x), int(keypoints[1].y)),
-                             (int(keypoints[2].x), int(keypoints[2].y)), color, 4)
         cv2.imshow('Results', img)
         cv2.waitKey(0)
 
@@ -84,8 +81,8 @@ if __name__ == '__main__':
     fall_detector.download(".", verbose=True)
 
     print("Running detector on image without humans...")
-    fall_detection_on_img(Image.open("test_images/no_person.png"), True)
+    fall_detection_on_img(Image.open("test_images/no_person.png"))
     print("Running detector on image with a fallen person...")
-    fall_detection_on_img(Image.open("test_images/fallen.png"), True)
+    fall_detection_on_img(Image.open("test_images/fallen.png"))
     print("Running detector on image with a standing person...")
-    fall_detection_on_img(Image.open("test_images/standing.png"), True)
+    fall_detection_on_img(Image.open("test_images/standing.png"))

@@ -113,7 +113,7 @@ class SkeletonActionRecognitionNode(Node):
                                                            file_name=model+'_ntu_cv_lw_openpose')
         self.action_classifier.load(model_saved_path, model+'_ntu_cv_lw_openpose')
 
-        self.get_logger().info("Skeleton-based action recognition node started!")
+        self.get_logger().info("Skeleton-based action recognition node initialized.")
 
     def callback(self, data):
         """
