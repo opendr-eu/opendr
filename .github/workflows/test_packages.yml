@@ -57,6 +57,7 @@ jobs:
           #- control/mobile_manipulation
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
+          - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -116,6 +117,7 @@ jobs:
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
+          - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set up Python 3.8

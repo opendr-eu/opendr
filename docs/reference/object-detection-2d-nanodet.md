@@ -98,7 +98,7 @@ Parameters:
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, input, thershold, nms_max_num)
+NanodetLearner.infer(self, input, conf_threshold, iou_threshold, nms_max_num)
 ```
 
 This method is used to perform object detection on an image.
@@ -109,15 +109,17 @@ Parameters:
 - **input** : *object*\
   Object of type engine.data.Image.
   Image type object to perform inference on.
-- **threshold**: *float, default=0.35*\
+- **conf_threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
+- **iou_threshold**: *float, default=0.6*\
+  Specifies the IOU threshold for NMS in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 
 #### `NanodetLearner.optimize`
 ```python
-NanodetLearner.optimize(self, export_path, verbose, optimization, nms_max_num)
+NanodetLearner.optimize(self, export_path, verbose, optimization, conf_threshold, iou_threshold, nms_max_num)
 ```
 
 This method is used to perform JIT or ONNX optimizations and save a trained model with its metadata.
@@ -138,6 +140,11 @@ Parameters:
   Enables the maximum verbosity.
 - **optimization**: *str, default="jit"*\
   It determines what kind of optimization is used, possible values are *jit* or *onnx*.
+- **conf_threshold**: *float, default=0.35*\
+  Specifies the threshold for object detection inference.
+  An object is detected if the confidence of the output is higher than the specified threshold.
+- **iou_threshold**: *float, default=0.6*\
+  Specifies the IOU threshold for NMS in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 
@@ -336,58 +343,62 @@ For PyTorch inference:
 
 | Method              {input} | RTX 2070 | TX2   | NX    |
 |-----------------------------|----------|-------|-------|
-| Efficient Lite0     {320}   | 48.63    | 9.38  | 14.48 |
-| Efficient Lite1     {416}   | 43.88    | 7.93  | 11.07 |
-| Efficient Lite2     {512}   | 40.51    | 6.44  | 8.84  |
-| RepVGG A0           {416}   | 33.4     | 9.21  | 12.3  |
-| Nanodet-g           {416}   | 51.32    | 9.57  | 15.75 |
-| Nanodet-m           {320}   | 48.36    | 8.56  | 14.08 |
-| Nanodet-m 0.5x      {320}   | 46.94    | 7.97  | 12.84 |
-| Nanodet-m 1.5x      {320}   | 47.41    | 8.8   | 13.98 |
-| Nanodet-m           {416}   | 47.3     | 8.34  | 13.15 |
-| Nanodet-m 1.5x      {416}   | 45.62    | 8.43  | 13.2  |
-| Nanodet-plus m      {320}   | 41.9     | 7.45  | 12.01 |
-| Nanodet-plus m 1.5x {320}   | 39.63    | 7.66  | 12.21 |
-| Nanodet-plus m      {416}   | 40.16    | 7.24  | 11.58 |
-| Nanodet-plus m 1.5x {416}   | 38.94    | 7.37  | 11.52 |
+| Efficient Lite0     {320}   | 81.98    | 15.51 | 22.75 |
+| Efficient Lite1     {416}   | 60.09    | 11.27 | 19.19 |
+| Efficient Lite2     {512}   | 59.46    | 8.53  | 15.99 |
+| RepVGG A0           {416}   | 48.13    | 13.33 | 21.46 |
+| Nanodet-g           {416}   | 89.93    | 15.59 | 21.67 |
+| Nanodet-t           {320}   | 63.83    | 13.33 | 19.60 |
+| Nanodet-m           {320}   | 67.90    | 13.38 | 19.36 |
+| Nanodet-m 0.5x      {320}   | 69.69    | 12.69 | 18.84 |
+| Nanodet-m 1.5x      {320}   | 65.77    | 13.95 | 18.45 |
+| Nanodet-m           {416}   | 71.76    | 13.06 | 17.88 |
+| Nanodet-m 1.5x      {416}   | 63.51    | 13.11 | 19.31 |
+| Nanodet-plus m      {320}   | 52.32    | 11.32 | 17.99 |
+| Nanodet-plus m 1.5x {320}   | 52.11    | 11.54 | 17.05 |
+| Nanodet-plus m      {416}   | 59.25    | 11.48 | 17.14 |
+| Nanodet-plus m 1.5x {416}   | 52.35    | 9.34  | 16.78 |
 
 For JIT optimization inference:
 
 | Method              {input} | RTX 2070 | TX2   | NX    |
 |-----------------------------|----------|-------|-------|
-| Efficient Lite0     {320}   | 69.06    | 12.94 | 17.78 |
-| Efficient Lite1     {416}   | 62.94    | 9.27  | 12.94 |
-| Efficient Lite2     {512}   | 65.46    | 7.46  | 10.32 |
-| RepVGG A0           {416}   | 41.44    | 11.16 | 14.89 |
-| Nanodet-g           {416}   | 76.3     | 12.94 | 20.52 |
-| Nanodet-m           {320}   | 75.66    | 12.22 | 20.67 |
-| Nanodet-m 0.5x      {320}   | 65.71    | 11.31 | 17.68 |
-| Nanodet-m 1.5x      {320}   | 66.23    | 12.46 | 19.99 |
-| Nanodet-m           {416}   | 79.91    | 12.08 | 19.28 |
-| Nanodet-m 1.5x      {416}   | 69.44    | 12.3  | 18.6  |
-| Nanodet-plus m      {320}   | 67.82    | 11.19 | 18.85 |
-| Nanodet-plus m 1.5x {320}   | 64.12    | 11.57 | 18.26 |
-| Nanodet-plus m      {416}   | 64.74    | 11.22 | 17.57 |
-| Nanodet-plus m 1.5x {416}   | 56.77    | 10.39 | 14.81 |
+| Efficient Lite0     {320}   | 108.64   | 18.56 | 27.39 |
+| Efficient Lite1     {416}   | 96.63    | 12.49 | 21.53 |
+| Efficient Lite2     {512}   | 97.97    | 9.35  | 16.91 |
+| RepVGG A0           {416}   | 48.23    | 16.59 | 23.77 |
+| Nanodet-g           {416}   | 96.01    | 19.78 | 27.37 |
+| Nanodet-t           {320}   | 99.85    | 18.17 | 23.74 |
+| Nanodet-m           {320}   | 103.78   | 19.27 | 24.24 |
+| Nanodet-m 0.5x      {320}   | 90.24    | 18.31 | 23.30 |
+| Nanodet-m 1.5x      {320}   | 104.82   | 19.29 | 23.16 |
+| Nanodet-m           {416}   | 100.61   | 12.08 | 22.34 |
+| Nanodet-m 1.5x      {416}   | 92.37    | 18.45 | 22.89 |
+| Nanodet-plus m      {320}   | 75.52    | 16.70 | 23.12 |
+| Nanodet-plus m 1.5x {320}   |  86.23   | 16.83 | 21.64 |
+| Nanodet-plus m      {416}   | 96.01    | 16.78 | 21.28 |
+| Nanodet-plus m 1.5x {416}   | 86.97    | 14.42 | 21.53 |
 
 For ONNX optimization inference:
 
-| Method              {input} | RTX 2070  |
-|-----------------------------|-----------|
-| Efficient Lite0     {320}   | 33.12     |
-| Efficient Lite1     {416}   | 16.78     |
-| Efficient Lite2     {512}   | 10.35     |
-| RepVGG A0           {416}   | 27.89     |
-| Nanodet-g           {416}   | 103.22    |
-| Nanodet-m           {320}   | 98.73     |
-| Nanodet-m 0.5x      {320}   | 144.46    |
-| Nanodet-m 1.5x      {320}   | 75.82     |
-| Nanodet-m           {416}   | 73.09     |
-| Nanodet-m 1.5x      {416}   | 51.30     |
-| Nanodet-plus m      {320}   | 51.39     |
-| Nanodet-plus m 1.5x {320}   | 39.65     |
-| Nanodet-plus m      {416}   | 39.17     |
-| Nanodet-plus m 1.5x {416}   | 28.55     |
+| Method              {input} | CPU    | TX2   | NX    |
+|-----------------------------|--------|-------|-------|
+| Efficient Lite0     {320}   | 51.1   | 10.15 | 11.34 |
+| Efficient Lite1     {416}   | 36.60  | 5.84  | 5.99  |
+| Efficient Lite2     {512}   | 28.76  | 4.23  | 3.93  |
+| RepVGG A0           {416}   | 83.03  | 9.49  | 9.49  |
+| Nanodet-g           {416}   | 97.11  | 8.87  | 14.61 |
+| Nanodet-t           {320}   | 87.34  | 13.22 | 19.06 |
+| Nanodet-m           {320}   | 101.83 | 15.54 | 19.36 |
+| Nanodet-m 0.5x      {320}   | 123.60 | 16.89 | 24.44 |
+| Nanodet-m 1.5x      {320}   | 88.39  | 13.35 | 18.32 |
+| Nanodet-m           {416}   | 83.42  | 12.51 | 17.11 |
+| Nanodet-m 1.5x      {416}   | 76.30  | 9.85  | 14.79 |
+| Nanodet-plus m      {320}   | 51.39  | 12.06 | 15.48 |
+| Nanodet-plus m 1.5x {320}   | 63.19  | 9.55  | 11.69 |
+| Nanodet-plus m      {416}   | 64.18  | 9.63  | 11.34 |
+| Nanodet-plus m 1.5x {416}   | 52.36  | 6.98  | 8.59  |
+Note that in embedded systems the standard deviation is around 0.2 - 0.3 seconds in larger networks cases.
 
 Finally, we measure the performance on the COCO dataset, using the corresponding metrics:
 

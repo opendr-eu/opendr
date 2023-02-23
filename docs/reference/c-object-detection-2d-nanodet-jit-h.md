@@ -41,8 +41,7 @@ The function returns an OpenDR vector of detections structure with the inference
 
 ### Function *drawBboxes()*
 ```C
-void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector);
+void drawBboxes(OpenDRImageT *image, NanodetModelT *model, OpenDRDetectionVectorTargetT *vector, int show);
 ```
-This function draws the given detections (*vector*) onto the input image (*image*) and then shows the image on screen.
+This function draws the given detections (*vector*) onto the input image (*image*) and then if (*show*) value is zero, the image will be displayed until a key is pressed.
 The (*model*) keeps all the necessary information.
-
