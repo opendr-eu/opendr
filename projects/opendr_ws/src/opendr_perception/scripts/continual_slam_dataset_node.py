@@ -128,7 +128,7 @@ def main():
                         help="ROS topic to publish images")
     parser.add_argument("--output_distance_topic", type=str, default="/cl_slam/distance",
                         help="ROS topic to publish distances")
-    parser.add_argument("--dataset_fps", type=float, default=5,
+    parser.add_argument("--dataset_fps", type=float, default=3,
                         help="Dataset frame rate")
     args = parser.parse_args()
 

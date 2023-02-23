@@ -86,7 +86,8 @@ class ContinualSlamLearner:
             self.input_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
         self.input_distance_subscriber = message_filters.Subscriber(
             self.input_distance_topic, ROS_Vector3Stamped, queue_size=1, buff_size=10000000)
-        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber, self.input_distance_subscriber], 1)
+        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber,
+                                                    self.input_distance_subscriber], 1)
         self.ts.registerCallback(self.callback)
 
     def _init_publisher(self):
@@ -103,7 +104,7 @@ class ContinualSlamLearner:
         path = os.path.join(env, self.path)
         print(path)
         try:
-            self.learner = ContinualSLAMLearner(path, mode="learner", ros=True)
+            self.learner = ContinualSLAMLearner(path, mode="learner", ros=False)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
@@ -125,7 +126,10 @@ class ContinualSlamLearner:
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
             rospy.logerr(e)
-            return False
+            if self.sample_size > 0:
+                return False
+            else:
+                return True
 
     def _clean_cache(self):
         """
@@ -189,13 +193,17 @@ class ContinualSlamLearner:
 
         # Add triplet to replay buffer and sample
         item = self._convert_cache_into_triplet()
-        self.replay_buffer.add(item)
-        item = ContinualSLAMLearner._input_formatter(item)
-        if len(self.replay_buffer) < self.sample_size:
-            return
-        batch = self.replay_buffer.sample()
-        # Concatenate the current triplet with the sampled batch
-        batch.insert(0, item)
+        if self.sample_size > 0:
+            self.replay_buffer.add(item)
+            item = ContinualSLAMLearner._input_formatter(item)
+            if len(self.replay_buffer) < self.sample_size:
+                return
+            batch = self.replay_buffer.sample()
+            # Concatenate the current triplet with the sampled batch
+            batch.insert(0, item)
+        else:
+            item = ContinualSLAMLearner._input_formatter(item)
+            batch = [item]
 
         # Train learner
         self.learner.fit(batch, learner=True)
@@ -246,24 +254,25 @@ def main():
     parser.add_argument('-pr',
                         '--publish_rate',
                         type=int,
-                        default=100,
+                        default=20,
                         help='Publish rate of the weights')
     parser.add_argument('-bs',
                         '--buffer_size',
                         type=int,
-                        default=500,
+                        default=20,
                         help='Size of the replay buffer')
     parser.add_argument('-ss',   
                         '--sample_size',
                         type=int,
                         default=3,
-                        help='Sample size of the replay buffer')
+                        help='Sample size of the replay buffer. If 0 is given, only online data is used')
     parser.add_argument('-sm',
                         '--save_memory',
-                        type=bool,
+                        action='store_false',
                         default=True,
-                        help='Whether to save memory or not. If True, the replay buffer will be saved to memory')
+                        help='Whether to save memory or not. Add it to the command if you want to write to disk')
     args = parser.parse_args()
+
 
     node = ContinualSlamLearner(args.config_path, 
                                 args.input_image_topic,

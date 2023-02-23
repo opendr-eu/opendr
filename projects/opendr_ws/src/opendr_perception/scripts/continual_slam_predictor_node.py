@@ -90,7 +90,7 @@ class ContinualSlamPredictor:
         env = os.getenv('OPENDR_HOME')
         path = os.path.join(env, self.path)
         try:
-            self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=True)
+            self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=False)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
@@ -187,7 +187,7 @@ class ContinualSlamPredictor:
         """
         rospy.loginfo("CL-SLAM predictor is currently updating its weights.")
         message = self.bridge.from_ros_string(message)
-        self.predictor.load(message=message)
+        self.predictor.load(weights_folder=message)
 
     def listen(self):
         """
