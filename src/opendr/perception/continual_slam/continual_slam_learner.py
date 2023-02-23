@@ -188,9 +188,9 @@ class ContinualSLAMLearner(Learner):
         input_dict = self._input_formatter(batch, replay_buffer, learner=learner, height=self.height, width=self.width)
         # Adapt
         if return_losses:
-            prediction, losses = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, use_expert=False, batch_size=batch_size)
+            prediction, losses = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
         else:
-            prediction = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, use_expert=False, batch_size=batch_size)
+            prediction = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
 
     def _predict(self,
                  batch: Tuple[Dict, None],
@@ -308,6 +308,8 @@ if __name__ == '__main__':
     for item in dataset:
         replay_buffer.add(item)
         item = ContinualSLAMLearner._input_formatter(item)
+        # sample = [item]
+        # learner.fit(sample, learner=True)
         if len(replay_buffer) > 3:
             sample = replay_buffer.sample()
             sample.insert(0, item)

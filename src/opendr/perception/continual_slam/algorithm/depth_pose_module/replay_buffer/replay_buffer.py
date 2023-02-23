@@ -47,7 +47,8 @@ class ReplayBuffer(TorchDataset):
         self.load_state_path = load_state_path
         self.local_save_path = local_save_path
         if dataset_config_path:
-            self.dataset_config = ConfigParser(dataset_config_path).dataset
+            self.config = ConfigParser(dataset_config_path)
+            self.dataset_config = self.config.dataset
         if not (dataset_config_path or (height and width)):
             raise ValueError("Either dataset_config or height and width must be specified.")
         if dataset_config_path:
@@ -56,6 +57,9 @@ class ReplayBuffer(TorchDataset):
         else:
             self.height = height
             self.width = width
+        if not self.save_memory and not self.local_save_path:
+            self.local_save_path = self.config.depth_pose.log_path
+
         self.num_workers = num_workers
         self.cosine_similarity_threshold = cosine_similarity_threshold
         self.num_features = num_features
@@ -208,11 +212,11 @@ class ReplayBuffer(TorchDataset):
                     for j in range(len(self.frame_ids)):
                         image_path = self.image_buffer[random_indices[i]]
                         image = Image.open(image_path)
-                        image = np.array(image)
+                        image = torch.Tensor(np.array(image)).permute(2, 0, 1).to(self.device)
                         single_sample[(self.frame_ids[j], 'image')] = image
 
                         distance_path = self.distance_buffer[random_indices[i]]
-                        distance = np.load(distance_path)
+                        distance = torch.Tensor(np.load(distance_path)).to(self.device)
                         single_sample[(self.frame_ids[j], 'distance')] = distance
 
                     batch.append(single_sample)

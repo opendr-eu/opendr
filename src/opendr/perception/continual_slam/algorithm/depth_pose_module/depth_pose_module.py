@@ -64,7 +64,6 @@ class DepthPoseModule:
               online_index: int = 0,
               steps: int = 1,
               online_loss_weight: Optional[float] = None,
-              use_expert: bool = True,
               do_adapt: bool = True,
               return_loss: bool = False,
               batch_size: int = None,
@@ -113,15 +112,6 @@ class DepthPoseModule:
                 losses['loss'].backward()
                 self.optimizer.step()
 
-        if self.batch_size != 1 and use_expert:
-            # online_inputs = {key: value[online_index].unsqueeze(0) for key, value in inputs.items()}
-            for _ in range(steps):
-                self.online_optimizer.zero_grad()
-                online_outputs, online_losses = self._process_batch(inputs, use_online=True)
-                online_losses['loss'].backward()
-                self.online_optimizer.step()
-            outputs = online_outputs
-            losses = online_losses
         if return_loss:
             return outputs, losses
         return outputs
@@ -310,14 +300,13 @@ class DepthPoseModule:
                 data = data/255.0
                 inputs[key[0]] = data.to(self.device)
 
-        # Compute predictions
         # from PIL import Image as pil_image
         # for key, data in inputs.items():
-        #     # x = inputs[key].cpu().numpy().squeeze(0)
-        #     # print(x.shape, key)
-        #     # img = pil_image.fromarray(x.transpose(1, 2, 0) * 255, 'RGB')
-        #     img = ToPILImage()(inputs[key].cpu().squeeze(0))
-        #     img.save(f'test_{key}.png')
+        #     xx = inputs[key].detach().cpu()
+        #     for i, x in enumerate(xx):
+        #         x = x.numpy()
+        #         img = pil_image.fromarray(np.uint8(x.transpose(1, 2, 0) * 255))
+        #         img.save(f'test_{key}_{i}.png')
         outputs = {}
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))
@@ -422,10 +411,10 @@ class DepthPoseModule:
             source_scale = 0
 
             depth = disp_to_depth(disp, self.min_depth, self.max_depth)
-            outputs[('depth', scale, 0)] = depth
+            outputs[('depth', 0, scale)] = depth
             if self.mode == 'learner':
                 camera_matrix, inv_camera_matrix = self._scale_camera_matrix(
-                    self.camera_matrix, scale)
+                    self.camera_matrix, source_scale)
                 camera_matrix = torch.Tensor(camera_matrix).to(self.device).unsqueeze(0)
                 inv_camera_matrix = torch.Tensor(inv_camera_matrix).to(self.device).unsqueeze(0)
 
@@ -478,6 +467,8 @@ class DepthPoseModule:
         """Predict poses for the current frame and the previous one. 0 -> - 1 and 0 -> 1
         :param inputs: dictionary containing the input images. The format is: {0: img_t1, -1: img_t2, 1: img_t0}
         """
+        assert self.num_pose_frames == 2, self.num_pose_frames
+        assert self.frame_ids == (0, -1, 1)
 
         outputs = {}
         pose_inputs_dict = inputs
@@ -664,5 +655,5 @@ class DepthPoseModule:
             scaled_inputs[('rgb', 0, scale)] = F.interpolate(inputs[0],
                                                              [height, width],
                                                              mode='bilinear',
-                                                             align_corners=True)
+                                                             align_corners=False)
         return scaled_inputs
