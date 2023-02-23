@@ -18,14 +18,15 @@ import argparse
 import time
 from pathlib import Path
 
-import rospy
-from opendr_bridge import ROSBridge
+import rclpy
+from rclpy.node import Node
+from opendr_bridge import ROS2Bridge
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 
-class ContinualSlamDatasetNode:
+class ContinualSlamDatasetNode(Node):
 
     def __init__(self, 
                  dataset_path: str,
@@ -33,6 +34,7 @@ class ContinualSlamDatasetNode:
                  output_image_topic: str = "/opendr/dataset/image",
                  output_distance_topic: str = "/opendr/imu/distance",
                  dataset_fps: float = 0.1):
+        super().__init__("opendr_continual_slam_dataset_node")
         """
         Creates a ROS Node for publishing dataset images
         :param dataset_path: Path to the dataset
@@ -49,7 +51,7 @@ class ContinualSlamDatasetNode:
 
         self.dataset_path = dataset_path
         self.config_file_path = config_file_path
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
         self.delay = 1.0 / dataset_fps
 
         self.output_image_topic = output_image_topic
@@ -57,11 +59,11 @@ class ContinualSlamDatasetNode:
 
     def _init_publisher(self):
 
-        self.output_image_publisher = rospy.Publisher(self.output_image_topic,
-                                                      ROS_Image,
+        self.output_image_publisher = self.create_publisher(ROS_Image,
+                                                      self.output_image_topic,
                                                       queue_size=10)
-        self.output_distance_publisher = rospy.Publisher(self.output_distance_topic,
-                                                         ROS_Vector3Stamped,
+        self.output_distance_publisher = self.create_publisher(ROS_Vector3Stamped,
+                                                         self.output_distance_topic,
                                                          queue_size=10)
 
     def _init_dataset(self):
@@ -73,14 +75,14 @@ class ContinualSlamDatasetNode:
             self.dataset = KittiDataset(self.dataset_path, config_file_path)
             return True
         except FileNotFoundError:
-            rospy.logerr("Dataset path is incorrect. Please check the path")
+            self.get_logger().error("Dataset path is incorrect. Please check the path")
             return False
 
     def _publish(self):
-        rospy.loginfo("Start publishing dataset images")
+        self.get_logger().info("Start publishing dataset images")
         i = 0
         length = len(self.dataset)-1
-        while not rospy.is_shutdown() and i < length:
+        while not rclpy.ok() and i < length:
             # TODO: Delete this later or find it out
             if i == length-1:
                 break
@@ -92,17 +94,17 @@ class ContinualSlamDatasetNode:
                 continue
             image_t0, distance_t0 = data[image_ids[0]]
 
-            stamp = rospy.Time.now()
+            stamp = self.get_clock().now().to_msg()
             # Convert image to ROS Image
             image = self.bridge.to_ros_image(image = image_t0, frame_id = image_ids[0], time = stamp)
             # Convert velocity to ROS Vector3Stamped
-            distance = self.bridge.to_ros_vector3_stamped(distance_t0, 0, 0, image_ids[0], stamp)
+            distance = self.bridge.to_ros_vector3_stamped(distance_t0, 0, 0, image_ids[0], time = stamp)
             # Publish the image and distance
             self.output_image_publisher.publish(image)
             self.output_distance_publisher.publish(distance)
 
-            rospy.loginfo("Published image {}".format(image_ids[0]))
-            rospy.loginfo("Published distance {}".format([distance_t0]))
+            self.get_logger().info("Published image {}".format(image_ids[0]))
+            self.get_logger().info("Published distance {}".format([distance_t0]))
             i += 1
             time.sleep(self.delay)
 
@@ -110,13 +112,14 @@ class ContinualSlamDatasetNode:
         """
         Runs the node
         """
-        rospy.init_node("continual_slam_dataset_node", anonymous=True)
         self._init_publisher()
         if self._init_dataset():
             self._publish()
 
-def main():
-    parser = argparse.ArgumentParser()
+def main(args=None):
+    rclpy.init(args=args)
+
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--dataset_path", type=str, default="/home/canakcia/Desktop/kitti_dset/",
                         help="Path to the dataset")
     parser.add_argument("--config_file_path", type=str,
