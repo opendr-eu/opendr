@@ -36,11 +36,26 @@ class ContinualSlamPredictor(Node):
                  input_distance_topic : str,
                  output_depth_topic : str,
                  output_pose_topic : str,
-                 update_topic : str,
-                 fps : int = 10):
+                 update_topic : str):
         super().__init__("opendr_continual_slam_predictor_node")
+        """
+        Continual SLAM predictor node. This node is responsible for publishing predicted pose and depth outputs.
+        :param path: Path to the folder where the model will be saved.
+        :type path: str
+        :param input_image_topic: ROS topic where the input image is published.
+        :type input_image_topic: str
+        :param input_distance_topic: ROS topic where the input distance is published.
+        :type input_distance_topic: str
+        :param output_depth_topic: ROS topic where the output depth will be published.
+        :type output_depth_topic: str
+        :param output_pose_topic: ROS topic where the output pose will be published.
+        :type output_pose_topic: str
+        :param update_topic: ROS topic where the update signal is published.
+        :type update_topic: str
+        :param fps: Frequency of the node in Hz.
+        :type fps: int
+        """
         self.bridge = ROS2Bridge()
-        self.delay = 1.0 / fps
 
         self.input_image_topic = input_image_topic
         self.input_distance_topic = input_distance_topic
@@ -254,6 +269,7 @@ def main(args=None):
                                   args.output_pose_topic,
                                   args.update_topic)
     node.listen()
+
 
 if __name__ == '__main__':
     main()

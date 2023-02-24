@@ -15,11 +15,12 @@
 
 import argparse
 from pathlib import Path
-import message_filters
-import rospy
+from message_filters import TimeSynchronizer, Subscriber
+import rclpy
+from rclpy.node import Node
 import os
 
-from opendr_bridge import ROSBridge
+from opendr_bridge import ROS2Bridge
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
 
@@ -28,7 +29,7 @@ from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from std_msgs.msg import String as ROS_String
 from opendr_bridge import ROSBridge
 
-class ContinualSlamLearner:
+class ContinualSlamLearner(Node):
     def __init__(self,
                  path: str,
                  input_image_topic : str,
@@ -38,6 +39,7 @@ class ContinualSlamLearner:
                  buffer_size : int = 1000,
                  save_memory : bool = True,
                  sample_size : int = 3):
+        super().__init__("opendr_continual_slam_learner_node")
         """
         Continual SLAM learner node. This node is responsible for training and updating the predictor.
         :param path: Path to the folder where the model will be saved.
@@ -57,7 +59,7 @@ class ContinualSlamLearner:
         :param sample_size: Number of samples (triplets from replay buffer) that will be used for training.
         :type sample_size: int
         """
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
         self.publish_rate = publish_rate
         self.buffer_size = buffer_size
         self.save_memory = save_memory
@@ -82,11 +84,11 @@ class ContinualSlamLearner:
         """
         Initializing subscribers. Here we also do synchronization between two ROS topics.
         """
-        self.input_image_subscriber = message_filters.Subscriber(
+        self.input_image_subscriber = Subscriber(
             self.input_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        self.input_distance_subscriber = message_filters.Subscriber(
+        self.input_distance_subscriber = Subscriber(
             self.input_distance_topic, ROS_Vector3Stamped, queue_size=1, buff_size=10000000)
-        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber,
+        self.ts = TimeSynchronizer([self.input_image_subscriber,
                                                     self.input_distance_subscriber], 1)
         self.ts.registerCallback(self.callback)
 
@@ -94,7 +96,9 @@ class ContinualSlamLearner:
         """
         Initializing publishers.
         """
-        self.output_weights_publisher = rospy.Publisher(self.output_weights_topic, ROS_String, queue_size=10)
+        self.output_weights_publisher = self.create_publisher(ROS_String,
+                                                              self.output_weights_topic,
+                                                              queue_size=10)
  
     def _init_learner(self):
         """
@@ -107,8 +111,8 @@ class ContinualSlamLearner:
             self.learner = ContinualSLAMLearner(path, mode="learner", ros=False)
             return True
         except Exception as e:
-            rospy.logerr("Continual SLAM node failed to initialize, due to learner initialization error.")
-            rospy.logerr(e)
+            self.get_logger().error("Continual SLAM node failed to initialize, due to learner initialization error.")
+            self.get_logger().error(e)
             return False
 
     def _init_replay_buffer(self):
@@ -124,8 +128,8 @@ class ContinualSlamLearner:
                                               sample_size=self.sample_size)
             return True
         except Exception as e:
-            rospy.logerr("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
-            rospy.logerr(e)
+            self.get_logger().error("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
+            self.get_logger().error(e)
             if self.sample_size > 0:
                 return False
             else:
@@ -211,7 +215,7 @@ class ContinualSlamLearner:
         # Publish new weights
         if self.do_publish % self.publish_rate == 0:
             message = self.learner.save()
-            rospy.loginfo(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
+            self.get_logger().info(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
             ros_message = self.bridge.to_ros_string(message)
             self.output_weights_publisher.publish(ros_message)
         self.do_publish += 1
@@ -221,16 +225,22 @@ class ContinualSlamLearner:
         Start the node and begin processing input data. The order of the function calls ensures that the node does not
         try to process input images without being in a trained state.
         """
-        rospy.init_node('opendr_continual_slam_node', anonymous=True)
         if self._init_learner() and self._init_replay_buffer():
-            rospy.loginfo("Continual SLAM node started.")
             self._init_publisher()
             self._init_subscribers()
-            rospy.spin()
+            self.get_logger().info("Continual SLAM node started.")
+            rclpy.spin(self)
+
+            # Destroy the node explicitly
+            # (optional - otherwise it will be done automatically
+            # when the garbage collector destroys the node object)
+            self.destroy_node()
+            rclpy.shutdown()
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def main(args=None):
+    rclpy.init(args=args)
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-c',
                         '--config_path',
                         type=str,
@@ -284,6 +294,6 @@ def main():
                                 args.sample_size)
     node.listen()
 
+
 if __name__ == '__main__':
     main()
-
