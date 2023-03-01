@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG branch=master
+ARG branch=docker_fixes_libtorch
 ARG ros_distro=noetic
 
 # Install dependencies
