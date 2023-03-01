@@ -1,6 +1,7 @@
 engine
 perception/speech_recognition
 perception/semantic_segmentation
+perception/binary_high_resolution
 perception/face_recognition
 perception/pose_estimation
 perception/fall_detection

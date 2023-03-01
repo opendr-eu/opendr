@@ -46,7 +46,7 @@ class VideoReader(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cpu", "cuda"])
-    parser.add_argument("--model", help="Model to use", type=str, default="yolov5s6",
+    parser.add_argument("--model", help="Model to use", type=str, default="yolov5s",
                         choices=['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
                                  'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom'])
     args = parser.parse_args()
@@ -78,12 +78,14 @@ if __name__ == '__main__':
                 draw_bounding_boxes(img, detections, yolo_detector.classes, line_thickness=3)
 
             # Wait a few frames for FPS to stabilize
-            if counter > 5:
+            if counter < 5:
+                counter += 1
+            else:
                 img = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
                                   1, (255, 0, 0), 2, cv2.LINE_AA)
 
             cv2.imshow('Result', img)
             cv2.waitKey(1)
-            counter += 1
+
     except:
         print("Inference fps: ", round(fps))

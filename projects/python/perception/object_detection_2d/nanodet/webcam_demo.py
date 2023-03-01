@@ -21,6 +21,7 @@ from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
+
 class VideoReader(object):
     def __init__(self, file_name):
         self.file_name = file_name
@@ -64,7 +65,8 @@ if __name__ == '__main__':
     image_provider = VideoReader(0)
 
     if args.optimize != "":
-        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize, nms_max_num=20)
+        nanodet.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize,
+                         conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
 
     try:
         counter, avg_fps = 0, 0
@@ -85,15 +87,16 @@ if __name__ == '__main__':
             img = img.opencv()
 
             if boxes:
-                draw_bounding_boxes(img, boxes, class_names=nanodet.classes)
+                draw_bounding_boxes(img, boxes, class_names=nanodet.classes, line_thickness=3)
 
             # Wait a few frames for FPS to stabilize
-            if counter > 5:
-                image = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                                    1, (255, 0, 0), 2, cv2.LINE_AA)
+            if counter < 5:
+                counter += 1
+            else:
+                img = cv2.putText(img, "FPS: %.2f" % (avg_fps,), (50, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                                  1, (255, 0, 0), 2, cv2.LINE_AA)
 
             cv2.imshow('Result', img)
             cv2.waitKey(1)
-            counter += 1
     except:
         print("Average inference fps: ", avg_fps)

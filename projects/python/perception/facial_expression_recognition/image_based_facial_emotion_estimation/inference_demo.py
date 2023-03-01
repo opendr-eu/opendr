@@ -18,6 +18,7 @@ import numpy as np
 from torchvision import transforms
 import PIL
 import cv2
+import time
 
 # OpenDR Modules
 from opendr.perception.facial_expression_recognition import FacialEmotionLearner, image_processing
@@ -39,15 +40,15 @@ def is_none(x):
         return False
 
 
-def detect_face(image):
+def detect_face(img):
     """
     Detects faces in an image.
-    :param image: (ndarray) Raw input image.
+    :param img: (ndarray) Raw input image.
     :return: (list) Tuples with coordinates of a detected face.
     """
 
     # Converts to greyscale
-    greyscale_image = image_processing.convert_bgr_to_grey(image)
+    greyscale_image = image_processing.convert_bgr_to_grey(img)
 
     # Runs haar cascade classifiers
     _FACE_DETECTOR_HAAR_CASCADE = cv2.CascadeClassifier("./face_detector/frontal_face.xml")
@@ -60,18 +61,18 @@ def detect_face(image):
     return face_coordinates[0] if (len(face_coordinates) > 0 and (np.sum(face_coordinates[0]) > 0)) else None
 
 
-def _pre_process_input_image(image):
+def _pre_process_input_image(img):
     """
     Pre-processes an image for ESR-9.
-    :param image: (ndarray)
-    :return: (ndarray) image
+    :param img: (ndarray)
+    :return: (ndarray) img
     """
 
-    image = image_processing.resize(image, INPUT_IMAGE_SIZE)
-    image = PIL.Image.fromarray(image)
-    image = transforms.Normalize(mean=INPUT_IMAGE_NORMALIZATION_MEAN,
-                                 std=INPUT_IMAGE_NORMALIZATION_STD)(transforms.ToTensor()(image)).unsqueeze(0)
-    return image.numpy()
+    img = image_processing.resize(img, INPUT_IMAGE_SIZE)
+    img = PIL.Image.fromarray(img)  # NOQA
+    img = transforms.Normalize(mean=INPUT_IMAGE_NORMALIZATION_MEAN,
+                               std=INPUT_IMAGE_NORMALIZATION_STD)(transforms.ToTensor()(image)).unsqueeze(0)
+    return img.numpy()
 
 
 def _predict(learner, input_face):
@@ -79,8 +80,6 @@ def _predict(learner, input_face):
     Facial emotion/expression estimation. Classifies the pre-processed input image with FacialEmotionLearner.
 
     :param input_face: (ndarray) input image.
-    :param device: runs the classification on CPU or GPU
-    :param ensemble_size: number of branches in the network
     :return: Lists of emotions and affect values including the ensemble predictions based on plurality.
     """
 
@@ -100,34 +99,44 @@ def recognize_facial_expression(learner, image, display):
     If more than one face is detected, the biggest one is used.
     The detected face is fed to the _predict function which runs FacialEmotionLearner for facial emotion/expression
     estimation.
+
     :param image: (ndarray) input image.
     """
-
+    start_time = time.perf_counter()
     # Detect face
     face_coordinates = detect_face(image)
+    end_time = time.perf_counter()
+    detect_fps = 1.0 / (end_time - start_time)
+    img = cv2.putText(image, "Detection FPS: %.2f" % (detect_fps,), (10, image.shape[1] - 280), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                      (0, 255, 255), 2, cv2.LINE_AA)
 
     if face_coordinates is None:
         print("No face detected.")
     else:
+        start_time = time.perf_counter()
         face = image[face_coordinates[0][1]:face_coordinates[1][1], face_coordinates[0][0]:face_coordinates[1][0], :]
         # Pre_process detected face
         input_face = _pre_process_input_image(face)
         # Recognize facial expression
         emotion, affect = _predict(learner, input_face=input_face)
+        end_time = time.perf_counter()
+        model_fps = 1.0 / (end_time - start_time)
+        img = cv2.putText(img, "Model FPS: %.2f" % (model_fps,), (10, image.shape[1] - 240), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                          (0, 255, 255), 2, cv2.LINE_AA)
 
         # display
         if display:
-            image = cv2.putText(image, "Valence: %.2f" % affect[0], (10, 40 + 0 * 30), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (0, 255, 255), 2, )
-            image = cv2.putText(image, "Arousal: %.2f" % affect[1], (10, 40 + 1 * 30), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (0, 255, 255), 2, )
-            image = cv2.putText(image, emotion.description, (10, 40 + 2 * 30), cv2.FONT_HERSHEY_SIMPLEX,
-                                1, (0, 255, 255), 2, )
+            img = cv2.putText(img, "Valence: %.2f" % affect[0], (10, 40 + 0 * 30), cv2.FONT_HERSHEY_SIMPLEX,
+                              1, (0, 255, 0), 2, )
+            img = cv2.putText(img, "Arousal: %.2f" % affect[1], (10, 40 + 1 * 30), cv2.FONT_HERSHEY_SIMPLEX,
+                              1, (0, 255, 0), 2, )
+            img = cv2.putText(img, "Expression: " + emotion.description, (10, 40 + 2 * 30), cv2.FONT_HERSHEY_SIMPLEX,
+                              1, (255, 0, 0), 2, )
         else:
             print('emotion:', emotion)
             print('valence, arousal:', affect)
 
-    return image
+    return img
 
 
 def webcam(learner, camera_id, display, frames):
@@ -147,7 +156,16 @@ def webcam(learner, camera_id, display, frames):
         while image_processing.is_video_capture_open():
             # Get a frame
             img, _ = image_processing.get_frame()
+
+            start_time = time.perf_counter()
+
             img = None if (img is None) else recognize_facial_expression(learner, img, display)
+
+            end_time = time.perf_counter()
+            total_fps = 1.0 / (end_time - start_time)
+            img = cv2.putText(img, "Total FPS: %.2f" % (total_fps,), (10, img.shape[1] - 200), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                              (0, 255, 255), 2, cv2.LINE_AA)
+
             if display and img is not None:
                 cv2.imshow('Result', img)
                 cv2.waitKey(1)
@@ -249,6 +267,7 @@ def main():
                 raise RuntimeError("Error: 'input' is not valid. The argument 'input' is a mandatory "
                                    "field when image or video mode is chosen.")
             image(learner, args.input, args.display)
+
         except RuntimeError as e:
             print(e)
     elif args.mode == "video":

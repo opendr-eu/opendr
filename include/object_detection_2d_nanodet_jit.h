@@ -54,8 +54,8 @@ typedef struct NanodetModel NanodetModelT;
  * @param width the width of model input, if set to zero the trained width will be used instead
  * @param model the model to be loaded
  */
-void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height, int width,
-                      NanodetModelT *model);
+void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height,
+                      int width, NanodetModelT *model);
 
 /**
  * This function performs inference using a nanodet object detection model and an input image.
@@ -73,7 +73,7 @@ void freeNanodetModel(NanodetModelT *model);
 
 /**
  * Draw the bounding boxes from detections in the given image.
- * @param image image that has been used for inference, detections will saved in it
+ * @param image image that has been used for inference
  * @param model nanodet model that has been used for inference
  * @param detectionsVector output of the inference
  * @param show if the value given is zero, the image will be displayed until a key is pressed
