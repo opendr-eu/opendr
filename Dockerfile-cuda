@@ -1,6 +1,6 @@
 FROM nvidia/cuda:11.2.0-cudnn8-devel-ubuntu20.04
 
-ARG branch=develop
+ARG branch=docker_fixes
 ARG ros_distro=noetic
 
 # Fix NVIDIA CUDA Linux repository key rotation
