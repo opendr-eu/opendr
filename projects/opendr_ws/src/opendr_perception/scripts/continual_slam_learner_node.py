@@ -258,7 +258,7 @@ def main():
     parser.add_argument('-bs',
                         '--buffer_size',
                         type=int,
-                        default=20,
+                        default=10,
                         help='Size of the replay buffer')
     parser.add_argument('-ss',   
                         '--sample_size',

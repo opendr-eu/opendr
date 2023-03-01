@@ -262,12 +262,12 @@ def main(args=None):
     parser.add_argument('-pr',
                         '--publish_rate',
                         type=int,
-                        default=10,
+                        default=20,
                         help='Publish rate of the weights')
     parser.add_argument('-bs',
                         '--buffer_size',
                         type=int,
-                        default=20,
+                        default=10,
                         help='Size of the replay buffer')
     parser.add_argument('-ss',   
                         '--sample_size',
