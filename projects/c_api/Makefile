@@ -108,6 +108,11 @@ $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
 	@+echo "Building nanodet object detection demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
+$(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
+	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
+	@+echo "Building nanodet object detection demo..."
+	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo samples/object_detection_2d/nanodet/nanodet_jit_webcam_demo.cpp $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
+
 $(BUILD_DIR)/object_tracking_2d/deep_sort_demo:
 	$(MKDIR_P) $(BUILD_DIR)/object_tracking_2d
 	@+echo "Building object tracking 2d deep sort demo..."
@@ -117,16 +122,6 @@ $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo:
 	$(MKDIR_P) $(BUILD_DIR)/skeleton_based_action_recognition
 	@+echo "Building skeleton based action recognition progressive spatiotemporal demo..."
 	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/skeleton_based_action_recognition/pst_demo samples/skeleton_based_action_recognition/progressive_spatio_temporal_gcn_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
-
-$(BUILD_DIR)/object_detection_2d/nanodet_jit_demo:
-	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
-	@+echo "Building nanodet object detection demo..."
-	$(CC)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_demo samples/object_detection_2d/nanodet/nanodet_jit_demo.c $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
-
-$(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo:
-	$(MKDIR_P) $(BUILD_DIR)/object_detection_2d
-	@+echo "Building nanodet object detection demo..."
-	$(CPP)  $(CFLAGS) -o $(BUILD_DIR)/object_detection_2d/nanodet_jit_webcam_demo samples/object_detection_2d/nanodet/nanodet_jit_webcam_demo.cpp $(INC) $(OPENDR_INC) $(OPENDR_LD) $(LD)
 
 clean:
 	@+echo "Cleaning C API demo binaries and temporary files..."
