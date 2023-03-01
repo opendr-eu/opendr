@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import argparse
-from pathlib import Path
 import message_filters
 import rospy
 import os

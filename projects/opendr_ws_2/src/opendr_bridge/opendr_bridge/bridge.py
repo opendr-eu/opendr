@@ -77,7 +77,7 @@ class ROS2Bridge:
         if time is not None:
             header.stamp = time
         # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
-        message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
+        message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding, header=header)
         return message
 
     def from_ros_image(self, message: ImageMsg, encoding: str='passthrough') -> Image:
@@ -740,9 +740,9 @@ class ROS2Bridge:
         marker.type = marker.SPHERE
         marker.id = id
         marker.action = marker.ADD
-        marker.pose.position.x = position[0]
-        marker.pose.position.y = position[1]
-        marker.pose.position.z = position[2]
+        marker.pose.position.x = float(position[0])
+        marker.pose.position.y = float(position[1])
+        marker.pose.position.z = float(position[2])
         marker.pose.orientation.x = 0.0
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
@@ -751,10 +751,10 @@ class ROS2Bridge:
         marker.scale.y = 1.0
         marker.scale.z = 1.0
         if rgba is not None:
-            marker.color.a = rgba[3]
-            marker.color.r = rgba[0]
-            marker.color.g = rgba[1]
-            marker.color.b = rgba[2]
+            marker.color.a = float(rgba[3])
+            marker.color.r = float(rgba[0])
+            marker.color.g = float(rgba[1])
+            marker.color.b = float(rgba[2])
         else:
             marker.color.a = 1.0
             marker.color.r = 1.0
@@ -765,7 +765,7 @@ class ROS2Bridge:
     def from_ros_marker(self):
         raise NotImplementedError
 
-    def to_ros_marker_array(self, position_list: list, frame_id_list: list, rgba: tuple = None) -> MarkerArrayMsg:
+    def to_ros_marker_array(self, position_list: list, frame_id_list: list, stamp: str, rgba: tuple = None) -> MarkerArrayMsg:
         """
         Creates ROS MarkerArray message given positions x,y,z and frame_id.
         :param position_list: The list of positions of the markers.
@@ -777,13 +777,13 @@ class ROS2Bridge:
         """
         marker_array = MarkerArrayMsg()
         for i in range(len(position_list)):
-            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i], i, rgba))
+            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i], i, stamp, rgba))
         return marker_array
 
     def from_ros_marker_array(self):
         raise NotImplementedError
 
-    def to_ros_vector3_stamped(self, x: float, y: float, z: float, frame_id: str, timestamp: str) -> Vector3StampedMsg:
+    def to_ros_vector3_stamped(self, x: float, y: float, z: float, frame_id: str, time: str) -> Vector3StampedMsg:
         """
         Creates a Vector3Stamped message given x,y,z coordinates and frame_id and time
         :param x: The x coordinate of the vector.
@@ -802,8 +802,7 @@ class ROS2Bridge:
 
         message = Vector3StampedMsg()
         message.header.frame_id = frame_id
-        message.header.stamp = timestamp
-
+        message.header.stamp = time
         message.vector.x = x
         message.vector.y = y
         message.vector.z = z

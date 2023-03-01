@@ -61,10 +61,10 @@ class ContinualSlamDatasetNode(Node):
 
         self.output_image_publisher = self.create_publisher(ROS_Image,
                                                       self.output_image_topic,
-                                                      queue_size=10)
+                                                      10)
         self.output_distance_publisher = self.create_publisher(ROS_Vector3Stamped,
                                                          self.output_distance_topic,
-                                                         queue_size=10)
+                                                         10)
 
     def _init_dataset(self):
         env = os.getenv("OPENDR_HOME")
@@ -82,7 +82,7 @@ class ContinualSlamDatasetNode(Node):
         self.get_logger().info("Start publishing dataset images")
         i = 0
         length = len(self.dataset)-1
-        while not rclpy.ok() and i < length:
+        while rclpy.ok() and i < length:
             # TODO: Delete this later or find it out
             if i == length-1:
                 break
@@ -98,7 +98,7 @@ class ContinualSlamDatasetNode(Node):
             # Convert image to ROS Image
             image = self.bridge.to_ros_image(image = image_t0, frame_id = image_ids[0], time = stamp)
             # Convert velocity to ROS Vector3Stamped
-            distance = self.bridge.to_ros_vector3_stamped(distance_t0, 0, 0, image_ids[0], time = stamp)
+            distance = self.bridge.to_ros_vector3_stamped(distance_t0, 0.0, 0.0, image_ids[0], time = stamp)
             # Publish the image and distance
             self.output_image_publisher.publish(image)
             self.output_distance_publisher.publish(distance)

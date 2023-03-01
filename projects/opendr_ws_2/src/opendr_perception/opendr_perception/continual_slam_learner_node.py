@@ -14,8 +14,7 @@
 # limitations under the License.
 
 import argparse
-from pathlib import Path
-from message_filters import TimeSynchronizer, Subscriber
+import message_filters
 import rclpy
 from rclpy.node import Node
 import os
@@ -27,7 +26,6 @@ from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer 
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from std_msgs.msg import String as ROS_String
-from opendr_bridge import ROSBridge
 
 class ContinualSlamLearner(Node):
     def __init__(self,
@@ -84,12 +82,12 @@ class ContinualSlamLearner(Node):
         """
         Initializing subscribers. Here we also do synchronization between two ROS topics.
         """
-        self.input_image_subscriber = Subscriber(
-            self.input_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        self.input_distance_subscriber = Subscriber(
-            self.input_distance_topic, ROS_Vector3Stamped, queue_size=1, buff_size=10000000)
-        self.ts = TimeSynchronizer([self.input_image_subscriber,
-                                                    self.input_distance_subscriber], 1)
+        self.input_image_subscriber = message_filters.Subscriber(
+            self, ROS_Image, self.input_image_topic)
+        self.input_distance_subscriber = message_filters.Subscriber(
+            self, ROS_Vector3Stamped, self.input_distance_topic)
+        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber,
+                                                    self.input_distance_subscriber], 10)
         self.ts.registerCallback(self.callback)
 
     def _init_publisher(self):
@@ -98,7 +96,7 @@ class ContinualSlamLearner(Node):
         """
         self.output_weights_publisher = self.create_publisher(ROS_String,
                                                               self.output_weights_topic,
-                                                              queue_size=10)
+                                                              10)
  
     def _init_learner(self):
         """
@@ -264,7 +262,7 @@ def main(args=None):
     parser.add_argument('-pr',
                         '--publish_rate',
                         type=int,
-                        default=20,
+                        default=10,
                         help='Publish rate of the weights')
     parser.add_argument('-bs',
                         '--buffer_size',

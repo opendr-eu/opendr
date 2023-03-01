@@ -55,6 +55,9 @@ setup(
             'binary_high_resolution = opendr_perception.binary_high_resolution_node:main',
             'continual_skeleton_based_action_recognition = \
             opendr_perception.continual_skeleton_based_action_recognition_node:main',
+            'continual_slam_dataset = opendr_perception.continual_slam_dataset_node:main',
+            'continual_slam_predictor = opendr_perception.continual_slam_predictor_node:main',
+            'continual_slam_learner = opendr_perception.continual_slam_learner_node:main',
         ],
     },
 )

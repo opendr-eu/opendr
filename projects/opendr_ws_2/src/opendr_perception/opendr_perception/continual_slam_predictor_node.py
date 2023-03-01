@@ -20,7 +20,7 @@ import os
 
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 
-from message_filters import TimeSynchronizer, Subscriber
+import message_filters
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image as ROS_Image
@@ -81,11 +81,12 @@ class ContinualSlamPredictor(Node):
         """
         Initializing subscribers. Here we also do synchronization between two ROS topics.
         """
-        self.input_image_subscriber = Subscriber(
-            self.input_image_topic, ROS_Image, queue_size=1, buff_size=10000000)
-        self.input_distance_subscriber = Subscriber(
-            self.input_distance_topic, ROS_Vector3Stamped, queue_size=1, buff_size=10000000)
-        self.ts = TimeSynchronizer([self.input_image_subscriber, self.input_distance_subscriber], 1)
+        self.input_image_subscriber = message_filters.Subscriber(
+            self, ROS_Image, self.input_image_topic)
+        self.input_distance_subscriber = message_filters.Subscriber(
+            self, ROS_Vector3Stamped, self.input_distance_topic)
+        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber,
+                                                    self.input_distance_subscriber], 10)
         self.ts.registerCallback(self.callback)
 
         self.update_subscriber = self.create_subscription(ROS_String, self.update_topic, self.update, 1)
@@ -95,9 +96,9 @@ class ContinualSlamPredictor(Node):
         Initializing publishers.
         """
         self.output_depth_publisher = self.create_publisher(
-            ROS_Image, self.output_depth_topic, queue_size=10)
+            ROS_Image, self.output_depth_topic, 10)
         self.output_pose_publisher = self.create_publisher(
-            ROS_MarkerArray, self.output_pose_topic, queue_size=10)
+            ROS_MarkerArray, self.output_pose_topic, 10)
 
     def _init_predictor(self):
         """
@@ -182,7 +183,7 @@ class ContinualSlamPredictor(Node):
         else:
             self.odometry = self.odometry @ new_odometry
         translation = self.odometry[0][:3, 3]
-        position = [-translation[0], 0, -translation[2]]
+        position = [(-translation[0]), 0.0, float(-translation[2])]
 
         self.cache["marker_position"].append(position)
         self.cache["marker_frame_id"].append("map")
