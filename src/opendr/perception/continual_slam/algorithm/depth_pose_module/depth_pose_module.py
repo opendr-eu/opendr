@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 import math
 import torch
@@ -134,7 +134,42 @@ class DepthPoseModule:
             outputs, losses = self._process_batch(batch)
         if return_loss:
             return outputs, losses
-        return outputs
+        return outputs, None
+
+    def predict_pose(
+        self,
+        image_0: Tensor,
+        image_1: Tensor,
+        as_numpy: bool = True,
+        use_online: bool = False,
+        ) -> Tuple[Union[Tensor, np.ndarray], Union[Tensor, np.ndarray]]:
+            if len(image_0.shape) == 3:
+                image_0 = image_0.unsqueeze(dim=0)
+            if len(image_1.shape) == 3:
+                image_1 = image_1.unsqueeze(dim=0)
+
+            self._set_eval()
+            with torch.no_grad():
+                image_0 = image_0.to(self.device)
+                image_1 = image_1.to(self.device)
+
+                # Pose network
+                pose_inputs = torch.cat([image_0, image_1], 1)
+                if use_online:
+                    pose_features = [self.online_models['pose_encoder'](pose_inputs)]
+                    axis_angle, translation = self.online_models['pose_decoder'](pose_features)
+                else:
+                    pose_features = [self.models['pose_encoder'](pose_inputs)]
+                    axis_angle, translation = self.models['pose_decoder'](pose_features)
+                axis_angle, translation = axis_angle[:, 0], translation[:, 0]
+                transformation = transformation_from_parameters(axis_angle, translation, invert=False)
+
+                cov_matrix = torch.eye(6, device=self.device)
+
+            if as_numpy:
+                transformation = transformation.squeeze().cpu().detach().numpy()
+                cov_matrix = cov_matrix.cpu().detach().numpy()
+            return transformation, cov_matrix
 
     def load_model(self, weights_folder: str = None, load_optimizer: bool = True) -> None:
         """

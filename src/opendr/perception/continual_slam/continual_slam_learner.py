@@ -29,6 +29,10 @@ from opendr.engine.learners import Learner
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module import DepthPoseModule
 from opendr.perception.continual_slam.configs.config_parser import ConfigParser
+from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimization import PoseGraphOptimization
+from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
+from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
+from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 
 
 class ContinualSLAMLearner(Learner):
@@ -38,7 +42,10 @@ class ContinualSLAMLearner(Learner):
     def __init__(self,
                  config_file: Union[str, Path],
                  mode: str = 'predictor',
-                 ros: bool = False
+                 ros: bool = False,
+                 do_loop_closure: bool = False,
+                 key_frame_freq: int = 10,
+                 lc_distance_poses: int = 150,
                  ):
         """
         :param config_file: path to the config file
@@ -54,6 +61,14 @@ class ContinualSLAMLearner(Learner):
         self.width = self.dataset_config.width
         self.model_config = self.config_file.depth_pose
         self.is_ros = ros
+        self.step = 0
+        self.key_frame_freq = key_frame_freq
+        self.do_loop_closure = do_loop_closure
+        self.lc_distance_poses = lc_distance_poses
+        self.since_last_lc = lc_distance_poses
+        self.online_dataset = Buffer()
+        self.pose_graph = PoseGraphOptimization()
+        self.loop_closure_detection = LoopClosureDetection(self.config_file.loop_closure)
         super(ContinualSLAMLearner, self).__init__(lr=self.model_config.learning_rate)
 
         self.mode = mode
@@ -74,7 +89,7 @@ class ContinualSLAMLearner(Learner):
             batch: List,
             return_losses: bool = False,
             replay_buffer: bool = False,
-            learner: bool = False) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+            learner: bool = False):
         """
         In the context of CL-SLAM, we implemented fit method as adapt method, which updates the weights of learner
         based on coming input. Only works in learner mode.
@@ -86,7 +101,7 @@ class ContinualSLAMLearner(Learner):
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         if self.mode == 'learner':
-            return self._fit(batch, return_losses, replay_buffer, learner=learner)
+            self._fit(batch, return_losses, replay_buffer, learner=learner)
         else:
             raise ValueError('Fit is only available in learner mode')
 
@@ -171,7 +186,7 @@ class ContinualSLAMLearner(Learner):
              batch: List,
              return_losses: bool = False,
              replay_buffer: bool = False,
-             learner: bool = False) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+             learner: bool = False):
         """
         :param batch: list of tuples of (input, target)
         :type batch: List[Tuple[Dict, None]]
@@ -181,16 +196,14 @@ class ContinualSLAMLearner(Learner):
         :type replay_buffer: bool
         :param learner: whether to use learner
         :type learner: bool
-        :return: tuple of (prediction, loss)
-        :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         batch_size = len(batch)
         input_dict = self._input_formatter(batch, replay_buffer, learner=learner, height=self.height, width=self.width)
         # Adapt
         if return_losses:
-            prediction, losses = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
+            self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
         else:
-            prediction = self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
+            self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
 
     def _predict(self,
                  batch: Tuple[Dict, None],
@@ -203,16 +216,59 @@ class ContinualSLAMLearner(Learner):
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         input_dict = self._input_formatter(batch)
+        self.step += 1
         # Get the prediction
-        if return_losses:
-            prediction, losses = self.predictor.predict(input_dict, return_loss=return_losses)
-            # Convert the prediction to opendr format
-            return self._output_formatter(prediction), losses
+        prediction, losses = self.predictor.predict(input_dict, return_loss=return_losses)
+        # Convert the prediction to opendr format
+        depth, odometry = self._output_formatter(prediction)
+        if not self.do_loop_closure:
+            return (depth, odometry), losses
         else:
-            prediction = self.predictor.predict(input_dict, return_loss=return_losses)
-            # Convert the prediction to opendr format
-            return self._output_formatter(prediction)
-
+            odometry = odometry.squeeze(0)
+            if self.step == 1: # We are at the first step
+                self.pose_graph.add_vertex(0, np.eye(4), fixed=True)
+            elif self.step > 1:
+                odom_pose = self.pose_graph.get_pose(self.pose_graph.vertex_ids[-1]) @ odometry
+                self.pose_graph.add_vertex(self.step, odom_pose)
+                cov_matrix = np.eye(6)
+                cov_matrix[2, 2] = .1
+                cov_matrix[5, 5] = .1
+                self.pose_graph.add_edge((self.pose_graph.vertex_ids[-2], self.step),
+                                        odometry,
+                                        information=np.linalg.inv(cov_matrix))
+            optimized = False
+            image = input_dict[(0, 'image')].squeeze()
+            self.loop_closure_detection.add(self.step, image)
+            if not self.step % self.key_frame_freq and self.step < 4000:
+                self.online_dataset.add(self.step, image)
+                if self.since_last_lc > self.lc_distance_poses:
+                    lc_step_ids, distances = self.loop_closure_detection.search(self.step)
+                    for i, d in zip(lc_step_ids, distances):
+                        lc_image = self.online_dataset.get(i-1)
+                        lc_transformation, cov_matrix = self.predictor.predict_pose(image,
+                                                                                    lc_image,
+                                                                                    as_numpy=True)
+                        odometry = self.pose_graph.get_transform(self.step, i)
+                        # print(f'{self.step} --> {i} '
+                        #     f'[sim={d:.3f}, pred_dist={np.linalg.norm(lc_transformation):.1f}m, '
+                        #     f'graph_dist={np.linalg.norm(graph_transformation):.1f}m]')
+                        # # LoopClosureDetection.display_matches(image, lc_image, self.current_step,
+                        # #                                      i, lc_transformation, d)
+                        cov_matrix = np.eye(6)
+                        cov_matrix[2, 2] = .1
+                        cov_matrix[5, 5] = .1
+                        self.pose_graph.add_edge((self.step, i),
+                                                lc_transformation,
+                                                information=.5 * np.linalg.inv(cov_matrix),
+                                                is_loop_closure=True)
+                    if len(lc_step_ids) > 0:
+                        self.pose_graph.optimize(max_iterations=10000, verbose=False)
+                        optimized = True
+            if optimized:
+                self.since_last_lc = 0
+            else:
+                self.since_last_lc += 1
+            return depth, np.expand_dims(odometry, axis=0), losses
     @staticmethod
     def _input_formatter(batch: Tuple[Dict, None],
                          replay_buffer: bool = False,
@@ -300,17 +356,19 @@ if __name__ == '__main__':
     env = os.getenv('OPENDR_HOME')
     config_file = os.path.join(env, 'src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml')
     learner = ContinualSLAMLearner(config_file=config_file, mode='learner', ros=False)
-
+    predictor = ContinualSLAMLearner(config_file=config_file, mode='predictor', ros=False, do_loop_closure=True)
     from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
+
+    # from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
     replay_buffer = ReplayBuffer(4, True, sample_size=3, dataset_config_path=config_file)
-    from opendr.perception.continual_slam.datasets.kitti import KittiDataset
     dataset = KittiDataset(path = '/home/canakcia/Desktop/kitti_dset/', config_file_path=config_file)
     for item in dataset:
-        replay_buffer.add(item)
-        item = ContinualSLAMLearner._input_formatter(item)
-        # sample = [item]
-        # learner.fit(sample, learner=True)
-        if len(replay_buffer) > 3:
-            sample = replay_buffer.sample()
-            sample.insert(0, item)
-            learner.fit(sample, learner=True)
+        predictor.infer(item)
+        # replay_buffer.add(item)
+        # item = ContinualSLAMLearner._input_formatter(item)
+        # # sample = [item]
+        # # learner.fit(sample, learner=True)
+        # if len(replay_buffer) > 3:
+        #     sample = replay_buffer.sample()
+        #     sample.insert(0, item)
+        #     learner.fit(sample, learner=True)

@@ -22,6 +22,7 @@ import yaml
 
 from opendr.perception.continual_slam.datasets import Config as Dataset
 from opendr.perception.continual_slam.algorithm.parsing.config import Config as DepthPosePrediction
+from opendr.perception.continual_slam.algorithm.loop_closure.config import LoopClosureDetection
 
 class ConfigParser():
     def __init__(self, config_file: Union[str, PathLike, Path]) -> None:
@@ -30,6 +31,7 @@ class ConfigParser():
         self.config_dict = {}
         self.dataset = None
         self.depth_pose = None
+        self.loop_closure = None
 
         self.parse()
 
@@ -98,6 +100,8 @@ class ConfigParser():
             self.dataset = Dataset(**self.config_dict['Dataset'])
         if 'DepthPosePrediction' in self.config_dict:
             self.depth_pose = DepthPosePrediction(**self.config_dict['DepthPosePrediction'])
+        if 'LoopClosureDetection' in self.config_dict:
+            self.loop_closure = LoopClosureDetection(**self.config_dict['LoopClosureDetection'])
 
     def __str__(self):
         string = ''

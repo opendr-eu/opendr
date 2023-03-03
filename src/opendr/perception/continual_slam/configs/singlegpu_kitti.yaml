@@ -44,3 +44,8 @@ DepthPosePrediction:
   gpu_ids: [ 0 ]
   load_weights_folder: /home/canakcia/Downloads/weights_025
   use_wandb: false
+
+LoopClosureDetection:
+  detection_threshold: .99
+  id_threshold: 250
+  num_matches: 1

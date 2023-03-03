@@ -90,7 +90,7 @@ class ContinualSlamPredictor:
         env = os.getenv('OPENDR_HOME')
         path = os.path.join(env, self.path)
         try:
-            self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=False)
+            self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=False, do_loop_closure=True)
             return True
         except Exception as e:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
@@ -149,6 +149,7 @@ class ContinualSlamPredictor:
             self.color = list(np.random.choice(range(256), size=3))
         if self.sequence != incoming_sequence:
             self._clean_cache()
+            self.predictor.step = 0
             self.sequence = incoming_sequence
             self.color = list(np.random.choice(range(256), size=3))
 
@@ -159,7 +160,7 @@ class ContinualSlamPredictor:
             return
 
         # Infer depth and pose
-        depth, new_odometry = self.predictor.infer(triplet)
+        depth, new_odometry, _ = self.predictor.infer(triplet)
         if self.odometry is None:
             self.odometry = new_odometry
         else:
