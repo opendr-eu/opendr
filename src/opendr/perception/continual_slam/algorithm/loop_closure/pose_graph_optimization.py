@@ -118,3 +118,19 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
             if np.abs(edge[0] - edge[1]) == 1:
                 return False
         return True
+
+    def return_last_positions(self):
+        positions = []
+        for i, (_, vertex) in enumerate(self.vertices().items()):
+            if isinstance(vertex, g2o.VertexSE3):
+                positions.append(vertex.estimate().matrix()[:3, 3])
+            if i == 20:
+                break
+        return positions
+    
+    def return_all_positions(self):
+        positions = []
+        for _, vertex in self.vertices().items():
+            if isinstance(vertex, g2o.VertexSE3):
+                positions.append(vertex.estimate().matrix()[:3, 3])
+        return positions

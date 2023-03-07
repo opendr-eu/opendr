@@ -566,7 +566,6 @@ class DepthPoseModule:
             if model is None:
                 continue
             path = self.load_weights_folder / f'{model_name}.pth'
-            print(path)
             pretrained_dict = torch.load(path, map_location=self.device)
             if isinstance(model, nn.DataParallel):
                 model_dict = model.module.state_dict()

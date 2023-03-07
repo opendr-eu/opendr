@@ -44,7 +44,7 @@ class ContinualSLAMLearner(Learner):
                  mode: str = 'predictor',
                  ros: bool = False,
                  do_loop_closure: bool = False,
-                 key_frame_freq: int = 10,
+                 key_frame_freq: int = 5,
                  lc_distance_poses: int = 150,
                  ):
         """
@@ -237,23 +237,27 @@ class ContinualSLAMLearner(Learner):
                                         odometry,
                                         information=np.linalg.inv(cov_matrix))
             optimized = False
+            lc = False
             image = input_dict[(0, 'image')].squeeze()
-            self.loop_closure_detection.add(self.step, image)
             if not self.step % self.key_frame_freq and self.step < 4000:
+                self.loop_closure_detection.add(self.step, image)
                 self.online_dataset.add(self.step, image)
                 if self.since_last_lc > self.lc_distance_poses:
                     lc_step_ids, distances = self.loop_closure_detection.search(self.step)
+                    if len(lc_step_ids) > 0:
+                        print(f'Loop closure detected at step {self.step}, candidates: {lc_step_ids}')
+                        lc = True
                     for i, d in zip(lc_step_ids, distances):
                         lc_image = self.online_dataset.get(i-1)
                         lc_transformation, cov_matrix = self.predictor.predict_pose(image,
                                                                                     lc_image,
                                                                                     as_numpy=True)
-                        odometry = self.pose_graph.get_transform(self.step, i)
-                        # print(f'{self.step} --> {i} '
-                        #     f'[sim={d:.3f}, pred_dist={np.linalg.norm(lc_transformation):.1f}m, '
-                        #     f'graph_dist={np.linalg.norm(graph_transformation):.1f}m]')
-                        # # LoopClosureDetection.display_matches(image, lc_image, self.current_step,
-                        # #                                      i, lc_transformation, d)
+                        graph_transformation = self.pose_graph.get_transform(self.step, i)
+                        print(f'{self.step} --> {i} '
+                            f'[sim={d:.3f}, pred_dist={np.linalg.norm(lc_transformation):.1f}m, '
+                            f'graph_dist={np.linalg.norm(graph_transformation):.1f}m]')
+                        # LoopClosureDetection.display_matches(image, lc_image, self.current_step,
+                        #                                      i, lc_transformation, d)
                         cov_matrix = np.eye(6)
                         cov_matrix[2, 2] = .1
                         cov_matrix[5, 5] = .1
@@ -268,7 +272,7 @@ class ContinualSLAMLearner(Learner):
                 self.since_last_lc = 0
             else:
                 self.since_last_lc += 1
-            return depth, np.expand_dims(odometry, axis=0), losses
+            return depth, np.expand_dims(odometry, axis=0), losses, lc, self.pose_graph
     @staticmethod
     def _input_formatter(batch: Tuple[Dict, None],
                          replay_buffer: bool = False,

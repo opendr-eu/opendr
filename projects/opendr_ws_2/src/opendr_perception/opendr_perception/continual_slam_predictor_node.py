@@ -67,6 +67,7 @@ class ContinualSlamPredictor(Node):
         self.predictor = None
         self.sequence = None
         self.color = None
+        self.frame_id = None
 
         # Create caches
         self.cache = {
@@ -158,6 +159,7 @@ class ContinualSlamPredictor(Node):
         stamp = self.get_clock().now().to_msg()
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
+        self.frame_id = frame_id
         incoming_sequence = frame_id.split("_")[0]
         distance = distance[0]
 
@@ -178,28 +180,44 @@ class ContinualSlamPredictor(Node):
             return
 
         # Infer depth and pose
-        depth, new_odometry, _ = self.predictor.infer(triplet)
-        if self.odometry is None:
-            self.odometry = new_odometry
-        else:
-            self.odometry = self.odometry @ new_odometry
-        translation = self.odometry[0][:3, 3]
-        position = [(-translation[0]), 0.0, float(-translation[2])]
+        depth, _, _, lc, pose_graph = self.predictor.infer(triplet)
+        # if self.odometry is None:
+        #     self.odometry = new_odometry
+        # else:
+        #     self.odometry = self.odometry @ new_odometry
+        # position = [(-translation[0]), 0.0, float(-translation[2])]
+        if not lc:
+            points = pose_graph.return_last_positions()
+            if not len(points):
+                return
+            for point in points:
+                position = [-point[0], 0.0, -point[2]]
 
-        self.cache["marker_position"].append(position)
-        self.cache["marker_frame_id"].append("map")
-        if self.color is None:
-            self.color = [255, 0, 0]
+                self.cache["marker_position"].append(position)
+                self.cache["marker_frame_id"].append("map")
+            if self.color is None:
+                self.color = [255, 0, 0]
+            rgba = (self.color[0], self.color[1], self.color[2], 1.0)
+        else:
+            self._clean_cache()
+            points = pose_graph.return_all_positions()
+            for point in points:
+                position = [-point[0], 0.0, -point[2]]
+                self.cache["marker_position"].append(position)
+                self.cache["marker_frame_id"].append("map")
+
         rgba = (self.color[0], self.color[1], self.color[2], 1.0)
         marker_list = self.bridge.to_ros_marker_array(self.cache['marker_position'],
-                                                      self.cache['marker_frame_id'],
-                                                      stamp,
-                                                      rgba)
+                                                self.cache['marker_frame_id'],
+                                                stamp,
+                                                rgba)
+
         depth = self.bridge.to_ros_image(depth)
 
-        self.get_logger().info(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {frame_id}")
+        # self.get_logger().info(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {frame_id}")
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
+            
 
     def update(self, message: ROS_String):
         """
@@ -207,8 +225,9 @@ class ContinualSlamPredictor(Node):
         :param message: ROS message
         :type ROS_Byte
         """
-        self.get_logger().info("CL-SLAM predictor is currently updating its weights.")
         message = self.bridge.from_ros_string(message)
+        self.get_logger().info(f"CL-SLAM predictor is currently updating its weights from {message}.\n"
+                               f"Last predicted frame id is {self.frame_id}")
         self.predictor.load(weights_folder=message)
 
     def listen(self):
