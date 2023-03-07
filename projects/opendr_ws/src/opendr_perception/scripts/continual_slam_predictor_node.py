@@ -92,9 +92,8 @@ class ContinualSlamPredictor:
         try:
             self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=False, do_loop_closure=True)
             return True
-        except Exception as e:
+        except Exception:
             rospy.logerr("Continual SLAM node failed to initialize, due to predictor initialization error.")
-            rospy.logerr(e)
             return False
                 
     def _clean_cache(self):

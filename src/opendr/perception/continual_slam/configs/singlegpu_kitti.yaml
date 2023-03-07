@@ -46,6 +46,6 @@ DepthPosePrediction:
   use_wandb: false
 
 LoopClosureDetection:
-  detection_threshold: .99
-  id_threshold: 250
+  detection_threshold: .999
+  id_threshold: 100
   num_matches: 1

@@ -239,7 +239,7 @@ class ContinualSLAMLearner(Learner):
             optimized = False
             lc = False
             image = input_dict[(0, 'image')].squeeze()
-            if not self.step % self.key_frame_freq and self.step < 4000:
+            if self.step % self.key_frame_freq == 0 and self.step < 4000:
                 self.loop_closure_detection.add(self.step, image)
                 self.online_dataset.add(self.step, image)
                 if self.since_last_lc > self.lc_distance_poses:
@@ -248,7 +248,7 @@ class ContinualSLAMLearner(Learner):
                         print(f'Loop closure detected at step {self.step}, candidates: {lc_step_ids}')
                         lc = True
                     for i, d in zip(lc_step_ids, distances):
-                        lc_image = self.online_dataset.get(i-1)
+                        lc_image = self.online_dataset.get(i)
                         lc_transformation, cov_matrix = self.predictor.predict_pose(image,
                                                                                     lc_image,
                                                                                     as_numpy=True)

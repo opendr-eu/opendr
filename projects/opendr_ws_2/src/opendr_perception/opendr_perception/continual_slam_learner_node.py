@@ -213,7 +213,7 @@ class ContinualSlamLearner(Node):
         # Publish new weights
         if self.do_publish % self.publish_rate == 0:
             message = self.learner.save()
-            self.get_logger().info(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
+            self.get_logger().info(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}\n")
             ros_message = self.bridge.to_ros_string(message)
             self.output_weights_publisher.publish(ros_message)
         self.do_publish += 1

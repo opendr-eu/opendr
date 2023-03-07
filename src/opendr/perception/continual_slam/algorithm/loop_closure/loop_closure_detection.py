@@ -65,6 +65,9 @@ class LoopClosureDetection:
         # Filter by the threshold
         indices = indices[distances > self.threshold]
         distances = distances[distances > self.threshold]
+        # print(distances)
+        # print(indices)
+        # print(index_id)
         # Do not return neighbors (trivial matches)
         distances = distances[np.abs(indices - index_id) > self.id_threshold]
         indices = indices[np.abs(indices - index_id) > self.id_threshold]

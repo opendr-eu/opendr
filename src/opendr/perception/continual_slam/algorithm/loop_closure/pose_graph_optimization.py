@@ -119,12 +119,12 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
                 return False
         return True
 
-    def return_last_positions(self):
+    def return_last_positions(self, n = 20):
         positions = []
         for i, (_, vertex) in enumerate(self.vertices().items()):
             if isinstance(vertex, g2o.VertexSE3):
                 positions.append(vertex.estimate().matrix()[:3, 3])
-            if i == 20:
+            if i == n:
                 break
         return positions
     

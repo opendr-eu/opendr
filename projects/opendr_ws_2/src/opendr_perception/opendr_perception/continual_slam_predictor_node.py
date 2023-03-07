@@ -181,13 +181,8 @@ class ContinualSlamPredictor(Node):
 
         # Infer depth and pose
         depth, _, _, lc, pose_graph = self.predictor.infer(triplet)
-        # if self.odometry is None:
-        #     self.odometry = new_odometry
-        # else:
-        #     self.odometry = self.odometry @ new_odometry
-        # position = [(-translation[0]), 0.0, float(-translation[2])]
         if not lc:
-            points = pose_graph.return_last_positions()
+            points = pose_graph.return_last_positions(n=10)
             if not len(points):
                 return
             for point in points:
@@ -227,7 +222,7 @@ class ContinualSlamPredictor(Node):
         """
         message = self.bridge.from_ros_string(message)
         self.get_logger().info(f"CL-SLAM predictor is currently updating its weights from {message}.\n"
-                               f"Last predicted frame id is {self.frame_id}")
+                               f"Last predicted frame id is {self.frame_id}\n")
         self.predictor.load(weights_folder=message)
 
     def listen(self):
