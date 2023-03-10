@@ -321,18 +321,17 @@ class ContinualSLAMLearner(Learner):
                                         information=np.linalg.inv(cov_matrix))
             optimized = False
             lc = False
-            image = input_dict[(0, 'image')].squeeze()
-            if self.step % self.key_frame_freq == 0 and self.step < 4000:
-                self.loop_closure_detection.add(self.step, image)
+            image = input_dict[(0, 'image')].squeeze()/255.0
+            if self.step % self.key_frame_freq == 0:
+                features = self.loop_closure_detection.add(self.step, image)
                 self.online_dataset.add(self.step, image)
                 if self.since_last_lc > self.lc_distance_poses:
-                    lc_step_ids, distances = self.loop_closure_detection.search(self.step)
+                    lc_step_ids, distances = self.loop_closure_detection.search(self.step, features)
                     if len(lc_step_ids) > 0:
                         print(f'Loop closure detected at step {self.step}, candidates: {lc_step_ids}')
                         lc = True
                     for i, d in zip(lc_step_ids, distances):
                         lc_image = self.online_dataset.get(i)
-                        print(self.online_dataset.images.keys())
                         # save images for debugging
                         import os
                         if not os.path.exists('./images'):
@@ -344,19 +343,10 @@ class ContinualSLAMLearner(Learner):
                         lc_transformation, cov_matrix = self.predictor.predict_pose(image,
                                                                                     lc_image,
                                                                                     as_numpy=True)
-                        print(f'\nLoop closure transformation:\n{lc_transformation}\n')
-                        print(f'Loop closure covariance: {cov_matrix}\n')
-                        graph_transformation = self.pose_graph.get_transform(self.step, i)
-                        print(f'Graph transformation:\n{graph_transformation}\n')
-                        print(f'{self.step} --> {i} '
-                            f'[sim={d:.3f}, pred_dist={np.linalg.norm(lc_transformation):.1f}m, '
-                            f'graph_dist={np.linalg.norm(graph_transformation):.1f}m]')
-                        # LoopClosureDetection.display_matches(image, lc_image, self.current_step,
-                        #                                      i, lc_transformation, d)
                         cov_matrix = np.eye(6)
                         cov_matrix[2, 2] = .1
                         cov_matrix[5, 5] = .1
-                        self.pose_graph.add_edge((self.step, i),
+                        self.pose_graph.add_edge((self.step, int(i)),
                                                 lc_transformation,
                                                 information=.5 * np.linalg.inv(cov_matrix),
                                                 is_loop_closure=True)
@@ -454,12 +444,12 @@ if __name__ == '__main__':
     import os
     env = os.getenv('OPENDR_HOME')
     config_file = os.path.join(env, 'src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml')
-    learner = ContinualSLAMLearner(config_file=config_file, mode='learner', ros=False)
+    # learner = ContinualSLAMLearner(config_file=config_file, mode='learner', ros=False)
     predictor = ContinualSLAMLearner(config_file=config_file, mode='predictor', ros=False, do_loop_closure=True)
-    from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
+    # from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
 
     # from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
-    replay_buffer = ReplayBuffer(4, True, sample_size=3, dataset_config_path=config_file)
+    # replay_buffer = ReplayBuffer(4, True, sample_size=3, dataset_config_path=config_file)
     dataset = KittiDataset(path = '/home/canakcia/Desktop/kitti_dset/', config_file_path=config_file)
     for item in dataset:
         predictor.infer(item)

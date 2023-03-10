@@ -4,6 +4,7 @@ from typing import List, Tuple
 import faiss
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import ArrayLike
 import torch
 from scipy.spatial.distance import cosine
 from torch import Tensor
@@ -32,10 +33,11 @@ class LoopClosureDetection:
 
         # Feature cache ===================================
         # Cosine similarity
-        self.faiss_index = faiss.index_factory(self.model.num_features, 'Flat',
-                                               faiss.METRIC_INNER_PRODUCT)
-        self.image_id_to_index = {}
-        self.index_to_image_id = {}
+        self.faiss_index = faiss.IndexIDMap(faiss.index_factory(self.model.num_features,
+                                                                "Flat",
+                                                                faiss.METRIC_INNER_PRODUCT
+                                                                )
+                                            )
         # =================================================
 
     def add(self, image_id: int, image: Tensor) -> None:
@@ -45,14 +47,12 @@ class LoopClosureDetection:
         features = self.model(image).squeeze().cpu().detach().numpy()
         features = np.expand_dims(features, 0)
         faiss.normalize_L2(features)  # Then the inner product becomes cosine similarity
-        self.faiss_index.add(features)
-        self.image_id_to_index[image_id] = self.faiss_index.ntotal - 1
-        self.index_to_image_id[self.faiss_index.ntotal - 1] = image_id
+        self.faiss_index.add_with_ids(features, np.array([image_id]))
+        return features
         # print(f'Is Faiss index trained: {self.faiss_index.is_trained}')
 
-    def search(self, image_id: int) -> Tuple[List[int], List[float]]:
-        index_id = self.image_id_to_index[image_id]
-        features = np.expand_dims(self.faiss_index.reconstruct(index_id), 0)
+    def search(self, image_id: int, features: ArrayLike) -> Tuple[List[int], List[float]]:
+        index_id = image_id
         distances, indices = self.faiss_index.search(features, 100)
         distances = distances.squeeze()
         indices = indices.squeeze()
@@ -68,15 +68,11 @@ class LoopClosureDetection:
         # Do not return neighbors (trivial matches)
         distances = distances[np.abs(indices - index_id) > self.id_threshold]
         indices = indices[np.abs(indices - index_id) > self.id_threshold]
-        if not len(indices) == 0:
-            print(distances)
-            print(indices)
-            print(index_id)
         # Return best N matches
         distances = distances[:self.num_matches]
         indices = indices[:self.num_matches]
         # Convert back to image IDs
-        image_ids = sorted([self.index_to_image_id[index_id] for index_id in indices])
+        image_ids = sorted(indices)
         if not len(indices) == 0:
             print(image_ids)
         return image_ids, distances
