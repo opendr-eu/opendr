@@ -23,9 +23,13 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 from torch import Tensor
 from numpy.typing import ArrayLike
+from tqdm import tqdm
+import urllib
+from zipfile import ZipFile
 
 from opendr.engine.data import Image
 from opendr.engine.learners import Learner
+from opendr.engine.constants import OPENDR_SERVER_URL
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module import DepthPoseModule
 from opendr.perception.continual_slam.configs.config_parser import ConfigParser
@@ -33,6 +37,8 @@ from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimiza
 from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
 from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
+
+from torchvision.transforms import ToPILImage
 
 
 class ContinualSLAMLearner(Learner):
@@ -172,6 +178,83 @@ class ContinualSLAMLearner(Learner):
         else:
             self.predictor.load_model(weights_folder = weights_folder, load_optimizer=load_optimizer)
 
+    def download(path: str, mode: str = 'model', trained_on: str = 'semantickitti', prepare_data: bool = False):
+        """
+        Download data from the OpenDR server.
+        Valid modes include pre-trained model weights and data used in the unit tests.
+
+        Currently, the following pre-trained models are available:
+            - SemanticKITTI visual odometry
+
+        :param path: path to the directory where the data should be downloaded
+        :type path: str
+        :param mode: mode to use. Valid options are ['model', 'test_data']
+        :type mode: str
+        :param trained_on: dataset on which the model was trained. Valid options are ['semantickitti']
+        :type trained_on: str
+        :param prepare_data: whether to prepare the data for the unit tests
+        :type prepare_data: bool
+
+        :return: path to the downloaded data
+        :rtype: str
+        """
+        if mode == "model":
+            models = {
+                "semantickitti":
+                f"{OPENDR_SERVER_URL}perception/continual_slam/models/model_semantickitti"
+            }
+            if trained_on not in models.keys():
+                raise ValueError(f"Could not find model weights pre-trained on {trained_on}. "
+                                 f"Valid options are {list(models.keys())}")
+            url = models[trained_on]
+        elif mode == "test_data":
+            url = f"{OPENDR_SERVER_URL}perception/continual_slam/test_data.zip"
+        else:
+            raise ValueError("Invalid mode. Valid options are ['model', 'test_data']")
+
+        networks = ["depth_encoder", "depth_decoder", "pose_encoder", "pose_decoder"]
+        if not isinstance(path, Path):
+            path = Path(path)
+        filename = path
+        path.mkdir(parents=True, exist_ok=True)
+
+        def pbar_hook(prog_bar: tqdm):
+            prev_b = [0]
+
+            def update_to(b=1, bsize=1, total=None):
+                if total is not None:
+                    prog_bar.total = total
+                prog_bar.update((b - prev_b[0]) * bsize)
+                prev_b[0] = b
+
+            return update_to
+
+        if os.path.exists(filename) and os.path.isfile(filename):
+            print(f'File already downloaded: {filename}')
+        else:
+            if mode == "model":
+                for network in networks:
+                    url = url + f"/{network}.pth"
+                    with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
+                              desc=f"Downloading {filename}") as pbar:
+                        urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+            else:
+                with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
+                          desc=f"Downloading {filename}") as pbar:
+                    urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+        if prepare_data and mode == "test_data":
+            print(f"Extracting {filename}")
+            try:
+                with ZipFile(filename, 'r') as zipObj:
+                    zipObj.extractall(path)
+                os.remove(filename)
+            except:
+                print(f"Could not extract {filename} to {path}. Please extract it manually.")
+                print("The data might have been already extracted an is available in the test_data folder.")
+            path = os.path.join(path, "test_data", "eval_data")
+            return path
+
+        return str(filename)
     def eval(self, dataset, *args, **kwargs):
         raise NotImplementedError
 
@@ -224,7 +307,7 @@ class ContinualSLAMLearner(Learner):
         if not self.do_loop_closure:
             return (depth, odometry), losses
         else:
-            odometry = odometry.squeeze(0)
+            #odometry = odometry.squeeze(0)
             if self.step == 1: # We are at the first step
                 self.pose_graph.add_vertex(0, np.eye(4), fixed=True)
             elif self.step > 1:
@@ -249,10 +332,22 @@ class ContinualSLAMLearner(Learner):
                         lc = True
                     for i, d in zip(lc_step_ids, distances):
                         lc_image = self.online_dataset.get(i)
+                        print(self.online_dataset.images.keys())
+                        # save images for debugging
+                        import os
+                        if not os.path.exists('./images'):
+                            os.makedirs('./images')
+                        pil_image = ToPILImage()(image.to('cpu'))
+                        pil_image.save(f'./images/{self.step}_image.png')
+                        pil_lc_image = ToPILImage()(lc_image.to('cpu'))
+                        pil_lc_image.save(f'./images/{i}_lc_image.png')
                         lc_transformation, cov_matrix = self.predictor.predict_pose(image,
                                                                                     lc_image,
                                                                                     as_numpy=True)
+                        print(f'\nLoop closure transformation:\n{lc_transformation}\n')
+                        print(f'Loop closure covariance: {cov_matrix}\n')
                         graph_transformation = self.pose_graph.get_transform(self.step, i)
+                        print(f'Graph transformation:\n{graph_transformation}\n')
                         print(f'{self.step} --> {i} '
                             f'[sim={d:.3f}, pred_dist={np.linalg.norm(lc_transformation):.1f}m, '
                             f'graph_dist={np.linalg.norm(graph_transformation):.1f}m]')
@@ -266,7 +361,7 @@ class ContinualSLAMLearner(Learner):
                                                 information=.5 * np.linalg.inv(cov_matrix),
                                                 is_loop_closure=True)
                     if len(lc_step_ids) > 0:
-                        self.pose_graph.optimize(max_iterations=10000, verbose=False)
+                        self.pose_graph.optimize(max_iterations=100000, verbose=False)
                         optimized = True
             if optimized:
                 self.since_last_lc = 0
@@ -340,7 +435,7 @@ class ContinualSLAMLearner(Learner):
                     depth = self._colorize_depth(prediction[item].squeeze().cpu().detach().numpy())
             if item[0] == 'cam_T_cam':
                 if item[2] == 1:
-                    odometry = prediction[item].cpu().detach().numpy()
+                    odometry = prediction[item][0, :].cpu().detach().numpy()
         return depth, odometry
 
     def _colorize_depth(self, depth):

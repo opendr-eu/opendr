@@ -76,7 +76,6 @@ class ContinualSlamPredictor(Node):
             "id": [],
             "marker_position": [],
             "marker_frame_id": []}
-        self.odometry = None
 
     def _init_subscribers(self):
         """
@@ -121,7 +120,6 @@ class ContinualSlamPredictor(Node):
         """
         for key in self.cache.keys():
             self.cache[key].clear()
-        self.odometry = None
 
     def _cache_arriving_data(self, image, distance, frame_id):
         """
@@ -194,7 +192,8 @@ class ContinualSlamPredictor(Node):
                 self.color = [255, 0, 0]
             rgba = (self.color[0], self.color[1], self.color[2], 1.0)
         else:
-            self._clean_cache()
+            self.cache["marker_position"].clear()
+            self.cache["marker_frame_id"].clear()
             points = pose_graph.return_all_positions()
             for point in points:
                 position = [-point[0], 0.0, -point[2]]

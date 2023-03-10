@@ -65,17 +65,20 @@ class LoopClosureDetection:
         # Filter by the threshold
         indices = indices[distances > self.threshold]
         distances = distances[distances > self.threshold]
-        # print(distances)
-        # print(indices)
-        # print(index_id)
         # Do not return neighbors (trivial matches)
         distances = distances[np.abs(indices - index_id) > self.id_threshold]
         indices = indices[np.abs(indices - index_id) > self.id_threshold]
+        if not len(indices) == 0:
+            print(distances)
+            print(indices)
+            print(index_id)
         # Return best N matches
         distances = distances[:self.num_matches]
         indices = indices[:self.num_matches]
         # Convert back to image IDs
         image_ids = sorted([self.index_to_image_id[index_id] for index_id in indices])
+        if not len(indices) == 0:
+            print(image_ids)
         return image_ids, distances
 
     def predict(self, image_0: Tensor, image_1: Tensor) -> float:

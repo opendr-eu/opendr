@@ -119,13 +119,20 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
                 return False
         return True
 
-    def return_last_positions(self, n = 20):
+    def return_last_positions(self, n = 20, reversed = False):
         positions = []
-        for i, (_, vertex) in enumerate(self.vertices().items()):
+        keys = list(self.vertices().keys())
+        length = len(keys)
+        i = 0
+        while i < n and i < length:
+            if reversed:
+                key = keys[length-i-1]
+            else:
+                key = keys[i]
+            vertex = self.vertices()[key]
             if isinstance(vertex, g2o.VertexSE3):
                 positions.append(vertex.estimate().matrix()[:3, 3])
-            if i == n:
-                break
+            i += 1
         return positions
     
     def return_all_positions(self):
@@ -133,4 +140,4 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
         for _, vertex in self.vertices().items():
             if isinstance(vertex, g2o.VertexSE3):
                 positions.append(vertex.estimate().matrix()[:3, 3])
-        return positions
+        return list(reversed(positions))
