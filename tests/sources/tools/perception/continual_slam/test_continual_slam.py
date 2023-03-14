@@ -76,68 +76,68 @@ class TestContinualSlamLearner(unittest.TestCase):
         assert predictor.step == 0
         assert learner.step == 0
     
-    # def test_fit(self):
-    #     warnings.simplefilter("ignore", UserWarning)
-    #     warnings.simplefilter("ignore", DeprecationWarning)
+    def test_fit(self):
+        warnings.simplefilter("ignore", UserWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
 
-    #     dataset = KittiDataset(self.config_file)
-    #     learner = ContinualSLAMLearner(self.config_file, mode="learner")
-    #     predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
-    #     replay_buffer = ReplayBuffer(buffer_size=5,
-    #                                  save_memory=True,
-    #                                  dataset_config_path=self.config_file,
-    #                                  sample_size=3)
-    #     # Test without replay buffer
-    #     for item in dataset:
-    #         replay_buffer.add(item)
-    #         item = ContinualSLAMLearner._input_formatter(item)
-    #         sample = [item]
-    #         assert learner.fit(sample, learner=True)
+        dataset = KittiDataset(self.config_file)
+        learner = ContinualSLAMLearner(self.config_file, mode="learner")
+        predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
+        replay_buffer = ReplayBuffer(buffer_size=5,
+                                     save_memory=True,
+                                     dataset_config_path=self.config_file,
+                                     sample_size=3)
+        # Test without replay buffer
+        for item in dataset:
+            replay_buffer.add(item)
+            item = ContinualSLAMLearner._input_formatter(item)
+            sample = [item]
+            assert learner.fit(sample, learner=True)
         
-    #     # Test with replay buffer
-    #     for item in dataset:
-    #         replay_buffer.add(item)
-    #         if replay_buffer.size < 3:
-    #             continue
-    #         item = ContinualSLAMLearner._input_formatter(item)
-    #         sample = replay_buffer.sample()
-    #         sample.insert(0, item)
-    #         assert learner.fit(sample, learner=True)
-    #         try:
-    #             predictor.fit(sample, learner=True)
-    #             assert False, "Should raise NotImplementedError"
-    #         except NotImplementedError:
-    #             pass
+        # Test with replay buffer
+        for item in dataset:
+            replay_buffer.add(item)
+            if replay_buffer.size < 3:
+                continue
+            item = ContinualSLAMLearner._input_formatter(item)
+            sample = replay_buffer.sample()
+            sample.insert(0, item)
+            assert learner.fit(sample, learner=True)
+            try:
+                predictor.fit(sample, learner=True)
+                assert False, "Should raise NotImplementedError"
+            except NotImplementedError:
+                pass
 
-    # def test_infer(self):
-    #     warnings.simplefilter("ignore", UserWarning)
-    #     warnings.simplefilter("ignore", DeprecationWarning)
+    def test_infer(self):
+        warnings.simplefilter("ignore", UserWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
 
-    #     dataset = KittiDataset(self.config_file)
-    #     predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
-    #     learner = ContinualSLAMLearner(self.config_file, mode="learner")
+        dataset = KittiDataset(self.config_file)
+        predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
+        learner = ContinualSLAMLearner(self.config_file, mode="learner")
 
-    #     # Test without loop closure
-    #     for item in dataset:
-    #         (depth, odometry), losses = predictor.infer(item, return_losses=True)
-    #         assert losses is None, "Losses should be None"
-    #         self.assertIsInstance(depth, Image)
-    #         self.assertIsInstance(odometry, np.array)
-    #         try: 
-    #             learner.infer(item, return_losses=True)
-    #             assert False, "Should raise NotImplementedError"
-    #         except NotImplementedError:
-    #             pass
+        # Test without loop closure
+        for item in dataset:
+            (depth, odometry), losses = predictor.infer(item, return_losses=True)
+            assert losses is None, "Losses should be None"
+            self.assertIsInstance(depth, Image)
+            self.assertIsInstance(odometry, np.array)
+            try: 
+                learner.infer(item, return_losses=True)
+                assert False, "Should raise NotImplementedError"
+            except NotImplementedError:
+                pass
         
-        # Test with loop closure
-        # predictor.config_file.depth_pose.loop_closure = True
-        # for item in dataset:
-        #     depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
-        #     assert losses is not None, "Losses should not be None"
-        #     assert lc is False, "Loop closure should be False since we are only using first 50 frames"
-        #     self.assertIsInstance(depth, Image)
-        #     self.assertIsInstance(odometry, np.array)
-        #     self.assertIsInstance(pose_graph, PoseGraphOptimization)
+        Test with loop closure
+        predictor.config_file.depth_pose.loop_closure = True
+        for item in dataset:
+            depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
+            assert losses is not None, "Losses should not be None"
+            assert lc is False, "Loop closure should be False since we are only using first 50 frames"
+            self.assertIsInstance(depth, Image)
+            self.assertIsInstance(odometry, np.array)
+            self.assertIsInstance(pose_graph, PoseGraphOptimization)
 
     def test_save(self):
         predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
