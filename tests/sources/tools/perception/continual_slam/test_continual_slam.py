@@ -129,7 +129,7 @@ class TestContinualSlamLearner(unittest.TestCase):
             except NotImplementedError:
                 pass
         
-        Test with loop closure
+        # Test with loop closure
         predictor.config_file.depth_pose.loop_closure = True
         for item in dataset:
             depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
