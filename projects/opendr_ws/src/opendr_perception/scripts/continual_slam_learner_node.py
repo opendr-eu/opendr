@@ -27,16 +27,17 @@ from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from std_msgs.msg import String as ROS_String
 from opendr_bridge import ROSBridge
 
+
 class ContinualSlamLearner:
     def __init__(self,
                  path: str,
-                 input_image_topic : str,
-                 input_distance_topic : str,
-                 output_weights_topic : str,
-                 publish_rate : int = 20,
-                 buffer_size : int = 1000,
-                 save_memory : bool = True,
-                 sample_size : int = 3):
+                 input_image_topic: str,
+                 input_distance_topic: str,
+                 output_weights_topic: str,
+                 publish_rate: int = 20,
+                 buffer_size: int = 1000,
+                 save_memory: bool = True,
+                 sample_size: int = 3):
         """
         Continual SLAM learner node. This node is responsible for training and updating the predictor.
         :param path: Path to the folder where the model will be saved.
@@ -77,6 +78,69 @@ class ContinualSlamLearner:
                       "distance": [],
                       "id": []}
 
+    def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
+        """
+        Callback method of predictor node.
+        :param image: Input image as a ROS message
+        :type ROS_Image
+        :param distance: Distance to the object as a ROS message
+        :type ROS_Vector3Stamped
+        """
+        image = self.bridge.from_ros_image(image)
+        frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
+        incoming_sequence = frame_id.split("_")[0]
+        distance = distance[0]
+
+        # Clear cache if new sequence is detected
+        if self.sequence is None:
+            self.sequence = incoming_sequence
+        if self.sequence != incoming_sequence:
+            self._clean_cache()
+            self.sequence = incoming_sequence
+
+        self._cache_arriving_data(image, distance, frame_id)
+
+        # If cache is not full, return
+        if len(self.cache['image']) < 3:
+            return
+
+        # Add triplet to replay buffer and sample
+        item = self._convert_cache_into_triplet()
+        if self.sample_size > 0:
+            self.replay_buffer.add(item)
+            item = ContinualSLAMLearner._input_formatter(item)
+            if len(self.replay_buffer) < self.sample_size:
+                return
+            batch = self.replay_buffer.sample()
+            # Concatenate the current triplet with the sampled batch
+            batch.insert(0, item)
+        else:
+            item = ContinualSLAMLearner._input_formatter(item)
+            batch = [item]
+
+        # Train learner
+        self.learner.fit(batch, learner=True)
+
+        # Publish new weights
+        if self.do_publish % self.publish_rate == 0:
+            message = self.learner.save()
+            rospy.loginfo(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
+            ros_message = self.bridge.to_ros_string(message)
+            self.output_weights_publisher.publish(ros_message)
+        self.do_publish += 1
+
+    def listen(self):
+        """
+        Start the node and begin processing input data. The order of the function calls ensures that the node does not
+        try to process input images without being in a trained state.
+        """
+        rospy.init_node('opendr_continual_slam_node', anonymous=True)
+        if self._init_learner() and self._init_replay_buffer():
+            rospy.loginfo("Continual SLAM node started.")
+            self._init_publisher()
+            self._init_subscribers()
+            rospy.spin()
+
     def _init_subscribers(self):
         """
         Initializing subscribers. Here we also do synchronization between two ROS topics.
@@ -94,7 +158,7 @@ class ContinualSlamLearner:
         Initializing publishers.
         """
         self.output_weights_publisher = rospy.Publisher(self.output_weights_topic, ROS_String, queue_size=10)
- 
+
     def _init_learner(self):
         """
         Creating a ContinualSLAMLearner instance with predictor and ros mode
@@ -163,69 +227,6 @@ class ContinualSlamLearner:
             triplet[self.cache['id'][i]] = (self.cache["image"][i], self.cache["distance"][i])
         return triplet
 
-    def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
-        """
-        Callback method of predictor node.
-        :param image: Input image as a ROS message
-        :type ROS_Image
-        :param distance: Distance to the object as a ROS message
-        :type ROS_Vector3Stamped
-        """
-        image = self.bridge.from_ros_image(image)
-        frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
-        incoming_sequence = frame_id.split("_")[0]
-        distance = distance[0]
-
-        # Clear cache if new sequence is detected
-        if self.sequence is None:
-            self.sequence = incoming_sequence
-        if self.sequence != incoming_sequence:
-            self._clean_cache()
-            self.sequence = incoming_sequence
-
-        self._cache_arriving_data(image, distance, frame_id)
-
-        # If cache is not full, return
-        if len(self.cache['image']) < 3:
-            return
-
-        # Add triplet to replay buffer and sample
-        item = self._convert_cache_into_triplet()
-        if self.sample_size > 0:
-            self.replay_buffer.add(item)
-            item = ContinualSLAMLearner._input_formatter(item)
-            if len(self.replay_buffer) < self.sample_size:
-                return
-            batch = self.replay_buffer.sample()
-            # Concatenate the current triplet with the sampled batch
-            batch.insert(0, item)
-        else:
-            item = ContinualSLAMLearner._input_formatter(item)
-            batch = [item]
-
-        # Train learner
-        self.learner.fit(batch, learner=True)
-
-        # Publish new weights
-        if self.do_publish % self.publish_rate == 0:
-            message = self.learner.save()
-            rospy.loginfo(f"CL-SLAM learner publishing new weights, currently in the frame {frame_id}")
-            ros_message = self.bridge.to_ros_string(message)
-            self.output_weights_publisher.publish(ros_message)
-        self.do_publish += 1
-
-    def listen(self):
-        """
-        Start the node and begin processing input data. The order of the function calls ensures that the node does not
-        try to process input images without being in a trained state.
-        """
-        rospy.init_node('opendr_continual_slam_node', anonymous=True)
-        if self._init_learner() and self._init_replay_buffer():
-            rospy.loginfo("Continual SLAM node started.")
-            self._init_publisher()
-            self._init_subscribers()
-            rospy.spin()
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -259,7 +260,7 @@ def main():
                         type=int,
                         default=10,
                         help='Size of the replay buffer')
-    parser.add_argument('-ss',   
+    parser.add_argument('-ss',
                         '--sample_size',
                         type=int,
                         default=3,
@@ -271,8 +272,7 @@ def main():
                         help='Whether to save memory or not. Add it to the command if you want to write to disk')
     args = parser.parse_args()
 
-
-    node = ContinualSlamLearner(args.config_path, 
+    node = ContinualSlamLearner(args.config_path,
                                 args.input_image_topic,
                                 args.input_distance_topic,
                                 args.output_weights_topic,
@@ -282,6 +282,6 @@ def main():
                                 args.sample_size)
     node.listen()
 
+
 if __name__ == '__main__':
     main()
-

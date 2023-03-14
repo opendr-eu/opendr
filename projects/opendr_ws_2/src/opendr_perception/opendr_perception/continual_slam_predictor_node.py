@@ -29,14 +29,15 @@ from visualization_msgs.msg import MarkerArray as ROS_MarkerArray
 from std_msgs.msg import String as ROS_String
 from opendr_bridge import ROS2Bridge
 
+
 class ContinualSlamPredictor(Node):
     def __init__(self,
                  path: Path,
-                 input_image_topic : str,
-                 input_distance_topic : str,
-                 output_depth_topic : str,
-                 output_pose_topic : str,
-                 update_topic : str):
+                 input_image_topic: str,
+                 input_distance_topic: str,
+                 output_depth_topic: str,
+                 output_pose_topic: str,
+                 update_topic: str):
         super().__init__("opendr_continual_slam_predictor_node")
         """
         Continual SLAM predictor node. This node is responsible for publishing predicted pose and depth outputs.
@@ -52,8 +53,6 @@ class ContinualSlamPredictor(Node):
         :type output_pose_topic: str
         :param update_topic: ROS topic where the update signal is published.
         :type update_topic: str
-        :param fps: Frequency of the node in Hz.
-        :type fps: int
         """
         self.bridge = ROS2Bridge()
 
@@ -77,6 +76,72 @@ class ContinualSlamPredictor(Node):
             "marker_position": [],
             "marker_frame_id": []}
 
+    def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
+        """
+        Callback method of predictor node.
+        :param image: Input image as a ROS message
+        :type ROS_Image
+        :param distance: Distance to the object as a ROS message
+        :type ROS_Vector3Stamped
+        """
+        # Data-preprocessing
+        stamp = self.get_clock().now().to_msg()
+        image = self.bridge.from_ros_image(image)
+        frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
+        self.frame_id = frame_id
+        incoming_sequence = frame_id.split("_")[0]
+        distance = distance[0]
+
+        self._check_sequence(incoming_sequence)
+        self._cache_arriving_data(image, distance, frame_id)
+        triplet = self._convert_cache_into_triplet()
+
+        # If triplet is not ready, return
+        if len(triplet) < 3:
+            return
+        # Infer depth and pose
+        depth = self._infer(triplet)
+        if depth is None:
+            return
+        rgba = (self.color[0], self.color[1], self.color[2], 1.0)
+        marker_list = self.bridge.to_ros_marker_array(self.cache['marker_position'],
+                                                      self.cache['marker_frame_id'],
+                                                      stamp,
+                                                      rgba)
+
+        depth = self.bridge.to_ros_image(depth)
+        self.output_depth_publisher.publish(depth)
+        self.output_pose_publisher.publish(marker_list)
+
+    def update(self, message: ROS_String):
+        """
+        Update the predictor with the new data
+        :param message: ROS message
+        :type ROS_Byte
+        """
+        message = self.bridge.from_ros_string(message)
+        self.get_logger().info(f"CL-SLAM predictor is currently updating its weights from {message}.\n"
+                               f"Last predicted frame id is {self.frame_id}\n")
+        self.predictor.load(weights_folder=message)
+
+    def listen(self):
+        """
+        Start the node and begin processing input data. The order of the function calls ensures that the node does not
+        try to process input images without being in a trained state.
+        """
+        if self._init_predictor():
+            self._init_publisher()
+            self._init_subscribers()
+            self.get_logger().info("Continual SLAM node started.")
+            rclpy.spin(self)
+
+            # Destroy the node explicitly
+            # (optional - otherwise it will be done automatically
+            # when the garbage collector destroys the node object)
+            self.destroy_node()
+            rclpy.shutdown()
+
+    # Auxiliary functions
     def _init_subscribers(self):
         """
         Initializing subscribers. Here we also do synchronization between two ROS topics.
@@ -109,11 +174,10 @@ class ContinualSlamPredictor(Node):
         try:
             self.predictor = ContinualSLAMLearner(path, mode="predictor", ros=False, do_loop_closure=True)
             return True
-        except Exception as e:
+        except Exception:
             self.get_logger().error("Continual SLAM node failed to initialize, due to predictor initialization error.")
-            self.get_logger().error(e)
             return False
-                
+
     def _clean_cache(self):
         """
         Cleaning the cache
@@ -141,26 +205,20 @@ class ContinualSlamPredictor(Node):
             self.cache['id'].pop(0)
 
     def _convert_cache_into_triplet(self) -> dict:
+        """
+        Converting the cache into a triplet
+        """
         triplet = {}
         for i in range(len(self.cache['image'])):
             triplet[self.cache['id'][i]] = (self.cache['image'][i], self.cache['distance'][i])
         return triplet
 
-    def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
+    def _check_sequence(self, incoming_sequence):
         """
-        Callback method of predictor node.
-        :param image: Input image as a ROS message
-        :type ROS_Image
-        :param distance: Distance to the object as a ROS message
-        :type ROS_Vector3Stamped
+        Checking if the new sequence is detected
+        :param incoming_sequence: Incoming sequence
+        :type incoming_sequence: str
         """
-        stamp = self.get_clock().now().to_msg()
-        image = self.bridge.from_ros_image(image)
-        frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
-        self.frame_id = frame_id
-        incoming_sequence = frame_id.split("_")[0]
-        distance = distance[0]
-
         # If new sequence is detected, clean the cache
         if self.sequence is None:
             self.sequence = incoming_sequence
@@ -171,18 +229,19 @@ class ContinualSlamPredictor(Node):
             self.sequence = incoming_sequence
             self.color = list(np.random.choice(range(256), size=3))
 
-        # Cache incoming data
-        self._cache_arriving_data(image, distance, frame_id)
-        triplet = self._convert_cache_into_triplet()
-        if len(triplet) < 3:
-            return
-
-        # Infer depth and pose
+    def _infer(self, triplet: dict):
+        """
+        Infer the triplet
+        :param triplet: Triplet
+        :type triplet: dict
+        :return: Depth image
+        :rtype: Image
+        """
         depth, _, _, lc, pose_graph = self.predictor.infer(triplet)
         if not lc:
-            points = pose_graph.return_last_positions(n=10)
+            points = pose_graph.return_last_positions(n=5)
             if not len(points):
-                return
+                return None
             for point in points:
                 position = [-point[0], 0.0, -point[2]]
 
@@ -190,7 +249,6 @@ class ContinualSlamPredictor(Node):
                 self.cache["marker_frame_id"].append("map")
             if self.color is None:
                 self.color = [255, 0, 0]
-            rgba = (self.color[0], self.color[1], self.color[2], 1.0)
         else:
             self.cache["marker_position"].clear()
             self.cache["marker_frame_id"].clear()
@@ -199,52 +257,13 @@ class ContinualSlamPredictor(Node):
                 position = [-point[0], 0.0, -point[2]]
                 self.cache["marker_position"].append(position)
                 self.cache["marker_frame_id"].append("map")
+        return depth
 
-        rgba = (self.color[0], self.color[1], self.color[2], 1.0)
-        marker_list = self.bridge.to_ros_marker_array(self.cache['marker_position'],
-                                                self.cache['marker_frame_id'],
-                                                stamp,
-                                                rgba)
-
-        depth = self.bridge.to_ros_image(depth)
-
-        # self.get_logger().info(f"CL-SLAM predictor is currently predicting depth and pose. Current frame id {frame_id}")
-        self.output_depth_publisher.publish(depth)
-        self.output_pose_publisher.publish(marker_list)
-            
-
-    def update(self, message: ROS_String):
-        """
-        Update the predictor with the new data
-        :param message: ROS message
-        :type ROS_Byte
-        """
-        message = self.bridge.from_ros_string(message)
-        self.get_logger().info(f"CL-SLAM predictor is currently updating its weights from {message}.\n"
-                               f"Last predicted frame id is {self.frame_id}\n")
-        self.predictor.load(weights_folder=message)
-
-    def listen(self):
-        """
-        Start the node and begin processing input data. The order of the function calls ensures that the node does not
-        try to process input images without being in a trained state.
-        """
-        if self._init_predictor():
-            self._init_publisher()
-            self._init_subscribers()
-            self.get_logger().info("Continual SLAM node started.")
-            rclpy.spin(self)
-
-            # Destroy the node explicitly
-            # (optional - otherwise it will be done automatically
-            # when the garbage collector destroys the node object)
-            self.destroy_node()
-            rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    
+
     parser.add_argument('-c',
                         '--config_path',
                         type=str,

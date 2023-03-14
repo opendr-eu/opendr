@@ -57,7 +57,11 @@ class ROS2Bridge:
     def __init__(self):
         self._cv_bridge = CvBridge()
 
-    def to_ros_image(self, image: Image, encoding: str='passthrough',frame_id: str = None, time: str = None) -> ImageMsg:
+    def to_ros_image(self,
+                     image: Image,
+                     encoding: str='passthrough',
+                     frame_id: str = None,
+                     time: str = None) -> ImageMsg:
         """
         Converts an OpenDR image into a ROS2 image message
         :param image: OpenDR image to be converted
@@ -718,7 +722,12 @@ class ROS2Bridge:
             classification.source_img = source_data
         return classification
 
-    def to_ros_marker(self, frame_id: str, position: list, id: int, timestamp: str, rgba: tuple = None) -> MarkerMsg:
+    def to_ros_marker(self,
+                      frame_id: str,
+                      position: list,
+                      id: int,
+                      timestamp: str,
+                      rgba: tuple = None) -> MarkerMsg:
         """
         Creates ROS Marker message given positions x,y,z and frame_id.
         :param frame_id: The frame_id of the marker.
@@ -751,39 +760,48 @@ class ROS2Bridge:
         marker.scale.y = 1.0
         marker.scale.z = 1.0
         if rgba is not None:
-            marker.color.a = float(rgba[3])
-            marker.color.r = float(rgba[0])
-            marker.color.g = float(rgba[1])
-            marker.color.b = float(rgba[2])
+            marker.color.a = 1.0
+            marker.color.r = float(rgba[0]/255)
+            marker.color.g = float(rgba[1]/255)
+            marker.color.b = float(rgba[2]/255)
         else:
             marker.color.a = 1.0
             marker.color.r = 1.0
             marker.color.g = 0.0
             marker.color.b = 0.0
         return marker
-    
-    def from_ros_marker(self):
-        raise NotImplementedError
 
-    def to_ros_marker_array(self, position_list: list, frame_id_list: list, stamp: str, rgba: tuple = None) -> MarkerArrayMsg:
+    def to_ros_marker_array(self,
+                            position_list: list,
+                            frame_id_list: list,
+                            stamp: str,
+                            rgba: tuple = None) -> MarkerArrayMsg:
         """
         Creates ROS MarkerArray message given positions x,y,z and frame_id.
         :param position_list: The list of positions of the markers.
         :type position_list: list
         :param frame_id_list: The list of frame_ids of the markers.
         :type frame_id_list: list
+        :param stamp: The timestamp of the marker.
+        :type stamp: str
         :param rgba: The color of the marker.
         :type rgba: tuple
         """
         marker_array = MarkerArrayMsg()
         for i in range(len(position_list)):
-            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i], i, stamp, rgba))
+            marker_array.markers.append(self.to_ros_marker(frame_id_list[i],
+                                                           position_list[i],
+                                                           i,
+                                                           stamp,
+                                                           rgba))
         return marker_array
 
-    def from_ros_marker_array(self):
-        raise NotImplementedError
-
-    def to_ros_vector3_stamped(self, x: float, y: float, z: float, frame_id: str, time: str) -> Vector3StampedMsg:
+    def to_ros_vector3_stamped(self,
+                               x: float,
+                               y: float,
+                               z: float,
+                               frame_id: str,
+                               time: str) -> Vector3StampedMsg:
         """
         Creates a Vector3Stamped message given x,y,z coordinates and frame_id and time
         :param x: The x coordinate of the vector.
@@ -839,7 +857,7 @@ class ROS2Bridge:
         message.data = data
 
         return message
-    
+
     def from_ros_string(self, message: String):
         """
         Creates a String message given data.

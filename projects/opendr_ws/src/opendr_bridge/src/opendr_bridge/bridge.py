@@ -19,9 +19,10 @@ from opendr.engine.target import (
 )
 
 import numpy as np
-
-from rospy.rostime import Time
 import struct
+
+import rospy
+from rospy.rostime import Time
 from cv_bridge import CvBridge
 from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, ObjectHypothesisWithPose,\
      Detection3DArray, Detection3D, BoundingBox3D as BoundingBox3DMsg, ObjectHypothesis, Classification2D
@@ -61,13 +62,21 @@ class ROSBridge:
         image = Image(np.asarray(cv_image, dtype=np.uint8))
         return image
 
-    def to_ros_image(self, image: Image, encoding: str='passthrough', frame_id: str = None, time: Time = None) -> ImageMsg:
+    def to_ros_image(self,
+                     image: Image,
+                     encoding: str='passthrough',
+                     frame_id: str = None,
+                     time: Time = None) -> ImageMsg:
         """
         Converts an OpenDR image into a ROS image message
         :param image: OpenDR image to be converted
         :type image: engine.data.Image
         :param encoding: encoding to be used for the conversion (inherited from CvBridge)
         :type encoding: str
+        :param frame_id: frame id of the image
+        :type frame_id: str
+        :param time: time of the image
+        :type time: rospy.rostime.Time
         :return: ROS image
         :rtype: sensor_msgs.msg.Image
         """
@@ -743,19 +752,27 @@ class ROSBridge:
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
 
-    def to_ros_marker(self, frame_id: str, position: list, id: int, rgba: tuple = None) -> MarkerMsg:
+    def to_ros_marker(self,
+                      frame_id: str,
+                      position: list,
+                      id: int,
+                      rgba: tuple = None) -> MarkerMsg:
         """
         Creates ROS Marker message given positions x,y,z and frame_id.
         :param frame_id: The frame_id of the marker.
         :type frame_id: str
         :param position: The position of the marker.
         :type position: list
-        :return: ROS message with the marker.
+        :param id: The id of the marker.
+        :type id: int
+        :param rgba: The color of the marker.
+        :type rgba: tuple
+        :return: ROS Marker message.
         :rtype: visualization_msgs.msg.Marker
         """
         marker = MarkerMsg()
         marker.header.frame_id = frame_id
-        marker.header.stamp = Time.now()
+        marker.header.stamp = rospy.Time.now()
         marker.type = marker.SPHERE
         marker.id = id
         marker.action = marker.ADD
@@ -771,38 +788,43 @@ class ROSBridge:
         marker.scale.z = 1.0
         if rgba is not None:
             marker.color.a = rgba[3]
-            marker.color.r = rgba[0]
-            marker.color.g = rgba[1]
-            marker.color.b = rgba[2]
+            marker.color.r = rgba[0] / 255.0
+            marker.color.g = rgba[1] / 255.0
+            marker.color.b = rgba[2] / 255.0
         else:
             marker.color.a = 1.0
             marker.color.r = 1.0
             marker.color.g = 0.0
             marker.color.b = 0.0
         return marker
-    
-    def from_ros_marker(self):
-        raise NotImplementedError
 
-    def to_ros_marker_array(self, position_list: list, frame_id_list: list, rgba: tuple = None) -> MarkerArrayMsg:
+    def to_ros_marker_array(self,
+                            position_list: list,
+                            frame_id_list: list,
+                            rgba: tuple = None) -> MarkerArrayMsg:
         """
         Creates ROS MarkerArray message given positions x,y,z and frame_id.
         :param position_list: The list of positions of the markers.
         :type position_list: list
         :param frame_id_list: The list of frame_ids of the markers.
         :type frame_id_list: list
-        :return: ROS message with the marker array.
-        :rtype: visualization_msgs.msg.MarkerArray
+        :param rgba: The color of the marker.
+        :type rgba: tuple
         """
         marker_array = MarkerArrayMsg()
         for i in range(len(position_list)):
-            marker_array.markers.append(self.to_ros_marker(frame_id_list[i], position_list[i], i, rgba))
+            marker_array.markers.append(self.to_ros_marker(frame_id_list[i],
+                                                           position_list[i],
+                                                           i,
+                                                           rgba))
         return marker_array
 
-    def from_ros_marker_array(self):
-        raise NotImplementedError
-
-    def to_ros_vector3_stamped(self, x: float, y: float, z: float, frame_id: str, time: Time) -> Vector3StampedMsg:
+    def to_ros_vector3_stamped(self,
+                               x: float,
+                               y: float,
+                               z: float,
+                               frame_id: str,
+                               time: Time) -> Vector3StampedMsg:
         """
         Creates a Vector3Stamped message given x,y,z coordinates and frame_id and time
         :param x: The x coordinate of the vector.
@@ -822,7 +844,6 @@ class ROSBridge:
         message = Vector3StampedMsg()
         message.header.frame_id = frame_id
         message.header.stamp = time
-
         message.vector.x = x
         message.vector.y = y
         message.vector.z = z
@@ -859,7 +880,7 @@ class ROSBridge:
         message.data = data
 
         return message
-    
+
     def from_ros_string(self, message: String):
         """
         Creates a String message given data.

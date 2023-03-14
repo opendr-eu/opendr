@@ -25,9 +25,10 @@ from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 
+
 class ContinualSlamDatasetNode:
 
-    def __init__(self, 
+    def __init__(self,
                  dataset_path: str,
                  config_file_path: str,
                  output_image_topic: str = "/opendr/dataset/image",
@@ -46,7 +47,6 @@ class ContinualSlamDatasetNode:
         :param dataset_fps: Dataset FPS
         :type dataset_fps: float
         """
-
         self.dataset_path = dataset_path
         self.config_file_path = config_file_path
         self.bridge = ROSBridge()
@@ -55,8 +55,20 @@ class ContinualSlamDatasetNode:
         self.output_image_topic = output_image_topic
         self.output_distance_topic = output_distance_topic
 
-    def _init_publisher(self):
+    def start(self):
+        """
+        Runs the node
+        """
+        rospy.init_node("continual_slam_dataset_node", anonymous=True)
+        self._init_publisher()
+        if self._init_dataset():
+            self._publish()
 
+    # Auxiliary functions
+    def _init_publisher(self):
+        """
+        Initializes publishers
+        """
         self.output_image_publisher = rospy.Publisher(self.output_image_topic,
                                                       ROS_Image,
                                                       queue_size=10)
@@ -65,6 +77,9 @@ class ContinualSlamDatasetNode:
                                                          queue_size=10)
 
     def _init_dataset(self):
+        """
+        Initializes dataset
+        """
         env = os.getenv("OPENDR_HOME")
         config_file_path = os.path.join(env, self.config_file_path)
         if not Path(config_file_path).exists():
@@ -77,24 +92,25 @@ class ContinualSlamDatasetNode:
             return False
 
     def _publish(self):
+        """
+        Publishes images and distances
+        """
         rospy.loginfo("Start publishing dataset images")
         i = 0
-        length = len(self.dataset)-1
-        while not rospy.is_shutdown() and i < length:
-            # TODO: Delete this later or find it out
-            if i == length-1:
+        while not rospy.is_shutdown():
+            if i == len(self.dataset)-2:
                 break
-            data = self.dataset[i][0] 
+            data = self.dataset[i][0]
             # Data is in format of {"image_id" : (image, velocity, distance)} for 3 past frames
             image_ids = list(data.keys())
             if len(data) < 3:
-                i += 1 
+                i += 1
                 continue
             image_t0, distance_t0 = data[image_ids[0]]
 
             stamp = rospy.Time.now()
             # Convert image to ROS Image
-            image = self.bridge.to_ros_image(image = image_t0, frame_id = image_ids[0], time = stamp)
+            image = self.bridge.to_ros_image(image=image_t0, frame_id=image_ids[0], time=stamp)
             # Convert velocity to ROS Vector3Stamped
             distance = self.bridge.to_ros_vector3_stamped(distance_t0, 0, 0, image_ids[0], stamp)
             # Publish the image and distance
@@ -106,14 +122,6 @@ class ContinualSlamDatasetNode:
             i += 1
             time.sleep(self.delay)
 
-    def start(self):
-        """
-        Runs the node
-        """
-        rospy.init_node("continual_slam_dataset_node", anonymous=True)
-        self._init_publisher()
-        if self._init_dataset():
-            self._publish()
 
 def main():
     parser = argparse.ArgumentParser()

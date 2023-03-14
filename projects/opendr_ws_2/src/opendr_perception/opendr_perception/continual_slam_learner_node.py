@@ -27,16 +27,17 @@ from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from std_msgs.msg import String as ROS_String
 
+
 class ContinualSlamLearner(Node):
     def __init__(self,
                  path: str,
-                 input_image_topic : str,
-                 input_distance_topic : str,
-                 output_weights_topic : str,
-                 publish_rate : int = 20,
-                 buffer_size : int = 1000,
-                 save_memory : bool = True,
-                 sample_size : int = 3):
+                 input_image_topic: str,
+                 input_distance_topic: str,
+                 output_weights_topic: str,
+                 publish_rate: int = 20,
+                 buffer_size: int = 1000,
+                 save_memory: bool = True,
+                 sample_size: int = 3):
         super().__init__("opendr_continual_slam_learner_node")
         """
         Continual SLAM learner node. This node is responsible for training and updating the predictor.
@@ -78,95 +79,6 @@ class ContinualSlamLearner(Node):
                       "distance": [],
                       "id": []}
 
-    def _init_subscribers(self):
-        """
-        Initializing subscribers. Here we also do synchronization between two ROS topics.
-        """
-        self.input_image_subscriber = message_filters.Subscriber(
-            self, ROS_Image, self.input_image_topic)
-        self.input_distance_subscriber = message_filters.Subscriber(
-            self, ROS_Vector3Stamped, self.input_distance_topic)
-        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber,
-                                                    self.input_distance_subscriber], 10)
-        self.ts.registerCallback(self.callback)
-
-    def _init_publisher(self):
-        """
-        Initializing publishers.
-        """
-        self.output_weights_publisher = self.create_publisher(ROS_String,
-                                                              self.output_weights_topic,
-                                                              10)
- 
-    def _init_learner(self):
-        """
-        Creating a ContinualSLAMLearner instance with predictor and ros mode
-        """
-        env = os.getenv('OPENDR_HOME')
-        path = os.path.join(env, self.path)
-        print(path)
-        try:
-            self.learner = ContinualSLAMLearner(path, mode="learner", ros=False)
-            return True
-        except Exception as e:
-            self.get_logger().error("Continual SLAM node failed to initialize, due to learner initialization error.")
-            self.get_logger().error(e)
-            return False
-
-    def _init_replay_buffer(self):
-        """
-        Creating a replay buffer instance
-        """
-        env = os.getenv('OPENDR_HOME')
-        path = os.path.join(env, self.path)
-        try:
-            self.replay_buffer = ReplayBuffer(buffer_size=self.buffer_size,
-                                              save_memory=self.save_memory,
-                                              dataset_config_path=path,
-                                              sample_size=self.sample_size)
-            return True
-        except Exception as e:
-            self.get_logger().error("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
-            self.get_logger().error(e)
-            if self.sample_size > 0:
-                return False
-            else:
-                return True
-
-    def _clean_cache(self):
-        """
-        Clearing the cache.
-        """
-        for key in self.cache.keys():
-            self.cache[key].clear()
-
-    def _cache_arriving_data(self, image, distance, frame_id):
-        """
-        Caching the arriving data.
-        :param image: Input image as a ROS message
-        :type ROS_Image
-        :param distance: Distance to the object as a ROS message
-        :type ROS_Vector3Stamped
-        :param frame_id: Frame id of the arriving data
-        :type int
-        """
-        self.cache["image"].append(image)
-        self.cache["distance"].append(distance)
-        self.cache["id"].append(frame_id)
-        if len(self.cache['image']) > 3:
-            self.cache["image"].pop(0)
-            self.cache["distance"].pop(0)
-            self.cache["id"].pop(0)
-
-    def _convert_cache_into_triplet(self) -> dict:
-        """
-        Converting the cache into a triplet.
-        """
-        triplet = {}
-        for i in range(len(self.cache["image"])):
-            triplet[self.cache['id'][i]] = (self.cache["image"][i], self.cache["distance"][i])
-        return triplet
-
     def callback(self, image: ROS_Image, distance: ROS_Vector3Stamped):
         """
         Callback method of predictor node.
@@ -175,6 +87,7 @@ class ContinualSlamLearner(Node):
         :param distance: Distance to the object as a ROS message
         :type ROS_Vector3Stamped
         """
+        # Data preprocessing
         image = self.bridge.from_ros_image(image)
         frame_id, distance = self.bridge.from_ros_vector3_stamped(distance)
         incoming_sequence = frame_id.split("_")[0]
@@ -235,6 +148,93 @@ class ContinualSlamLearner(Node):
             self.destroy_node()
             rclpy.shutdown()
 
+    # Auxiliary functions
+    def _init_subscribers(self):
+        """
+        Initializing subscribers. Here we also do synchronization between two ROS topics.
+        """
+        self.input_image_subscriber = message_filters.Subscriber(
+            self, ROS_Image, self.input_image_topic)
+        self.input_distance_subscriber = message_filters.Subscriber(
+            self, ROS_Vector3Stamped, self.input_distance_topic)
+        self.ts = message_filters.TimeSynchronizer([self.input_image_subscriber,
+                                                    self.input_distance_subscriber], 10)
+        self.ts.registerCallback(self.callback)
+
+    def _init_publisher(self):
+        """
+        Initializing publishers.
+        """
+        self.output_weights_publisher = self.create_publisher(ROS_String,
+                                                              self.output_weights_topic,
+                                                              10)
+
+    def _init_learner(self):
+        """
+        Creating a ContinualSLAMLearner instance with predictor and ros mode
+        """
+        env = os.getenv('OPENDR_HOME')
+        path = os.path.join(env, self.path)
+        try:
+            self.learner = ContinualSLAMLearner(path, mode="learner", ros=False)
+            return True
+        except Exception:
+            self.get_logger().error("Continual SLAM node failed to initialize, due to learner initialization error.")
+            return False
+
+    def _init_replay_buffer(self):
+        """
+        Creating a replay buffer instance
+        """
+        env = os.getenv('OPENDR_HOME')
+        path = os.path.join(env, self.path)
+        try:
+            self.replay_buffer = ReplayBuffer(buffer_size=self.buffer_size,
+                                              save_memory=self.save_memory,
+                                              dataset_config_path=path,
+                                              sample_size=self.sample_size)
+            return True
+        except Exception as e:
+            self.get_logger().error("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
+            if self.sample_size > 0:
+                return False
+            else:
+                return True
+
+    def _clean_cache(self):
+        """
+        Clearing the cache.
+        """
+        for key in self.cache.keys():
+            self.cache[key].clear()
+
+    def _cache_arriving_data(self, image, distance, frame_id):
+        """
+        Caching the arriving data.
+        :param image: Input image as a ROS message
+        :type ROS_Image
+        :param distance: Distance to the object as a ROS message
+        :type ROS_Vector3Stamped
+        :param frame_id: Frame id of the arriving data
+        :type int
+        """
+        self.cache["image"].append(image)
+        self.cache["distance"].append(distance)
+        self.cache["id"].append(frame_id)
+        if len(self.cache['image']) > 3:
+            self.cache["image"].pop(0)
+            self.cache["distance"].pop(0)
+            self.cache["id"].pop(0)
+
+    def _convert_cache_into_triplet(self) -> dict:
+        """
+        Converting the cache into a triplet.
+        """
+        triplet = {}
+        for i in range(len(self.cache["image"])):
+            triplet[self.cache['id'][i]] = (self.cache["image"][i], self.cache["distance"][i])
+        return triplet
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -269,7 +269,7 @@ def main(args=None):
                         type=int,
                         default=10,
                         help='Size of the replay buffer')
-    parser.add_argument('-ss',   
+    parser.add_argument('-ss',
                         '--sample_size',
                         type=int,
                         default=3,
@@ -281,8 +281,7 @@ def main(args=None):
                         help='Whether to save memory or not. Add it to the command if you want to write to disk')
     args = parser.parse_args()
 
-
-    node = ContinualSlamLearner(args.config_path, 
+    node = ContinualSlamLearner(args.config_path,
                                 args.input_image_topic,
                                 args.input_distance_topic,
                                 args.output_weights_topic,

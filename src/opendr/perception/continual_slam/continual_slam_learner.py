@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional, List, Union
 
@@ -37,8 +38,6 @@ from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimiza
 from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
 from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
-
-from torchvision.transforms import ToPILImage
 
 
 class ContinualSLAMLearner(Learner):
@@ -130,12 +129,13 @@ class ContinualSLAMLearner(Learner):
         else:
             raise ValueError('Inference is only available in predictor mode')
 
-    def save(self) -> str:
+    def save(self, location: str = None) -> str:
         """
         Save the model weights as an binary-encoded string for ros message
         """
         save_dict = {}
-        location = Path.cwd() / 'temp_weights'
+        if location is None:
+            location = Path.cwd() / 'temp_weights'
         if not location.exists():
             location.mkdir(parents=True, exist_ok=True)
         for model_name, model in self.learner.models.items():
@@ -234,10 +234,10 @@ class ContinualSLAMLearner(Learner):
         else:
             if mode == "model":
                 for network in networks:
-                    url = url + f"/{network}.pth"
+                    durl = url + f"/{network}.pth"
                     with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
                               desc=f"Downloading {filename}") as pbar:
-                        urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+                        urllib.request.urlretrieve(durl, filename, pbar_hook(pbar))
             else:
                 with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
                           desc=f"Downloading {filename}") as pbar:
@@ -283,10 +283,14 @@ class ContinualSLAMLearner(Learner):
         batch_size = len(batch)
         input_dict = self._input_formatter(batch, replay_buffer, learner=learner, height=self.height, width=self.width)
         # Adapt
-        if return_losses:
-            self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
-        else:
-            self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
+        try:
+            if return_losses:
+                self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
+            else:
+                self.learner.adapt(input_dict, steps=5, return_loss=return_losses, batch_size=batch_size)
+            return True
+        except:
+            return False
 
     def _predict(self,
                  batch: Tuple[Dict, None],
@@ -332,14 +336,6 @@ class ContinualSLAMLearner(Learner):
                         lc = True
                     for i, d in zip(lc_step_ids, distances):
                         lc_image = self.online_dataset.get(i)
-                        # save images for debugging
-                        import os
-                        if not os.path.exists('./images'):
-                            os.makedirs('./images')
-                        pil_image = ToPILImage()(image.to('cpu'))
-                        pil_image.save(f'./images/{self.step}_image.png')
-                        pil_lc_image = ToPILImage()(lc_image.to('cpu'))
-                        pil_lc_image.save(f'./images/{i}_lc_image.png')
                         lc_transformation, cov_matrix = self.predictor.predict_pose(image,
                                                                                     lc_image,
                                                                                     as_numpy=True)
@@ -444,15 +440,10 @@ if __name__ == '__main__':
     import os
     env = os.getenv('OPENDR_HOME')
     config_file = os.path.join(env, 'src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml')
-    # learner = ContinualSLAMLearner(config_file=config_file, mode='learner', ros=False)
     predictor = ContinualSLAMLearner(config_file=config_file, mode='predictor', ros=False, do_loop_closure=True)
-    # from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
-
-    # from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
-    # replay_buffer = ReplayBuffer(4, True, sample_size=3, dataset_config_path=config_file)
     dataset = KittiDataset(path = '/home/canakcia/Desktop/kitti_dset/', config_file_path=config_file)
     for item in dataset:
-        predictor.infer(item)
+        output = predictor.infer(item, return_losses=True)
         # replay_buffer.add(item)
         # item = ContinualSLAMLearner._input_formatter(item)
         # # sample = [item]
