@@ -99,11 +99,12 @@ class PoseEstimationNode:
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
+
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
-        if self.performance_publisher:
-            start_time = perf_counter()
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
         if self.performance_publisher:
