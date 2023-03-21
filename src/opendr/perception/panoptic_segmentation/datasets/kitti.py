@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import argparse
 import multiprocessing as mp
 import os
 import warnings
@@ -441,3 +442,18 @@ class _Counter:
     def init_counter(c):
         global counter
         counter = c
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('raw_path', type=str)
+    parser.add_argument('odom_path', type=str)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--oxts', action='store_true')
+    group.add_argument('--depth', action='store_true')
+    args = parser.parse_args()
+
+    KittiDataset.prepare_data(Path(args.raw_path),
+                              Path(args.odom_path),
+                              oxts=args.oxts,
+                              gt_depth=args.depth)

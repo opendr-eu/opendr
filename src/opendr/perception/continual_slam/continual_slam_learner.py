@@ -37,7 +37,6 @@ from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimization import PoseGraphOptimization
 from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
 from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
-from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 
 
 class ContinualSLAMLearner(Learner):

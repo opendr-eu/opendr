@@ -16,7 +16,6 @@ import sys
 import os
 from pathlib import Path
 
-from opendr.engine.data import Image
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
@@ -25,18 +24,20 @@ from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer 
 def download_models():
     ContinualSLAMLearner.download(path="models", trained_on="semantickitti")
 
+
 def download_test_data():
     dataset_path = ContinualSLAMLearner.download(path="test_data", mode="test_data")
     return dataset_path
+
 
 def train(dataset_path, config_file):
     dataset = KittiDataset(dataset_path, config_file)
     learner = ContinualSLAMLearner(config_file, mode="learner")
 
     replay_buffer = ReplayBuffer(buffer_size=5,
-                                save_memory=True,
-                                dataset_config_path=config_file,
-                                sample_size=3)
+                                 save_memory=True,
+                                 dataset_config_path=config_file,
+                                 sample_size=3)
     for item in dataset:
         replay_buffer.add(item)
         if replay_buffer.size < 3:
@@ -45,14 +46,19 @@ def train(dataset_path, config_file):
         sample = replay_buffer.sample()
         sample.insert(0, item)
         learner.fit(sample, learner=True)
+    return (learner.save("./saved_model/"))
 
-def inference(dataset_path, config_file):
+
+def inference(dataset_path, config_file, model_path=None):
     dataset = KittiDataset(dataset_path, config_file)
     predictor = ContinualSLAMLearner(config_file, mode="predictor")
+    if model_path is not None:
+        predictor.load(model_path)
     predictor.config_file.depth_pose.loop_closure = True
     for item in dataset:
         depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
     # TODO: Ask Niclas if we need to output a visualization here or not
+
 
 def main():
     env = os.getenv('OPENDR_HOME')
@@ -60,8 +66,9 @@ def main():
 
     download_models()
     dataset_path = download_test_data()
-    train(dataset_path=dataset_path, config_file_path=config_file)
-    inference()
+    model_path = train(dataset_path=dataset_path, config_file_path=config_file)
+    inference(dataset_path=dataset_path, config_file_path=config_file, model_path=model_path)
+
 
 if __name__ == "__main__":
     main()

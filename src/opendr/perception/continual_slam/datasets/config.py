@@ -1,3 +1,4 @@
+# flake8: noqa
 # Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,20 +18,12 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 
+@dataclasses.dataclass
 class Dataset:
-    def __init__(self,
-                 dataset: str,
-                 config_file: Path,
-                 dataset_path: Optional[Path],
-                 scales: Optional[Tuple[int, ...]],
-                 height: Optional[int],
-                 width: Optional[int],
-                 frame_ids: Tuple[int, ...]
-                 ):
-        self.dataset = dataset
-        self.config_file = config_file
-        self.dataset_path = dataset_path
-        self.scales = scales
-        self.height = height
-        self.width = width
-        self.frame_ids = frame_ids
+    dataset: str
+    config_file: Path
+    dataset_path: Optional[Path]
+    scales: Optional[Tuple[int, ...]]
+    height: Optional[int]
+    width: Optional[int]
+    frame_ids: Tuple[int, ...]

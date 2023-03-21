@@ -68,7 +68,7 @@ class ConfigParser():
                         expected_type = [expected_type]
 
                     # Remove the NoneType before attempting conversions
-                    expected_type = [tp for tp in expected_type if not isinstance(tp, None)]
+                    expected_type = [tp for tp in expected_type if tp is not type(None)]  # noqa: E721
 
                     if not any(isinstance(value, tp) for tp in expected_type):
                         if len(expected_type) == 1:

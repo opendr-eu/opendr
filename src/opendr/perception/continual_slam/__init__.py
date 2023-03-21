@@ -1,3 +1,3 @@
-from opendr.perception.continual_slam.datasets.kitti import KittiDataset
+from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 
-__all__ = ['KittiDataset']
+__all__ = ['ContinualSLAMLearner']
