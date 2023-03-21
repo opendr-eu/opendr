@@ -136,13 +136,12 @@ class DepthPoseModule:
             return outputs, losses
         return outputs, None
 
-    def predict_pose(
-        self,
-        image_0: Tensor,
-        image_1: Tensor,
-        as_numpy: bool = True,
-        use_online: bool = False,
-        ) -> Tuple[Union[Tensor, np.ndarray], Union[Tensor, np.ndarray]]:
+    def predict_pose(self,
+                     image_0: Tensor,
+                     image_1: Tensor,
+                     as_numpy: bool = True,
+                     use_online: bool = False,
+                     ) -> Tuple[Union[Tensor, np.ndarray], Union[Tensor, np.ndarray]]:
             if len(image_0.shape) == 3:
                 image_0 = image_0.unsqueeze(dim=0)
             if len(image_1.shape) == 3:
@@ -597,7 +596,6 @@ class DepthPoseModule:
             except:  # pylint: disable=bare-except
                 print('Cannot find matching optimizer weights, so the optimizer is randomly '
                       'initialized.')
-
 
     def _load_online_model(self, load_optimizer: bool = True) -> None:
         """Load model(s) from disk

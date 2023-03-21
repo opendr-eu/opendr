@@ -45,7 +45,7 @@ def rmdir(_dir):
 class TestContinualSlamLearner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST Continaul SLAM Predictor/Learner\n**********************************")
+        print("\n\n**********************\nTEST Continaul SLAM Predictor/Learner\n******************************")
         cls.temp_dir = os.path.join('tests', 'sources', 'tools', 'perception', 'continual_slam',
                                     'continual_slam_temp')
         if os.path.exists(cls.temp_dir):
@@ -58,7 +58,7 @@ class TestContinualSlamLearner(unittest.TestCase):
         cls.test_data = os.path.join(cls.temp_dir, "test_data")
         with zipfile.ZipFile(test_data_zipped, "r") as f:
             f.extractall(cls.temp_dir)
-        
+
         # Configuration for the weights pre-trained on SemanticKITTI
         cls.config_file = str(Path(sys.modules[
             ContinualSLAMLearner.__module__].__file__).parent / 'configs' / 'singlegpu_kitti.yaml')
@@ -69,13 +69,13 @@ class TestContinualSlamLearner(unittest.TestCase):
     def tearDownClass(cls):
         # Clean up downloaded files
         rmdir(cls.temp_dir)
-    
+
     def test_init(self):
         predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
         learner = ContinualSLAMLearner(self.config_file, mode="learner")
         assert predictor.step == 0
         assert learner.step == 0
-    
+
     def test_fit(self):
         warnings.simplefilter("ignore", UserWarning)
         warnings.simplefilter("ignore", DeprecationWarning)
@@ -93,7 +93,7 @@ class TestContinualSlamLearner(unittest.TestCase):
             item = ContinualSLAMLearner._input_formatter(item)
             sample = [item]
             assert learner.fit(sample, learner=True)
-        
+
         # Test with replay buffer
         for item in dataset:
             replay_buffer.add(item)
@@ -123,12 +123,12 @@ class TestContinualSlamLearner(unittest.TestCase):
             assert losses is None, "Losses should be None"
             self.assertIsInstance(depth, Image)
             self.assertIsInstance(odometry, np.array)
-            try: 
+            try:
                 learner.infer(item, return_losses=True)
                 assert False, "Should raise NotImplementedError"
             except NotImplementedError:
                 pass
-        
+
         # Test with loop closure
         predictor.config_file.depth_pose.loop_closure = True
         for item in dataset:

@@ -22,8 +22,8 @@ class ReplayBuffer(TorchDataset):
                  save_memory: bool,
                  device: Optional[torch.device] = None,
                  dataset_config_path: Optional[str] = None,
-                 height : Optional[int] = None,
-                 width : Optional[int] = None,
+                 height: Optional[int] = None,
+                 width: Optional[int] = None,
                  save_state_path: Optional[Path] = None,
                  load_state_path: Optional[Path] = None,
                  local_save_path: Optional[Path] = None,
@@ -73,8 +73,10 @@ class ReplayBuffer(TorchDataset):
 
         if self.save_memory:
             # Create image buffer tensor with shape (buffer_size, 3, 3, height, width)
-            self.image_buffer = torch.zeros((buffer_size, 3, 3, self.height, self.width), dtype=torch.float32, device=self.device)
-            self.feature_vector_buffer = torch.zeros((buffer_size, num_features), dtype=torch.float32, device=self.device)
+            self.image_buffer = torch.zeros((buffer_size, 3, 3, self.height, self.width),
+                                            dtype=torch.float32, device=self.device)
+            self.feature_vector_buffer = torch.zeros((buffer_size, num_features),
+                                                     dtype=torch.float32, device=self.device)
             # Create distance buffer tensor with shape (buffer_size, 3)
             self.distance_buffer = torch.zeros((buffer_size, 3), dtype=torch.float32, device=self.device)
 
@@ -97,9 +99,9 @@ class ReplayBuffer(TorchDataset):
             # Create a dictionary that holds the distance buffer
             os.makedirs(os.path.join(self.local_save_path, "distances"), exist_ok=True)
 
-        self.buffer =  {"image_buffer": self.image_buffer,
-                        "distance_buffer": self.distance_buffer,
-                        "feature_vector_buffer": self.feature_vector_buffer,}
+        self.buffer = {"image_buffer": self.image_buffer,
+                       "distance_buffer": self.distance_buffer,
+                       "feature_vector_buffer": self.feature_vector_buffer}
 
     def add(self, data: Dict[Any, Tensor]):
         """
@@ -148,7 +150,7 @@ class ReplayBuffer(TorchDataset):
             # Now we compare the new image with the images in the buffer using the encoder
             # and we add the new image to the buffer if it is sufficiently different from the
             # images in the buffer using cosine similarity.
-            
+
             # Get the feature vector of the new image (central image from the image triplet)
             new_image_feature = self.encoder(data[(0, 'image')])
             if self.compute_cosine_similarity(new_image_feature):

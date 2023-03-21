@@ -153,30 +153,13 @@ class ContinualSLAMLearner(Learner):
             if self.is_ros:
                 save_dict[model_name] = to_save
 
-        if self.is_ros:
-            # Here the idea is that to save the weights dictionary as binary encoded 
-            # and then latin decoded string so that we can publish the string as ros message
-            save_dict = pickle.dumps(save_dict).decode('latin1')
-            return save_dict
-        else:
-            return str(location)
+        return str(location)
 
-    def load(self, weights_folder: str = None, message: str = None, load_optimizer: bool = False) -> None:
+    def load(self, weights_folder: str = None, load_optimizer: bool = False) -> None:
         """
         Load the model weights from an binary-encoded string for ros message
         """
-        if self.is_ros:
-            # Now we are encoding the latin decoded message to convert back to binary
-            # then we load the dictionary from this binary message
-            load_dict = pickle.loads(bytes(message, encoding='latin1'))
-            for model_name, model in self.predictor.models.items():
-                if model is None:
-                    continue
-                if isinstance(model, torch.nn.DataParallel):
-                    model = model.module
-                model.load_state_dict(load_dict[model_name])
-        else:
-            self.predictor.load_model(weights_folder = weights_folder, load_optimizer=load_optimizer)
+        self.predictor.load_model(weights_folder=weights_folder, load_optimizer=load_optimizer)
 
     def download(path: str, mode: str = 'model', trained_on: str = 'semantickitti', prepare_data: bool = False):
         """
@@ -255,6 +238,7 @@ class ContinualSLAMLearner(Learner):
             return path
 
         return str(filename)
+
     def eval(self, dataset, *args, **kwargs):
         raise NotImplementedError
 
@@ -311,8 +295,7 @@ class ContinualSLAMLearner(Learner):
         if not self.do_loop_closure:
             return (depth, odometry), losses
         else:
-            #odometry = odometry.squeeze(0)
-            if self.step == 1: # We are at the first step
+            if self.step == 1:
                 self.pose_graph.add_vertex(0, np.eye(4), fixed=True)
             elif self.step > 1:
                 odom_pose = self.pose_graph.get_pose(self.pose_graph.vertex_ids[-1]) @ odometry
@@ -321,8 +304,8 @@ class ContinualSLAMLearner(Learner):
                 cov_matrix[2, 2] = .1
                 cov_matrix[5, 5] = .1
                 self.pose_graph.add_edge((self.pose_graph.vertex_ids[-2], self.step),
-                                        odometry,
-                                        information=np.linalg.inv(cov_matrix))
+                                         odometry,
+                                         information=np.linalg.inv(cov_matrix))
             optimized = False
             lc = False
             image = input_dict[(0, 'image')].squeeze()/255.0
@@ -343,9 +326,9 @@ class ContinualSLAMLearner(Learner):
                         cov_matrix[2, 2] = .1
                         cov_matrix[5, 5] = .1
                         self.pose_graph.add_edge((self.step, int(i)),
-                                                lc_transformation,
-                                                information=.5 * np.linalg.inv(cov_matrix),
-                                                is_loop_closure=True)
+                                                 lc_transformation,
+                                                 information=.5 * np.linalg.inv(cov_matrix),
+                                                 is_loop_closure=True)
                     if len(lc_step_ids) > 0:
                         self.pose_graph.optimize(max_iterations=100000, verbose=False)
                         optimized = True
@@ -354,6 +337,7 @@ class ContinualSLAMLearner(Learner):
             else:
                 self.since_last_lc += 1
             return depth, np.expand_dims(odometry, axis=0), losses, lc, self.pose_graph
+
     @staticmethod
     def _input_formatter(batch: Tuple[Dict, None],
                          replay_buffer: bool = False,
@@ -371,14 +355,14 @@ class ContinualSLAMLearner(Learner):
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             if not (height and width):
                 raise ValueError('Height and width must be provided for learner')
-            input_dict = {
-            (-1, 'image') : torch.zeros(size = (len(batch), 3, height, width), device=device),
-            (-1, 'distance'): torch.zeros(size = (len(batch), 1), device=device),
-            (0, 'image') : torch.zeros(size = (len(batch), 3, height, width), device=device),
-            (0, 'distance'): torch.zeros(size = (len(batch), 1), device=device),
-            (1, 'image') : torch.zeros(size = (len(batch), 3, height, width), device=device),
-            (1, 'distance'): torch.zeros(size = (len(batch), 1), device=device),
-            }
+
+            input_dict = {(-1, 'image'): torch.zeros(size=(len(batch), 3, height, width), device=device),
+                          (-1, 'distance'): torch.zeros(size=(len(batch), 1), device=device),
+                          (0, 'image'): torch.zeros(size=(len(batch), 3, height, width), device=device),
+                          (0, 'distance'): torch.zeros(size=(len(batch), 1), device=device),
+                          (1, 'image'): torch.zeros(size=(len(batch), 3, height, width), device=device),
+                          (1, 'distance'): torch.zeros(size=(len(batch), 1), device=device),
+                          }
             for i, input in enumerate(batch):
                 for frame_id in ([-1, 0, 1]):
                     image = input[(frame_id, 'image')]
@@ -434,21 +418,3 @@ class ContinualSLAMLearner(Learner):
         colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3]*255).astype(np.uint8)
         colormapped_img = cv2.cvtColor(colormapped_img, cv2.COLOR_RGB2BGR)
         return Image(colormapped_img)
-
-
-if __name__ == '__main__':
-    import os
-    env = os.getenv('OPENDR_HOME')
-    config_file = os.path.join(env, 'src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml')
-    predictor = ContinualSLAMLearner(config_file=config_file, mode='predictor', ros=False, do_loop_closure=True)
-    dataset = KittiDataset(path = '/home/canakcia/Desktop/kitti_dset/', config_file_path=config_file)
-    for item in dataset:
-        output = predictor.infer(item, return_losses=True)
-        # replay_buffer.add(item)
-        # item = ContinualSLAMLearner._input_formatter(item)
-        # # sample = [item]
-        # # learner.fit(sample, learner=True)
-        # if len(replay_buffer) > 3:
-        #     sample = replay_buffer.sample()
-        #     sample.insert(0, item)
-        #     learner.fit(sample, learner=True)

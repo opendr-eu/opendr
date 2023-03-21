@@ -33,7 +33,7 @@ skippedDirectories = [
     'lib',
     'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
     'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
-    'src/opendr/perception/continual_slam/algorithm/g2o',
+    'src/opendr/perception/continual_slam/algorithm',
     'projects/python/control/eagerx',
     'projects/opendr_ws_2/src/vision_opencv',
     'projects/opendr_ws/devel',

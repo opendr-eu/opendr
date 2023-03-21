@@ -123,8 +123,8 @@ class KittiDataset(ExternalDataset, DatasetIterator):
                     odometry_sequence_path = odometry_dataset_path / f'{sequence:02}' / 'gt_depth'
                     split = 'val' if sequence == 4 else 'train'
                     raw_sequence_path = raw_dataset_path / split / \
-                                        f'{mapping["date"]}_drive_{mapping["drive"]:04}_sync' / \
-                                        'proj_depth' / 'groundtruth'
+                        f'{mapping["date"]}_drive_{mapping["drive"]:04}_sync' / \
+                        'proj_depth' / 'groundtruth'
                     if not raw_sequence_path.exists():
                         continue
                     for image in ['image_02', 'image_03']:
@@ -144,14 +144,14 @@ class KittiDataset(ExternalDataset, DatasetIterator):
                 for sequence, mapping in KITTI_RAW_SEQ_MAPPING.items():
                     odometry_sequence_path = odometry_dataset_path / f'{sequence:02}' / 'oxts'
                     raw_sequence_path = raw_dataset_path / \
-                                        f'{mapping["date"]}' / \
-                                        f'{mapping["date"]}_drive_{mapping["drive"]:04}_sync' / \
-                                        'oxts'
+                        f'{mapping["date"]}' / \
+                        f'{mapping["date"]}_drive_{mapping["drive"]:04}_sync' / \
+                        'oxts'
                     if not raw_sequence_path.exists():
                         continue
                     odometry_sequence_path.mkdir(exist_ok=True, parents=True)
                     copyfile(raw_sequence_path / 'dataformat.txt',
-                            odometry_sequence_path / 'dataformat.txt')
+                             odometry_sequence_path / 'dataformat.txt')
                     with open(raw_sequence_path / 'timestamps.txt', 'r', encoding='utf-8') as f:
                         timestamps = f.readlines()[mapping['start_frame']:mapping['end_frame'] + 1]
                     with open(odometry_sequence_path / 'timestamps.txt', 'w', encoding='utf-8') as f:
@@ -239,7 +239,7 @@ class KittiDataset(ExternalDataset, DatasetIterator):
             distance = self._load_relative_distance(i)
             image_id = self.images[i].name.split('.')[0]
             sequence_id = re.findall("sequences/\d\d", str(self.images[i]))[0].split('/')[1]
-            if self.sequence_check == None:
+            if self.sequence_check is None:
                 self.sequence_check = sequence_id
             else:
                 if self.sequence_check != sequence_id:

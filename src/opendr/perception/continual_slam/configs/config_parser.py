@@ -24,6 +24,7 @@ from opendr.perception.continual_slam.datasets import Config as Dataset
 from opendr.perception.continual_slam.algorithm.parsing.config import Config as DepthPosePrediction
 from opendr.perception.continual_slam.algorithm.loop_closure.config import LoopClosureDetection
 
+
 class ConfigParser():
     def __init__(self, config_file: Union[str, PathLike, Path]) -> None:
         self.filename = Path(config_file)
@@ -67,7 +68,7 @@ class ConfigParser():
                         expected_type = [expected_type]
 
                     # Remove the NoneType before attempting conversions
-                    expected_type = [tp for tp in expected_type if tp is not type(None)]
+                    expected_type = [tp for tp in expected_type if not isinstance(tp, None)]
 
                     if not any(isinstance(value, tp) for tp in expected_type):
                         if len(expected_type) == 1:

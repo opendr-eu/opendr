@@ -3,12 +3,14 @@ import torch.nn as nn
 from torch import Tensor
 from torchvision import models, transforms
 
+
 class Identity(nn.Module):
     def __init__(self):
         super(Identity, self).__init__()
-        
+
     def forward(self, x):
         return x
+
 
 class LCFeatureEncoder:
     def __init__(self, device: torch.device):

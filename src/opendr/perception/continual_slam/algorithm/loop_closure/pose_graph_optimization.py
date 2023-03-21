@@ -119,7 +119,7 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
                 return False
         return True
 
-    def return_last_positions(self, n = 20, reversed = False):
+    def return_last_positions(self, n=20, reversed=False):
         positions = []
         keys = list(self.vertices().keys())
         length = len(keys)
