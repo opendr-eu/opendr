@@ -718,28 +718,58 @@ You can find the audiovisual emotion recognition ROS node python script [here](.
 The node makes use of the toolkit's [audiovisual emotion recognition tool](../../../../src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/avlearner.py),
 whose documentation can be found [here](../../../../docs/reference/audiovisual-emotion-recognition-learner.md).
 
+----
+## RGB + IMU input
+
+### Continual SLAM ROS Nodes
+A ROS node for performing depth+position output mapping based on visual + imu input. Continual SLAM involves the use of two distinct ROS nodes, one dedicated to performing inference and the other exclusively focused on training. Both of the nodes are based on the learner class defined in [ContinualSLAMLearner](../../../../src/opendr/perception/continual_slam/continual_slam_learner.py).
+
+You can find the continual slam ROS node python scripts here [learner](./scripts/continual_slam_learner_node.py), [predictor](./scripts/continual_slam_predictor_node.py). You can further also find the RGB image + IMU publisher node [here](./scripts/continual_slam_dataset_node.py). 
+
 #### Instructions for basic usage:
 
-1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
-2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
-3. You are then ready to start the audiovisual emotion recognition node
+1. Download the KITTI Visual Odometry datased as it is described [here](../../../../src/opendr/perception/continual_slam/datasets/README.md). 
 
+2. Decide on the frame rate FPS, then one can start the dataset publisher node using the following line:
+   ```shell
+   rosrun opendr_perception continual_slam_dataset_node.py
+   ```
+
+   The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `--dataset_path`: path to the dataset (default=`./kitti`)
+   - `--config_file_path`: path to the config file for learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `--output_image_topic OUTPUT_IMAGE_TOPIC`: topic to which we are publishing the RGB image (default=`/cl_slam/image`)
+   - `--output_distance_topic OUTPUT_DISTANCE_TOPIC`: topic to publish distances (default=`/cl_slam/distance`)
+   - `--dataset_fps FPS`: frame rate which the dataset will be published, (default=`3`)
+
+3. Start the Predictor Node
     ```shell
-    rosrun opendr_perception audiovisual_emotion_recognition_node.py
+    rosrun opendr_perception continual_slam_predictor_node.py
     ```
     The following optional arguments are available:
    - `-h or --help`: show a help message and exit
-   - `-iv or --input_video_topic INPUT_VIDEO_TOPIC`: topic name for input video, expects detected face of size 224x224 (default=`/usb_cam/image_raw`)
-   - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
-   - `-o or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the predicted emotion (default=`/opendr/audiovisual_emotion`)
-   - `--buffer_size BUFFER_SIZE`: length of audio and video in seconds, (default=`3.6`)
-   - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
+   - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
+   - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
+   - `-odt or --output_depth_topic`: output depth topic, published to Continual SLAM Dataset Node (default=`/opendr/predicted/image`)
+   - `-opt or --output_pose_topic`: output pose topic, published to Continual SLAM Dataset Node (default=`/opendr/predicted/pose`)
+   - `-ut or --update_topic`: update topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/update`)
 
-4. Default output topics:
-   - Detection messages: `/opendr/audiovisual_emotion`
-
-   For viewing the output, refer to the [notes above.](#notes)
-
+4. Start the Learner Node (Optional)
+    ```shell
+    rosrun opendr_perception continual_slam_learner_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
+   - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
+   - `-ot or --output_weights_topic`: output weights topic to be published to Continual SLAM Predictor Node (default=`/cl_slam/update`)
+   - `-pr or --publish_rate`: publish rate of the weights (default=`20`)
+   - `-bs or --buffer_size`: size of the replay buffer (default=`10`)
+   - `-ss or --sample_size`: sample size of the replay buffer. If 0 is given, only online data is used (default=`3`)
+   - `-sm or --save_memory`: whether to save memory or not. Add it to the command if you want to write to disk (default=`True`)
 ----
 ## Audio input
 

@@ -81,6 +81,10 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 1. [RGBD Hand Gesture Recognition](src/opendr_perception/README.md#rgbd-hand-gesture-recognition-ros2-node)
 ## RGB + Audio input
 1. [Audiovisual Emotion Recognition](src/opendr_perception/README.md#audiovisual-emotion-recognition-ros2-node)
+
+## RGB + IMU input
+1. [Continual SLAM](src/opendr_perception//README.md#continual-slam-ros2-nodes)
+
 ## Audio input
 1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros2-node)
 ## Point cloud input
