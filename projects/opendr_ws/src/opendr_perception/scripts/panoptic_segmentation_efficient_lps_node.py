@@ -17,9 +17,11 @@ import sys
 from pathlib import Path
 import argparse
 from typing import Optional
+from time import perf_counter
 
 import matplotlib
 import rospy
+from std_msgs.msg import Float32
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 
 from opendr_bridge import ROSBridge
@@ -35,6 +37,7 @@ class EfficientLpsNode:
                  input_pcl_topic: str,
                  checkpoint: str,
                  output_heatmap_pointcloud_topic: Optional[str] = None,
+                 performance_topic=None,
                  ):
         """
         Initialize the EfficientLPS ROS node and create an instance of the respective learner class.
@@ -45,11 +48,19 @@ class EfficientLpsNode:
         :type checkpoint: str
         :param output_heatmap_pointcloud_topic: topic for the output 3D heatmap point cloud
         :type output_heatmap_pointcloud_topic: Optional[str]
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         """
 
         self.checkpoint = checkpoint
         self.input_pcl_topic = input_pcl_topic
         self.output_heatmap_pointcloud_topic = output_heatmap_pointcloud_topic
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         # Initialize all ROS related things
         self._bridge = ROSBridge()
@@ -57,7 +68,7 @@ class EfficientLpsNode:
 
         # Initialize the panoptic segmentation network
         config_file = Path(sys.modules[
-            EfficientLpsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_semantickitti.py'
+                               EfficientLpsLearner.__module__].__file__).parent / 'configs' / 'singlegpu_semantickitti.py'
         self._learner = EfficientLpsLearner(str(config_file))
 
         # Other
@@ -121,6 +132,8 @@ class EfficientLpsNode:
         :param data: PointCloud data message
         :type data: sensor_msgs.msg.PointCloud
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image to OpenDR Image
         pointcloud = self._bridge.from_ros_point_cloud2(data)
 
@@ -128,6 +141,13 @@ class EfficientLpsNode:
             # Get a list of two OpenDR heatmaps: [instance map, semantic map, depth map] if projected_output is True,
             # or a list of numpy arrays: [instance labels, semantic labels] otherwise.
             prediction = self._learner.infer(pointcloud)
+
+            if self.performance_publisher:
+                end_time = perf_counter()
+                fps = 1.0 / (end_time - start_time)  # NOQA
+                fps_msg = Float32()
+                fps_msg.data = fps
+                self.performance_publisher.publish(fps_msg)
 
             # The output topics are only published if there is at least one subscriber
             if self._visualization_pointcloud_publisher is not None and \
@@ -153,11 +173,14 @@ if __name__ == "__main__":
                         help='Download pretrained models [semantickitti] or load from the provided path')
     parser.add_argument('-o', '--output_heatmap_pointcloud_topic', type=str, default="/opendr/panoptic",
                         help='Publish the rgb visualization on this topic')
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
 
     args = parser.parse_args()
 
     efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic,
                                           args.checkpoint,
-                                          args.output_heatmap_pointcloud_topic)
+                                          args.output_heatmap_pointcloud_topic,
+                                          performance_topic=args.performance_topic)
 
     efficient_lps_node.listen()
