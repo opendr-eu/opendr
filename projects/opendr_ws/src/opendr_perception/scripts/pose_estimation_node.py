@@ -43,8 +43,9 @@ class PoseEstimationNode:
         :param detections_topic: Topic to which we are publishing the annotations (if None, no pose detection message
         is published)
         :type detections_topic:  str
-        :param performance_topic: Topic to which we are publishing performance information (if None, no performance message is published)
-        :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param num_refinement_stages: Specifies the number of pose estimation refinement stages are added on the
@@ -101,12 +102,12 @@ class PoseEstimationNode:
         """
         if self.performance_publisher:
             start_time = perf_counter()
-
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run pose estimation
         poses = self.pose_estimator.infer(image)
+
         if self.performance_publisher:
             end_time = perf_counter()
             fps = 1.0 / (end_time - start_time)  # NOQA
