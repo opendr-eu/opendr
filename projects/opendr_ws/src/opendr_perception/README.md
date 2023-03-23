@@ -46,6 +46,11 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 
     _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._
 
+- ### Logging the node performance in the console
+   OpenDR provides the utility [performance node](#performance-ros-node) to log performance messages in the console for the running node.
+   You can set the `performance_topic` of the node you are using and also run the performance node to get the time it takes for the
+   node to process a single input and its average speed expressed in frames per second.
+
 - ### An example diagram of OpenDR nodes running
     ![Pose Estimation ROS node running diagram](../../images/opendr_node_diagram.png)
     - On the left, the `usb_cam` node can be seen, which is using a system camera to publish images on the `/usb_cam/image_raw` topic.
