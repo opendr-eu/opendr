@@ -976,3 +976,28 @@ The following optional arguments are available:
    - `-s or --split SPLIT`: split of the dataset to use, only (train, valid, test) are available (default=`valid`)
    - `-o or --output_point_cloud_2_topic OUTPUT_POINT_CLOUD_2_TOPIC`: topic name to publish the data (default=`/opendr/dataset_point_cloud2`)
    - `-t or --test_data`: Add this argument if you want to only test this node with the test data available in our server
+
+----
+## Utility ROS Nodes
+
+### Performance ROS Node
+
+The performance node is used to subscribe to the optional performance topic of a running node and log its performance in terms of the time it
+took to process a single input and produce output and in terms of frames per second. It uses a modifiable rolling window to calculate the average FPS.
+
+You can inspect [the node](./scripts/performance_node.py) and modify it to your needs.
+
+#### Instructions for basic usage:
+
+1. Start the node you want to benchmark as usual but also set the optional argument `--performance_topic` to, for example, `/opendr/performance`
+2. Start the performance node:
+    ```shell
+    rosrun opendr_perception performance_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_performance_topic INPUT_PERFORMANCE_TOPIC`: topic name for input performance data (default=`/opendr/performance`)
+   - `-w or --window WINDOW`: the window to use in number of frames to calculate the running average FPS (default=`20`)
+
+Note that the `input_performance_topic` of the performance node must match the `performance_topic` of the running node.
+Also note that the running node should properly get input and produce output to publish performance messages for the performance node to use.
