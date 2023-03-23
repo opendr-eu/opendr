@@ -17,7 +17,7 @@ import sys
 import shutil
 import unittest
 import warnings
-import zipfile
+import yaml
 from pathlib import Path
 import numpy as np
 
@@ -53,17 +53,23 @@ class TestContinualSlamLearner(unittest.TestCase):
         os.makedirs(cls.temp_dir)
 
         # Download all required files for testing
-        cls.model_weights = ContinualSLAMLearner.download(path=cls.temp_dir, trained_on="semantickitti")
-        test_data_zipped = ContinualSLAMLearner.download(path=cls.temp_dir, mode="test_data")
-        cls.test_data = os.path.join(cls.temp_dir, "test_data")
-        with zipfile.ZipFile(test_data_zipped, "r") as f:
-            f.extractall(cls.temp_dir)
+        cls.model_weights = ContinualSLAMLearner.download(path=cls.temp_dir, trained_on="cityscapes")
+        cls.test_data = ContinualSLAMLearner.download(path=cls.temp_dir, mode="test_data")
 
         # Configuration for the weights pre-trained on SemanticKITTI
-        cls.config_file = str(Path(sys.modules[
+        base_config_file = str(Path(sys.modules[
             ContinualSLAMLearner.__module__].__file__).parent / 'configs' / 'singlegpu_kitti.yaml')
-        cls.config_file.depth_pose.load_weights_folder = cls.model_weights
-        cls.config_file.dataset.dataset_path = cls.test_data
+        
+        with open(base_config_file) as f:
+            try:
+                databaseConfig = yaml.safe_load(f)   
+            except yaml.YAMLError as exc:
+                print(exc)
+            databaseConfig['Dataset']['dataset_path'] = str(cls.test_data)
+            databaseConfig['DepthPosePrediction']['load_weights_folder'] = str(cls.model_weights)
+        cls.config_file = os.path.join(cls.temp_dir, 'singlegpu_kitti.yaml')
+        with open(cls.config_file, 'w') as f:
+            yaml.dump(databaseConfig, f)
 
     @classmethod
     def tearDownClass(cls):
@@ -80,7 +86,7 @@ class TestContinualSlamLearner(unittest.TestCase):
         warnings.simplefilter("ignore", UserWarning)
         warnings.simplefilter("ignore", DeprecationWarning)
 
-        dataset = KittiDataset(self.config_file)
+        dataset = KittiDataset(str(self.test_data), self.config_file)
         learner = ContinualSLAMLearner(self.config_file, mode="learner")
         predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
         replay_buffer = ReplayBuffer(buffer_size=5,
@@ -97,7 +103,7 @@ class TestContinualSlamLearner(unittest.TestCase):
         # Test with replay buffer
         for item in dataset:
             replay_buffer.add(item)
-            if replay_buffer.size < 3:
+            if replay_buffer.count < 3:
                 continue
             item = ContinualSLAMLearner._input_formatter(item)
             sample = replay_buffer.sample()
@@ -106,14 +112,14 @@ class TestContinualSlamLearner(unittest.TestCase):
             try:
                 predictor.fit(sample, learner=True)
                 assert False, "Should raise NotImplementedError"
-            except NotImplementedError:
+            except ValueError:
                 pass
 
     def test_infer(self):
         warnings.simplefilter("ignore", UserWarning)
         warnings.simplefilter("ignore", DeprecationWarning)
 
-        dataset = KittiDataset(self.config_file)
+        dataset = KittiDataset(str(self.test_data), self.config_file)
         predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
         learner = ContinualSLAMLearner(self.config_file, mode="learner")
 
@@ -122,27 +128,28 @@ class TestContinualSlamLearner(unittest.TestCase):
             (depth, odometry), losses = predictor.infer(item, return_losses=True)
             assert losses is None, "Losses should be None"
             self.assertIsInstance(depth, Image)
-            self.assertIsInstance(odometry, np.array)
+            self.assertIsInstance(odometry, np.ndarray)
             try:
                 learner.infer(item, return_losses=True)
                 assert False, "Should raise NotImplementedError"
-            except NotImplementedError:
+            except ValueError:
                 pass
 
         # Test with loop closure
-        predictor.config_file.depth_pose.loop_closure = True
+        predictor.do_loop_closure = True
+        predictor.step = 0
         for item in dataset:
             depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
-            assert losses is not None, "Losses should not be None"
+            assert losses is None, "Losses should be None"
             assert lc is False, "Loop closure should be False since we are only using first 50 frames"
             self.assertIsInstance(depth, Image)
-            self.assertIsInstance(odometry, np.array)
+            self.assertIsInstance(odometry, np.ndarray)
             self.assertIsInstance(pose_graph, PoseGraphOptimization)
 
     def test_save(self):
-        predictor = ContinualSLAMLearner(self.config_file, mode="predictor")
-        temp_model_path = self.tempdir + '/test_save_weights'
-        location = predictor.save(temp_model_path)
+        learner = ContinualSLAMLearner(self.config_file, mode="learner")
+        temp_model_path = self.temp_dir + '/test_save_weights'
+        location = learner.save(temp_model_path)
         self.assertTrue(temp_model_path == location)
         self.assertTrue(os.path.exists(os.path.join(temp_model_path, 'depth_decoder.pth')))
         self.assertTrue(os.path.exists(os.path.join(temp_model_path, 'pose_encoder.pth')))

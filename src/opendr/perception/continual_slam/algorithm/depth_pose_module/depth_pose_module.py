@@ -334,13 +334,6 @@ class DepthPoseModule:
                 data = data/255.0
                 inputs[key[0]] = data.to(self.device)
 
-        # from PIL import Image as pil_image
-        # for key, data in inputs.items():
-        #     xx = inputs[key].detach().cpu()
-        #     for i, x in enumerate(xx):
-        #         x = x.numpy()
-        #         img = pil_image.fromarray(np.uint8(x.transpose(1, 2, 0) * 255))
-        #         img.save(f'test_{key}_{i}.png')
         outputs = {}
         outputs.update(self._predict_disparity(inputs, use_online=use_online))
         outputs.update(self._predict_poses(inputs, use_online=use_online))

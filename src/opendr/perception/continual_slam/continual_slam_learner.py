@@ -105,7 +105,7 @@ class ContinualSLAMLearner(Learner):
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         if self.mode == 'learner':
-            self._fit(batch, return_losses, replay_buffer, learner=learner)
+            return self._fit(batch, return_losses, replay_buffer, learner=learner)
         else:
             raise ValueError('Fit is only available in learner mode')
 
@@ -135,6 +135,8 @@ class ContinualSLAMLearner(Learner):
         save_dict = {}
         if location is None:
             location = Path.cwd() / 'temp_weights'
+        else:
+            location = Path(location)
         if not location.exists():
             location.mkdir(parents=True, exist_ok=True)
         for model_name, model in self.learner.models.items():
@@ -154,13 +156,19 @@ class ContinualSLAMLearner(Learner):
 
         return str(location)
 
-    def load(self, weights_folder: str = None, load_optimizer: bool = False) -> None:
+    def load(self, weights_folder: str = None, load_optimizer: bool = False) -> bool:
         """
         Load the model weights from an binary-encoded string for ros message
         """
-        self.predictor.load_model(weights_folder=weights_folder, load_optimizer=load_optimizer)
-
-    def download(path: str, mode: str = 'model', trained_on: str = 'semantickitti', prepare_data: bool = False):
+        try:
+            self.predictor.load_model(weights_folder=weights_folder, load_optimizer=load_optimizer)
+            return True
+        except Exception as e:
+            print(str(e))
+            return False
+    
+    @staticmethod
+    def download(path: str, mode: str = 'model', trained_on: str = 'cityscapes', prepare_data: bool = False):
         """
         Download data from the OpenDR server.
         Valid modes include pre-trained model weights and data used in the unit tests.
@@ -172,7 +180,7 @@ class ContinualSLAMLearner(Learner):
         :type path: str
         :param mode: mode to use. Valid options are ['model', 'test_data']
         :type mode: str
-        :param trained_on: dataset on which the model was trained. Valid options are ['semantickitti']
+        :param trained_on: dataset on which the model was trained. Valid options are ['cityscapes']
         :type trained_on: str
         :param prepare_data: whether to prepare the data for the unit tests
         :type prepare_data: bool
@@ -182,8 +190,8 @@ class ContinualSLAMLearner(Learner):
         """
         if mode == "model":
             models = {
-                "semantickitti":
-                f"{OPENDR_SERVER_URL}perception/continual_slam/models/model_semantickitti"
+                "cityscapes":
+                f"{OPENDR_SERVER_URL}perception/continual_slam/models/cityscapes_masks_pretrain.zip"
             }
             if trained_on not in models.keys():
                 raise ValueError(f"Could not find model weights pre-trained on {trained_on}. "
@@ -194,7 +202,6 @@ class ContinualSLAMLearner(Learner):
         else:
             raise ValueError("Invalid mode. Valid options are ['model', 'test_data']")
 
-        networks = ["depth_encoder", "depth_decoder", "pose_encoder", "pose_decoder"]
         if not isinstance(path, Path):
             path = Path(path)
         filename = path
@@ -214,29 +221,23 @@ class ContinualSLAMLearner(Learner):
         if os.path.exists(filename) and os.path.isfile(filename):
             print(f'File already downloaded: {filename}')
         else:
-            if mode == "model":
-                for network in networks:
-                    durl = url + f"/{network}.pth"
-                    with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
-                              desc=f"Downloading {filename}") as pbar:
-                        urllib.request.urlretrieve(durl, filename, pbar_hook(pbar))
-            else:
-                with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
-                          desc=f"Downloading {filename}") as pbar:
-                    urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
-        if prepare_data and mode == "test_data":
-            print(f"Extracting {filename}")
-            try:
-                with ZipFile(filename, 'r') as zipObj:
-                    zipObj.extractall(path)
-                os.remove(filename)
-            except:
-                print(f"Could not extract {filename} to {path}. Please extract it manually.")
-                print("The data might have been already extracted an is available in the test_data folder.")
-            path = os.path.join(path, "test_data", "eval_data")
-            return path
-
-        return str(filename)
+            filename = path / url.split('/')[-1]
+            with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
+                        desc=f"Downloading {filename}") as pbar:
+                urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
+        print(f"Extracting {filename}")
+        if mode == "model":
+            path = path / "models"
+        try:
+            with ZipFile(filename, 'r') as zipObj:
+                zipObj.extractall(path)
+            os.remove(filename)
+        except:
+            print(f"Could not extract {filename} to {path}. Please extract it manually.")
+            print("The data might have been already extracted an is available in the test_data folder.")
+        if mode == "test_data":
+            path = path / "test_data" / "infer_data"
+        return path
 
     def eval(self, dataset, *args, **kwargs):
         raise NotImplementedError
