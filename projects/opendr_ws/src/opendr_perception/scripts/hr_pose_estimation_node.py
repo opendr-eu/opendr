@@ -28,7 +28,7 @@ from opendr.perception.pose_estimation import draw
 from opendr.perception.pose_estimation import HighResolutionPoseEstimationLearner
 
 
-class PoseEstimationNode:
+class HRPoseEstimationNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_pose_annotated", detections_topic="/opendr/poses", device="cuda",
@@ -173,12 +173,12 @@ def main():
         stages = 2
         half_prec = False
 
-    pose_estimator_node = PoseEstimationNode(device=device,
-                                             input_rgb_image_topic=args.input_rgb_image_topic,
-                                             output_rgb_image_topic=args.output_rgb_image_topic,
-                                             detections_topic=args.detections_topic,
-                                             performance_topic=args.performance_topic,
-                                             num_refinement_stages=stages, use_stride=stride, half_precision=half_prec)
+    pose_estimator_node = HRPoseEstimationNode(device=device,
+                                               input_rgb_image_topic=args.input_rgb_image_topic,
+                                               output_rgb_image_topic=args.output_rgb_image_topic,
+                                               detections_topic=args.detections_topic,
+                                               performance_topic=args.performance_topic,
+                                               num_refinement_stages=stages, use_stride=stride, half_precision=half_prec)
     pose_estimator_node.listen()
 
 
