@@ -193,6 +193,11 @@ class ContinualSlamPredictor:
             self.cache['id'].pop(0)
 
     def _convert_cache_into_triplet(self) -> dict:
+        """
+        Converting the cached data into a triplet dictionary
+        return: Triplet dictionary
+        rtype: dict
+        """
         triplet = {}
         for i in range(len(self.cache['image'])):
             triplet[self.cache['id'][i]] = (self.cache['image'][i], self.cache['distance'][i])
