@@ -18,8 +18,8 @@ from pathlib import Path
 import argparse
 from typing import Optional
 from time import perf_counter
-
 import matplotlib
+
 import rospy
 from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
