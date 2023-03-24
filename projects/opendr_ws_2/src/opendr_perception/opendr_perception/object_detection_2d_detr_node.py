@@ -16,10 +16,12 @@
 import argparse
 import torch
 import numpy as np
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
 
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
 from opendr_bridge import ROS2Bridge
@@ -31,11 +33,11 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 class ObjectDetectionDetrNode(Node):
     def __init__(
-        self,
-        input_rgb_image_topic="image_raw",
-        output_rgb_image_topic="/opendr/image_objects_annotated",
-        detections_topic="/opendr/objects",
-        device="cuda",
+            self,
+            input_rgb_image_topic="image_raw",
+            output_rgb_image_topic="/opendr/image_objects_annotated",
+            detections_topic="/opendr/objects", performance_topic=None,
+            device="cuda",
     ):
         """
         Creates a ROS2 Node for object detection with DETR.
@@ -47,6 +49,9 @@ class ObjectDetectionDetrNode(Node):
         :param detections_topic: Topic to which we are publishing the annotations (if None, no object detection message
         is published)
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -61,6 +66,11 @@ class ObjectDetectionDetrNode(Node):
             self.detection_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.detection_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
 
         self.image_subscriber = self.create_subscription(ROS_Image, input_rgb_image_topic, self.callback, 1)
 
@@ -172,11 +182,20 @@ class ObjectDetectionDetrNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
 
         # Run detection estimation
         boxes = self.object_detector.infer(image)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
@@ -205,6 +224,8 @@ def main(args=None):
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/objects")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -222,12 +243,11 @@ def main(args=None):
         print("Using CPU.")
         device = "cpu"
 
-    object_detection_detr_node = ObjectDetectionDetrNode(
-        device=device,
-        input_rgb_image_topic=args.input_rgb_image_topic,
-        output_rgb_image_topic=args.output_rgb_image_topic,
-        detections_topic=args.detections_topic,
-    )
+    object_detection_detr_node = ObjectDetectionDetrNode(device=device,
+                                                         input_rgb_image_topic=args.input_rgb_image_topic,
+                                                         output_rgb_image_topic=args.output_rgb_image_topic,
+                                                         detections_topic=args.detections_topic,
+                                                         performance_topic=args.performance_topic)
 
     rclpy.spin(object_detection_detr_node)
 
