@@ -106,9 +106,8 @@ class ObjectDetectionNanodetNode:
             self.performance_publisher.publish(fps_msg)
 
         # Publish detections in ROS message
-        ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
         if self.object_publisher is not None:
-            self.object_publisher.publish(ros_boxes)
+            self.object_publisher.publish(self.bridge.to_ros_boxes(boxes))
 
         if self.image_publisher is not None:
             # Get an OpenCV image back
