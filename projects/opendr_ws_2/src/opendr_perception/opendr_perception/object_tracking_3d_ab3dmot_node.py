@@ -93,7 +93,8 @@ class ObjectTracking3DAb3dmotNode(Node):
         # Convert sensor_msgs.msg.Image into OpenDR Image
         point_cloud = self.bridge.from_ros_point_cloud(data)
         detection_boxes = self.detector.infer(point_cloud)
-        tracking_boxes = self.learner.infer(detection_boxes)
+        if self.tracking_id_publisher or self.performance_publisher:
+            tracking_boxes = self.learner.infer(detection_boxes)
 
         if self.performance_publisher:
             end_time = perf_counter()
