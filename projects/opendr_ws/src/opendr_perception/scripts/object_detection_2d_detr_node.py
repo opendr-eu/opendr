@@ -34,7 +34,8 @@ class ObjectDetectionDetrNode:
             self,
             input_rgb_image_topic="/usb_cam/image_raw",
             output_rgb_image_topic="/opendr/image_objects_annotated",
-            detections_topic="/opendr/objects", performance_topic=None,
+            detections_topic="/opendr/objects",
+            performance_topic=None,
             device="cuda",
     ):
         """

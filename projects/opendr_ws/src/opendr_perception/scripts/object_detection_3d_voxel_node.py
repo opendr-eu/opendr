@@ -29,7 +29,8 @@ class ObjectDetection3DVoxelNode:
     def __init__(
             self,
             input_point_cloud_topic="/opendr/dataset_point_cloud",
-            detections_topic="/opendr/objects3d", performance_topic=None,
+            detections_topic="/opendr/objects3d",
+            performance_topic=None,
             device="cuda:0",
             model_name="tanet_car_xyres_16",
             model_config_path=os.path.join(

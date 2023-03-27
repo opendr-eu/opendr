@@ -54,7 +54,7 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
     _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._
 
 - ### Logging the node performance in the console
-   OpenDR provides the utility [performance node](#performance-ros-node) to log performance messages in the console for the running node.
+   OpenDR provides the utility [performance node](#performance-ros2-node) to log performance messages in the console for the running node.
    You can set the `performance_topic` of the node you are using and also run the performance node to get the time it takes for the
    node to process a single input and its average speed expressed in frames per second.
 
