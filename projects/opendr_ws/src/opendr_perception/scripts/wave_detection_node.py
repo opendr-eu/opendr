@@ -30,7 +30,7 @@ from opendr.perception.pose_estimation import draw, get_bbox
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
 
-class PoseEstimationNode:
+class WaveDetectionNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_pose_annotated",
@@ -265,13 +265,13 @@ def main():
         stages = 2
         half_prec = False
 
-    pose_estimator_node = PoseEstimationNode(device=device,
-                                             input_rgb_image_topic=args.input_rgb_image_topic,
-                                             output_rgb_image_topic=args.output_rgb_image_topic,
-                                             pose_detections_topic=args.pose_detections_topic,
-                                             wave_detections_topic=args.wave_detections_topic,
-                                             num_refinement_stages=stages, use_stride=stride, half_precision=half_prec)
-    pose_estimator_node.listen()
+    wave_estimator_node = WaveDetectionNode(device=device,
+                                            input_rgb_image_topic=args.input_rgb_image_topic,
+                                            output_rgb_image_topic=args.output_rgb_image_topic,
+                                            pose_detections_topic=args.pose_detections_topic,
+                                            wave_detections_topic=args.wave_detections_topic,
+                                            num_refinement_stages=stages, use_stride=stride, half_precision=half_prec)
+    wave_estimator_node.listen()
 
 
 if __name__ == '__main__':
