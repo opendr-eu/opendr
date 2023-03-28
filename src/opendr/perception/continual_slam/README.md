@@ -1,6 +1,8 @@
-# Continual Learning 
+'# Continual Learning 
 
-Continual Learning, also known as lifelong learning, is a machine learning paradigm that enables a model to learn from a continuous stream of data, without forgetting previously learned knowledge or skills, and without requiring access to all the data at once. The goal is to maintain and improve the model's performance over time as it encounters new tasks or domains. 
+Continual Learning is a machine learning paradigm enabling a model to learn tasks consecutively without forgetting previously learned knowledge or skills.
+In particular, online continual learning operates on a continuous stream of data, i.e., without requiring access to all the data at once.
+The goal is to maintain and improve the model's performance over time as it encounters new tasks or domains. 
 
 ## Modules
 
@@ -31,7 +33,7 @@ GitHub repository: https://github.com/robot-learning-freiburg/CL-SLAM
 
 **Base repositories**
 
-The OpenDR implementation extends the [Continual SLAM repository](https://github.com/robot-learning-freiburg/CL-SLAM), from [Niclas Voedisch](http://www.informatik.uni-freiburg.de/~voedisch) and [Abhinav Valada](https://rl.uni-freiburg.de/people/valada), with the OpenDR interface.
+The OpenDR implementation extends the [Continual SLAM repository](https://github.com/robot-learning-freiburg/CL-SLAM), from [Niclas Vödisch](http://www.informatik.uni-freiburg.de/~voedisch), with the OpenDR interface.
 
 Please note that the original repository is heavily based on
 - [monodepthv2](https://github.com/nianticlabs/monodepth2) by the [Niantic Labs](https://www.nianticlabs.com/) authored by [Clément Godard](http://www0.cs.ucl.ac.uk/staff/C.Godard/)
