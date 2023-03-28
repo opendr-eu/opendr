@@ -32,7 +32,7 @@ from opendr.perception.fall_detection import FallDetectorLearner
 
 class FallDetectionNode:
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", input_pose_topic="opendr/poses",
+    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", input_pose_topic="/opendr/poses",
                  output_rgb_image_topic="/opendr/image_fallen_annotated", detections_topic="/opendr/fallen",
                  device="cuda", num_refinement_stages=2, use_stride=False, half_precision=False):
         """
@@ -60,7 +60,6 @@ class FallDetectionNode:
         single (fp32) precision. Valid only for GPU-based inference
         :type half_precision: bool
         """
-
         # If input image topic is set, it is used for visualization
         if input_rgb_image_topic is not None:
             self.input_rgb_image_topic = input_rgb_image_topic
