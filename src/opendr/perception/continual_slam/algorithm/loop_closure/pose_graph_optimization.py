@@ -141,3 +141,19 @@ class PoseGraphOptimization(g2o.SparseOptimizer):
             if isinstance(vertex, g2o.VertexSE3):
                 positions.append(vertex.estimate().matrix()[:3, 3])
         return list(reversed(positions))
+
+    def return_last_poses(self, n=20, reversed=False):
+        poses = []
+        keys = list(self.vertices().keys())
+        length = len(keys)
+        i = 0
+        while i < n and i < length:
+            if reversed:
+                key = keys[length-i-1]
+            else:
+                key = keys[i]
+            vertex = self.vertices()[key]
+            if isinstance(vertex, g2o.VertexSE3):
+                poses.append(vertex.estimate().matrix())
+            i += 1
+        return poses

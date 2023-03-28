@@ -65,7 +65,7 @@ def inference(dataset_path, config_file, model_path=None):
     load_model(model_path, predictor)
     predictor.do_loop_closure = True
     for i, item in enumerate(dataset):
-        depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
+        depth, _, _, _, _ = predictor.infer(item, return_losses=True)
         cv2.imwrite(f'./cl_slam/predictions/depth_{i}.png', depth.opencv())
 
 def main():

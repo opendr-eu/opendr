@@ -18,7 +18,6 @@ from typing import Dict, Any, Tuple, Optional, List, Union
 
 import torch
 import cv2
-import pickle
 import numpy as np
 import matplotlib as mpl
 from matplotlib import pyplot as plt
@@ -29,6 +28,7 @@ import urllib
 from zipfile import ZipFile
 
 from opendr.engine.data import Image
+from opendr.engine.data import PointCloud
 from opendr.engine.learners import Learner
 from opendr.engine.constants import OPENDR_SERVER_URL
 
@@ -37,7 +37,8 @@ from opendr.perception.continual_slam.configs.config_parser import ConfigParser
 from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimization import PoseGraphOptimization
 from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
 from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
-
+from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layers import BackProjectDepth
+from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import disp_to_depth
 
 class ContinualSLAMLearner(Learner):
     """
@@ -73,6 +74,7 @@ class ContinualSLAMLearner(Learner):
         self.online_dataset = Buffer()
         self.pose_graph = PoseGraphOptimization()
         self.loop_closure_detection = LoopClosureDetection(self.config_file.loop_closure)
+        self.project_depth = BackProjectDepth(1, self.height, self.width)
         super(ContinualSLAMLearner, self).__init__(lr=self.model_config.learning_rate)
 
         self.mode = mode
@@ -112,7 +114,8 @@ class ContinualSLAMLearner(Learner):
     def infer(self,
               batch: Tuple[Dict, None],
               return_losses: bool = False,
-              ) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
+              *args,
+              **kwargs) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
         """
         We implemented infer method as predict method which predicts the output based on coming input. Only works in
         predictor mode.
@@ -124,7 +127,7 @@ class ContinualSLAMLearner(Learner):
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
         if self.mode == 'predictor':
-            return self._predict(batch, return_losses)
+            return self._predict(batch, return_losses, *args, **kwargs)
         else:
             raise ValueError('Inference is only available in predictor mode')
 
@@ -166,7 +169,44 @@ class ContinualSLAMLearner(Learner):
         except Exception as e:
             print(str(e))
             return False
-    
+
+    def visualize_3d(self, image: Image, depth_map: ArrayLike, threshold=40):
+        """
+        Visualize the 3D point cloud
+        :param image: RGB image
+        :type image: Image
+        :param depth_map: depth map
+        :type depth_map: ArrayLike
+        :param threshold: threshold for the depth map
+        :type threshold: float
+        """
+        # Convert to numpy
+        image = image.numpy()
+
+        # Get camera matrix
+        camera_matrix = self.predictor.camera_matrix
+        _, inv_camera_matrix = self.predictor._scale_camera_matrix(camera_matrix, 0)
+        inv_camera_matrix = torch.Tensor(inv_camera_matrix).unsqueeze(0)
+        depth_map = torch.Tensor(depth_map).unsqueeze(0).unsqueeze(0)
+        pcl = self.project_depth(depth_map, inv_camera_matrix).squeeze(0).numpy()
+
+        x = pcl[0, :]
+        y = pcl[1, :]
+        z = pcl[2, :]
+
+        colors = image.reshape(3, -1).T
+
+        # Filter out points with depth greater than threshold
+        length = np.linalg.norm(np.c_[x, y, z], axis=1)
+        mask = length < threshold
+        x = x[mask]
+        y = y[mask]
+        z = z[mask]
+        colors = colors[mask]
+
+        points = np.c_[x, y, z, colors]
+        return PointCloud(points)
+
     @staticmethod
     def download(path: str, mode: str = 'model', trained_on: str = 'cityscapes', prepare_data: bool = False):
         """
@@ -279,10 +319,15 @@ class ContinualSLAMLearner(Learner):
     def _predict(self,
                  batch: Tuple[Dict, None],
                  return_losses: bool = False,
+                 pointcloud: bool = False
                  ) -> Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]:
         """
         :param batch: tuple of (input, target)
         :type batch: Tuple[Dict, None]
+        :param return_losses: whether to return the losses
+        :type return_losses: bool
+        :param pointcloud: whether to return the depthmap for pointcloud format
+        :type pointcloud: bool
         :return: tuple of (prediction, loss)
         :rtype: Tuple[Dict[Tensor, Any], Optional[Dict[Tensor, Any]]]
         """
@@ -291,11 +336,11 @@ class ContinualSLAMLearner(Learner):
         # Get the prediction
         prediction, losses = self.predictor.predict(input_dict, return_loss=return_losses)
         # Convert the prediction to opendr format
-        depth, odometry = self._output_formatter(prediction)
+        depth, odometry = self._output_formatter(prediction, pointcloud=pointcloud)
         if not self.do_loop_closure:
             return (depth, odometry), losses
         else:
-            if self.step == 1:
+            if self.step == 1 or len(self.pose_graph.vertex_ids) == 0:
                 self.pose_graph.add_vertex(0, np.eye(4), fixed=True)
             elif self.step > 1:
                 odom_pose = self.pose_graph.get_pose(self.pose_graph.vertex_ids[-1]) @ odometry
@@ -390,7 +435,7 @@ class ContinualSLAMLearner(Learner):
             input_dict[(frame_id, 'distance')] = torch.Tensor([inputs[id][1]])
         return input_dict
 
-    def _output_formatter(self, prediction: Dict) -> Tuple[ArrayLike, ArrayLike]:
+    def _output_formatter(self, prediction: Dict, pointcloud: bool = False) -> Tuple[ArrayLike, ArrayLike]:
         """
         Format the output of the prediction
         :param prediction: dictionary of predictions which has items of:
@@ -402,10 +447,15 @@ class ContinualSLAMLearner(Learner):
         for item in prediction:
             if item[0] == 'disp':
                 if item[2] == 0:
-                    depth = self._colorize_depth(prediction[item].squeeze().cpu().detach().numpy())
+                    disp = self._colorize_depth(prediction[item].squeeze().cpu().detach().numpy())
             if item[0] == 'cam_T_cam':
                 if item[2] == 1:
                     odometry = prediction[item][0, :].cpu().detach().numpy()
+            if item[0] == 'depth' and pointcloud:
+                if item[2] == 0:
+                    depth = prediction[item].squeeze().cpu().detach().numpy()
+        if pointcloud:
+            return (disp, depth), odometry
         return depth, odometry
 
     def _colorize_depth(self, depth):

@@ -31,11 +31,16 @@ from shape_msgs.msg import Mesh, MeshTriangle
 from std_msgs.msg import ColorRGBA, String, Header, String
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, PointCloud2 as PointCloud2Msg,\
      ChannelFloat32 as ChannelFloat32Msg, PointField as PointFieldMsg
-from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg, Vector3Stamped as Vector3StampedMsg
+from geometry_msgs.msg import (
+    Point32 as Point32Msg,
+    Quaternion as QuaternionMsg,
+    Vector3Stamped as Vector3StampedMsg,
+    TransformStamped as TransformStampedMsg
+)
 from visualization_msgs.msg import Marker as MarkerMsg, MarkerArray as MarkerArrayMsg
 from sensor_msgs import point_cloud2 as pc2
 from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
-
+import tf.transformations as tr
 
 class ROSBridge:
     """
@@ -633,7 +638,7 @@ class ROSBridge:
 
         return result
 
-    def to_ros_point_cloud2(self, point_cloud: PointCloud, channels: str = None):
+    def to_ros_point_cloud2(self, point_cloud: PointCloud, channels: str = None, frame_id = "base_link"):
 
         """
         Converts an OpenDR PointCloud message into a ROS PointCloud2
@@ -647,7 +652,7 @@ class ROSBridge:
 
         header = Header()
         header.stamp = rospy.Time.now()
-        header.frame_id = "base_link"
+        header.frame_id = frame_id
 
         channel_count = point_cloud.data.shape[-1] - 3
 
@@ -891,3 +896,22 @@ class ROSBridge:
         """
 
         return message.data
+
+
+    def to_ros_transformstamped(self, stamp, frame_id, child_frame_id, odometry):
+        """
+        Creates a TransformStamped message given frame_id, child_frame_id and odometry.
+        """
+        t = TransformStampedMsg()
+        t.header.stamp = stamp
+        t.header.frame_id = frame_id
+        t.child_frame_id = child_frame_id
+        t.transform.translation.x = -odometry[0, 3]
+        t.transform.translation.y = 0.0
+        t.transform.translation.z = -odometry[2, 3]
+        q = tr.quaternion_from_matrix(odometry)
+        t.transform.rotation.x = q[0]
+        t.transform.rotation.y = q[1]
+        t.transform.rotation.z = q[2]
+        t.transform.rotation.w = q[3]
+        return t
