@@ -17,8 +17,10 @@ import argparse
 import torch
 from numpy import std, ndarray
 import cv2
+from time import perf_counter
 
 import rospy
+from std_msgs.msg import Float32
 from vision_msgs.msg import Detection2D
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge.msg import OpenDRPose2D
@@ -36,6 +38,7 @@ class WaveDetectionNode:
                  output_rgb_image_topic="/opendr/image_pose_annotated",
                  pose_detections_topic="/opendr/poses",
                  wave_detections_topic="/opendr/wave",
+                 performance_topic=None,
                  device="cuda",
                  num_refinement_stages=2, use_stride=False, half_precision=False):
         """
@@ -53,6 +56,9 @@ class WaveDetectionNode:
         :type wave_detections_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param num_refinement_stages: Specifies the number of pose estimation refinement stages are added on the
         model's head, including the initial stage. Can be 0, 1 or 2, with more stages meaning slower and more accurate
         inference
@@ -81,6 +87,11 @@ class WaveDetectionNode:
         else:
             self.wave_publisher = None
 
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
+
         self.bridge = ROSBridge()
 
         # Initialize the pose estimation learner
@@ -106,6 +117,8 @@ class WaveDetectionNode:
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
@@ -194,6 +207,14 @@ class WaveDetectionNode:
                     waving = waving_and_pose[0]
                     pose = waving_and_pose[1]
                     x, y, w, h = get_bbox(pose)
+
+                    if self.performance_publisher:
+                        end_time = perf_counter()
+                        fps = 1.0 / (end_time - start_time)  # NOQA
+                        fps_msg = Float32()
+                        fps_msg.data = fps
+                        self.performance_publisher.publish(fps_msg)
+
                     if self.image_publisher is not None and waving == 1:
                         if type(image) != ndarray:
                             # Get an OpenCV image back
@@ -237,6 +258,8 @@ def main():
     parser.add_argument("-wd", "--wave_detections_topic", help="Topic name for wave detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/wave")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
@@ -270,6 +293,7 @@ def main():
                                             output_rgb_image_topic=args.output_rgb_image_topic,
                                             pose_detections_topic=args.pose_detections_topic,
                                             wave_detections_topic=args.wave_detections_topic,
+                                            performance_topic=args.performance_topic,
                                             num_refinement_stages=stages, use_stride=stride, half_precision=half_prec)
     wave_estimator_node.listen()
 
