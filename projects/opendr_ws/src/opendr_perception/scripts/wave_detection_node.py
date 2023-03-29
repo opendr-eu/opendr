@@ -28,7 +28,7 @@ from opendr_bridge import ROSBridge
 
 from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox
-from opendr.perception.pose_estimation import draw, get_bbox
+from opendr.perception.pose_estimation import get_bbox
 from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
 
