@@ -36,7 +36,7 @@ class FallDetectionNode:
                  output_rgb_image_topic="/opendr/image_fallen_annotated", detections_topic="/opendr/fallen",
                  device="cuda", num_refinement_stages=2, use_stride=False, half_precision=False):
         """
-        Creates a ROS Node for rule-based fall detection based on Lightweight OpenPose.
+        Creates a ROS Node for rule-based fall detection via pose estimation.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
         :param input_pose_topic: Topic from which we are reading the input pose list
@@ -98,9 +98,9 @@ class FallDetectionNode:
         if self.input_pose_topic is not None:
             rospy.Subscriber(self.input_pose_topic, OpenDRPose2D, self.pose_callback, queue_size=1, buff_size=10000000)
 
-        if self.input_pose_topic:
+        if self.input_pose_topic and not self.input_rgb_image_topic:
             rospy.loginfo("Fall detection node started in detection mode.")
-        elif self.input_rgb_image_topic:
+        elif self.input_rgb_image_topic and not self.input_pose_topic:
             rospy.loginfo("Fall detection node started in visualization mode.")
         elif self.input_pose_topic and self.input_rgb_image_topic:
             rospy.loginfo("Fall detection node started in both detection and visualization mode.")
