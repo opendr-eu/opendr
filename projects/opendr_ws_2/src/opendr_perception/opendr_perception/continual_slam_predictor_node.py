@@ -28,7 +28,8 @@ from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from visualization_msgs.msg import MarkerArray as ROS_MarkerArray
 from std_msgs.msg import String as ROS_String
 from opendr_bridge import ROS2Bridge
-
+import tf2_ros
+from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 
 class ContinualSlamPredictor(Node):
     def __init__(self,
@@ -37,6 +38,8 @@ class ContinualSlamPredictor(Node):
                  input_distance_topic: str,
                  output_depth_topic: str,
                  output_pose_topic: str,
+                 output_pointcloud_topic: str,
+                 publish_pointcloud: bool,
                  update_topic: str):
         super().__init__("opendr_continual_slam_predictor_node")
         """
@@ -51,6 +54,10 @@ class ContinualSlamPredictor(Node):
         :type output_depth_topic: str
         :param output_pose_topic: ROS topic where the output pose will be published.
         :type output_pose_topic: str
+        :param output_pointcloud_topic: ROS topic where the output pointcloud will be published.
+        :type output_pointcloud_topic: str
+        :param publish_pointcloud: Whether to publish the pointcloud or not.
+        :type publish_pointcloud: bool
         :param update_topic: ROS topic where the update signal is published.
         :type update_topic: str
         """
@@ -60,6 +67,10 @@ class ContinualSlamPredictor(Node):
         self.input_distance_topic = input_distance_topic
         self.output_depth_topic = output_depth_topic
         self.output_pose_topic = output_pose_topic
+        if publish_pointcloud:
+            self.output_pointcloud_topic = output_pointcloud_topic
+        else:
+            self.output_pointcloud_topic = None
         self.update_topic = update_topic
 
         self.path = path
@@ -100,7 +111,17 @@ class ContinualSlamPredictor(Node):
         if len(triplet) < 3:
             return
         # Infer depth and pose
-        depth = self._infer(triplet)
+        if self.output_pointcloud_topic:
+            depth, raw_depth, pose_graph = self._infer(triplet, return_raw_depth=True, pointcloud=True)
+            odometry = pose_graph.return_last_poses(n=1)[0]
+            pointcloud = self.predictor.visualize_3d(image, raw_depth)
+            pointcloud = self.bridge.to_ros_point_cloud2(pointcloud, stamp, 'rgb', 'car')
+            tf = self.bridge.to_ros_transformstamped(stamp=stamp,
+                                                     frame_id = "world",
+                                                     child_frame_id = "car",
+                                                     odometry = odometry)
+        else:
+            depth, _ = self._infer(triplet)
         if depth is None:
             return
         rgba = (self.color[0], self.color[1], self.color[2], 1.0)
@@ -112,6 +133,9 @@ class ContinualSlamPredictor(Node):
         depth = self.bridge.to_ros_image(depth)
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
+        if self.output_pointcloud_topic:
+            self.tf_broadcaster.sendTransform(tf)
+            self.pointcloud_publisher.publish(pointcloud)
 
     def update(self, message: ROS_String):
         """
@@ -164,6 +188,10 @@ class ContinualSlamPredictor(Node):
             ROS_Image, self.output_depth_topic, 10)
         self.output_pose_publisher = self.create_publisher(
             ROS_MarkerArray, self.output_pose_topic, 10)
+        if self.output_pointcloud_topic:
+            self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
+            self.pointcloud_publisher = self.create_publisher(
+                ROS_PointCloud2, self.output_pointcloud_topic, 10)
 
     def _init_predictor(self):
         """
@@ -225,19 +253,23 @@ class ContinualSlamPredictor(Node):
             self.color = list(np.random.choice(range(256), size=3))
         if self.sequence != incoming_sequence:
             self._clean_cache()
-            self.predictor.step = 0
+            self.predictor._reset()
             self.sequence = incoming_sequence
             self.color = list(np.random.choice(range(256), size=3))
 
-    def _infer(self, triplet: dict):
+    def _infer(self, triplet: dict, return_raw_depth=False, pointcloud=False):
         """
         Infer the triplet
         :param triplet: Triplet
         :type triplet: dict
-        :return: Depth image
-        :rtype: Image
+        :param return_raw_depth: Return raw depth
+        :type return_raw_depth: bool
+        :param pointcloud: Return pointcloud
+        :type pointcloud: bool
+        :return: Depth iimage, odometry, optional raw depth image
+        :rtype: np.ndarray, np.ndarray, np.ndarray
         """
-        depth, _, _, lc, pose_graph = self.predictor.infer(triplet)
+        depth, odometry, _, lc, pose_graph = self.predictor.infer(triplet, pointcloud=pointcloud)
         if not lc:
             points = pose_graph.return_last_positions(n=5)
             if not len(points):
@@ -246,7 +278,7 @@ class ContinualSlamPredictor(Node):
                 position = [-point[0], 0.0, -point[2]]
 
                 self.cache["marker_position"].append(position)
-                self.cache["marker_frame_id"].append("map")
+                self.cache["marker_frame_id"].append("world")
             if self.color is None:
                 self.color = [255, 0, 0]
         else:
@@ -256,8 +288,11 @@ class ContinualSlamPredictor(Node):
             for point in points:
                 position = [-point[0], 0.0, -point[2]]
                 self.cache["marker_position"].append(position)
-                self.cache["marker_frame_id"].append("map")
-        return depth
+                self.cache["marker_frame_id"].append("world")
+        if return_raw_depth:
+            depth, raw_depth = depth
+            return depth, raw_depth, pose_graph
+        return depth, odometry
 
 
 def main(args=None):
@@ -289,6 +324,15 @@ def main(args=None):
                         type=str,
                         default='/opendr/predicted/pose',
                         help='Output pose topic, published to Continual SLAM Dataset Node')
+    parser.add_argument('-ppcl',
+                        '--publish_pointcloud',
+                        action='store_true',
+                        help='Publish pointcloud to ROS')
+    parser.add_argument('-opct',
+                        '--output_pointcloud_topic',
+                        type=str,
+                        default='/opendr/predicted/pointcloud',
+                        help='Output pointcloud topic, published to Continual SLAM Dataset Node')
     parser.add_argument('-ut',
                         '--update_topic',
                         type=str,
@@ -301,6 +345,8 @@ def main(args=None):
                                   args.input_distance_topic,
                                   args.output_depth_topic,
                                   args.output_pose_topic,
+                                  args.output_pointcloud_topic,
+                                  args.publish_pointcloud,
                                   args.update_topic)
     node.listen()
 

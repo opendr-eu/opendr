@@ -785,8 +785,10 @@ You can find the continual slam ROS node python scripts here [learner](./opendr_
    - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
    - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
    - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
-   - `-odt or --output_depth_topic`: output depth topic, published to Continual SLAM Dataset Node (default=`/opendr/predicted/image`)
-   - `-opt or --output_pose_topic`: output pose topic, published to Continual SLAM Dataset Node (default=`/opendr/predicted/pose`)
+   - `-odt or --output_depth_topic`: output depth topic, published to visual output tools (default=`/opendr/predicted/image`)
+   - `-opt or --output_pose_topic`: output pose topic, published to visual output tools (default=`/opendr/predicted/pose`)
+   - `-ppcl or --publish_pointcloud`: boolean to decide whether pointcloud output is asked or not (default=`false`)
+   - `-opct or --output_pointcloud_topic`: output pointcloud topic, depending on `--publish_pointcloud`, published to visual output tools (default=`/opendr/predicted/pointcloud`)
    - `-ut or --update_topic`: update topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/update`)
 
 4. Start the Learner Node (Optional)

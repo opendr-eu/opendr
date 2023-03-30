@@ -897,7 +897,6 @@ class ROSBridge:
 
         return message.data
 
-
     def to_ros_transformstamped(self, stamp, frame_id, child_frame_id, odometry):
         """
         Creates a TransformStamped message given frame_id, child_frame_id and odometry.

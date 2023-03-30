@@ -456,7 +456,7 @@ class ContinualSLAMLearner(Learner):
                     depth = prediction[item].squeeze().cpu().detach().numpy()
         if pointcloud:
             return (disp, depth), odometry
-        return depth, odometry
+        return disp, odometry
 
     def _colorize_depth(self, depth):
         """
@@ -468,3 +468,9 @@ class ContinualSLAMLearner(Learner):
         colormapped_img = (mapper.to_rgba(depth.squeeze())[:, :, :3]*255).astype(np.uint8)
         colormapped_img = cv2.cvtColor(colormapped_img, cv2.COLOR_RGB2BGR)
         return Image(colormapped_img)
+
+    def _reset(self):
+        self.step = 0
+        self.online_dataset = Buffer()
+        self.pose_graph = PoseGraphOptimization()
+        self.loop_closure_detection = LoopClosureDetection(self.config_file.loop_closure)

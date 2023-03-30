@@ -38,6 +38,7 @@ class ContinualSlamPredictor:
                  output_depth_topic: str,
                  output_pose_topic: str,
                  output_pointcloud_topic: str,
+                 publish_pointcloud: bool,
                  update_topic: str):
         """
         Continual SLAM predictor node. This node is responsible for publishing predicted pose and depth outputs.
@@ -53,6 +54,8 @@ class ContinualSlamPredictor:
         :type output_pose_topic: str
         :param output_pointcloud_topic: ROS topic where the output pointcloud will be published.
         :type output_pointcloud_topic: str
+        :param publish_pointcloud: Whether to publish the pointcloud or not.
+        :type publish_pointcloud: bool
         :param update_topic: ROS topic where the update signal is published.
         :type update_topic: str
         """
@@ -62,7 +65,10 @@ class ContinualSlamPredictor:
         self.input_distance_topic = input_distance_topic
         self.output_depth_topic = output_depth_topic
         self.output_pose_topic = output_pose_topic
-        self.output_pointcloud_topic = output_pointcloud_topic
+        if publish_pointcloud:
+            self.output_pointcloud_topic = output_pointcloud_topic
+        else:
+            self.output_pointcloud_topic = None
         self.update_topic = update_topic
 
         self.path = path
@@ -101,26 +107,30 @@ class ContinualSlamPredictor:
         if len(triplet) < 3:
             return
         # Infer depth and pose
-        depth, raw_depth, pose_graph = self._infer(triplet, return_raw_depth=True, pointcloud=True)
-        odometry = pose_graph.return_last_poses(n=1)[0]
-        pointcloud = self.predictor.visualize_3d(image, raw_depth)
-        pointcloud = self.bridge.to_ros_point_cloud2(pointcloud, 'rgb', 'car')
+        if self.output_pointcloud_topic:
+            depth, raw_depth, pose_graph = self._infer(triplet, return_raw_depth=True, pointcloud=True)
+            odometry = pose_graph.return_last_poses(n=1)[0]
+            pointcloud = self.predictor.visualize_3d(image, raw_depth)
+            pointcloud = self.bridge.to_ros_point_cloud2(pointcloud, 'rgb', 'car')
+            tf = self.bridge.to_ros_transformstamped(stamp=rospy.Time.now(),
+                                                     frame_id = "world",
+                                                     child_frame_id = "car",
+                                                     odometry = odometry)
+        else:
+            depth, _ = self._infer(triplet)
         if depth is None:
             return
         rgba = (self.color[0], self.color[1], self.color[2], 1.0)
         marker_list = self.bridge.to_ros_marker_array(self.cache['marker_position'],
                                                       self.cache['marker_frame_id'],
                                                       rgba)
-        tf = self.bridge.to_ros_transformstamped(stamp=rospy.Time.now(),
-                                                 frame_id = "world",
-                                                 child_frame_id = "car",
-                                                 odometry = odometry)
 
         depth = self.bridge.to_ros_image(depth)
         self.output_depth_publisher.publish(depth)
         self.output_pose_publisher.publish(marker_list)
-        self.tf_broadcaster.sendTransform(tf)
-        self.pointcloud_publisher.publish(pointcloud)
+        if self.output_pointcloud_topic:
+            self.tf_broadcaster.sendTransform(tf)
+            self.pointcloud_publisher.publish(pointcloud)
 
     def update(self, message: ROS_String):
         """
@@ -166,9 +176,10 @@ class ContinualSlamPredictor:
             self.output_depth_topic, ROS_Image, queue_size=10)
         self.output_pose_publisher = rospy.Publisher(
             self.output_pose_topic, ROS_MarkerArray, queue_size=10)
-        self.tf_broadcaster = tf2_ros.TransformBroadcaster()
-        self.pointcloud_publisher = rospy.Publisher(
-            self.output_pointcloud_topic, ROS_PointCloud2, queue_size=10)
+        if self.output_pointcloud_topic:
+            self.tf_broadcaster = tf2_ros.TransformBroadcaster()
+            self.pointcloud_publisher = rospy.Publisher(
+                self.output_pointcloud_topic, ROS_PointCloud2, queue_size=10)
 
 
     def _init_predictor(self):
@@ -233,17 +244,21 @@ class ContinualSlamPredictor:
             self.color = list(np.random.choice(range(256), size=3))
         if self.sequence != incoming_sequence:
             self._clean_cache()
-            self.predictor.step = 0
+            self.predictor._reset()
             self.sequence = incoming_sequence
             self.color = list(np.random.choice(range(256), size=3))
 
-    def _infer(self, triplet: dict, return_raw_depth=False, pointcloud=False):
+    def _infer(self, triplet: dict, return_raw_depth: bool = False, pointcloud: bool = False):
         """
         Infer the triplet
         :param triplet: Triplet
         :type triplet: dict
-        :return: Depth image
-        :rtype: Image
+        :param return_raw_depth: Return raw depth
+        :type return_raw_depth: bool
+        :param pointcloud: Return pointcloud
+        :type pointcloud: bool
+        :return: Depth iimage, odometry, optional raw depth image
+        :rtype: np.ndarray, np.ndarray, np.ndarray
         """
         depth, odometry, _, lc, pose_graph = self.predictor.infer(triplet, pointcloud=pointcloud)
         if not lc:
@@ -299,6 +314,10 @@ def main():
                         type=str,
                         default='/opendr/predicted/pose',
                         help='Output pose topic, published to Continual SLAM Dataset Node')
+    parser.add_argument('-ppcl',
+                        '--publish_pointcloud',
+                        action='store_true',
+                        help='Publish pointcloud to ROS')
     parser.add_argument('-opct',
                         '--output_pointcloud_topic',
                         type=str,
@@ -317,6 +336,7 @@ def main():
                                   args.output_depth_topic,
                                   args.output_pose_topic,
                                   args.output_pointcloud_topic,
+                                  args.publish_pointcloud,
                                   args.update_topic)
     node.listen()
 
