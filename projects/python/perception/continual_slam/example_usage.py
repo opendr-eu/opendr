@@ -15,6 +15,8 @@
 import argparse
 import os
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
 
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
@@ -64,9 +66,19 @@ def inference(dataset_path, config_file, model_path=None):
     predictor = ContinualSLAMLearner(config_file, mode="predictor")
     load_model(model_path, predictor)
     predictor.do_loop_closure = True
+    os.makedirs('./cl_slam/predictions', exist_ok=True)
     for i, item in enumerate(dataset):
-        depth, _, _, _, _ = predictor.infer(item, return_losses=True)
+        depth, _, _, _, pose_graph = predictor.infer(item, return_losses=True)
         cv2.imwrite(f'./cl_slam/predictions/depth_{i}.png', depth.opencv())
+    poses = pose_graph.return_all_positions()
+    poses = np.delete(np.array(poses), 1, 1)
+    hfont = {'fontname':'Helvetica Neue'}
+    plt.scatter(-poses[:, 0], -poses[:, 1], c='r', marker='o')
+    plt.xlabel('x [m]', **hfont)
+    plt.ylabel('z [m]', **hfont)
+    plt.title('Pose Graph for the Inference on test data')
+    plt.savefig('./cl_slam/predictions/pose_graph.png')
+
 
 def main():
     env = os.getenv('OPENDR_HOME')
