@@ -130,30 +130,59 @@ You can find the fall detection ROS2 node python script [here](./opendr_percepti
 The node makes use of the toolkit's [fall detection tool](../../../../src/opendr/perception/fall_detection/fall_detector_learner.py) whose documentation can be found [here](../../../../docs/reference/fall-detection.md).
 Fall detection uses the toolkit's pose estimation tool internally.
 
-<!-- TODO Should add information about taking advantage of the pose estimation ros node when running fall detection, see issue https://github.com/opendr-eu/opendr/issues/282 -->
+This node normally runs on `detection mode` where it subscribes to a topic of OpenDR poses and detects whether the poses are fallen persons or not.
+By providing an image topic the node runs on `visualization mode`. It also gets images, performs pose estimation internally and visualizes the output on an output image topic.
+Note that when providing an image topic the node has significantly worse performance in terms of speed, due to running pose estimation internally.
 
-#### Instructions for basic usage:
+- #### Instructions for basic usage in `detection mode`:
 
-1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+1. Start the node responsible for publishing poses. Refer to the [pose estimation node above](#pose-estimation-ros2-node).
 
 2. You are then ready to start the fall detection node:
 
     ```shell
     ros2 run opendr_perception fall_detection
     ```
-    The following optional arguments are available:
+   The following optional arguments are available and relevant for running fall detection on pose messages only:
    - `-h or --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
-   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_fallen_annotated`)
-   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/fallen`)
+   - `-ip or --input_pose_topic INPUT_POSE_TOPIC`: topic name for input pose, `None` to stop the node from running detections on pose messages (default=`/opendr/poses`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
+
+3. Detections are published on the `detections_topic`
+
+- #### Instructions for `visualization mode`:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the fall detection node in `visualization mode`, which needs an input image topic to be provided:
+
+    ```shell
+    ros2 run opendr_perception fall_detection -ii /image_raw
+    ```
+    The following optional arguments are available and relevant for running fall detection on images. Note that the
+`input_rgb_image_topic` is required for running in `visualization mode`:
+   - `-h or --help`: show a help message and exit
+   - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_fallen_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
-3. Default output topics:
-   - Output images: `/opendr/image_fallen_annotated`
-   - Detection messages: `/opendr/fallen`
 
-   For viewing the output, refer to the [notes above.](#notes)
+- Default output topics:
+  - Detection messages: `/opendr/fallen`
+  - Output images: `/opendr/image_fallen_annotated`
+
+  For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+Note that when the node runs on the default `detection mode` it is significantly faster than when it is provided with an 
+input image topic. However, pose estimation needs to be performed externally on another node which publishes poses.
+When an input image topic is provided and the node runs in `visualization mode`, it runs pose estimation internally, and 
+consequently it is recommended to only use it for testing purposes and not run other pose estimation nodes in parallel.
+The node can run in both modes in parallel or only on one of the two. To run the node only on `visualization mode` provide
+the argument `-ip None` to disable the `detection mode`. Detection messages on `detections_topic` are published in both modes.
 
 ### Face Detection ROS2 Node
 
