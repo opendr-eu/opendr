@@ -80,7 +80,7 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 12. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros-node)
 13. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros-node)
 14. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros-node)
-15. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-node)
+15. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-nodes)
 16. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros-node)
 
 ## RGB + Infrared input
