@@ -82,21 +82,21 @@ class FallDetectionNode(Node):
 
         if input_pose_topic is not None:
             self.pose_subscriber = self.create_subscription(OpenDRPose2D, input_pose_topic, self.pose_callback, 1)
-            self.fall_publisher = self.create_publisher(Detection2D, detections_topic, 1)
         else:
             self.pose_subscriber = None
-            self.fall_publisher = None
+
+        self.fall_publisher = self.create_publisher(Detection2D, detections_topic, 1)
 
         self.bridge = ROS2Bridge()
 
         # Initialize the fall detection learner
         self.fall_detector = FallDetectorLearner(self.pose_estimator)
 
-        if self.input_pose_topic and not self.input_rgb_image_topic:
+        if input_pose_topic and not input_rgb_image_topic:
             self.get_logger().info("Fall detection node initialized in detection mode.")
-        elif self.input_rgb_image_topic and not self.input_pose_topic:
+        elif input_rgb_image_topic and not input_pose_topic:
             self.get_logger().info("Fall detection node initialized in visualization mode.")
-        elif self.input_pose_topic and self.input_rgb_image_topic:
+        elif input_pose_topic and input_rgb_image_topic:
             self.get_logger().info("Fall detection node initialized in both detection and visualization mode.")
 
     def pose_callback(self, data):
@@ -131,17 +131,23 @@ class FallDetectionNode(Node):
         image = image.opencv()
 
         for detection in detections:
-            fallen = detection[0].data
+            fallen = detection[0].data  # Class: 1 = fallen, -1 = standing, 0 = can't detect
+            pose = detection[1]
+            x, y, w, h = get_bbox(pose)
 
             if fallen == 1:
-                pose = detection[1]
-                x, y, w, h = get_bbox(pose)
                 if self.image_publisher is not None:
                     # Paint person bounding box inferred from pose
                     color = (0, 0, 255)
                     cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                     cv2.putText(image, "Fallen person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                 1, color, 2, cv2.LINE_AA)
+
+            # Create Detection2D that contains the bbox of the pose as well as the detection class
+            ros_detection = self.bridge.to_ros_box(BoundingBox(left=x, top=y, width=w, height=h,
+                                                               name=fallen, score=pose.confidence))
+            self.fall_publisher.publish(ros_detection)
+
         self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
