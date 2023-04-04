@@ -78,10 +78,10 @@ class FallDetectionNode:
 
         if input_pose_topic is not None:
             self.input_pose_topic = input_pose_topic
-            self.fall_publisher = rospy.Publisher(detections_topic, Detection2D, queue_size=1)
         else:
             self.input_pose_topic = None
-            self.fall_publisher = None
+
+        self.fall_publisher = rospy.Publisher(detections_topic, Detection2D, queue_size=1)
 
         self.bridge = ROSBridge()
 
@@ -140,16 +140,21 @@ class FallDetectionNode:
 
         for detection in detections:
             fallen = detection[0].data
+            pose = detection[1]
+            x, y, w, h = get_bbox(pose)
 
             if fallen == 1:
-                pose = detection[1]
-                x, y, w, h = get_bbox(pose)
                 if self.image_publisher is not None:
                     # Paint person bounding box inferred from pose
                     color = (0, 0, 255)
                     cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                     cv2.putText(image, "Fallen person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                 1, color, 2, cv2.LINE_AA)
+
+            # Create Detection2D that contains the bbox of the pose as well as the detection class
+            ros_detection = self.bridge.to_ros_box(BoundingBox(left=x, top=y, width=w, height=h,
+                                                               name=fallen, score=pose.confidence))
+            self.fall_publisher.publish(ros_detection)
         self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
 
