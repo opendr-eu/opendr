@@ -128,7 +128,7 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
 You can find the fall detection ROS2 node python script [here](./opendr_perception/fall_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [fall detection tool](../../../../src/opendr/perception/fall_detection/fall_detector_learner.py) whose documentation can be found [here](../../../../docs/reference/fall-detection.md).
-Fall detection uses the toolkit's pose estimation tool internally.
+Fall detection is rule-based and works on top of pose estimation.
 
 This node normally runs on `detection mode` where it subscribes to a topic of OpenDR poses and detects whether the poses are fallen persons or not.
 By providing an image topic the node runs on `visualization mode`. It also gets images, performs pose estimation internally and visualizes the output on an output image topic.
@@ -172,6 +172,65 @@ Note that when providing an image topic the node has significantly worse perform
 - Default output topics:
   - Detection messages: `/opendr/fallen`
   - Output images: `/opendr/image_fallen_annotated`
+
+  For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+Note that when the node runs on the default `detection mode` it is significantly faster than when it is provided with an 
+input image topic. However, pose estimation needs to be performed externally on another node which publishes poses.
+When an input image topic is provided and the node runs in `visualization mode`, it runs pose estimation internally, and 
+consequently it is recommended to only use it for testing purposes and not run other pose estimation nodes in parallel.
+The node can run in both modes in parallel or only on one of the two. To run the node only on `visualization mode` provide
+the argument `-ip None` to disable the `detection mode`. Detection messages on `detections_topic` are published in both modes.
+
+### Wave Detection ROS2 Node
+
+You can find the wave detection ROS2 node python script [here](./opendr_perception/wave_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node is based on a [wave detection demo of the Lightweight OpenPose tool](../../../../projects/python/perception/pose_estimation/lightweight_open_pose/demos/wave_detection_demo.py).
+Wave detection is rule-based and works on top of pose estimation.
+
+This node normally runs on `detection mode` where it subscribes to a topic of OpenDR poses and detects whether the poses are waving or not.
+By providing an image topic the node runs on `visualization mode`. It also gets images, performs pose estimation internally and visualizes the output on an output image topic.
+Note that when providing an image topic the node has significantly worse performance in terms of speed, due to running pose estimation internally.
+
+- #### Instructions for basic usage in `detection mode`:
+
+1. Start the node responsible for publishing poses. Refer to the [pose estimation node above](#pose-estimation-ros2-node).
+
+2. You are then ready to start the wave detection node:
+
+    ```shell
+    ros2 run opendr_perception wave_detection
+    ```
+    The following optional arguments are available and relevant for running fall detection on pose messages only:
+   - `-h or --help`: show a help message and exit
+   - `-ip or --input_pose_topic INPUT_POSE_TOPIC`: topic name for input pose, `None` to stop the node from running detections on pose messages (default=`/opendr/poses`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/wave`)
+
+3. Detections are published on the `detections_topic`
+
+- #### Instructions for `visualization mode`:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the wave detection node in `visualization mode`, which needs an input image topic to be provided:
+
+    ```shell
+    ros2 run opendr_perception wave_detection -ii /image_raw
+    ```
+    The following optional arguments are available and relevant for running wave detection on images. Note that the
+`input_rgb_image_topic` is required for running in `visualization mode`:
+   - `-h or --help`: show a help message and exit
+   - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_wave_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/wave`)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
+
+- Default output topics:
+  - Detection messages: `/opendr/wave`
+  - Output images: `/opendr/image_wave_annotated`
 
   For viewing the output, refer to the [notes above.](#notes)
 
