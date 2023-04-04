@@ -34,8 +34,11 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 
 from opendr.perception.continual_slam.algorithm.depth_pose_module import DepthPoseModule
 from opendr.perception.continual_slam.configs.config_parser import ConfigParser
-from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimization import PoseGraphOptimization
-from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
+try:
+    from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimization import PoseGraphOptimization
+    from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
+except ImportError:
+    print("Loop closure not available. Please install the optional dependencies.")
 from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
 from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layers import BackProjectDepth
 

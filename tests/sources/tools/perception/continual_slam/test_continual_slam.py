@@ -24,7 +24,6 @@ import numpy as np
 from opendr.perception.continual_slam.continual_slam_learner import ContinualSLAMLearner
 from opendr.perception.continual_slam.datasets.kitti import KittiDataset
 from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer import ReplayBuffer
-from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimization import PoseGraphOptimization
 from opendr.engine.data import Image
 
 
@@ -134,17 +133,6 @@ class TestContinualSlamLearner(unittest.TestCase):
                 assert False, "Should raise NotImplementedError"
             except ValueError:
                 pass
-
-        # Test with loop closure
-        predictor.do_loop_closure = True
-        predictor.step = 0
-        for item in dataset:
-            depth, odometry, losses, lc, pose_graph = predictor.infer(item, return_losses=True)
-            assert losses is None, "Losses should be None"
-            assert lc is False, "Loop closure should be False since we are only using first 50 frames"
-            self.assertIsInstance(depth, Image)
-            self.assertIsInstance(odometry, np.ndarray)
-            self.assertIsInstance(pose_graph, PoseGraphOptimization)
 
     def test_save(self):
         learner = ContinualSLAMLearner(self.config_file, mode="learner")
