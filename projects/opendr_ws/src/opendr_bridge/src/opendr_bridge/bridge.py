@@ -42,6 +42,7 @@ from sensor_msgs import point_cloud2 as pc2
 from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 import tf.transformations as tr
 
+
 class ROSBridge:
     """
     This class provides an interface to convert OpenDR data types and targets into ROS-compatible ones similar to CvBridge.
@@ -638,7 +639,7 @@ class ROSBridge:
 
         return result
 
-    def to_ros_point_cloud2(self, point_cloud: PointCloud, channels: str = None, frame_id = "base_link"):
+    def to_ros_point_cloud2(self, point_cloud: PointCloud, channels: str = None, frame_id="base_link"):
 
         """
         Converts an OpenDR PointCloud message into a ROS PointCloud2

@@ -45,6 +45,7 @@ from visualization_msgs.msg import (
 from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
 from sensor_msgs_py import point_cloud2 as pc2
 
+
 class ROS2Bridge:
     """
     This class provides an interface to convert OpenDR data types and targets into ROS2-compatible ones similar
@@ -399,7 +400,7 @@ class ROS2Bridge:
 
         return result
 
-    def to_ros_point_cloud2(self, point_cloud: PointCloud, timestamp: str, channels: str=None, frame_id = "base_link"):
+    def to_ros_point_cloud2(self, point_cloud: PointCloud, timestamp: str, channels: str=None, frame_id="base_link"):
 
         """
         Converts an OpenDR PointCloud message into a ROS PointCloud2
@@ -880,6 +881,7 @@ class ROS2Bridge:
         t.transform.translation.x = -odometry[0, 3]
         t.transform.translation.y = 0.0
         t.transform.translation.z = -odometry[2, 3]
+
         def quaternion_from_matrix(matrix):
             q = np.empty((4, ), dtype=np.float64)
             M = np.array(matrix, dtype=np.float64, copy=False)[:4, :4]
@@ -902,6 +904,7 @@ class ROS2Bridge:
                 q[3] = M[k, j] - M[j, k]
             q *= 0.5 / np.sqrt(t * M[3, 3])
             return q
+
         q = quaternion_from_matrix(odometry)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]

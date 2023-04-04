@@ -59,10 +59,10 @@ class TestContinualSlamLearner(unittest.TestCase):
         # Configuration for the weights pre-trained on SemanticKITTI
         base_config_file = str(Path(sys.modules[
             ContinualSLAMLearner.__module__].__file__).parent / 'configs' / 'singlegpu_kitti.yaml')
-        
+
         with open(base_config_file) as f:
             try:
-                databaseConfig = yaml.safe_load(f)   
+                databaseConfig = yaml.safe_load(f)
             except yaml.YAMLError as exc:
                 print(exc)
             databaseConfig['Dataset']['dataset_path'] = str(cls.test_data)

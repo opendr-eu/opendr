@@ -31,6 +31,7 @@ from opendr_bridge import ROS2Bridge
 import tf2_ros
 from sensor_msgs.msg import PointCloud2 as ROS_PointCloud2
 
+
 class ContinualSlamPredictor(Node):
     def __init__(self,
                  path: Path,
@@ -117,9 +118,9 @@ class ContinualSlamPredictor(Node):
             pointcloud = self.predictor.visualize_3d(image, raw_depth)
             pointcloud = self.bridge.to_ros_point_cloud2(pointcloud, stamp, 'rgb', 'car')
             tf = self.bridge.to_ros_transformstamped(stamp=stamp,
-                                                     frame_id = "world",
-                                                     child_frame_id = "car",
-                                                     odometry = odometry)
+                                                     frame_id="world",
+                                                     child_frame_id="car",
+                                                     odometry=odometry)
         else:
             depth, _ = self._infer(triplet)
         if depth is None:

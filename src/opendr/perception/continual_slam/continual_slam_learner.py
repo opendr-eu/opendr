@@ -40,6 +40,7 @@ from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffe
 from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layers import BackProjectDepth
 from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import disp_to_depth
 
+
 class ContinualSLAMLearner(Learner):
     """
     This class implements the CL-SLAM algorithm, which is a continual learning approach for SLAM.
@@ -263,7 +264,7 @@ class ContinualSLAMLearner(Learner):
         else:
             filename = path / url.split('/')[-1]
             with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
-                        desc=f"Downloading {filename}") as pbar:
+                      desc=f"Downloading {filename}") as pbar:
                 urllib.request.urlretrieve(url, filename, pbar_hook(pbar))
         print(f"Extracting {filename}")
         if mode == "model":

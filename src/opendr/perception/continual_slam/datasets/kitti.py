@@ -18,7 +18,7 @@ import re
 from datetime import datetime
 from tqdm import tqdm
 from shutil import copyfile
-
+import argparse
 from os import PathLike
 from pathlib import Path
 from typing import Tuple, Union, Any, List
@@ -265,3 +265,17 @@ class KittiDataset(ExternalDataset, DatasetIterator):
         :rtype: int
         """
         return len(self.images)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('raw_path', type=str)
+    parser.add_argument('odom_path', type=str)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--oxts', action='store_true')
+    group.add_argument('--depth', action='store_true')
+    args = parser.parse_args()
+
+    KittiDataset.prepare_dataset(Path(args.raw_path),
+                              Path(args.odom_path),
+                              oxts=args.oxts,
+                              gt_depth=args.depth)
