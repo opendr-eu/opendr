@@ -72,7 +72,7 @@ def inference(dataset_path, config_file, model_path=None):
         cv2.imwrite(f'./cl_slam/predictions/depth_{i}.png', depth.opencv())
     poses = pose_graph.return_all_positions()
     poses = np.delete(np.array(poses), 1, 1)
-    hfont = {'fontname':'Helvetica Neue'}
+    hfont = {'fontname': 'Helvetica Neue'}
     plt.scatter(-poses[:, 0], -poses[:, 1], c='r', marker='o')
     plt.xlabel('x [m]', **hfont)
     plt.ylabel('z [m]', **hfont)

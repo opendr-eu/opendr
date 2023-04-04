@@ -42,6 +42,9 @@ Please note that the original repository is heavily based on
 
 More code snippets can be found in [example_usage.py](../../../../projects/python/perception/continual_slam/example_usage.py) with the corresponding [readme](../../../../projects/python/perception/continual_slam/README.md).
 
+Below, you can see an example of published PointClouds from ROS nodes, where the visual input is published with respect to depth estimation.
+![](continual_slam_pcl.png)
+
 **Prepare the downloaded SemanticKITTI dataset** (see the [datasets' readme](./datasets/README.md) as well)
 ```python
 from opendr.perception.continual_slam.datasets import KittiDataset
