@@ -60,6 +60,7 @@ class TestClangFormat(unittest.TestCase):
         skippedPaths = [
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
+            'src/opendr/perception/continual_slam/algorithm/g2o',
             'src/opendr/planning/end_to_end_planning/ardupilot',
         ]
         skippedFiles = [

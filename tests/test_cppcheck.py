@@ -90,7 +90,7 @@ class TestCppCheck(unittest.TestCase):
         sourceDirs = [
             'src/c_api',
         ]
-        skippedDirs = ['src/opendr/perception/continual_slam/algorithm/g2o/',
+        skippedDirs = [
         ]
         includeDirs = [
             'include/'
