@@ -194,7 +194,7 @@ class ContinualSlamLearner(Node):
                                               dataset_config_path=path,
                                               sample_size=self.sample_size)
             return True
-        except Exception as e:
+        except Exception:
             self.get_logger().error("Continual SLAM node failed to initialize, due to replay buffer initialization error.")
             if self.sample_size > 0:
                 return False

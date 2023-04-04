@@ -38,7 +38,6 @@ from opendr.perception.continual_slam.algorithm.loop_closure.pose_graph_optimiza
 from opendr.perception.continual_slam.algorithm.loop_closure.loop_closure_detection import LoopClosureDetection
 from opendr.perception.continual_slam.algorithm.loop_closure.buffer import Buffer
 from opendr.perception.continual_slam.algorithm.depth_pose_module.networks.layers import BackProjectDepth
-from opendr.perception.continual_slam.algorithm.depth_pose_module.utils import disp_to_depth
 
 
 class ContinualSLAMLearner(Learner):

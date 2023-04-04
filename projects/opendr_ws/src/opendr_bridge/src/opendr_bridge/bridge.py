@@ -28,7 +28,7 @@ from vision_msgs.msg import Detection2DArray, Detection2D, BoundingBox2D, Object
      Detection3DArray, Detection3D, BoundingBox3D as BoundingBox3DMsg, ObjectHypothesis, Classification2D
 from geometry_msgs.msg import Pose2D, Point, Pose as Pose3D
 from shape_msgs.msg import Mesh, MeshTriangle
-from std_msgs.msg import ColorRGBA, String, Header, String
+from std_msgs.msg import ColorRGBA, String, Header
 from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, PointCloud2 as PointCloud2Msg,\
      ChannelFloat32 as ChannelFloat32Msg, PointField as PointFieldMsg
 from geometry_msgs.msg import (

@@ -25,7 +25,6 @@ from opendr.perception.continual_slam.algorithm.depth_pose_module.replay_buffer 
 from sensor_msgs.msg import Image as ROS_Image
 from geometry_msgs.msg import Vector3Stamped as ROS_Vector3Stamped
 from std_msgs.msg import String as ROS_String
-from opendr_bridge import ROSBridge
 
 
 class ContinualSlamLearner:

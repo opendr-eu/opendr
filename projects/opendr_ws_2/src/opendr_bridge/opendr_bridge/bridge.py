@@ -20,7 +20,7 @@ from opendr.engine.target import (
     BoundingBox3D, BoundingBox3DList, TrackingAnnotation
 )
 from cv_bridge import CvBridge
-from std_msgs.msg import String, ColorRGBA, Header, String
+from std_msgs.msg import String, ColorRGBA, Header
 from sensor_msgs.msg import (
     Image as ImageMsg, PointCloud as PointCloudMsg, ChannelFloat32 as ChannelFloat32Msg,
     PointField as PointFieldMsg, PointCloud2 as PointCloud2Msg
