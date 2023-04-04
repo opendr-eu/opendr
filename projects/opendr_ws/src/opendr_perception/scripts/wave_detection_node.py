@@ -45,6 +45,8 @@ class WaveDetectionNode:
         Creates a ROS Node for rule-based wave detection via pose estimation.
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
+        :param input_pose_topic: Topic from which we are reading the input pose list
+        :type input_pose_topic: str
         :param output_rgb_image_topic: Topic to which we are publishing the annotated image (if None, no annotated
         image is published)
         :type output_rgb_image_topic: str
@@ -90,7 +92,6 @@ class WaveDetectionNode:
 
         if input_pose_topic is not None:
             self.input_pose_topic = input_pose_topic
-            self.wave_publisher = rospy.Publisher(detections_topic, Detection2D, queue_size=1)
 
             if performance_topic is not None:
                 self.wave_performance_publisher = rospy.Publisher(performance_topic + "/wave", Float32, queue_size=1)
@@ -98,7 +99,8 @@ class WaveDetectionNode:
                 self.wave_performance_publisher = None
         else:
             self.input_pose_topic = None
-            self.wave_publisher = None
+
+        self.wave_publisher = rospy.Publisher(detections_topic, Detection2D, queue_size=1)
 
         self.bridge = ROSBridge()
         self.pose_list = []
@@ -200,6 +202,9 @@ class WaveDetectionNode:
                     cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                     cv2.putText(image, "Waving person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                 1, color, 2, cv2.LINE_AA)
+
+                self.wave_publisher.publish(self.bridge.to_ros_box(BoundingBox(left=x, top=y, width=w, height=h,
+                                                                               name=waving, score=pose.confidence)))
 
         if type(image) != ndarray:
             # Get an OpenCV image back
