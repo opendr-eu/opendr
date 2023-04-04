@@ -718,6 +718,28 @@ You can find the audiovisual emotion recognition ROS node python script [here](.
 The node makes use of the toolkit's [audiovisual emotion recognition tool](../../../../src/opendr/perception/multimodal_human_centric/audiovisual_emotion_learner/avlearner.py),
 whose documentation can be found [here](../../../../docs/reference/audiovisual-emotion-recognition-learner.md).
 
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+2. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2 if needed.
+3. You are then ready to start the audiovisual emotion recognition node
+
+    ```shell
+    rosrun opendr_perception audiovisual_emotion_recognition_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-iv or --input_video_topic INPUT_VIDEO_TOPIC`: topic name for input video, expects detected face of size 224x224 (default=`/usb_cam/image_raw`)
+   - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-o or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the predicted emotion (default=`/opendr/audiovisual_emotion`)
+   - `--buffer_size BUFFER_SIZE`: length of audio and video in seconds, (default=`3.6`)
+   - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
+
+4. Default output topics:
+   - Detection messages: `/opendr/audiovisual_emotion`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
 ----
 ## RGB + IMU input
 
@@ -773,6 +795,7 @@ You can find the continual slam ROS node python scripts here [learner](./scripts
    - `-ss or --sample_size`: sample size of the replay buffer. If 0 is given, only online data is used (default=`3`)
    - `-sm or --save_memory`: whether to save memory or not. Add it to the command if you want to write to disk (default=`True`)
 ----
+
 ## Audio input
 
 ### Speech Command Recognition ROS Node
