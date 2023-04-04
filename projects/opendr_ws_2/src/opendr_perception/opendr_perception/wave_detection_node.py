@@ -15,7 +15,7 @@
 
 import argparse
 import torch
-from numpy import std, ndarray
+from numpy import std
 import cv2
 from time import perf_counter
 
