@@ -21,10 +21,6 @@ import multiprocessing
 
 from distutils.spawn import find_executable
 
-skippedDirs = [
-    'src/opendr/perception/continual_slam/algorithm/g2o/',
-]
-
 
 class TestCppCheck(unittest.TestCase):
     """Unit test for CppCheck errors."""
@@ -94,7 +90,7 @@ class TestCppCheck(unittest.TestCase):
         sourceDirs = [
             'src/c_api',
         ]
-        skippedDirs = [
+        skippedDirs = ['src/opendr/perception/continual_slam/algorithm/g2o/',
         ]
         includeDirs = [
             'include/'
