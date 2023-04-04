@@ -126,7 +126,7 @@ This node normally runs on `detection mode` where it subscribes to a topic of Op
 By providing an image topic the node runs on `visualization mode`. It also gets images, performs pose estimation internally and visualizes the output on an output image topic.
 Note that when providing an image topic the node has significantly worse performance in terms of speed, due to running pose estimation internally.
 
-#### Instructions for basic usage in `detection mode`:
+- #### Instructions for basic usage in `detection mode`:
 
 1. Start the node responsible for publishing poses. Refer to the [pose estimation node above](#pose-estimation-ros-node).
 
@@ -142,7 +142,7 @@ Note that when providing an image topic the node has significantly worse perform
 
 3. Detections are published on the `detections_topic`
 
-#### Instructions for `visualization mode`:
+- #### Instructions for `visualization mode`:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
@@ -156,14 +156,15 @@ Note that when providing an image topic the node has significantly worse perform
    - `-h or --help`: show a help message and exit
    - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_fallen_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
-3. Default output topics:
-   - Detection messages: `/opendr/fallen`
-   - Output images: `/opendr/image_fallen_annotated`
+- Default output topics:
+  - Detection messages: `/opendr/fallen`
+  - Output images: `/opendr/image_fallen_annotated`
 
-   For viewing the output, refer to the [notes above.](#notes)
+  For viewing the output, refer to the [notes above.](#notes)
 
 **Notes**
 
@@ -172,7 +173,7 @@ input image topic. However, pose estimation needs to be performed externally on 
 When an input image topic is provided and the node runs in `visualization mode`, it runs pose estimation internally, and 
 consequently it is recommended to only use it for testing purposes and not run other pose estimation nodes in parallel.
 The node can run in both modes in parallel or only on one of the two. To run the node only on `visualization mode` provide
-the argument `-ip None` to disable the `detection mode`.
+the argument `-ip None` to disable the `detection mode`. Detection messages on `detections_topic` are published in both modes.
 
 ### Face Detection ROS Node
 
