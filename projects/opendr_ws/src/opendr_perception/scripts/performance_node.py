@@ -56,7 +56,7 @@ class PerformanceNode:
             self.fps_window.append(fps)
         self.fps_window = self.fps_window[1:]
         self.fps_window.append(fps)
-        rospy.loginfo(f"Average inferences per second   : {round(mean(self.fps_window), 2)}")  # NOQA
+        rospy.loginfo(f"Average inferences per second: {round(mean(self.fps_window), 2)}")  # NOQA
 
 
 def main():
