@@ -51,12 +51,12 @@ class PerformanceNode:
         :type data: sensor_msgs.msg.Image
         """
         fps = data.data
-        rospy.loginfo(f"Time per frame: {str(round(1.0 / fps, 4))} sec")
+        rospy.loginfo(f"Time per inference: {str(round(1.0 / fps, 4))} sec")
         while len(self.fps_window) < self.window_length:
             self.fps_window.append(fps)
         self.fps_window = self.fps_window[1:]
         self.fps_window.append(fps)
-        rospy.loginfo(f"Average FPS   : {round(mean(self.fps_window), 2)}")  # NOQA
+        rospy.loginfo(f"Average inferences per second   : {round(mean(self.fps_window), 2)}")  # NOQA
 
 
 def main():
