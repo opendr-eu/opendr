@@ -167,9 +167,9 @@ class WhisperLearner(Learner):
     def eval(self, dataset: Dataset, steps: int = None):
         """Evaluate the model on the dataset.
 
-        :dataset: TODO
         :steps: TODO
         :returns: TODO
+        :dataset: TODO
 
         """
         pass
@@ -181,6 +181,9 @@ class WhisperLearner(Learner):
         :returns: TODO
 
         """
+        transcription = self.model.transcribe(batch)
+        
+        return transcription
 
     def optimize(self):
         return
