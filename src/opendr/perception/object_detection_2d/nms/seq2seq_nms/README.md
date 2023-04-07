@@ -1,7 +1,9 @@
 Seq2Seq-NMS
 ======
 
-This folder contains an implementation of Seq2Seq-NMS [[1]](#seq2seq_nms-1).
+This folder contains an implementation of the Seq2Seq-NMS algorithm, for neural Non-Maximum Suppression in visual person detection. If one uses any part of this implementation in his/her work, he/she is kindly asked to cite the following paper:
+
+- C. Symeonidis, I. Mademlis, I. Pitas, N. Nikolaidis, "Neural Attention-driven Non-Maximum Suppression for Person Detection", IEEE Transactions on Image Processing, 2023 (accepted for publication).»
 
 TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task on the validation sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
 |  **Pretrained Model**  | **Dataset** | **Detector** | **Type of Appearance-based Features** | **Pre-processing IoU Threshold** | **AP@0.5 on validation set** | **AP@0.5 on test set** |
@@ -14,4 +16,3 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 \* The minival set was used as validation set.<br>
 \*\* The minitest set was used as test set.
 
-<a name="seq2seq_nms-1" href="https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275">[1]</a> Neural Attention-driven Non-Maximum Suppression for Person Detection, [TechRxiv](https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275).
