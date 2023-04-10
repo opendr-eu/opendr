@@ -5,7 +5,7 @@ The *seq2seq-nms* module contains the *Seq2SeqNMSLearner* class, which inherits 
 ### Class Seq2SeqNMSLearner
 Bases: `engine.learners.Learner`
 
-It can be used to perform single-class non-maximum suppression (NMS) on images (inference) as well as training new seq2seq-nms models. The implementation is based on [[1]](#seq2seq_nms-1). The method is set-up for performing NMS on the person-detection task, using the implemention of the [SSD](/docs/reference/object-detection-2d-ssd.md) detector. The Seq2Seq-NMS method can also be employed for performing single-class NMS, in any class other than human/pedestrian class. In that case the method needs to be trained from scratch. Finally, a pretrained-model can be employed for evaluation or inference on the same class that it was trained with, using RoIs from a different detector than the one used in the training. In that case, we advise to fine-tune the Seq2Seq-nms pretrained model using RoIs from the detector, deployed in the inference/evaluation of the method, in order to achieve the highest possible performance.
+It can be used to perform single-class non-maximum suppression (NMS) on images (inference) as well as training new seq2seq-nms models. The implementation is based on [1]. The method is set-up for performing NMS on the person-detection task, using the implemention of the [SSD](/docs/reference/object-detection-2d-ssd.md) detector. The Seq2Seq-NMS method can also be employed for performing single-class NMS, in any class other than human/pedestrian class. In that case the method needs to be trained from scratch. Finally, a pretrained-model can be employed for evaluation or inference on the same class that it was trained with, using RoIs from a different detector than the one used in the training. In that case, we advise to fine-tune the Seq2Seq-nms pretrained model using RoIs from the detector, deployed in the inference/evaluation of the method, in order to achieve the highest possible performance.
 
 The [Seq2SeqNMSLearner](/src/opendr/perception/object_detection_2d/nms/seq2seq_nms/seq2seq_nms_learner.py) class has the following
 public methods:
@@ -302,4 +302,4 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 
 
 #### References
-<a name="seq2seq_nms-1" href="https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275">[1]</a> Neural Attention-driven Non-Maximum Suppression for Person Detection, [TechRxiv](https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275).
+[1] C. Symeonidis, I. Mademlis, I. Pitas, N. Nikolaidis, "Neural Attention-driven Non-Maximum Suppression for Person Detection", IEEE Transactions on Image Processing, 2023 (accepted for publication).
