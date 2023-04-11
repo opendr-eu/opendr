@@ -32,7 +32,7 @@ from opendr.perception.fall_detection import FallDetectorLearner
 
 class FallDetectionNode:
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", input_pose_topic="/opendr/poses",
+    def __init__(self, input_rgb_image_topic=None, input_pose_topic="/opendr/poses",
                  output_rgb_image_topic="/opendr/image_fallen_annotated", detections_topic="/opendr/fallen",
                  device="cuda", num_refinement_stages=2, use_stride=False, half_precision=False):
         """
@@ -76,10 +76,7 @@ class FallDetectionNode:
             self.image_publisher = None
             self.pose_estimator = None
 
-        if input_pose_topic is not None:
-            self.input_pose_topic = input_pose_topic
-        else:
-            self.input_pose_topic = None
+        self.input_pose_topic = input_pose_topic
 
         self.fall_publisher = rospy.Publisher(detections_topic, Detection2D, queue_size=1)
 
