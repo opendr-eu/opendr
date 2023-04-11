@@ -95,7 +95,7 @@ class FallDetectionNode:
             self.input_pose_topic = input_pose_topic
 
             if performance_topic is not None:
-                self.fall_performance_publisher = rospy.Publisher(performance_topic + "/wave", Float32, queue_size=1)
+                self.fall_performance_publisher = rospy.Publisher(performance_topic + "/fallen", Float32, queue_size=1)
             else:
                 self.fall_performance_publisher = None
         else:
