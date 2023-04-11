@@ -55,11 +55,11 @@ class WaveDetectionNode(Node):
         :param detections_topic: Topic to which we are publishing the annotations (if None, no wave detection message
         is published)
         :type detections_topic:  str
-        :param device: device on which we are running inference ('cpu' or 'cuda')
-        :type device: str
         :param performance_topic: Topic to which we are publishing performance information (if None, no performance
         message is published)
         :type performance_topic:  str
+        :param device: device on which we are running inference ('cpu' or 'cuda')
+        :type device: str
         :param num_refinement_stages: Specifies the number of pose estimation refinement stages are added on the
         model's head, including the initial stage. Can be 0, 1 or 2, with more stages meaning slower and more accurate
         inference
