@@ -16,10 +16,12 @@
 import cv2
 import argparse
 import torch
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
 
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
 from opendr_bridge import ROS2Bridge
@@ -34,7 +36,7 @@ from opendr.perception.fall_detection import FallDetectorLearner
 class FallDetectionNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_fallen_annotated",
-                 detections_topic="/opendr/fallen", device="cuda",
+                 detections_topic="/opendr/fallen", performance_topic=None, device="cuda",
                  num_refinement_stages=2, use_stride=False, half_precision=False):
         """
         Creates a ROS2 Node for rule-based fall detection based on Lightweight OpenPose.
@@ -46,6 +48,9 @@ class FallDetectionNode(Node):
         :param detections_topic: Topic to which we are publishing the annotations (if None, no pose detection message
         is published)
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param num_refinement_stages: Specifies the number of pose estimation refinement stages are added on the
@@ -73,6 +78,11 @@ class FallDetectionNode(Node):
         else:
             self.fall_publisher = None
 
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         self.bridge = ROS2Bridge()
 
         # Initialize the pose estimation learner
@@ -93,24 +103,31 @@ class FallDetectionNode(Node):
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run fall detection
         detections = self.fall_detector.infer(image)
 
-        # Get an OpenCV image back
-        image = image.opencv()
-
         bboxes = BoundingBoxList([])
         fallen_pose_id = 0
         for detection in detections:
             fallen = detection[0].data
-            pose = detection[1]
-            x, y, w, h = get_bbox(pose)
 
             if fallen == 1:
+                pose = detection[1]
+                x, y, w, h = get_bbox(pose)
+                if self.performance_publisher:
+                    end_time = perf_counter()
+                    fps = 1.0 / (end_time - start_time)  # NOQA
+                    fps_msg = Float32()
+                    fps_msg.data = fps
+                    self.performance_publisher.publish(fps_msg)
                 if self.image_publisher is not None:
+                    # Get an OpenCV image back
+                    image = image.opencv()
                     # Paint person bounding box inferred from pose
                     color = (0, 0, 255)
                     cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
@@ -142,6 +159,8 @@ def main(args=None):
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/fallen")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
@@ -174,6 +193,7 @@ def main(args=None):
                                             input_rgb_image_topic=args.input_rgb_image_topic,
                                             output_rgb_image_topic=args.output_rgb_image_topic,
                                             detections_topic=args.detections_topic,
+                                            performance_topic=args.performance_topic,
                                             num_refinement_stages=stages, use_stride=stride, half_precision=half_prec)
 
     rclpy.spin(fall_detection_node)

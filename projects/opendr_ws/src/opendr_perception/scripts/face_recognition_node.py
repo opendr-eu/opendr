@@ -16,9 +16,10 @@
 import argparse
 import cv2
 import torch
+from time import perf_counter
 
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
@@ -34,7 +35,7 @@ class FaceRecognitionNode:
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/image_face_reco_annotated",
                  detections_topic="/opendr/face_recognition", detections_id_topic="/opendr/face_recognition_id",
-                 database_path="./database", device="cuda", backbone="mobilefacenet"):
+                 performance_topic=None, database_path="./database", device="cuda", backbone="mobilefacenet"):
         """
         Creates a ROS Node for face recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -48,6 +49,9 @@ class FaceRecognitionNode:
         :param detections_id_topic: Topic to which we are publishing the ID of the recognized person (if None,
         no ID message is published)
         :type detections_id_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param backbone: Backbone network
@@ -71,6 +75,11 @@ class FaceRecognitionNode:
             self.face_id_publisher = rospy.Publisher(detections_id_topic, String, queue_size=1)
         else:
             self.face_id_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROSBridge()
 
@@ -101,6 +110,8 @@ class FaceRecognitionNode:
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
         # Get an OpenCV image back
@@ -116,6 +127,13 @@ class FaceRecognitionNode:
                     (startX, startY, endX, endY) = int(box[0]), int(box[1]), int(box[2]), int(box[3])
                     frame = image[startY:endY, startX:endX]
                     result = self.recognizer.infer(frame)
+
+                    if self.performance_publisher:
+                        end_time = perf_counter()
+                        fps = 1.0 / (end_time - start_time)  # NOQA
+                        fps_msg = Float32()
+                        fps_msg.data = fps
+                        self.performance_publisher.publish(fps_msg)
 
                     # Publish face information and ID
                     if self.face_publisher is not None:
@@ -152,6 +170,8 @@ def main():
     parser.add_argument("-id", "--detections_id_topic", help="Topic name for detection ID messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/face_recognition_id")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone", help="Backbone network, defaults to mobilefacenet",
@@ -179,7 +199,8 @@ def main():
                                                 input_rgb_image_topic=args.input_rgb_image_topic,
                                                 output_rgb_image_topic=args.output_rgb_image_topic,
                                                 detections_topic=args.detections_topic,
-                                                detections_id_topic=args.detections_id_topic)
+                                                detections_id_topic=args.detections_id_topic,
+                                                performance_topic=args.performance_topic)
     face_recognition_node.listen()
 
 

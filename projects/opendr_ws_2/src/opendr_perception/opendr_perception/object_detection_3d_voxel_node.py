@@ -16,8 +16,10 @@
 import torch
 import argparse
 import os
+from time import perf_counter
 import rclpy
 from rclpy.node import Node
+from std_msgs.msg import Float32
 from vision_msgs.msg import Detection3DArray
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROS2Bridge
@@ -28,7 +30,7 @@ class ObjectDetection3DVoxelNode(Node):
     def __init__(
             self,
             input_point_cloud_topic="/opendr/dataset_point_cloud",
-            detections_topic="/opendr/objects3d",
+            detections_topic="/opendr/objects3d", performance_topic=None,
             device="cuda:0",
             model_name="tanet_car_xyres_16",
             model_config_path=os.path.join(
@@ -44,6 +46,9 @@ class ObjectDetection3DVoxelNode(Node):
         :type input_point_cloud_topic: str
         :param detections_topic: Topic to which we are publishing the annotations
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model_name: the pretrained model to download or a trained model in temp_dir
@@ -71,6 +76,11 @@ class ObjectDetection3DVoxelNode(Node):
             Detection3DArray, detections_topic, 1
         )
 
+        if performance_topic is not None:
+            self.performance_publisher = self.create_subscription(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         self.create_subscription(ROS_PointCloud, input_point_cloud_topic, self.callback, 1)
 
         self.get_logger().info("Object Detection 3D Voxel Node initialized.")
@@ -81,10 +91,18 @@ class ObjectDetection3DVoxelNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         point_cloud = self.bridge.from_ros_point_cloud(data)
         detection_boxes = self.learner.infer(point_cloud)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         # Convert detected boxes to ROS type and publish
         ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
@@ -101,6 +119,8 @@ def main(args=None):
     parser.add_argument("-d", "--detections_topic",
                         help="Output detections topic",
                         type=str, default="/opendr/objects3d")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
@@ -137,6 +157,7 @@ def main(args=None):
         input_point_cloud_topic=args.input_point_cloud_topic,
         temp_dir=args.temp_dir,
         detections_topic=args.detections_topic,
+        performance_topic=args.performance_topic
     )
 
     rclpy.spin(voxel_node)

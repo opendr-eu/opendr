@@ -17,8 +17,10 @@ import argparse
 import numpy as np
 import torch
 import cv2
+from time import perf_counter
 
 import rospy
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
 
@@ -29,7 +31,7 @@ from opendr.perception.binary_high_resolution import BinaryHighResolutionLearner
 class BinaryHighResolutionNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw", output_heatmap_topic="/opendr/binary_hr_heatmap",
-                 output_rgb_image_topic="/opendr/binary_hr_heatmap_visualization",
+                 output_rgb_image_topic="/opendr/binary_hr_heatmap_visualization", performance_topic=None,
                  model_path=None, architecture="VGG_720p", device="cuda"):
         """
         Create a ROS Node for binary high resolution classification with Binary High Resolution.
@@ -40,6 +42,9 @@ class BinaryHighResolutionNode:
         :param output_rgb_image_topic: Topic to which we are publishing the heatmap image blended with the
         input image for visualization purposes
         :type output_rgb_image_topic: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param model_path: The path to the directory of a trained model
         :type model_path: str
         :param architecture: Architecture used on trained model (`VGG_720p` or `VGG_1080p`)
@@ -58,6 +63,11 @@ class BinaryHighResolutionNode:
             self.visualization_publisher = rospy.Publisher(output_rgb_image_topic, ROS_Image, queue_size=1)
         else:
             self.visualization_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROSBridge()
 
@@ -94,11 +104,20 @@ class BinaryHighResolutionNode:
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
         image = image.convert("channels_last")
         # Run learner to retrieve the OpenDR heatmap
         heatmap = self.learner.infer(image)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         # Publish heatmap in the form of an image
         if self.heatmap_publisher is not None:
@@ -126,6 +145,8 @@ def main():
                                                                 "blended with the input image for visualization purposes",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/binary_hr_heatmap_visualization")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("-m", "--model_path", help="Path to the directory of the trained model",
                         type=str, default="test_model")
     parser.add_argument("-a", "--architecture", help="Architecture used for the trained model, either \"VGG_720p\" or "
@@ -152,6 +173,7 @@ def main():
                                               input_rgb_image_topic=args.input_rgb_image_topic,
                                               output_heatmap_topic=args.output_heatmap_topic,
                                               output_rgb_image_topic=args.output_rgb_image_topic,
+                                              performance_topic=args.performance_topic,
                                               model_path=args.model_path,
                                               architecture=args.architecture)
     binary_hr_node.listen()
