@@ -34,7 +34,7 @@ from opendr.perception.pose_estimation import LightweightOpenPoseLearner
 
 class WaveDetectionNode:
 
-    def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
+    def __init__(self, input_rgb_image_topic=None,
                  input_pose_topic="/opendr/poses",
                  output_rgb_image_topic="/opendr/image_pose_annotated",
                  detections_topic="/opendr/wave",
