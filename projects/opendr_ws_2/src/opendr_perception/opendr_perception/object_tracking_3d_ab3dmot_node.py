@@ -16,10 +16,11 @@
 import torch
 import argparse
 import os
+from time import perf_counter
 import rclpy
 from rclpy.node import Node
 from vision_msgs.msg import Detection3DArray
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int32MultiArray, Float32
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROS2Bridge
 from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner
@@ -33,6 +34,7 @@ class ObjectTracking3DAb3dmotNode(Node):
             input_point_cloud_topic="/opendr/dataset_point_cloud",
             output_detection3d_topic="/opendr/detection3d",
             output_tracking3d_id_topic="/opendr/tracking3d_id",
+            performance_topic=None,
             device="cuda:0",
     ):
         """
@@ -45,6 +47,9 @@ class ObjectTracking3DAb3dmotNode(Node):
         :type output_detection3d_topic:  str
         :param output_tracking3d_id_topic: Topic to which we are publishing the tracking ids
         :type output_tracking3d_id_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -68,6 +73,11 @@ class ObjectTracking3DAb3dmotNode(Node):
                 Int32MultiArray, output_tracking3d_id_topic, 1
             )
 
+        if performance_topic is not None:
+            self.performance_publisher = self.create_subscription(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         self.create_subscription(ROS_PointCloud, input_point_cloud_topic, self.callback, 1)
 
         self.get_logger().info("Object Tracking 3D Ab3dmot Node initialized.")
@@ -78,19 +88,27 @@ class ObjectTracking3DAb3dmotNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         point_cloud = self.bridge.from_ros_point_cloud(data)
         detection_boxes = self.detector.infer(point_cloud)
+        if self.tracking_id_publisher or self.performance_publisher:
+            tracking_boxes = self.learner.infer(detection_boxes)
 
-        # Convert detected boxes to ROS type and publish
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
+
         if self.detection_publisher is not None:
-            ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes)
-            self.detection_publisher.publish(ros_boxes)
+            # Convert detected boxes to ROS type and publish
+            self.detection_publisher.publish(self.bridge.to_ros_boxes_3d(detection_boxes))
             self.get_logger().info("Published " + str(len(detection_boxes)) + " detection boxes")
 
         if self.tracking_id_publisher is not None:
-            tracking_boxes = self.learner.infer(detection_boxes)
             ids = [tracking_box.id for tracking_box in tracking_boxes]
             ros_ids = Int32MultiArray()
             ros_ids.data = ids
@@ -111,6 +129,8 @@ def main(args=None):
     parser.add_argument("-t", "--tracking3d_id_topic",
                         help="Output tracking ids topic with the same element count as in output_detection_topic",
                         type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects_tracking_id")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
@@ -163,6 +183,7 @@ def main(args=None):
         input_point_cloud_topic=input_point_cloud_topic,
         output_detection3d_topic=output_detection3d_topic,
         output_tracking3d_id_topic=output_tracking3d_id_topic,
+        performance_topic=args.performance_topic
     )
 
     rclpy.spin(ab3dmot_node)
