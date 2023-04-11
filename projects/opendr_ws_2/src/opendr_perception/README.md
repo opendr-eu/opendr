@@ -147,6 +147,7 @@ Note that when providing an image topic the node has significantly worse perform
    - `-h or --help`: show a help message and exit
    - `-ip or --input_pose_topic INPUT_POSE_TOPIC`: topic name for input pose, `None` to stop the node from running detections on pose messages (default=`/opendr/poses`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/fallen` (default=`None`, disabled)
 
 3. Detections are published on the `detections_topic`
 
@@ -165,6 +166,7 @@ Note that when providing an image topic the node has significantly worse perform
    - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_fallen_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/image` (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
@@ -207,6 +209,7 @@ Note that when providing an image topic the node has significantly worse perform
    - `-h or --help`: show a help message and exit
    - `-ip or --input_pose_topic INPUT_POSE_TOPIC`: topic name for input pose, `None` to stop the node from running detections on pose messages (default=`/opendr/poses`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/wave`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/wave` (default=`None`, disabled)
 
 3. Detections are published on the `detections_topic`
 
@@ -225,6 +228,7 @@ Note that when providing an image topic the node has significantly worse perform
    - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_wave_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/wave`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/image` (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
