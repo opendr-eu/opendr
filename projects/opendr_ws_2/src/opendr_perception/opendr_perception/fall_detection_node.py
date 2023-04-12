@@ -87,7 +87,7 @@ class FallDetectionNode(Node):
             self.pose_estimator.load("openpose_default")
 
             if performance_topic is not None:
-                self.image_performance_publisher = self.create_publisher(Float32, performance_topic + "/image", queue_size=1)
+                self.image_performance_publisher = self.create_publisher(Float32, performance_topic + "/image", 1)
             else:
                 self.image_performance_publisher = None
         else:
@@ -99,7 +99,7 @@ class FallDetectionNode(Node):
             self.pose_subscriber = self.create_subscription(OpenDRPose2D, input_pose_topic, self.pose_callback, 1)
 
             if performance_topic is not None:
-                self.fall_performance_publisher = self.create_publisher(Float32, performance_topic + "/fallen", queue_size=1)
+                self.fall_performance_publisher = self.create_publisher(Float32, performance_topic + "/fallen", 1)
             else:
                 self.fall_performance_publisher = None
         else:
