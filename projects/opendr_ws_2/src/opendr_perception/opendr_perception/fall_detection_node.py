@@ -176,6 +176,14 @@ class FallDetectionNode(Node):
                                                                            name=fallen, score=pose.confidence)))
 
             if fallen == 1:
+                pose = detection[1]
+                x, y, w, h = get_bbox(pose)
+                if self.performance_publisher:
+                    end_time = perf_counter()
+                    fps = 1.0 / (end_time - start_time)  # NOQA
+                    fps_msg = Float32()
+                    fps_msg.data = fps
+                    self.performance_publisher.publish(fps_msg)
                 if self.image_publisher is not None:
                     if type(image) != ndarray:
                         # Get an OpenCV image back

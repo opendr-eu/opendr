@@ -16,11 +16,12 @@
 
 import argparse
 import torch
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
 from vision_msgs.msg import Classification2D
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Float32
 
 from opendr_bridge import ROS2Bridge
 from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner, AttentionNeuralBagOfFeatureLearner
@@ -29,13 +30,16 @@ from opendr.perception.heart_anomaly_detection import GatedRecurrentUnitLearner,
 class HeartAnomalyNode(Node):
 
     def __init__(self, input_ecg_topic="/ecg/ecg", output_heart_anomaly_topic="/opendr/heart_anomaly",
-                 device="cuda", model="anbof"):
+                 performance_topic=None, device="cuda", model="anbof"):
         """
         Creates a ROS2 Node for heart anomaly (atrial fibrillation) detection from ecg data
         :param input_ecg_topic: Topic from which we are reading the input array data
         :type input_ecg_topic: str
         :param output_heart_anomaly_topic: Topic to which we are publishing the predicted class
         :type output_heart_anomaly_topic: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model: model to use: anbof or gru
@@ -46,6 +50,11 @@ class HeartAnomalyNode(Node):
         self.publisher = self.create_publisher(Classification2D, output_heart_anomaly_topic, 1)
 
         self.subscriber = self.create_subscription(Float32MultiArray, input_ecg_topic, self.callback, 1)
+
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROS2Bridge()
 
@@ -71,11 +80,20 @@ class HeartAnomalyNode(Node):
         :param msg_data: input message
         :type msg_data: std_msgs.msg.Float32MultiArray
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert Float32MultiArray to OpenDR Timeseries
         data = self.bridge.from_rosarray_to_timeseries(msg_data, self.channels, self.series_length)
 
         # Run ecg classification
         class_pred = self.learner.infer(data)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         # Publish results
         ros_class = self.bridge.from_category_to_rosclass(class_pred, self.get_clock().now().to_msg())
@@ -90,6 +108,8 @@ def main(args=None):
                         help="listen to input ECG data on this topic")
     parser.add_argument("-o", "--output_heart_anomaly_topic", type=str, default="/opendr/heart_anomaly",
                         help="Topic name for heart anomaly detection topic")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--model", type=str, default="anbof", help="model to be used for prediction: anbof or gru",
                         choices=["anbof", "gru"])
     parser.add_argument("--device", type=str, default="cuda", help="Device to use (cpu, cuda)",
@@ -111,6 +131,7 @@ def main(args=None):
 
     heart_anomaly_detection_node = HeartAnomalyNode(input_ecg_topic=args.input_ecg_topic,
                                                     output_heart_anomaly_topic=args.output_heart_anomaly_topic,
+                                                    performance_topic=args.performance_topic,
                                                     model=args.model, device=device)
 
     rclpy.spin(heart_anomaly_detection_node)

@@ -16,10 +16,11 @@
 import argparse
 import torch
 import numpy as np
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROS2Bridge
@@ -38,6 +39,7 @@ class CoSkeletonActionRecognitionNode(Node):
                  pose_annotations_topic="/opendr/poses",
                  output_category_topic="/opendr/continual_skeleton_recognized_action",
                  output_category_description_topic="/opendr/continual_skeleton_recognized_action_description",
+                 performance_topic=None,
                  device="cuda", model='costgcn'):
         """
         Creates a ROS2 Node for continual skeleton-based action recognition.
@@ -55,6 +57,9 @@ class CoSkeletonActionRecognitionNode(Node):
         :param output_category_description_topic: Topic to which we are publishing the description of the recognized
         action (if None, we are not publishing the description)
         :type output_category_description_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model:  model to use for skeleton-based action recognition.
@@ -86,6 +91,11 @@ class CoSkeletonActionRecognitionNode(Node):
         else:
             self.string_publisher = None
 
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         self.bridge = ROS2Bridge()
 
         # Initialize the pose estimation
@@ -112,6 +122,8 @@ class CoSkeletonActionRecognitionNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
 
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
@@ -121,6 +133,22 @@ class CoSkeletonActionRecognitionNode(Node):
         if len(poses) > 2:
             # select two poses with the highest energy
             poses = _select_2_poses(poses)
+
+        num_frames = 1
+        poses_list = [poses]
+        skeleton_seq = _pose2numpy(num_frames, poses_list)
+
+        # Run action recognition
+        result = self.action_classifier.infer(skeleton_seq)  # input_size: BxCxTxVxS
+        category = result[0]
+        category.confidence = float(category.confidence.max())
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         #  Publish detections in ROS message
         if self.pose_publisher is not None:
@@ -136,15 +164,6 @@ class CoSkeletonActionRecognitionNode(Node):
                 draw(image, pose)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
-
-        num_frames = 1
-        poses_list = [poses]
-        skeleton_seq = _pose2numpy(num_frames, poses_list)
-
-        # Run action recognition
-        result = self.action_classifier.infer(skeleton_seq)  # input_size: BxCxTxVxS
-        category = result[0]
-        category.confidence = float(category.confidence.max())
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))
@@ -196,6 +215,8 @@ def main(args=None):
                                                                           "recognized action category",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/continual_skeleton_recognized_action_description")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model to use, either \"costgcn\"",
@@ -222,6 +243,7 @@ def main(args=None):
                                         pose_annotations_topic=args.pose_annotations_topic,
                                         output_category_topic=args.output_category_topic,
                                         output_category_description_topic=args.output_category_description_topic,
+                                        performance_topic=args.performance_topic,
                                         device=device,
                                         model=args.model)
 

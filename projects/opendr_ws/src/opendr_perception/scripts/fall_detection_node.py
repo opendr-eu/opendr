@@ -188,6 +188,7 @@ class FallDetectionNode:
                     if type(image) != ndarray:
                         # Get an OpenCV image back
                         image = image.opencv()
+
                     # Paint person bounding box inferred from pose
                     color = (0, 0, 255)
                     cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
