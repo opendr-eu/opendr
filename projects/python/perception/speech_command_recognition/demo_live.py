@@ -1,19 +1,31 @@
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import argparse
-import numpy as np
-import sounddevice as sd
 import threading
 import time
 from typing import Callable
-import os
-import torch
-import io
-import urllib.request
-from tqdm import tqdm
-import hashlib
-import warnings
-from pathlib import Path
+from logging import getLogger
+
+import numpy as np
+import sounddevice as sd
 
 from opendr.perception.speech_recognition import WhisperLearner
+
+
+logger = getLogger(__name__)
 
 
 def record_audio(duration: int, sample_rate: int) -> np.ndarray:
@@ -31,20 +43,25 @@ def record_audio(duration: int, sample_rate: int) -> np.ndarray:
     return audio_data
 
 
-def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable):
+def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable, details: bool):
     print("Transcribing...")
-    start = time.time()
     output = transcribe_function(audio_data)
-    end = time.time()
-    transcript = output["text"]
 
-    print("Transcription: ", transcript)
-    print(f"Inference time: {end - start:.2f} s")
+    if not details:
+        output = output["text"]
 
-def main(duration, sample_rate, interval, model_path, model_name, load_path, device):
+    print("Transcription: ", output)
+
+
+def main(duration, sample_rate, interval, model_path, model_name, load_path, device, details):
     # Initialize the WhisperLearner class and load the model
     learner = WhisperLearner()
-    learner.load(model_name=model_name, download_root=model_path, load_path=load_path, device=device)
+    learner.load(
+        model_name=model_name,
+        download_root=model_path,
+        load_path=load_path,
+        device=device,
+    )
 
     while True:
         # Start a new thread for recording audio
@@ -56,7 +73,7 @@ def main(duration, sample_rate, interval, model_path, model_name, load_path, dev
         # Start a new thread for transcribing the recorded audio
         transcribe_thread = threading.Thread(
             target=transcribe_audio,
-            args=(record_audio(duration, sample_rate), learner.infer),
+            args=(record_audio(duration, sample_rate), learner.infer, details),
         )
         transcribe_thread.start()
 
@@ -115,14 +132,29 @@ if __name__ == "__main__":
         help="Download path for the pretrained Whisper model.",
     )
     parser.add_argument(
-        "-m",
         "--model_name",
         type=str,
         required=False,
         help="Name of the pretrained Whisper model.",
     )
+    parser.add_argument(
+        "--details",
+        type=bool,
+        required=False,
+        default=False,
+        help="Return the command with side information",
+    )
+
 
     args = parser.parse_args()
 
-    main(args.duration, args.sample_rate, args.interval, model_path=args.download_path, model_name=args.model_name, load_path=args.load_path, device=args.device)
-
+    main(
+        args.duration,
+        args.sample_rate,
+        args.interval,
+        model_path=args.download_path,
+        model_name=args.model_name,
+        load_path=args.load_path,
+        device=args.device,
+        details=args.details,
+    )

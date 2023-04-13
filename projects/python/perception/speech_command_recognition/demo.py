@@ -19,7 +19,7 @@ import torch
 import argparse
 import librosa
 from opendr.engine.data import Timeseries
-from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechNetsLearner, QuadraticSelfOnnLearner
+from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechNetsLearner, QuadraticSelfOnnLearner, WhisperLearner
 
 
 if __name__ == '__main__':
@@ -31,12 +31,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('input', type=str, help="Path to the input file")
-    parser.add_argument('--model', choices=["matchboxnet", "edgespeechnets", "quad_selfonn"], required=True,
+    parser.add_argument('--input', type=str, help="Path to the input file")
+    parser.add_argument('--model', choices=["matchboxnet", "edgespeechnets", "quad_selfonn", "whisper"], required=True,
                         help='model to be used for prediction: matchboxnet or quad_selfonn')
     parser.add_argument('--model_path', type=str,
                         help='path to the model files, if not given, the pretrained model will be downloaded')
     parser.add_argument('--n_class', type=int, help='Number of classes', default=20)
+    parser.add_argument('--model_name', type=str, help="Specific name for Whisper model", required=False, default="tiny.en")
 
     args = parser.parse_args()
 
@@ -50,11 +51,17 @@ if __name__ == '__main__':
     elif args.model == "quad_selfonn":
         learner = QuadraticSelfOnnLearner(output_classes_n=args.n_class, device=device)
         load_path = './QuadraticSelfOnn'
+    elif args.model == "whisper":
+        learner = WhisperLearner(fp16=False)
 
     # Load or download the model
     if args.model_path is None:
-        learner.download_pretrained(path='.')
-        learner.load(load_path)
+        if args.model == "whisper":
+            learner.download(model_name=args.model_name, path=".")
+            learner.load(load_path=f"./{args.model_name}.pt")
+        else:
+            learner.download_pretrained(path='.')
+            learner.load(load_path)
     else:
         learner.load(args.model_path)
 
@@ -62,4 +69,8 @@ if __name__ == '__main__':
     audio_input, _ = librosa.load(args.input, sr=learner.sample_rate)
     data = Timeseries(np.expand_dims(audio_input, axis=0))
     result = learner.infer(data)
-    print(result)
+
+    if args.model == "whisper":
+        print(result.text)
+    else:
+        print(result)

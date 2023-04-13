@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Union, Iterable, Optional
+from typing import Union, Iterable, Optional, List, Dict
 import os
 import io
 import hashlib
@@ -21,6 +21,7 @@ from logging import getLogger
 import warnings
 import urllib
 
+import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 
@@ -30,6 +31,7 @@ import whisper
 from whisper import _MODELS as MODELS_URL
 from whisper.model import ModelDimensions, Whisper
 
+from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
 from opendr.engine.datasets import Dataset
 
@@ -39,8 +41,13 @@ logger = getLogger(__name__)
 _MODEL_NAMES = ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium', 'large']
 
 class WhisperLearner(Learner):
-    def __init__(self):
-        return
+    def __init__(
+            self,
+            fp16: bool = True,
+        ):
+        self.sample_rate = 16000
+        self.fp16 = fp16 
+
 
     def _load_model_hparams(self):
         return
@@ -89,16 +96,17 @@ class WhisperLearner(Learner):
         """
         pass
 
-    def load(self, load_path: Union[str, Path], model_name: str, device: Optional[Union[str, torch.device]] = None, download_root: Union[str, Path] = None, in_memory: bool = False):
+    def load(self, load_path: Union[str, Path] = None, model_name: str = None, device: Optional[Union[str, torch.device]] = None, download_root: Union[str, Path] = "./", in_memory: bool = False):
         """Load model.
 
         :path: TODO
         :returns: TODO
 
         """
+        assert load_path is not None or model_name is not None, "Either load_path or model_name must be provided"
         
         if load_path is None:
-            self.download(models_name=[model_name], path=download_root)
+            self.download(model_name=model_name, path=download_root)
 
             url = MODELS_URL[model_name]
             load_path = os.path.join(download_root, os.path.basename(url))
@@ -111,11 +119,7 @@ class WhisperLearner(Learner):
 
 
     @staticmethod
-    def download(models_name: Iterable[str], path: Union[str, Path]):
-
-        # TODO: Iterate over model name.
-        # Temp:
-        model_name = list(models_name)[0]
+    def download(model_name: str, path: Union[str, Path]):
 
         url = MODELS_URL[model_name]
         os.makedirs(path, exist_ok=True)
@@ -174,16 +178,30 @@ class WhisperLearner(Learner):
         """
         pass
 
-    def infer(self, batch: Union[torch.Tensor]):
-        """Run inference on a batch of data
+    def infer(self, batch: Union[Timeseries, np.array, torch.Tensor], temperature: float = 0.0, device: Union[str, torch.device] = "cpu", **decode_options) -> Dict:
+        """Run inference on one sample of audio
 
-        :batch: TODO
+        :batch: 1-D array or 2-D array with last dimension is 1.
         :returns: TODO
 
         """
-        transcription = self.model.transcribe(batch)
-        
-        return transcription
+        if isinstance(batch, Timeseries):
+            data = batch.numpy().reshape(-1)
+        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
+            data = batch
+        else:
+            raise TypeError("batch must be a Timeseries, torch.Tensor or np.ndarray")
+
+        data = whisper.pad_or_trim(data)       
+        mel = whisper.log_mel_spectrogram(data, device=device)
+
+        decode_options["language"] = "en"
+        decode_options["without_timestamps"] = False
+        decode_options["fp16"] = self.fp16
+        options = whisper.DecodingOptions(**decode_options, temperature=temperature)
+        output = whisper.decode(model=self.model, mel=mel, options=options)
+
+        return output
 
     def optimize(self):
         return
