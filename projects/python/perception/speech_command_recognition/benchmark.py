@@ -16,6 +16,7 @@
 import argparse
 from typing import Optional, Union, Tuple, List
 import os
+import time
 from functools import partial
 
 import numpy as np
@@ -42,15 +43,6 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-
-def matching_percentage(hypothesis: List[str], reference: List[str]) -> float:
-    if len(hypothesis) != len(reference):
-        raise ValueError("Both lists must have the same length.")
-
-    matching_count = sum(h == r for h, r in zip(hypothesis, reference))
-    total_count = len(hypothesis)
-
-    return matching_count / total_count
 
 
 class SubsetSC(SPEECHCOMMANDS):
@@ -91,57 +83,14 @@ class SubsetSC(SPEECHCOMMANDS):
         audio, sample_rate, label, _, _ = super().__getitem__(i)
         assert sample_rate == 16000
 
+        sample = whisper.pad_or_trim(audio.flatten().to(self.device))
         if self.preprocess:
-            audio = whisper.pad_or_trim(audio.flatten().to(self.device))
             sample = whisper.log_mel_spectrogram(audio)
-        else:
-            sample = audio
 
         return (sample, label)
 
-    @staticmethod
-    def get_keywords_list():
-        return [
-            "backward",
-            "bed",
-            "bird",
-            "cat",
-            "dog",
-            "down",
-            "eight",
-            "five",
-            "follow",
-            "forward",
-            "four",
-            "go",
-            "happy",
-            "house",
-            "learn",
-            "left",
-            "marvin",
-            "nine",
-            "no",
-            "off",
-            "on",
-            "one",
-            "right",
-            "seven",
-            "sheila",
-            "six",
-            "stop",
-            "three",
-            "tree",
-            "two",
-            "up",
-            "visual",
-            "wow",
-            "yes",
-            "zero",
-        ]
-
 
 def main(args):
-    assert args.load_path is not None or args.model_name is not None, "Must specify either --load-path or --model-name."
 
     test_set = SubsetSC(
         root=args.root,
@@ -151,68 +100,11 @@ def main(args):
         preprocess=args.preprocess,
         device=args.device,
     )
-    batch_size = args.batch_size
 
-    loader = DataLoader(
-        test_set,
-        batch_size=batch_size,
-        shuffle=False,
-        drop_last=False,
-    )
+    learner = WhisperLearner(model_name=args.model_name, normalized_text=True, fp16=args.fp16, device=args.device)
 
-    model_name = args.model_name
-    learner = WhisperLearner()
-    learner.load(load_path=args.load_path, model_name=model_name, device=args.device)
-
-    print(
-        f"Model is {'multilingual' if learner.model.is_multilingual else 'English-only'} "
-        f"and has {sum(np.prod(p.shape) for p in learner.model.parameters()):,} parameters."
-    )
-
-    if args.preprocess:
-        # predict without timestamps for short-form transcription
-        options = whisper.DecodingOptions(language="en", without_timestamps=True, fp16=args.fp16)
-        infer_fn = partial(learner.model.decode, options=options) 
-    else:
-        infer_fn = partial(learner.infer, device=args.device, fp16=args.fp16)
-
-
-    hypotheses = []
-    references = []
-
-    for samples, texts in tqdm(loader):
-        results = infer_fn(samples)
-        if not isinstance(results, list):
-            hypotheses.extend([results.text])
-        else:
-            hypotheses.extend([result.text for result in results])
-        references.extend(texts)
-
-    data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
-
-    normalizer = EnglishTextNormalizer()
-    data["hypothesis_clean"] = [normalizer(text) for text in data["hypothesis"]]
-    data["reference_clean"] = [normalizer(text) for text in data["reference"]]
-
-    data.to_csv(f"data_{model_name}.csv")
-
-    # data = pd.read_csv(f"data_{args.model_name}.csv")
-    # data.fillna("", inplace=True)
-
-    keywords = [normalizer(word) for word in SubsetSC.get_keywords_list()]
-    for word in keywords:
-        data_filtered = data[data["reference_clean"].apply(lambda x: x == word)]
-
-        mp = matching_percentage(hypothesis=list(data_filtered["hypothesis_clean"]), 
-                                 reference=list(data_filtered["reference_clean"]))
-   
-        print(f"Maching percentage for '{word}': {mp * 100:.2f} % ")
-
-    wer = jiwer.wer(list(data["reference_clean"]), list(data["hypothesis_clean"]))
-    mp = matching_percentage(hypothesis=list(data["hypothesis_clean"]), 
-                             reference=list(data["reference_clean"]))
-    print(f"Maching percentage for all keywords: {mp * 100:.2f} %")
-    print(f"WER (Word error rate): {wer * 100:.2f} %")
+    learner.load()  # Auto download the model to currenct directory and load it.
+    learner.eval(dataset=test_set, batch_size=args.batch_size)
 
 
 

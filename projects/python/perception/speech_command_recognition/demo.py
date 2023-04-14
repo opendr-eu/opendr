@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # Load or download the model
     if args.model_path is None:
         if args.model == "whisper":
-            learner.download(model_name=args.model_name, path=".")
+            learner.download(path=".")
             learner.load(load_path=f"./{args.model_name}.pt")
         else:
             learner.download_pretrained(path='.')
@@ -71,6 +71,6 @@ if __name__ == '__main__':
     result = learner.infer(data)
 
     if args.model == "whisper":
-        print(result.text)
+        print(result[0]["text"])
     else:
         print(result)

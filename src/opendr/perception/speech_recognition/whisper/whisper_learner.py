@@ -1,0 +1,399 @@
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+from typing import Union, Iterable, Optional, List, Dict
+import os
+import io
+import hashlib
+from logging import getLogger
+import warnings
+import urllib
+
+import pandas as pd
+import numpy as np
+from pathlib import Path
+from tqdm import tqdm
+
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+import whisper
+from whisper import _MODELS as MODELS_URL
+from whisper.model import ModelDimensions, Whisper
+from whisper.normalizers import EnglishTextNormalizer
+from whisper.tokenizer import get_tokenizer
+
+from opendr.engine.data import Timeseries
+from opendr.engine.learners import Learner
+
+
+logger = getLogger(__name__)
+
+
+
+class WhisperLearner(Learner):
+    def __init__(
+        self,
+        model_name: str = "tiny.en",
+        language: Optional[str] = "en",
+        normalized_text: Optional[bool] = True,
+        device: str = "cpu",
+        temperature: float = 0.0,
+        sample_len: Optional[int] = None,
+        best_of: Optional[int] = None,
+        beam_size: Optional[int] = None,
+        patience: Optional[float] = None,
+        length_penalty: Optional[float] = None,
+        prompt: Optional[Union[str, List[int]]] = None,
+        prefix: Optional[Union[str, List[int]]] = None,
+        suppress_tokens: Optional[Union[str, Iterable[int]]] = "-1",
+        suppress_blank: bool = True,
+        without_timestamps: bool = False,
+        max_initial_timestamp: Optional[float] = 1.0,
+        fp16: bool = True,
+    ):
+        """
+        Initialize the MyClass object with the given parameters.
+
+        :param task: Whether to perform X->X "transcribe" or X->English "translate" (default: "transcribe").
+        :param language: Language that the audio is in; uses detected language if None (default: None).
+        :param temperature: Sampling-related option (default: 0.0).
+        :param sample_len: Maximum number of tokens to sample (default: None).
+        :param best_of: Number of independent sample trajectories, if t > 0 (default: None).
+        :param beam_size: Number of beams in beam search, if t == 0 (default: None).
+        :param patience: Patience in beam search (arxiv:2204.05424) (default: None).
+        :param length_penalty: "Alpha" in Google NMT, or None for length norm, when ranking generations (default: None).
+        :param prompt: Text or tokens to feed as the prompt or the prefix (default: None).
+        :param prefix: To prefix the current context (default: None).
+        :param suppress_tokens: List of token ids (or comma-separated token ids) to suppress (default: "-1").
+        :param suppress_blank: If True, suppress blank outputs (default: True).
+        :param without_timestamps: If True, use to sample text tokens only (default: False).
+        :param max_initial_timestamp: Maximum initial timestamp (default: 1.0).
+        :param fp16: If True, use fp16 for most of the calculation (default: True).
+        """
+        super(WhisperLearner, self).__init__()
+
+        assert model_name in whisper.available_models(), f"Model name: {model_name} is not valid; available models = {whisper.available_models()}"
+
+        self.task = "transcribe"
+        self.model_name = model_name
+        self.language = language
+        self.normalized_text = normalized_text
+        self.device = device
+        self.temperature = temperature
+        self.sample_len = sample_len
+        self.best_of = best_of
+        self.beam_size = beam_size
+        self.patience = patience
+        self.length_penalty = length_penalty
+        self.prompt = prompt
+        self.prefix = prefix
+        self.suppress_tokens = suppress_tokens
+        self.suppress_blank = suppress_blank
+        self.without_timestamps = without_timestamps
+        self.max_initial_timestamp = max_initial_timestamp
+        self.fp16 = fp16
+        self.sample_rate = 16000
+
+        if self.device == "cpu" and self.fp16:
+            logger.warning("FP16 is not supported on CPU, using FP32 instead.")
+            self.fp16 = False
+
+        self.decode_options = whisper.DecodingOptions(
+            task=self.task,
+            language=self.language,
+            temperature=self.temperature,
+            sample_len=self.sample_len,
+            best_of=self.best_of,
+            beam_size=self.beam_size,
+            patience=self.patience,
+            length_penalty=self.length_penalty,
+            prompt=self.prompt,
+            prefix=self.prefix,
+            suppress_tokens=self.suppress_tokens,
+            suppress_blank=self.suppress_blank,
+            without_timestamps=self.without_timestamps,
+            max_initial_timestamp=self.max_initial_timestamp,
+            fp16=self.fp16,
+        )
+
+        self.normalizer = None
+        if self.normalized_text:
+            self.normalizer = EnglishTextNormalizer()
+
+
+    def _load_model_weights(
+        self,
+        load_path: Union[str, Path],
+        in_memory: bool = False,
+    ):
+        """Load pretrained weight using Whisper api: whisper.load_model
+
+        :molde_name: name of pretrained model
+        :returns: TODO
+
+        """
+
+        alignment_heads = whisper._ALIGNMENT_HEADS[self.model_name]
+
+        if os.path.isfile(load_path):
+            checkpoint_file = open(load_path, "rb").read() if in_memory else load_path
+        else:
+            raise RuntimeError(
+                f"Model {load_path} not found; available models = {whisper.available_models()}"
+            )
+
+        with (
+            io.BytesIO(checkpoint_file) if in_memory else open(checkpoint_file, "rb")
+        ) as fp:
+            checkpoint = torch.load(fp, map_location=self.device)
+        del checkpoint_file
+
+        dims = ModelDimensions(**checkpoint["dims"])
+        model = Whisper(dims)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        model.set_alignment_heads(alignment_heads)
+
+        return model.to(self.device)
+
+    def save(self, path: Union[str, Path]):
+        """Save model weights to path
+        :path: Directory in which to save model weights. 
+        :returns: TODO
+        """
+        pass
+
+    def load(
+        self,
+        load_path: Union[str, Path] = None,
+        download_root: Union[str, Path] = "./",
+        in_memory: bool = False,
+    ):
+        """Load model.
+
+        :path: TODO
+        :returns: TODO
+
+        """
+
+        if load_path is None:
+            assert download_root is not None, "download_root must be specified when load_path is None"
+            self.download(path=download_root)
+
+            url = MODELS_URL[self.model_name]
+            load_path = os.path.join(download_root, os.path.basename(url))
+        else:
+            load_model_name, _ = os.path.splitext(os.path.basename(load_path))
+            assert self.model_name == load_model_name, f"Given path: {load_path} has model name does not match with the model name: {self.model_name}"
+
+        self.model = self._load_model_weights(
+            load_path=load_path,
+            in_memory=in_memory,
+        )
+
+        self.tokenizer = get_tokenizer(self.model.is_multilingual, language=self.language, task=self.task)
+
+    def download(self, path: Union[str, Path] = "."):
+
+        url = MODELS_URL[self.model_name]
+        os.makedirs(path, exist_ok=True)
+        expected_sha256 = url.split("/")[-2]
+        download_target = os.path.join(path, os.path.basename(url))
+
+        if os.path.exists(download_target) and not os.path.isfile(download_target):
+            raise RuntimeError(f"{download_target} exists and is not a regular file")
+        if os.path.isfile(download_target):
+            with open(download_target, "rb") as f:
+                model_bytes = f.read()
+            if hashlib.sha256(model_bytes).hexdigest() == expected_sha256:
+                pass
+            else:
+                warnings.warn(
+                    f"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file"
+                )
+
+        with urllib.request.urlopen(url) as source, open(
+            download_target, "wb"
+        ) as output:
+            with tqdm(
+                total=int(source.info().get("Content-Length")),
+                ncols=80,
+                unit="iB",
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as loop:
+                while True:
+                    buffer = source.read(8192)
+                    if not buffer:
+                        break
+
+                    output.write(buffer)
+                    loop.update(len(buffer))
+
+        model_bytes = open(download_target, "rb").read()
+        if hashlib.sha256(model_bytes).hexdigest() != expected_sha256:
+            raise RuntimeError(
+                "Model has been downloaded but the SHA256 checksum does not not match. Please retry loading the model."
+            )
+
+    def reset(self):
+        return
+
+    def fit(self):
+        return
+
+    def eval(self, dataset: Dataset, batch_size: int = 2):
+        """Evaluate the model on the dataset.
+
+        :steps: TODO
+        :returns: TODO
+        :dataset: a dataset should be a speech command dataset
+
+        """
+        if not self.normalizer:
+            logger.warning("English normalizer is not used. The evaluation metric may get affected.")
+
+        loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=False,
+            drop_last=False,
+        )
+
+        self.model.eval() 
+        self.model.to(self.device)
+
+        hypotheses = []
+        references = []
+        keywords_list = []
+
+        with torch.no_grad():
+            for samples, texts in tqdm(loader):
+                results = self.infer(samples)
+
+
+                if not isinstance(results, list):
+                    results = [results]
+
+                if self.normalizer:
+                    texts = [self.normalizer(text) for text in texts]
+
+                for text in texts:
+                    if text not in keywords_list:
+                        keywords_list.append(text)
+
+                hypotheses.extend([result.get("text") for result in results])
+                references.extend(texts)
+
+            data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
+
+
+        def matching_percentage(hypothesis: List[str], reference: List[str]) -> float:
+            if len(hypothesis) != len(reference):
+                raise ValueError("Both lists must have the same length.")
+
+            matching_count = sum(h == r for h, r in zip(hypothesis, reference))
+            total_count = len(hypothesis)
+
+            return matching_count / total_count
+
+        performance = {"word_accuracy": {}, "total_accuracy": None}
+        for word in keywords_list:
+            data_filtered = data[data["reference"].apply(lambda x: x == word)]
+
+            mp = matching_percentage(hypothesis=list(data_filtered["hypothesis"]), 
+                                     reference=list(data_filtered["reference"]))
+       
+            performance["word_accuracy"]["word"] = mp
+            print(f"Maching percentage for '{word}': {mp * 100:.2f} % ")
+
+        mp = matching_percentage(hypothesis=list(data["hypothesis"]), 
+                                 reference=list(data["reference"]))
+        performance["total_accuracy"] = mp
+        print(f"Maching percentage for all keywords: {mp * 100:.2f} %")
+
+        return performance
+
+
+    def infer(
+        self,
+        batch: Union[Timeseries, np.ndarray, torch.Tensor]
+    ) -> List[Dict[str, Union[str, float]]]:
+
+        """Run inference on one sample of audio
+        :batch: TODO
+        :returns: TODO
+
+        """
+        if isinstance(batch, Timeseries):
+            data = batch.numpy().reshape(-1)
+        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
+            data = batch
+        else:
+            raise TypeError("batch must be a Timeseries, torch.Tensor or np.ndarray")
+
+
+        mel = self.preprocess(data)
+
+        decode_results = self.model.decode(mel=mel, options=self.decode_options)
+        output = self.postprocess(decode_results)
+
+        return output
+
+    def preprocess(self, data: Union[np.array, torch.Tensor]) -> torch.Tensor:
+        """Preprocess audio data
+
+        :data: 1-D array or 2-D array with last dimension is 1.
+        :returns: TODO
+
+        """
+
+        data = whisper.pad_or_trim(data)
+        mel = whisper.log_mel_spectrogram(data, device=self.device)
+
+        return mel
+
+    def postprocess(
+        self,
+        decode_results: Union[whisper.DecodingResult, List[whisper.DecodingResult]],
+    ):
+        """Postprocess the decoding results
+
+        :decode_results: TODO
+        :returns: TODO
+
+        """
+        decode_results = (
+            decode_results if isinstance(decode_results, list) else [decode_results]
+        )
+        return [
+            {
+                "text": self.normalizer(self.tokenizer.decode(result.tokens)) if self.normalized_text else self.tokenizer.decode(result.tokens),
+                "tokens": result.tokens,
+                "temperature": result.temperature,
+                "avg_logprob": result.avg_logprob,
+                "compression_ratio": result.compression_ratio,
+                "no_speech_prob": result.no_speech_prob,
+                "language": result.language,
+                "language_probs": result.language_probs
+            }
+            for result in decode_results
+        ]
+
+    def optimize(self):
+        return
+
+    def _save_onnx(self):
+        return

@@ -29,7 +29,6 @@ logger = getLogger(__name__)
 
 
 def record_audio(duration: int, sample_rate: int) -> np.ndarray:
-    print("Recording...")
     audio_data = sd.rec(
         int(duration * sample_rate),
         samplerate=sample_rate,
@@ -37,7 +36,6 @@ def record_audio(duration: int, sample_rate: int) -> np.ndarray:
         dtype="float32",
     )
     sd.wait()  # Wait for the recording to finish
-    print("Recording finished.")
     audio_data = np.squeeze(audio_data, axis=-1)
 
     return audio_data
@@ -55,12 +53,10 @@ def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable, deta
 
 def main(duration, sample_rate, interval, model_path, model_name, load_path, device, details):
     # Initialize the WhisperLearner class and load the model
-    learner = WhisperLearner()
+    learner = WhisperLearner(model_name=model_name, device=device)
     learner.load(
-        model_name=model_name,
         download_root=model_path,
         load_path=load_path,
-        device=device,
     )
 
     while True:
@@ -134,7 +130,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model_name",
         type=str,
-        required=False,
+        default="tiny.en",
         help="Name of the pretrained Whisper model.",
     )
     parser.add_argument(
