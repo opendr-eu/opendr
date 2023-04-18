@@ -159,31 +159,20 @@ class FallDetectionNode(Node):
         # Run fall detection
         detections = self.fall_detector.infer(image)
 
+        time_accumulator = 0.0
         for detection in detections:
             fallen = detection[0].data  # Class: 1 = fallen, -1 = standing, 0 = can't detect
             pose = detection[1]
             x, y, w, h = get_bbox(pose)
 
             if self.image_performance_publisher:
-                end_time = perf_counter()
-                fps = 1.0 / (end_time - start_time)  # NOQA
-                fps_msg = Float32()
-                fps_msg.data = fps
-                self.image_performance_publisher.publish(fps_msg)
+                time_accumulator += perf_counter() - start_time
 
             # Create Detection2D that contains the bbox of the pose as well as the detection class
             self.fall_publisher.publish(self.bridge.to_ros_box(BoundingBox(left=x, top=y, width=w, height=h,
                                                                            name=fallen, score=pose.confidence)))
 
             if fallen == 1:
-                pose = detection[1]
-                x, y, w, h = get_bbox(pose)
-                if self.performance_publisher:
-                    end_time = perf_counter()
-                    fps = 1.0 / (end_time - start_time)  # NOQA
-                    fps_msg = Float32()
-                    fps_msg.data = fps
-                    self.performance_publisher.publish(fps_msg)
                 if self.image_publisher is not None:
                     if type(image) != ndarray:
                         # Get an OpenCV image back
@@ -193,6 +182,18 @@ class FallDetectionNode(Node):
                     cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                     cv2.putText(image, "Fallen person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                 1, color, 2, cv2.LINE_AA)
+
+            if self.image_performance_publisher:
+                start_time = perf_counter()
+
+        if self.image_performance_publisher:
+            if time_accumulator != 0.0:
+                fps = 1.0 / time_accumulator
+            else:  # No detections
+                fps = 1.0 / (perf_counter() - start_time)
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.image_performance_publisher.publish(fps_msg)
 
         if type(image) != ndarray:
             # Get an OpenCV image back
