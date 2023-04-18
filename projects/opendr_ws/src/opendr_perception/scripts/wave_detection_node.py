@@ -181,17 +181,17 @@ class WaveDetectionNode:
 
             pose_waves = self.wave_detection()
 
+            time_accumulator = 0.0
             for pose_id, waving_and_pose in pose_waves.items():
                 waving = waving_and_pose[0]
                 pose = waving_and_pose[1]
                 x, y, w, h = get_bbox(pose)
 
                 if self.image_performance_publisher:
-                    end_time = perf_counter()
-                    fps = 1.0 / (end_time - start_time)  # NOQA
-                    fps_msg = Float32()
-                    fps_msg.data = fps
-                    self.image_performance_publisher.publish(fps_msg)
+                    time_accumulator += perf_counter() - start_time
+
+                self.wave_publisher.publish(self.bridge.to_ros_box(BoundingBox(left=x, top=y, width=w, height=h,
+                                                                               name=waving, score=pose.confidence)))
 
                 if waving == 1:
                     if type(image) != ndarray:
@@ -203,8 +203,17 @@ class WaveDetectionNode:
                     cv2.putText(image, "Waving person", (x, y + h - 10), cv2.FONT_HERSHEY_SIMPLEX,
                                 1, color, 2, cv2.LINE_AA)
 
-                self.wave_publisher.publish(self.bridge.to_ros_box(BoundingBox(left=x, top=y, width=w, height=h,
-                                                                               name=waving, score=pose.confidence)))
+                if self.image_performance_publisher:
+                    start_time = perf_counter()
+
+        if self.image_performance_publisher:
+            if time_accumulator != 0.0:
+                fps = 1.0 / time_accumulator
+            else:  # No detections
+                fps = 1.0 / (perf_counter() - start_time)
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.image_performance_publisher.publish(fps_msg)
 
         if type(image) != ndarray:
             # Get an OpenCV image back
