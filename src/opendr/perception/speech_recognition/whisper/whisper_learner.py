@@ -25,6 +25,8 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from tqdm import tqdm
+import Levenshtein
+from abydos.phonetic import *
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -48,6 +50,7 @@ class WhisperLearner(Learner):
         self,
         model_name: str = "tiny.en",
         language: Optional[str] = "en",
+        keywords_list: Optional[List[str]] = None,
         normalized_text: Optional[bool] = True,
         device: str = "cpu",
         temperature: float = 0.0,
@@ -90,6 +93,7 @@ class WhisperLearner(Learner):
         self.task = "transcribe"
         self.model_name = model_name
         self.language = language
+        self.keywords_list = keywords_list
         self.normalized_text = normalized_text
         self.device = device
         self.temperature = temperature
@@ -130,8 +134,11 @@ class WhisperLearner(Learner):
         )
 
         self.normalizer = None
+        self.keywords_normalized = None
         if self.normalized_text:
             self.normalizer = EnglishTextNormalizer()
+            if self.keywords_list is not None:
+                self.keywords_normalized = [self.normalizer(kw) for kw in self.keywords_list]
 
 
     def _load_model_weights(
@@ -254,7 +261,7 @@ class WhisperLearner(Learner):
     def fit(self):
         return
 
-    def eval(self, dataset: Dataset, batch_size: int = 2):
+    def eval(self, dataset: Dataset, batch_size: int = 2, save_path: str = None) -> Dict:
         """Evaluate the model on the dataset.
 
         :steps: TODO
@@ -279,9 +286,12 @@ class WhisperLearner(Learner):
         references = []
         keywords_list = []
 
+        i = 0
         with torch.no_grad():
             for samples, texts in tqdm(loader):
                 results = self.infer(samples)
+                # samples = samples.squeeze()
+                # results = model.transcribe(samples)
 
 
                 if not isinstance(results, list):
@@ -289,6 +299,8 @@ class WhisperLearner(Learner):
 
                 if self.normalizer:
                     texts = [self.normalizer(text) for text in texts]
+                    # for result in results:
+                    #     result["text"] = self.normalizer(result["text"])
 
                 for text in texts:
                     if text not in keywords_list:
@@ -297,12 +309,24 @@ class WhisperLearner(Learner):
                 hypotheses.extend([result.get("text") for result in results])
                 references.extend(texts)
 
+                # i += 1
+
+                # if i == 20:
+                #     break
+
             data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
+
+            if save_path is not None:
+                data.to_csv(save_path, index=False)
 
 
         def matching_percentage(hypothesis: List[str], reference: List[str]) -> float:
             if len(hypothesis) != len(reference):
                 raise ValueError("Both lists must have the same length.")
+
+            # for h, r in zip(hypotheses, reference):
+            #     if h != r:
+            #         print(f"hypotheses: {h}. Reference: {r}.")
 
             matching_count = sum(h == r for h, r in zip(hypothesis, reference))
             total_count = len(hypothesis)
@@ -316,13 +340,11 @@ class WhisperLearner(Learner):
             mp = matching_percentage(hypothesis=list(data_filtered["hypothesis"]), 
                                      reference=list(data_filtered["reference"]))
        
-            performance["word_accuracy"]["word"] = mp
-            print(f"Maching percentage for '{word}': {mp * 100:.2f} % ")
+            performance["word_accuracy"][word] = mp
 
         mp = matching_percentage(hypothesis=list(data["hypothesis"]), 
                                  reference=list(data["reference"]))
         performance["total_accuracy"] = mp
-        print(f"Maching percentage for all keywords: {mp * 100:.2f} %")
 
         return performance
 
@@ -378,9 +400,12 @@ class WhisperLearner(Learner):
         decode_results = (
             decode_results if isinstance(decode_results, list) else [decode_results]
         )
-        return [
+
+
+        # keyword maching.
+        results = [
             {
-                "text": self.normalizer(self.tokenizer.decode(result.tokens)) if self.normalized_text else self.tokenizer.decode(result.tokens),
+                "text": self._closest_word(self.tokenizer.decode(result.tokens), self.keywords_list),
                 "tokens": result.tokens,
                 "temperature": result.temperature,
                 "avg_logprob": result.avg_logprob,
@@ -391,6 +416,42 @@ class WhisperLearner(Learner):
             }
             for result in decode_results
         ]
+
+        for result in results:
+            if self.normalized_text:
+                result["text"] = self.normalizer(result["text"])
+
+        return results
+
+
+    def _closest_word(self, word: str, keywords_list: Optional[List[str]]) -> str:
+        if keywords_list is None or len(keywords_list) == 0:
+            return word
+
+        if self.normalized_text:
+            if self.normalizer(word) in self.keywords_normalized:
+                print("found normalized word")
+                return word
+
+        rs = RefinedSoundex(retain_vowels=True)
+
+        min_distance = float('inf')
+        closest = None
+        
+        from whisper.normalizers.basic import remove_symbols_and_diacritics
+        print(f"word: {word}")
+        norm_word = remove_symbols_and_diacritics(word) 
+        norm_word = norm_word.strip().lower()
+        print(f"norm_word: {norm_word}")
+        for keyword in keywords_list:
+            distance = Levenshtein.distance(rs.encode(norm_word), rs.encode(keyword))
+            # print(f"keyword: {keyword}, distance: {distance}")
+            if distance < min_distance:
+                min_distance = distance
+                closest = keyword
+        
+        print(f"closest: {closest}")
+        return closest
 
     def optimize(self):
         return

@@ -52,14 +52,12 @@ class SubsetSC(SPEECHCOMMANDS):
         url: str = "speech_commands_v0.02",
         folder_in_archive: str = "SpeechCommands",
         subset: str = "testing",
-        preprocess: bool = True,
         device: Optional[Union[str, torch.device]] = "cpu",
     ):
 
         super().__init__(
             root=root, url=url, folder_in_archive=folder_in_archive, subset=subset
         )
-        self.preprocess = preprocess
         self.device = device
 
         def load_list(filename):
@@ -84,8 +82,6 @@ class SubsetSC(SPEECHCOMMANDS):
         assert sample_rate == 16000
 
         sample = whisper.pad_or_trim(audio.flatten().to(self.device))
-        if self.preprocess:
-            sample = whisper.log_mel_spectrogram(audio)
 
         return (sample, label)
 
@@ -97,15 +93,58 @@ def main(args):
         url=args.url,
         folder_in_archive=args.folder_in_archive,
         subset=args.subset,
-        preprocess=args.preprocess,
         device=args.device,
     )
 
-    learner = WhisperLearner(model_name=args.model_name, normalized_text=True, fp16=args.fp16, device=args.device)
+    keywords_list = [
+            "backward",
+            "bed",
+            "bird",
+            "cat",
+            "dog",
+            "down",
+            "eight",
+            "five",
+            "follow",
+            "forward",
+            "four",
+            "go",
+            "happy",
+            "house",
+            "learn",
+            "left",
+            "marvin",
+            "nine",
+            "no",
+            "off",
+            "on",
+            "one",
+            "right",
+            "seven",
+            "sheila",
+            "six",
+            "stop",
+            "three",
+            "tree",
+            "two",
+            "up",
+            "visual",
+            "wow",
+            "yes",
+            "zero",
+        ]
 
-    learner.load()  # Auto download the model to currenct directory and load it.
-    learner.eval(dataset=test_set, batch_size=args.batch_size)
+    learner = WhisperLearner(model_name=args.model_name, keywords_list=keywords_list, normalized_text=True, fp16=args.fp16, device=args.device)
 
+    learner.load(args.load_path)  # Auto download the model to currenct directory and load it.
+    
+    performance = learner.eval(dataset=test_set, batch_size=args.batch_size, save_path=f"./{args.model_name}_fp16_{args.fp16}.csv")
+
+    # Print results.
+    for word, mp in performance["word_accuracy"].items(): 
+        print(f"Maching percentage for '{word}': {mp * 100:.2f} % ")
+
+    print(f"Maching percentage for all keywords: {performance['total_accuracy'] * 100:.2f} %")
 
 
 if __name__ == "__main__":
@@ -136,12 +175,6 @@ if __name__ == "__main__":
         choices=["testing", "validation", "training"],
         default="testing",
         help="Subset of the dataset to use",
-    )
-    parser.add_argument(
-        "--preprocess",
-        type=str2bool,
-        default=True,
-        help="Transform the audio to log mel spectrogram before feeding to model",
     )
     parser.add_argument(
         "--device",
