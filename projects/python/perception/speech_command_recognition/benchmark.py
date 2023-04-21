@@ -14,21 +14,12 @@
 
 
 import argparse
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union, Tuple
 import os
-import time
-from functools import partial
-
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
-import whisper
-from whisper.normalizers import EnglishTextNormalizer
-import jiwer
 
 import torch
-from torch.utils.data import DataLoader
 from torchaudio.datasets import SPEECHCOMMANDS
+import whisper
 
 from opendr.perception.speech_recognition import WhisperLearner
 
@@ -138,6 +129,7 @@ def main(args):
 
     learner.load(args.load_path)  # Auto download the model to currenct directory and load it.
     
+    print("Start evaluation...")
     performance = learner.eval(dataset=test_set, batch_size=args.batch_size, save_path=f"./{args.model_name}_fp16_{args.fp16}.csv")
 
     # Print results.
@@ -186,7 +178,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=8,
+        default=4,
         help="Batch size for DataLoader",
     )
     parser.add_argument(

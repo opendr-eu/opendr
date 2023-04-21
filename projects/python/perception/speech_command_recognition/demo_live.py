@@ -13,10 +13,9 @@
 # limitations under the License.
 
 
-import argparse
-import threading
-import time
 from typing import Callable
+import argparse
+import time
 from logging import getLogger
 
 import numpy as np
@@ -26,6 +25,16 @@ from opendr.perception.speech_recognition import WhisperLearner
 
 
 logger = getLogger(__name__)
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('True', 'true'):
+        return True
+    elif v.lower() in ('False', 'false'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def record_audio(duration: int, sample_rate: int) -> np.ndarray:
@@ -44,14 +53,30 @@ def record_audio(duration: int, sample_rate: int) -> np.ndarray:
 def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable, details: bool):
     print("Transcribing...")
     output = transcribe_function(audio_data)
+    output = output[0]
 
     if not details:
         output = output["text"]
 
     print("Transcription: ", output)
 
+    return output
 
-def main(duration, sample_rate, interval, model_path, model_name, load_path, device, details):
+
+def wait_for_start_command(learner, sample_rate):
+    print("Waiting for 'Hi Whisper' command...")
+    print("Stop by saying 'Bye Whisper'.")
+    while True:
+        audio_data = record_audio(1, sample_rate)
+        transcription = learner.infer(audio_data)[0]["text"].lower()
+        print(f"User said: {transcription}")
+        if "hi whisper" in transcription:
+            print("Start command received. Starting the loop.")
+            break
+        time.sleep(1)
+
+
+def main(duration, interval, model_path, model_name, load_path, device, details):
     # Initialize the WhisperLearner class and load the model
     learner = WhisperLearner(model_name=model_name, device=device)
     learner.load(
@@ -59,27 +84,25 @@ def main(duration, sample_rate, interval, model_path, model_name, load_path, dev
         load_path=load_path,
     )
 
+    # Wait for the user to say "hi whisper" before starting the loop
+    sample_rate = 16000
+    wait_for_start_command(learner, sample_rate)
+
     while True:
-        # Start a new thread for recording audio
-        record_thread = threading.Thread(
-            target=record_audio, args=(duration, sample_rate)
-        )
-        record_thread.start()
+        # Record the audio
+        audio_data = record_audio(duration, sample_rate)
 
-        # Start a new thread for transcribing the recorded audio
-        transcribe_thread = threading.Thread(
-            target=transcribe_audio,
-            args=(record_audio(duration, sample_rate), learner.infer, details),
-        )
-        transcribe_thread.start()
+        # Transcribe the recorded audio and check for the "bye whisper" command
+        transcription = transcribe_audio(audio_data, learner.infer, details)
+        if not isinstance(transcription, str):
+            transcription = transcription["text"]
 
-        # Wait for both threads to finish
-        record_thread.join()
-        transcribe_thread.join()
+        if "bye whisper" in transcription.lower():
+            print("Stop command received. Exiting the program.")
+            break
 
         # Wait for `interval` seconds before starting the next recording
         time.sleep(interval)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -93,13 +116,6 @@ if __name__ == "__main__":
         help="Duration of the recording in seconds.",
     )
     parser.add_argument(
-        "-s",
-        "--sample_rate",
-        type=int,
-        default=16000,
-        help="Sample rate of the recording.",
-    )
-    parser.add_argument(
         "-i",
         "--interval",
         type=float,
@@ -107,7 +123,6 @@ if __name__ == "__main__":
         help="Time interval between recordings in seconds.",
     )
     parser.add_argument(
-        "-de",
         "--device",
         type=str,
         default="cpu",
@@ -123,6 +138,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-p",
         "--download_path",
+        default=".",
         type=str,
         required=False,
         help="Download path for the pretrained Whisper model.",
@@ -135,7 +151,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--details",
-        type=bool,
+        type=str2bool,
         required=False,
         default=False,
         help="Return the command with side information",
@@ -145,9 +161,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(
-        args.duration,
-        args.sample_rate,
-        args.interval,
+        duration=args.duration,
+        interval=args.interval,
         model_path=args.download_path,
         model_name=args.model_name,
         load_path=args.load_path,
