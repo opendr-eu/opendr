@@ -25,8 +25,6 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from tqdm import tqdm
-import Levenshtein
-from abydos.phonetic import *
 
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -39,6 +37,7 @@ from whisper.tokenizer import get_tokenizer
 
 from opendr.engine.data import Timeseries
 from opendr.engine.learners import Learner
+from opendr.perception.speech_recognition.whisper.algorithm.utils import matching_percentage
 
 
 logger = getLogger(__name__)
@@ -48,7 +47,7 @@ logger = getLogger(__name__)
 class WhisperLearner(Learner):
     def __init__(
         self,
-        model_name: str = "tiny.en",
+        model_name: str,
         language: Optional[str] = "en",
         keywords_list: Optional[List[str]] = None,
         normalized_text: Optional[bool] = True,
@@ -68,24 +67,32 @@ class WhisperLearner(Learner):
         fp16: bool = True,
     ):
         """
-        Initialize the MyClass object with the given parameters.
+        Initialize a new instance of the WhisperLearner class, a subclass of the Learner class.
 
-        :param task: Whether to perform X->X "transcribe" or X->English "translate" (default: "transcribe").
-        :param language: Language that the audio is in; uses detected language if None (default: None).
-        :param temperature: Sampling-related option (default: 0.0).
-        :param sample_len: Maximum number of tokens to sample (default: None).
-        :param best_of: Number of independent sample trajectories, if t > 0 (default: None).
-        :param beam_size: Number of beams in beam search, if t == 0 (default: None).
-        :param patience: Patience in beam search (arxiv:2204.05424) (default: None).
-        :param length_penalty: "Alpha" in Google NMT, or None for length norm, when ranking generations (default: None).
-        :param prompt: Text or tokens to feed as the prompt or the prefix (default: None).
-        :param prefix: To prefix the current context (default: None).
-        :param suppress_tokens: List of token ids (or comma-separated token ids) to suppress (default: "-1").
-        :param suppress_blank: If True, suppress blank outputs (default: True).
-        :param without_timestamps: If True, use to sample text tokens only (default: False).
-        :param max_initial_timestamp: Maximum initial timestamp (default: 1.0).
-        :param fp16: If True, use fp16 for most of the calculation (default: True).
+        Args:
+            model_name (str, optional): The name of the model to use for transcription.
+            language (Optional[str], optional): The language of the audio input.
+            keywords_list (Optional[List[str]], optional): A list of keywords registered by user.
+            normalized_text (Optional[bool], optional): Whether to normalize the transcribed text.
+            device (str, optional): The device to use for processing, either "cpu" or "gpu".
+            temperature (float, optional): The sampling temperature during decoding.
+            sample_len (Optional[int], optional): The maximum length of the decoded audio.
+            best_of (Optional[int], optional): The number of samples to generate and select the best from.
+            beam_size (Optional[int], optional): The size of the beam search during decoding.
+            patience (Optional[float], optional): The patience value for early stopping during decoding.
+            length_penalty (Optional[float], optional): The length penalty applied during decoding.
+            prompt (Optional[Union[str, List[int]]], optional): The prompt for the model during decoding.
+            prefix (Optional[Union[str, List[int]]], optional): The prefix for the model during decoding.
+            suppress_tokens (Optional[Union[str, Iterable[int]]], optional): The tokens to suppress during decoding.
+            suppress_blank (bool, optional): Whether to suppress blank tokens during decoding.
+            without_timestamps (bool, optional): Whether to generate timestamps during decoding.
+            max_initial_timestamp (Optional[float], optional): The maximum initial timestamp during decoding.
+            fp16 (bool, optional): Whether to use half-precision floating-point format to perform inference.
+
+        Raises:
+            AssertionError: If the model name is not valid.
         """
+
         super(WhisperLearner, self).__init__()
 
         assert model_name in whisper.available_models(), f"Model name: {model_name} is not valid; available models = {whisper.available_models()}"
@@ -145,12 +152,19 @@ class WhisperLearner(Learner):
         self,
         load_path: Union[str, Path],
         in_memory: bool = False,
-    ):
-        """Load pretrained weight using Whisper api: whisper.load_model
+    ) -> torch.nn.Module:
+        """
+        Load pretrained model weights.
 
-        :molde_name: name of pretrained model
-        :returns: TODO
+        Args:
+            load_path (Union[str, Path]): The path to the pretrained model weights.
+            in_memory (bool, optional): Whether to load the model weights into memory.
 
+        Returns:
+            torch.nn.Module: The loaded model with pretrained weights.
+
+        Raises:
+            RuntimeError: If the specified model is not found.
         """
 
         alignment_heads = whisper._ALIGNMENT_HEADS[self.model_name]
@@ -176,23 +190,34 @@ class WhisperLearner(Learner):
         return model.to(self.device)
 
     def save(self, path: Union[str, Path]):
-        """Save model weights to path
-        :path: Directory in which to save model weights. 
-        :returns: TODO
+        """
+        Save model weights to path
+
+        Args:
+            path (Union[str, Path]): Directory in which to save model weights. 
         """
         pass
 
     def load(
         self,
-        load_path: Union[str, Path] = None,
+        load_path: Optional[Union[str, Path]]= None,
         download_root: Union[str, Path] = "./",
         in_memory: bool = False,
     ):
-        """Load model.
+        """
+        Load a pretrained model from the specified path or download it if not provided.
 
-        :path: TODO
-        :returns: TODO
+        Args:
+            load_path (Union[str, Path], optional): The path to the pretrained model weights.
+            download_root (Union[str, Path], optional): The root directory for downloading the pretrained model.
+            in_memory (bool, optional): Whether to load the model weights into memory.
 
+        Returns:
+            None
+
+        Raises:
+            AssertionError: If download_root is not specified when load_path is None.
+            AssertionError: If the model name from the given path does not match the current model name.
         """
 
         if load_path is None:
@@ -213,6 +238,16 @@ class WhisperLearner(Learner):
         self.tokenizer = get_tokenizer(self.model.is_multilingual, language=self.language, task=self.task)
 
     def download(self, path: Union[str, Path] = "."):
+        """
+        Download the pretrained model specified by the current model name.
+
+        Args:
+            path (Union[str, Path], optional): The path to save the downloaded pretrained model.
+
+        Raises:
+            RuntimeError: If the target path for the downloaded model is not a regular file.
+            RuntimeError: If the SHA256 checksum does not match after downloading the model.
+        """
 
         url = MODELS_URL[self.model_name]
         os.makedirs(path, exist_ok=True)
@@ -262,15 +297,24 @@ class WhisperLearner(Learner):
         return
 
     def eval(self, dataset: Dataset, batch_size: int = 2, save_path: str = None) -> Dict:
-        """Evaluate the model on the dataset.
-
-        :steps: TODO
-        :returns: TODO
-        :dataset: a dataset should be a speech command dataset
-
         """
+        Evaluate the model on the given dataset.
+
+        Args:
+            dataset (Dataset): A speech command dataset.
+            batch_size (int, optional): The batch size for DataLoader.
+            save_path (str, optional): The path to save the evaluation results.
+
+        Returns:
+            Dict: A dictionary containing the evaluation performance metrics.
+
+        Raises:
+            AssertionError: If the model is not loaded.
+        """
+        assert self.model is not None, "Model is not loaded. Please load a model before evaluating."
+
         if not self.normalizer:
-            logger.warning("English normalizer is not used. The evaluation metric may get affected.")
+            logger.warning("English normalizer is not used. The evaluation results may get affected.")
 
         loader = DataLoader(
             dataset,
@@ -286,21 +330,15 @@ class WhisperLearner(Learner):
         references = []
         keywords_list = []
 
-        i = 0
         with torch.no_grad():
             for samples, texts in tqdm(loader):
                 results = self.infer(samples)
-                # samples = samples.squeeze()
-                # results = model.transcribe(samples)
-
 
                 if not isinstance(results, list):
                     results = [results]
 
                 if self.normalizer:
                     texts = [self.normalizer(text) for text in texts]
-                    # for result in results:
-                    #     result["text"] = self.normalizer(result["text"])
 
                 for text in texts:
                     if text not in keywords_list:
@@ -309,29 +347,11 @@ class WhisperLearner(Learner):
                 hypotheses.extend([result.get("text") for result in results])
                 references.extend(texts)
 
-                # i += 1
-
-                # if i == 20:
-                #     break
-
             data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
 
             if save_path is not None:
                 data.to_csv(save_path, index=False)
 
-
-        def matching_percentage(hypothesis: List[str], reference: List[str]) -> float:
-            if len(hypothesis) != len(reference):
-                raise ValueError("Both lists must have the same length.")
-
-            # for h, r in zip(hypotheses, reference):
-            #     if h != r:
-            #         print(f"hypotheses: {h}. Reference: {r}.")
-
-            matching_count = sum(h == r for h, r in zip(hypothesis, reference))
-            total_count = len(hypothesis)
-
-            return matching_count / total_count
 
         performance = {"word_accuracy": {}, "total_accuracy": None}
         for word in keywords_list:
@@ -352,12 +372,18 @@ class WhisperLearner(Learner):
     def infer(
         self,
         batch: Union[Timeseries, np.ndarray, torch.Tensor]
-    ) -> List[Dict[str, Union[str, float]]]:
+    ) -> List[Dict]:
+        """
+        Run inference on a batch of audio sample.
 
-        """Run inference on one sample of audio
-        :batch: TODO
-        :returns: TODO
+        Args:
+            batch (Union[Timeseries, np.ndarray, torch.Tensor]): The audio sample as a Timeseries, torch.Tensor, or np.ndarray.
 
+        Returns:
+            List[Dict]: The inference results.
+
+        Raises:
+            TypeError: If the input batch is not a Timeseries, torch.Tensor, or np.ndarray.
         """
         if isinstance(batch, Timeseries):
             data = batch.numpy().reshape(-1)
@@ -375,11 +401,18 @@ class WhisperLearner(Learner):
         return output
 
     def preprocess(self, data: Union[np.array, torch.Tensor]) -> torch.Tensor:
-        """Preprocess audio data
+        """
+        Preprocess audio data.
 
-        :data: 1-D array or 2-D array with last dimension is 1.
-        :returns: TODO
+        This function pads or trims the input audio data and computes the log Mel spectrogram.
+        The audio data should be a 1-D array for a single audio or a 2-D array with the first
+        dimension being the batch size.
 
+        Args:
+            data (Union[np.array, torch.Tensor]): Input audio data.
+
+        Returns:
+            torch.Tensor: Log Mel spectrogram of the preprocessed audio data.
         """
 
         data = whisper.pad_or_trim(data)
@@ -391,21 +424,26 @@ class WhisperLearner(Learner):
         self,
         decode_results: Union[whisper.DecodingResult, List[whisper.DecodingResult]],
     ):
-        """Postprocess the decoding results
-
-        :decode_results: TODO
-        :returns: TODO
-
         """
+        Postprocess the decoding results.
+
+        This function processes the given decoding results, converting them into a list of dictionaries.
+        Each dictionary contains information such as text, tokens, temperature, avg_logprob, compression_ratio,
+        no_speech_prob, language, and language_probs.
+
+        Args:
+            decode_results (Union[whisper.DecodingResult, List[whisper.DecodingResult]]): Decoding results to be postprocessed.
+
+        Returns:
+            List[dict]: A list of dictionaries containing postprocessed decoding result information.
+        """       
         decode_results = (
             decode_results if isinstance(decode_results, list) else [decode_results]
         )
 
-
-        # keyword maching.
         results = [
             {
-                "text": self._closest_word(self.tokenizer.decode(result.tokens), self.keywords_list),
+                "text": self.tokenizer.decode(result.tokens),
                 "tokens": result.tokens,
                 "temperature": result.temperature,
                 "avg_logprob": result.avg_logprob,
@@ -423,35 +461,6 @@ class WhisperLearner(Learner):
 
         return results
 
-
-    def _closest_word(self, word: str, keywords_list: Optional[List[str]]) -> str:
-        if keywords_list is None or len(keywords_list) == 0:
-            return word
-
-        if self.normalized_text:
-            if self.normalizer(word) in self.keywords_normalized:
-                print("found normalized word")
-                return word
-
-        rs = RefinedSoundex(retain_vowels=True)
-
-        min_distance = float('inf')
-        closest = None
-        
-        from whisper.normalizers.basic import remove_symbols_and_diacritics
-        print(f"word: {word}")
-        norm_word = remove_symbols_and_diacritics(word) 
-        norm_word = norm_word.strip().lower()
-        print(f"norm_word: {norm_word}")
-        for keyword in keywords_list:
-            distance = Levenshtein.distance(rs.encode(norm_word), rs.encode(keyword))
-            # print(f"keyword: {keyword}, distance: {distance}")
-            if distance < min_distance:
-                min_distance = distance
-                closest = keyword
-        
-        print(f"closest: {closest}")
-        return closest
 
     def optimize(self):
         return
