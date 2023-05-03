@@ -125,7 +125,7 @@ def main(args):
             "zero",
         ]
 
-    learner = WhisperLearner(model_name=args.model_name, keywords_list=keywords_list, normalized_text=True, fp16=args.fp16, device=args.device)
+    learner = WhisperLearner(model_name=args.model_name, keywords_list=keywords_list, fp16=args.fp16, device=args.device)
 
     learner.load(args.load_path)  # Auto download the model to currenct directory and load it.
     
@@ -133,9 +133,6 @@ def main(args):
     performance = learner.eval(dataset=test_set, batch_size=args.batch_size, save_path=f"./{args.model_name}_fp16_{args.fp16}.csv")
 
     # Print results.
-    for word, mp in performance["word_accuracy"].items(): 
-        print(f"Maching percentage for '{word}': {mp * 100:.2f} % ")
-
     print(f"Maching percentage for all keywords: {performance['total_accuracy'] * 100:.2f} %")
 
 

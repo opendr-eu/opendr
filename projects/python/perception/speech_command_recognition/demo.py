@@ -97,6 +97,6 @@ if __name__ == "__main__":
 
     print("The word is: ", end="")
     if args.model == "whisper":
-        print(result[0]["text"])
+        print(result[0].data)
     else:
         print(result)

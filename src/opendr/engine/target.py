@@ -1127,3 +1127,46 @@ class Heatmap(Target):
         :rtype: str
         """
         return str(self.data)
+
+
+class Transcription(Target):
+    """
+    The Transcription target is used for speech transcription problems.
+    It contains the transcribed text.
+    """
+
+    def __init__(self, text: str):
+        """Initialize a transcription.
+
+        Args:
+            text (str): Transcribed text
+        """
+        super().__init__()
+        self.data = text
+
+    @property
+    def data(self):
+        """
+        Getter of data.
+
+        :return: the actual transcription held by the object
+        :rtype: str
+        """
+        if self._data is None:
+            raise ValueError("Transcription is empty")
+
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        """
+        Setter for data. Transcription expects data of str type.
+        :param: data to be used for creating a Transcription object
+        """
+        if isinstance(data, str):
+            self._data = data
+        else:
+            raise ValueError("Transcription expects strings as data")
+
+    def __str__(self):
+        return self.data

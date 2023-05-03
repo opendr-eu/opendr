@@ -56,14 +56,13 @@ Here is a list of available arguments:
 - `-l` or `--load_path`: Path to the pretrained Whisper model. Use when you already download the model. 
 - `-p` or `--download_path`: Save path for the download pretrained Whisper model (required if not using the default model)
 - `--model_name`: Name of the pretrained Whisper model (default: "tiny.en")
-- `--details`: Return the command with side information (default: False)
 
 ### Example
 
 Here is an example command that records and transcribes audio every 0.5 seconds, with a recording duration of 2 seconds, using the default Whisper model:
 
 ```
-python demo_live.py -d 2 -i 0.5 --model_name tiny.en --device cuda --details False
+python demo_live.py -d 2 -i 0.5 --model_name tiny.en --device cuda
 ```
 
 ## Whisper Learner Speech Commands Benchmark

@@ -32,16 +32,16 @@ from torch.utils.data import Dataset, DataLoader
 import whisper
 from whisper import _MODELS as MODELS_URL
 from whisper.model import ModelDimensions, Whisper
-from whisper.normalizers import EnglishTextNormalizer
+from whisper.normalizers import BasicTextNormalizer, EnglishTextNormalizer
 from whisper.tokenizer import get_tokenizer
 
 from opendr.engine.data import Timeseries
+from opendr.engine.target import Transcription
 from opendr.engine.learners import Learner
 from opendr.perception.speech_recognition.whisper.algorithm.utils import matching_percentage
 
 
 logger = getLogger(__name__)
-
 
 
 class WhisperLearner(Learner):
@@ -50,7 +50,6 @@ class WhisperLearner(Learner):
         model_name: str,
         language: Optional[str] = "en",
         keywords_list: Optional[List[str]] = None,
-        normalized_text: Optional[bool] = True,
         device: str = "cpu",
         temperature: float = 0.0,
         sample_len: Optional[int] = None,
@@ -101,7 +100,6 @@ class WhisperLearner(Learner):
         self.model_name = model_name
         self.language = language
         self.keywords_list = keywords_list
-        self.normalized_text = normalized_text
         self.device = device
         self.temperature = temperature
         self.sample_len = sample_len
@@ -140,12 +138,7 @@ class WhisperLearner(Learner):
             fp16=self.fp16,
         )
 
-        self.normalizer = None
-        self.keywords_normalized = None
-        if self.normalized_text:
-            self.normalizer = EnglishTextNormalizer()
-            if self.keywords_list is not None:
-                self.keywords_normalized = [self.normalizer(kw) for kw in self.keywords_list]
+        self.basic_text_normalizer = BasicTextNormalizer()
 
 
     def _load_model_weights(
@@ -313,8 +306,8 @@ class WhisperLearner(Learner):
         """
         assert self.model is not None, "Model is not loaded. Please load a model before evaluating."
 
-        if not self.normalizer:
-            logger.warning("English normalizer is not used. The evaluation results may get affected.")
+        normalizer = EnglishTextNormalizer()
+        logger.warning("Used English text normalizer of Whisper to standardize the prediction and reference text.")
 
         loader = DataLoader(
             dataset,
@@ -328,7 +321,6 @@ class WhisperLearner(Learner):
 
         hypotheses = []
         references = []
-        keywords_list = []
 
         with torch.no_grad():
             for samples, texts in tqdm(loader):
@@ -337,14 +329,10 @@ class WhisperLearner(Learner):
                 if not isinstance(results, list):
                     results = [results]
 
-                if self.normalizer:
-                    texts = [self.normalizer(text) for text in texts]
+                texts = [normalizer(text) for text in texts]
+                prediction = [normalizer(result.data) for result in results]
 
-                for text in texts:
-                    if text not in keywords_list:
-                        keywords_list.append(text)
-
-                hypotheses.extend([result.get("text") for result in results])
+                hypotheses.extend(prediction)
                 references.extend(texts)
 
             data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
@@ -352,19 +340,9 @@ class WhisperLearner(Learner):
             if save_path is not None:
                 data.to_csv(save_path, index=False)
 
-
-        performance = {"word_accuracy": {}, "total_accuracy": None}
-        for word in keywords_list:
-            data_filtered = data[data["reference"].apply(lambda x: x == word)]
-
-            mp = matching_percentage(hypothesis=list(data_filtered["hypothesis"]), 
-                                     reference=list(data_filtered["reference"]))
-       
-            performance["word_accuracy"][word] = mp
-
         mp = matching_percentage(hypothesis=list(data["hypothesis"]), 
                                  reference=list(data["reference"]))
-        performance["total_accuracy"] = mp
+        performance = {"total_accuracy": mp}
 
         return performance
 
@@ -391,7 +369,6 @@ class WhisperLearner(Learner):
             data = batch
         else:
             raise TypeError("batch must be a Timeseries, torch.Tensor or np.ndarray")
-
 
         mel = self.preprocess(data)
 
@@ -442,22 +419,9 @@ class WhisperLearner(Learner):
         )
 
         results = [
-            {
-                "text": self.tokenizer.decode(result.tokens),
-                "tokens": result.tokens,
-                "temperature": result.temperature,
-                "avg_logprob": result.avg_logprob,
-                "compression_ratio": result.compression_ratio,
-                "no_speech_prob": result.no_speech_prob,
-                "language": result.language,
-                "language_probs": result.language_probs
-            }
+            Transcription(text=self.basic_text_normalizer(self.tokenizer.decode(result.tokens)))
             for result in decode_results
         ]
-
-        for result in results:
-            if self.normalized_text:
-                result["text"] = self.normalizer(result["text"])
 
         return results
 

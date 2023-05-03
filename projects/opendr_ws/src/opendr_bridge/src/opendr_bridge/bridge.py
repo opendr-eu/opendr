@@ -15,7 +15,7 @@
 from opendr.engine.data import Image, Timeseries, PointCloud
 from opendr.engine.target import (
     Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D,
-    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList
+    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList, Transcription
 )
 
 import numpy as np
@@ -31,7 +31,7 @@ from sensor_msgs.msg import Image as ImageMsg, PointCloud as PointCloudMsg, Poin
 import rospy
 from geometry_msgs.msg import Point32 as Point32Msg, Quaternion as QuaternionMsg
 from sensor_msgs import point_cloud2 as pc2
-from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
+from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRTranscription
 
 
 class ROSBridge:
@@ -735,3 +735,32 @@ class ROSBridge:
             box.results[0].score = boxes_3d[i].confidence
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
+
+    def from_ros_transcription(self, ros_transcripton):
+        """
+        Converts a ROS transcription object to a Transcription object.
+    
+        Args:
+            ros_transcripton: A ROS transcription object
+    
+        Returns:
+            transcription: A Transcription object containing the same text as the input ROS object
+        """
+        transcription = Transcription(text=ros_transcripton.text)
+    
+        return transcription
+    
+    def to_ros_transcription(self, transcription: Transcription):
+        """
+        Converts a Transcription object to a ROS transcription object.
+    
+        Args:
+            transcription (Transcription): A Transcription object
+    
+        Returns:
+            ros_transcripton: A ROS transcription object containing the same text as the input Transcription object
+        """
+        ros_transcripton = OpenDRTranscription()
+        ros_transcripton.text = transcription.data
+    
+        return ros_transcripton

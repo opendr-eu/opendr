@@ -50,13 +50,9 @@ def record_audio(duration: int, sample_rate: int) -> np.ndarray:
     return audio_data
 
 
-def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable, details: bool):
-    print("Transcribing...")
+def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable):
     output = transcribe_function(audio_data)
-    output = output[0]
-
-    if not details:
-        output = output["text"]
+    output = output[0].data
 
     print("Transcription: ", output)
 
@@ -68,7 +64,7 @@ def wait_for_start_command(learner, sample_rate):
     print("Stop by saying 'Bye Whisper'.")
     while True:
         audio_data = record_audio(1, sample_rate)
-        transcription = learner.infer(audio_data)[0]["text"].lower()
+        transcription = learner.infer(audio_data)[0].data.lower()
         print(f"User said: {transcription}")
         if "hi whisper" in transcription:
             print("Start command received. Starting the loop.")
@@ -76,7 +72,7 @@ def wait_for_start_command(learner, sample_rate):
         time.sleep(1)
 
 
-def main(duration, interval, model_path, model_name, load_path, device, details):
+def main(duration, interval, model_path, model_name, load_path, device):
     # Initialize the WhisperLearner class and load the model
     learner = WhisperLearner(model_name=model_name, device=device)
     learner.load(
@@ -93,9 +89,7 @@ def main(duration, interval, model_path, model_name, load_path, device, details)
         audio_data = record_audio(duration, sample_rate)
 
         # Transcribe the recorded audio and check for the "bye whisper" command
-        transcription = transcribe_audio(audio_data, learner.infer, details)
-        if not isinstance(transcription, str):
-            transcription = transcription["text"]
+        transcription = transcribe_audio(audio_data, learner.infer)
 
         if "bye whisper" in transcription.lower():
             print("Stop command received. Exiting the program.")
@@ -149,14 +143,6 @@ if __name__ == "__main__":
         default="tiny.en",
         help="Name of the pretrained Whisper model.",
     )
-    parser.add_argument(
-        "--details",
-        type=str2bool,
-        required=False,
-        default=False,
-        help="Return the command with side information",
-    )
-
 
     args = parser.parse_args()
 
@@ -166,6 +152,5 @@ if __name__ == "__main__":
         model_path=args.download_path,
         model_name=args.model_name,
         load_path=args.load_path,
-        device=args.device,
-        details=args.details,
+        device=args.device
     )
