@@ -302,4 +302,4 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 
 
 #### References
-[1] C. Symeonidis, I. Mademlis, I. Pitas, N. Nikolaidis, "Neural Attention-driven Non-Maximum Suppression for Person Detection", IEEE Transactions on Image Processing, 2023 (accepted for publication).
+[1] C. Symeonidis, I. Mademlis, I. Pitas and N. Nikolaidis, "Neural Attention-Driven Non-Maximum Suppression for Person Detection" in IEEE Transactions on Image Processing, vol. 32, pp. 2454-2467, 2023, doi: 10.1109/TIP.2023.3268561.
