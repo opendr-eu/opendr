@@ -38,7 +38,6 @@ from whisper.tokenizer import get_tokenizer
 from opendr.engine.data import Timeseries
 from opendr.engine.target import Transcription
 from opendr.engine.learners import Learner
-from opendr.perception.speech_recognition.whisper.algorithm.utils import matching_percentage
 
 
 logger = getLogger(__name__)
