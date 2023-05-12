@@ -306,6 +306,31 @@ class WhisperLearner(Learner):
         """
         assert self.model is not None, "Model is not loaded. Please load a model before evaluating."
 
+
+        def matching_percentage(hypothesis: List[str], reference: List[str]) -> float:
+            """
+            Compute the accuracy of string predicted by the model and the ground truth.
+            Used in keyword matching.
+
+            Args:
+                hypothesis (List[str]): A list of predicted strings.
+                reference (List[str]): A list of ground truth strings.
+
+            Returns:
+                float: The accuracy of the predicted strings.
+
+            Raises:
+                AssertionError: If the model is not loaded.
+            """
+
+            if len(hypothesis) != len(reference):
+                raise ValueError("Both lists must have the same length.")
+
+            matching_count = sum(h == r for h, r in zip(hypothesis, reference))
+            total_count = len(hypothesis)
+
+            return matching_count / total_count
+
         normalizer = EnglishTextNormalizer()
         logger.warning("Used English text normalizer of Whisper to standardize the prediction and reference text.")
 
