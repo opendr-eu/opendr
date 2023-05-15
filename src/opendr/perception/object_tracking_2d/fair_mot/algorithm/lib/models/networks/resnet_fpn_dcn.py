@@ -15,7 +15,7 @@ import logging
 
 import torch
 import torch.nn as nn
-import DCN
+from DCN import ModulatedDeformConv2dPack as DCN
 import torch.utils.model_zoo as model_zoo
 
 BN_MOMENTUM = 0.1
