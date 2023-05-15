@@ -107,6 +107,7 @@ jobs:
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
+          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
