@@ -222,7 +222,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python3 -m pip install --upgrade pip
-        python3 -m pip install wheel
+        python3 -m pip install wheel==0.38.4
 
         # install all tools one at a time
         while read f; do
@@ -308,7 +308,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python3 -m pip install --upgrade pip
-        python3 -m pip install wheel
+        python3 -m pip install wheel==0.38.4
 
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})

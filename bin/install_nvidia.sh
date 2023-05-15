@@ -174,7 +174,7 @@ pip3 install google-auth-oauthlib==0.4.6
 pip3 install graphviz==0.8.4
 pip3 install greenlet==1.1.2
 pip3 install grpcio==1.42.0
-pip3 install git+https://github.com/openai/gym.git@9180d12e1b66e7e2a1a622614f787a6ec147ac40
+pip3 install gym==0.21.0
 pip3 install hyperlink==21.0.0
 pip3 install idna==3.3
 pip3 install idna-ssl==1.1.0
@@ -288,7 +288,7 @@ pip3 install yacs==0.1.8
 pip3 install yarl==1.7.2
 pip3 install zipp==3.6.0
 pip3 install zope.interface==5.4.0
-pip3 install wheel
+pip3 install wheel==0.38.4
 pip3 install pytorch-lightning==1.2.3
 pip3 install omegaconf==2.3.0
 pip3 install ninja
