@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 import torch.optim as optim
 import torch.nn as nn
-import PIL
 import numpy as np
 import zipfile
 import torch
