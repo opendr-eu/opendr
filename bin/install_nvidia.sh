@@ -300,7 +300,7 @@ pip3 install git+https://github.com/cidl-auth/cocoapi@03ee5a19844e253b8365dbbf35
 pip3 install git+https://github.com/cocodataset/panopticapi.git@7bb4655548f98f3fedc07bf37e9040a992b054b0
 pip3 install git+https://github.com/mapillary/inplace_abn.git
 pip3 install git+https://github.com/facebookresearch/detectron2.git@4841e70ee48da72c32304f9ebf98138c2a70048d
-pip3 install git+https://github.com/cidl-auth/DCNv2
+pip3 install git+https://github.com/cidl-auth/DCNv2_updated
 pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS
 pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS
 pip3 install ${OPENDR_HOME}/src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS/efficientNet
