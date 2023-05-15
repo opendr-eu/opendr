@@ -19,10 +19,12 @@ import os
 import cv2
 import numpy as np
 import torch
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
 import message_filters
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Classification2D
 
@@ -35,7 +37,8 @@ class RgbdHandGestureNode(Node):
 
     def __init__(self, input_rgb_image_topic="/kinect2/qhd/image_color_rect",
                  input_depth_image_topic="/kinect2/qhd/image_depth_rect",
-                 output_gestures_topic="/opendr/gestures", device="cuda", delay=0.1):
+                 output_gestures_topic="/opendr/gestures",
+                 performance_topic=None, device="cuda", delay=0.1):
         """
         Creates a ROS2 Node for gesture recognition from RGBD. Assuming that the following drivers have been installed:
         https://github.com/OpenKinect/libfreenect2 and https://github.com/code-iai/iai_kinect2.
@@ -45,6 +48,9 @@ class RgbdHandGestureNode(Node):
         :type input_depth_image_topic: str
         :param output_gestures_topic: Topic to which we are publishing the predicted gesture class
         :type output_gestures_topic: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param delay: Define the delay (in seconds) with which rgb message and depth message can be synchronized
@@ -53,6 +59,11 @@ class RgbdHandGestureNode(Node):
         super().__init__("opendr_rgbd_hand_gesture_recognition_node")
 
         self.gesture_publisher = self.create_publisher(Classification2D, output_gestures_topic, 1)
+
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
 
         image_sub = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, qos_profile=1)
         depth_sub = message_filters.Subscriber(self, ROS_Image, input_depth_image_topic, qos_profile=1)
@@ -83,7 +94,8 @@ class RgbdHandGestureNode(Node):
         :param depth_data: input depth image message
         :type depth_data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image and preprocess
         rgb_image = self.bridge.from_ros_image(rgb_data, encoding='bgr8')
         depth_data.encoding = 'mono16'
@@ -92,6 +104,13 @@ class RgbdHandGestureNode(Node):
 
         # Run gesture recognition
         gesture_class = self.gesture_learner.infer(img)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         #  Publish results
         ros_gesture = self.bridge.from_category_to_rosclass(gesture_class, self.get_clock().now().to_msg())
@@ -105,8 +124,8 @@ class RgbdHandGestureNode(Node):
         :param depth_image: input depth image
         :type depth_image: engine.data.Image
         """
-        rgb_image = rgb_image.convert(format='channels_last') / (2**8 - 1)
-        depth_image = depth_image.convert(format='channels_last') / (2**16 - 1)
+        rgb_image = rgb_image.convert(format='channels_last') / (2 ** 8 - 1)
+        depth_image = depth_image.convert(format='channels_last') / (2 ** 16 - 1)
 
         # resize the images to 224x224
         rgb_image = cv2.resize(rgb_image, (224, 224))
@@ -131,10 +150,12 @@ def main(args=None):
                         type=str, default="/kinect2/qhd/image_depth_rect")
     parser.add_argument("-o", "--output_gestures_topic", help="Topic name for predicted gesture class",
                         type=str, default="/opendr/gestures")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                         choices=["cuda", "cpu"])
     parser.add_argument("--delay", help="The delay (in seconds) with which RGB message and"
-                        "depth message can be synchronized", type=float, default=0.1)
+                                        "depth message can be synchronized", type=float, default=0.1)
 
     args = parser.parse_args()
 
@@ -154,6 +175,7 @@ def main(args=None):
     gesture_node = RgbdHandGestureNode(input_rgb_image_topic=args.input_rgb_image_topic,
                                        input_depth_image_topic=args.input_depth_image_topic,
                                        output_gestures_topic=args.output_gestures_topic, device=device,
+                                       performance_topic=args.performance_topic,
                                        delay=args.delay)
 
     rclpy.spin(gesture_node)
