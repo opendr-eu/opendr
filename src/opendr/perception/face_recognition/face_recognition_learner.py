@@ -846,7 +846,7 @@ class FaceRecognitionLearner(Learner):
         input_names = ['data']
         output_names = ['features']
         output_name = os.path.join(self.temp_path, 'onnx_' + self.backbone + '_backbone_model.onnx')
-        torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+        torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose,
                           input_names=input_names, output_names=output_names)
         if self.mode == 'full' and self.network_head == 'classifier':
             if 'cuda' in self.device:
@@ -856,7 +856,7 @@ class FaceRecognitionLearner(Learner):
             input_names = ['features']
             output_names = ['classes']
             output_name = os.path.join(self.temp_path, 'onnx_' + self.network_head + '_head_model.onnx')
-            torch.onnx.export(self.network_head_model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            torch.onnx.export(self.network_head_model, inp, output_name, verbose=verbose,
                               input_names=input_names, output_names=output_names)
 
     def optimize(self, do_constant_folding=False):
