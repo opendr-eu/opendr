@@ -857,7 +857,7 @@ class LightweightOpenPoseLearner(Learner):
         else:
             output_names = ['stage_0_output_1_heatmaps', 'stage_0_output_0_pafs']
 
-        torch.onnx.export(self.model, inp, output_name, verbose=verbose,
+        torch.onnx.export(self.model, inp, output_name, verbose=verbose, opset_version=11,
                           do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
                           dynamic_axes={"data": {3: "width"}})
 

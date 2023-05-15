@@ -523,7 +523,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         output_names = self.heads.keys()
 
         torch.onnx.export(
-            self.model, inp, output_name, verbose=verbose,
+            self.model, inp, output_name, verbose=verbose, opset_version=11,
             do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names
         )
 

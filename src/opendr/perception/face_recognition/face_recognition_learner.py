@@ -856,7 +856,7 @@ class FaceRecognitionLearner(Learner):
             input_names = ['features']
             output_names = ['classes']
             output_name = os.path.join(self.temp_path, 'onnx_' + self.network_head + '_head_model.onnx')
-            torch.onnx.export(self.network_head_model, inp, output_name, verbose=verbose,
+            torch.onnx.export(self.network_head_model, inp, output_name, verbose=verbose, opset_version=11,
                               input_names=input_names, output_names=output_names)
 
     def optimize(self, do_constant_folding=False):

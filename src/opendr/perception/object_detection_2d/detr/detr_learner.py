@@ -644,7 +644,6 @@ class DetrLearner(Learner):
             self.model,
             x,
             os.path.join(self.temp_path, "onnx_model_temp.onnx"),
-
             do_constant_folding=do_constant_folding,
             input_names=input_names,
             output_names=output_names,
