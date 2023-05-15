@@ -846,7 +846,7 @@ class FaceRecognitionLearner(Learner):
         input_names = ['data']
         output_names = ['features']
         output_name = os.path.join(self.temp_path, 'onnx_' + self.backbone + '_backbone_model.onnx')
-        torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose,
+        torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose, opset_version=11,
                           input_names=input_names, output_names=output_names)
         if self.mode == 'full' and self.network_head == 'classifier':
             if 'cuda' in self.device:
