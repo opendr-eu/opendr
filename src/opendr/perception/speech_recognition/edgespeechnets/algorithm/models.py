@@ -75,7 +75,7 @@ class ESNResBlock(nn.Module):
         x = self.conv1(x)
         x = self.bn(x)
         x = self.conv2(x)
-        x += residual_input
+        x = x + residual_input
         return x
 
 
