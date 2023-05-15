@@ -34,6 +34,7 @@ import onnxruntime
 import shutil
 import json
 from urllib.request import urlretrieve
+from torchvision.transforms import InterpolationMode
 
 # OpenDR engine imports
 from opendr.engine.learners import Learner
@@ -172,7 +173,7 @@ class FacialEmotionLearner(Learner):
                            transforms.RandomAffine(degrees=30,
                                                    translate=(.1, .1),
                                                    scale=(1.0, 1.25),
-                                                   resample=PIL.Image.BILINEAR)]
+                                                   interpolation=InterpolationMode.BILINEAR)]
         if verbose:
             print("Starting: {}".format(str(self.name_experiment)))
             print("Running on {}".format(self.device))
