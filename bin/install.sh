@@ -29,7 +29,7 @@ git submodule update
 python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -U pip
-python3 -m pip install setuptools configparser
+python3 -m pip install setuptools configparser wheel==0.38.4
 
 # Add repositories for ROS
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' \
