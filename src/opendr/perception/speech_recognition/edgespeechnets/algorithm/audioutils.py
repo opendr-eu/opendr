@@ -18,8 +18,10 @@ import torch as t
 
 
 def _normalize(tensor: t.Tensor) -> t.Tensor:
-    tensor.add_(-tensor.mean())
-    tensor.div_(tensor.std())
+    tensor = (tensor - tensor.mean())/(tensor.std())
+    # Removed inplace operation
+    # tensor.add_(-tensor.mean())
+    # tensor.div_(tensor.std())
     return tensor
 
 
