@@ -174,7 +174,7 @@ pip3 install google-auth-oauthlib==0.4.6
 pip3 install graphviz==0.8.4
 pip3 install greenlet==1.1.2
 pip3 install grpcio==1.42.0
-pip3 install gym==0.21.0
+pip3 install gym==0.26.2
 pip3 install hyperlink==21.0.0
 pip3 install idna==3.3
 pip3 install idna-ssl==1.1.0
