@@ -59,8 +59,7 @@ class DenseNet(nn.Module):
 
         if pretrained != '':
             # get pretrained weights
-            state_dict = load_state_dict_from_url(densenet_models.model_urls[model_name],
-                                                                  progress=False)
+            state_dict = load_state_dict_from_url(densenet_models.model_urls[model_name], progress=False)
 
             # fix naming issue
             # as in https://github.com/pytorch/vision/blob/master/torchvision/models/densenet.py
