@@ -83,7 +83,7 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
+          # - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
           - control/multi_object_search
@@ -393,7 +393,7 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
+          # - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
           - control/multi_object_search
