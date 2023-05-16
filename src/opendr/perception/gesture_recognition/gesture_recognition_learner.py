@@ -51,10 +51,10 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
 _MODEL_NAMES = {"plus_m_1.5x_416"}
 
 
-class GestureLearner(NanodetLearner):
+class GestureRecognitionLearner(NanodetLearner):
     def __init__(self, **kwargs):
 
-        super(GestureLearner, self).__init__(**kwargs)
+        super(GestureRecognitionLearner, self).__init__(**kwargs)
 
         self.ort_session = None
         self.jit_model = None
