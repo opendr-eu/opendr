@@ -126,6 +126,6 @@ jobs:
         python-version: 3.8
     - name: Test Docker
       run: |
-        docker run --name toolkit -i opendr/opendr-toolkit:cpu_v2.1.0 bash
+        docker run --name toolkit -i opendr/opendr-toolkit:cpu_v2.2.0 bash
         docker start toolkit
         docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
