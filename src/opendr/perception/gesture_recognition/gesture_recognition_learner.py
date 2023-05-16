@@ -72,7 +72,7 @@ class GestureLearner(NanodetLearner):
             main_url = "https://n-usr-2uzac.s3pd02.sbercloud.ru/b-usr-2uzac-mv4/hagrid/"
             test_urls = {"test": f"{main_url}test.zip",  "ann_train_val": f"{main_url}ann_train_val.zip", "ann_test": f"{main_url}ann_test.zip"}
 
-            gestures = ["call"]#, "dislike", "fist","four","like","mute","ok","one","palm","peace_inverted","peace","rock","stop_inverted","stop","three","three2","two_up_inverted","two_up"]
+            gestures = ["call", "dislike", "fist","four","like","mute","ok","one","palm","peace_inverted","peace","rock","stop_inverted","stop","three","three2","two_up_inverted","two_up"]
             if verbose:
                 print('Downloading annotations....')
             save_path_test = os.path.join(save_path, 'test')
@@ -88,14 +88,14 @@ class GestureLearner(NanodetLearner):
                 zip_ref.extractall(save_path)
             os.remove(os.path.join(save_path, "ann_train_val.zip"))
             
-            '''
+            
             if verbose:
                 print('Downloading test data....')
             os.system(f"wget {test_urls['test']} -O {save_path_test}/test.zip")
             with zipfile.ZipFile(os.path.join(save_path_test, "test.zip"), 'r') as zip_ref:
                 zip_ref.extractall(save_path_test)
             os.remove(os.path.join(save_path_test, "test.zip"))
-            '''
+            
             save_train = os.path.join(save_path, 'train')
             os.makedirs(save_train, exist_ok=True)
 
