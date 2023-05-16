@@ -55,8 +55,8 @@ if __name__ == '__main__':
     optimize, device, model = args.optimize, args.device, args.model
 
     gesture_model = GestureRecognitionLearner(model_to_use=model, device=device)
-    #nanodet.download("./predefined_examples", mode="pretrained")
-    gesture_model.load("/home/kateryna/gesture_models/nanodet_{}".format(args.model), verbose=True)
+    nanodet.download("./predefined_examples", mode="pretrained")
+    gesture_model.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
 
     # Use the first camera available on the system
     image_provider = VideoReader(0)
@@ -65,7 +65,7 @@ if __name__ == '__main__':
         gesture_model.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize,
                          conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
 
-    if 1==1: #try:
+    while True:
         counter, avg_fps = 0, 0
         for img in image_provider:
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
             start_time = time.perf_counter()
 
             # Perform inference
-            boxes = gesture_model.infer(img, conf_threshold=0.5, iou_threshold=0.6, nms_max_num=20)
+            boxes = gesture_model.infer(img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=2)
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 
@@ -95,6 +95,4 @@ if __name__ == '__main__':
 
             cv2.imshow('Result', img)
             cv2.waitKey(1)
-    else: #except:
-        print("Average inference fps: ", avg_fps)
 
