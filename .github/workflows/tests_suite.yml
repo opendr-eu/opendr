@@ -18,8 +18,9 @@ jobs:
   test-sources:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-11]
+        os: [ubuntu-20.04, macos-11]
         include:
           - os: ubuntu-20.04
             DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
