@@ -35,7 +35,7 @@ First, install the required dependencies:
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
-pip install wheel
+pip install wheel==0.38.4
 ```
 Then, you  install the Python API of the toolkit using pip:
 ```bash
@@ -57,8 +57,8 @@ For example, if you stick with the default PyTorch version (1.8) and use CUDA11.
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
-pip install wheel
-pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install wheel==0.38.4
+pip install torch==1.13.1+cu116 torchvision==0.14.1 torchaudio==0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install 'git+https://github.com/facebookresearch/detectron2.git'
 pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
