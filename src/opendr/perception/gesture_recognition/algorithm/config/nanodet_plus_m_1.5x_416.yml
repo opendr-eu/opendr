@@ -1,16 +1,14 @@
 # nanodet-plus-m-1.5x_416
-# COCO mAP(0.5:0.95) = 0.341
-#             AP_50  = 0.506
-#             AP_75  = 0.357
-#           AP_small = 0.143
-#               AP_m = 0.363
-#               AP_l = 0.539
+# Hagrid
+# mAP: 0.8259552204046907
+# AP_50: 0.9856925561494753
+# AP_75: 0.9544670343699412
+# AP_small: 0.8283787128712872
+# AP_m: 0.6140567858343431
+# AP_l: 0.8365065829188417
 save_dir: ./temp/hagrid-nanodet_plus_m_1.5x_416
 check_point_name: plus_m_1.5x_416
 model:
-  #weight_averager:
-  #  name: ExpMovingAverager
-  #  decay: 0.9998
   arch:
     name: NanoDetPlus
     detach_epoch: 10
@@ -63,7 +61,7 @@ model:
       reg_max: 7
 data:
   train:
-    input_size: [416,416] #[w,h]
+    input_size: [416,416]
     keep_ratio: False
     pipeline:
       perspective: 0.0
@@ -76,14 +74,14 @@ data:
       brightness: 0.2
       contrast: [0.6, 1.4]
       saturation: [0.5, 1.2]
-      normalize: [[0,0,0],[1,1,1]] #[[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
+      normalize: [[0,0,0],[1,1,1]] 
   val:
-    input_size: [416,416] #[w,h]
+    input_size: [416,416]
     keep_ratio: False
     pipeline:
-      normalize: [[0,0,0],[1,1,1]] #[[103.53, 116.28, 123.675], [57.375, 57.12, 58.395]]
+      normalize: [[0,0,0],[1,1,1]]
 device:
-  gpu_ids: [0,1] #,1]
+  gpu_ids: [0,1]
   workers_per_gpu: 4
   batchsize_per_gpu: 96
 schedule:

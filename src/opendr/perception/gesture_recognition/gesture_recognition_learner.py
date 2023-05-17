@@ -65,7 +65,8 @@ class GestureRecognitionLearner(NanodetLearner):
         self.logger = None
         self.task = None
 
-    def preprocess_data(self, download=False, verbose=True, save_path='./data/'):
+    def preprocess_data(self, preprocess=True, download=False, verbose=True, save_path='./data/'):
+        
         if download:
             if verbose:
                 print('Downloading hagrid dataset....')
@@ -117,17 +118,21 @@ class GestureRecognitionLearner(NanodetLearner):
                     os.rename(os.path.join(save_train, target, filename), os.path.join(save_val, target, filename))
 
                 os.remove(os.path.join(save_train, "{}.zip".format(target)))
-        convert_to_coco(out=save_path, dataset_folder=save_path, dataset_annotations=save_path) 
+        if preprocess:
+            convert_to_coco(out=save_path, dataset_folder=save_path, dataset_annotations=save_path) 
+        dataset = ExternalDataset(save_path, 'coco')
+        val_dataset = ExternalDataset(save_path, 'coco')
+        test_dataset = ExternalDataset(save_path, 'coco')
+        return dataset, val_dataset, test_dataset
 
-    def fit(self, dataset_path = './data', preprocess_data = False, download_data = False, logging_path='', verbose=True, logging=False, seed=123, local_rank=1):
+
+    def fit(self, dataset, val_dataset, logging_path='', verbose=True, logging=False, seed=123, local_rank=1):
         """
         This method is used to train the gesture recognition model.
-        :param dataset_path: path to where dataset is located
-        :type dataset_path: str
-        :param preprocess_data: if set to True, converts raw dataset into COCO format
-        :type preprocess_data: bool
-        :param download_data: if set to True, gesture recognition dataset will be downloaded and preprocessed to COCO format
-        :type download_data: bool 
+        :param dataset: training data
+        :type dataset ExternalDataset
+        :param val_dataset: training data
+        :type val_dataset ExternalDataset
         :param logging_path: subdirectory in temp_path to save logger outputs
         :type logging_path: str
         :param verbose: if set to True, additional information is printed to STDOUT
@@ -156,11 +161,6 @@ class GestureRecognitionLearner(NanodetLearner):
         elif verbose:
             print("Setting up data...")
         
-        if preprocess_data or download_data:
-            self.preprocess_data(download=download_data, verbose=verbose, save_path=dataset_path)
-        dataset = ExternalDataset(dataset_path, 'coco')
-        val_dataset = ExternalDataset(dataset_path, 'coco')
-
         train_dataset = build_dataset(self.cfg.data.train, dataset, self.cfg.class_names, "train")
         val_dataset = train_dataset if val_dataset is None else \
             build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "val")
@@ -221,15 +221,11 @@ class GestureRecognitionLearner(NanodetLearner):
 
         trainer.fit(self.task, train_dataloader, val_dataloader)
 
-    def eval(self, dataset_path, preprocess_data=False, download_data=False, verbose=True, logging=False, local_rank=1):
+    def eval(self, dataset, verbose=True, logging=False, local_rank=1):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
-        :param dataset_path: path to the dataset
-        :type dataset_path: str
-        :param preprocess_data: if set to True, converts raw dataset into COCO format
-        :type preprocess_data: bool
-        :param download_data: if set to True, gesture recognition dataset will be downloaded and preprocessed to COCO format
-        :type download_data: bool 
+        :param dataset: test data
+        :type dataset_path: ExternalDataset
         :param verbose: if set to True, additional information is printed to STDOUT
         :type verbose: bool
         :param logging: if set to True, text and STDOUT logging will be used
@@ -251,10 +247,7 @@ class GestureRecognitionLearner(NanodetLearner):
             self.logger.info("Setting up data...")
         elif verbose:
             print("Setting up data...")
-        if preprocess_data or download_data:
-            self.preprocess_data(download=download_data, verbose=verbose, save_path=dataset_path)
 
-        dataset = ExternalDataset(dataset_path, 'coco')
         val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "test")
 
         val_dataloader = torch.utils.data.DataLoader(
