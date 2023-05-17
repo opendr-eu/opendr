@@ -24,24 +24,31 @@ The following argument only used for Whisper:
 
 ### Example:
 
-1. Run inference with MatchboxNet 
+1. Download and load model. 
+
+1.1. Download and load model without specify location. The implementation will download to some default folders: Current directory for Whisper.
 ```
-python demo.py example2.wav --model matchboxnet
+python demo.py example1.wav --model whisper --model-name tiny.en
+```
+```
+python demo.py example1.wav --model vosk --lang en-us
 ```
 
-2. Download model and run inference
-
+1.2. Download model to a specified path and load it to memory.
 ```
-python demo.py example1.wav --model whisper --model_name tiny.en
+python demo.py example1.wav --model whisper --model-name --download_dir "./pretrained_whisper"
 ```
-
-3. Load model from the given path and run inference.
-
 ```
-python demo.py example1.wav --model whisper --model_name tiny.en --model_path "./tiny.en.pt"
+python demo.py example1.wav --mode whisper --lang en-us --download_dir "./pretrained_vosk"
 ```
 
-Two example recordings are also provided in the folder.
+1.3. Load model from a path. For Whisper, path is a file, and for Vosk, path is a directory.
+```
+python demo.py example1.wav --model whisper --model-name tiny.en --model-path "./pretrained_whisper/tiny.en.pt"
+```
+```
+python demo.py example1.wav --model vosk --language en-us --model-path "./pretrained_vosk/vosk-model-small-en-us-0.15"
+```
 
 
 ## Live Demo

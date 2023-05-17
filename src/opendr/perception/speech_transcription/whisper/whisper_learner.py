@@ -49,7 +49,7 @@ class WhisperLearner(Learner):
         model_name: str,
         language: Optional[str] = "en",
         keywords_list: Optional[List[str]] = None,
-        device: str = "cpu",
+        device: str = "cuda",
         temperature: float = 0.0,
         sample_len: Optional[int] = None,
         best_of: Optional[int] = None,
@@ -192,8 +192,8 @@ class WhisperLearner(Learner):
 
     def load(
         self,
-        load_path: Optional[Union[str, Path]]= None,
-        download_root: Union[str, Path] = "./",
+        model_path: Optional[Union[str, Path]]= None,
+        download_dir: Union[str, Path] = "./",
         in_memory: bool = False,
     ):
         """
@@ -212,22 +212,26 @@ class WhisperLearner(Learner):
             AssertionError: If the model name from the given path does not match the current model name.
         """
 
-        if load_path is None:
-            assert download_root is not None, "download_root must be specified when load_path is None"
-            self.download(path=download_root)
+        self.download_dir = download_dir
 
-            url = MODELS_URL[self.model_name]
-            load_path = os.path.join(download_root, os.path.basename(url))
-        else:
-            load_model_name, _ = os.path.splitext(os.path.basename(load_path))
-            assert self.model_name == load_model_name, f"Given path: {load_path} has model name does not match with the model name: {self.model_name}"
+        if model_path is None:
+            model_path = self._get_model_path()
 
         self.model = self._load_model_weights(
-            load_path=load_path,
+            load_path=model_path,
             in_memory=in_memory,
         )
-
         self.tokenizer = get_tokenizer(self.model.is_multilingual, language=self.language, task=self.task)
+
+    def _get_model_path(self): 
+        if self.download_dir is None:
+            directory = "./"
+        else:
+            directory = self.download_dir
+
+        self.download(directory)
+        return Path(directory, f"{self.model_name}.pt")
+
 
     def download(self, path: Union[str, Path] = "."):
         """
@@ -374,7 +378,7 @@ class WhisperLearner(Learner):
     def infer(
         self,
         batch: Union[Timeseries, np.ndarray, torch.Tensor]
-    ) -> List[Dict]:
+    ) -> Union[Transcription, List[Transcription]]:
         """
         Run inference on a batch of audio sample.
 
@@ -389,10 +393,10 @@ class WhisperLearner(Learner):
         """
         if isinstance(batch, Timeseries):
             data = batch.numpy().reshape(-1)
-        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
+        elif isinstance(batch, torch.tensor) or isinstance(batch, np.ndarray):
             data = batch
         else:
-            raise TypeError("batch must be a Timeseries, torch.Tensor or np.ndarray")
+            raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
         mel = self.preprocess(data)
 
@@ -421,33 +425,31 @@ class WhisperLearner(Learner):
 
         return mel
 
-    def postprocess(
-        self,
-        decode_results: Union[whisper.DecodingResult, List[whisper.DecodingResult]],
-    ):
+    def postprocess(self, decode_results: Union[Transcription, List[Transcription]]) -> Union[Transcription, List[Transcription]]:
         """
         Postprocess the decoding results.
 
-        This function processes the given decoding results, converting them into a list of dictionaries.
-        Each dictionary contains information such as text, tokens, temperature, avg_logprob, compression_ratio,
+        This function processes the given decoding results, converting them into a list of Transcription objects.
+        Each Transcription object contains information such as text, tokens, temperature, avg_logprob, compression_ratio,
         no_speech_prob, language, and language_probs.
 
         Args:
-            decode_results (Union[whisper.DecodingResult, List[whisper.DecodingResult]]): Decoding results to be postprocessed.
+            decode_results (Union[Transcription, List[Transcription]]): Decoding results to be postprocessed.
 
         Returns:
-            List[dict]: A list of dictionaries containing postprocessed decoding result information.
+            List[Transcription]: A list of Transcription objects containing postprocessed decoding result information.
         """       
-        decode_results = (
-            decode_results if isinstance(decode_results, list) else [decode_results]
-        )
+
+        # Ensure we always work with a list
+        if not isinstance(decode_results, list):
+            decode_results = [decode_results]
 
         results = [
             Transcription(text=self.basic_text_normalizer(self.tokenizer.decode(result.tokens)))
             for result in decode_results
         ]
 
-        return results
+        return results[0] if len(results) == 1 else results
 
 
     def optimize(self):

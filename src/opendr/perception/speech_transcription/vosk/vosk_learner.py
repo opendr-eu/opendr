@@ -17,9 +17,9 @@ from typing import Union, Iterable, Optional, List, Dict
 import os
 import sys
 from logging import getLogger
-import warnings
-import urllib
 import requests
+from re import match
+import json
 from urllib.request import urlretrieve
 
 import pandas as pd
@@ -31,7 +31,8 @@ from zipfile import ZipFile
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from vosk import Model, MODEL_PRE_URL, MODEL_LIST_URL, MODEL_DIRS
+from vosk import Model as VoskModel
+from vosk import KaldiRecognizer, MODEL_PRE_URL, MODEL_LIST_URL, MODEL_DIRS
 
 from opendr.engine.data import Timeseries
 from opendr.engine.target import Transcription
@@ -43,17 +44,30 @@ logger = getLogger(__name__)
 
 class VoskLearner(Learner):
     def __init__(
-        self 
+        self,
+        model_name: str = None,
+        language: str = None, 
+        device: str = "cpu",
+        sample_rate: int = 16000,
     ):
         super(VoskLearner, self).__init__()
+        if device == "cuda":
+            logger.warning("The implementation does not support CUDA, using CPU instead.")
+            device = "cpu"
+        
+        self.model_name = model_name
+        self.language = language
+        self.device = device
+        self.sample_rate = sample_rate
         self.model = None
+        self.rec = None
 
 
     def _load_model_weights(
         self,
         model_path
     ) -> torch.nn.Module:
-        return Model(model_path=model_path)
+        return VoskModel(model_path=model_path)
 
     def save(self, path: Union[str, Path]):
         """
@@ -65,19 +79,20 @@ class VoskLearner(Learner):
         pass
 
     def load(
-        self, model_path=None, model_name=None, lang=None, download_dir=None
+        self, model_path=None, download_dir=None
     ):
         self.download_dir = download_dir
         if model_path is None:
-            model_path = self._get_model_path(model_name, lang)
+            model_path = self._get_model_path()
 
         self.model = self._load_model_weights(model_path)
+        self.rec = KaldiRecognizer(self.model, self.sample_rate)
 
-    def _get_model_path(self, model_name, lang):
-        if model_name is None:
-            model_path = self._get_model_by_lang(lang)
+    def _get_model_path(self):
+        if self.model_name is None:
+            model_path = self._get_model_by_lang(self.language)
         else:
-            model_path = self._get_model_by_name(model_name)
+            model_path = self._get_model_by_name(self.model_name)
         return str(model_path)
 
     def _get_model_by_name(self, model_name):
@@ -175,40 +190,41 @@ class VoskLearner(Learner):
     def infer(
         self,
         batch: Union[Timeseries, np.ndarray, torch.Tensor]
-    ) -> List[Dict]:
-        return
+    ) -> Transcription:
+
+        if isinstance(batch, Timeseries):
+            data = batch.numpy().reshape(-1)
+        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
+            data = batch
+        else:
+            raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
+        
+        byte_data = self.preprocess(data)
+        if self.rec.AcceptWaveform(byte_data):
+            output = self.rec.Result()
+        else:
+            output = self.rec.PartialResult()
+
+        transcribe_text =  json.loads(self.rec.FinalResult())["text"]
+        output = Transcription(text=transcribe_text)
+
+        return output
 
     def preprocess(self, data: Union[np.array, torch.Tensor]) -> torch.Tensor:
         """
         Preprocess audio data.
 
-        This function pads or trims the input audio data and computes the log Mel spectrogram.
-        The audio data should be a 1-D array for a single audio or a 2-D array with the first
-        dimension being the batch size.
-
-        Args:
-            data (Union[np.array, torch.Tensor]): Input audio data.
-
-        Returns:
-            torch.Tensor: Log Mel spectrogram of the preprocessed audio data.
         """
-        return
+        # convert the array to int16, as vosk expects 16-bit integer data.
+        data = (data * np.iinfo(np.int16).max).astype(np.int16).tobytes()
+
+        return data
 
     def postprocess(
         self,
     ):
         """
         Postprocess the decoding results.
-
-        This function processes the given decoding results, converting them into a list of dictionaries.
-        Each dictionary contains information such as text, tokens, temperature, avg_logprob, compression_ratio,
-        no_speech_prob, language, and language_probs.
-
-        Args:
-            decode_results (Union[whisper.DecodingResult, List[whisper.DecodingResult]]): Decoding results to be postprocessed.
-
-        Returns:
-            List[dict]: A list of dictionaries containing postprocessed decoding result information.
         """       
         return
 
