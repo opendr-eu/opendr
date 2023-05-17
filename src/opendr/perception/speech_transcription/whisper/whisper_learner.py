@@ -14,6 +14,7 @@
 
 
 from typing import Union, Iterable, Optional, List, Dict
+from dataclasses import asdict
 import os
 import io
 import hashlib
@@ -30,6 +31,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 import whisper
+from whisper import DecodingResult
 from whisper import _MODELS as MODELS_URL
 from whisper.model import ModelDimensions, Whisper
 from whisper.normalizers import BasicTextNormalizer, EnglishTextNormalizer
@@ -377,7 +379,8 @@ class WhisperLearner(Learner):
 
     def infer(
         self,
-        batch: Union[Timeseries, np.ndarray, torch.Tensor]
+        batch: Union[Timeseries, np.ndarray, torch.Tensor],
+        builtin_transcribe: bool = False,
     ) -> Union[Transcription, List[Transcription]]:
         """
         Run inference on a batch of audio sample.
@@ -398,10 +401,13 @@ class WhisperLearner(Learner):
         else:
             raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
-        mel = self.preprocess(data)
-
-        decode_results = self.model.decode(mel=mel, options=self.decode_options)
-        output = self.postprocess(decode_results)
+        if builtin_transcribe:
+            decode_results = self.model.transcribe(data, **asdict(self.decode_options))
+            output = Transcription(text=decode_results["text"])
+        else:
+            mel = self.preprocess(data)
+            decode_results = self.model.decode(mel=mel, options=self.decode_options)
+            output = self.postprocess(decode_results)
 
         return output
 
@@ -425,7 +431,7 @@ class WhisperLearner(Learner):
 
         return mel
 
-    def postprocess(self, decode_results: Union[Transcription, List[Transcription]]) -> Union[Transcription, List[Transcription]]:
+    def postprocess(self, decode_results: Union[DecodingResult, List[DecodingResult]]) -> Union[Transcription, List[Transcription]]:
         """
         Postprocess the decoding results.
 
@@ -444,11 +450,15 @@ class WhisperLearner(Learner):
         if not isinstance(decode_results, list):
             decode_results = [decode_results]
 
+        # results = [
+        #     Transcription(text=self.basic_text_normalizer(self.tokenizer.decode(result.tokens)))
+        #     for result in decode_results
+        # ]
+
         results = [
-            Transcription(text=self.basic_text_normalizer(self.tokenizer.decode(result.tokens)))
+            Transcription(text=self.tokenizer.decode(result.tokens))
             for result in decode_results
         ]
-
         return results[0] if len(results) == 1 else results
 
 

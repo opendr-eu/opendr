@@ -205,7 +205,7 @@ class VoskLearner(Learner):
         else:
             output = self.rec.PartialResult()
 
-        transcribe_text =  json.loads(self.rec.FinalResult())["text"]
+        transcribe_text = json.loads(self.rec.FinalResult())["text"]
         output = Transcription(text=transcribe_text)
 
         return output

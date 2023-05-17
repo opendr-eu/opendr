@@ -27,6 +27,16 @@ from opendr.perception.speech_transcription import (
     VoskLearner,
 )
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('True', 'true'):
+        return True
+    elif v.lower() in ('False', 'false'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 if __name__ == "__main__":
     # Select the device to perform inference on
@@ -65,6 +75,11 @@ if __name__ == "__main__":
         type=str,
         help="Path to the directory where the model will be downloaded",
     )
+    parser.add_argument(
+        "--builtin-transcribe",
+        type=str2bool,
+        help="Use the built-in transcribe function of the Whisper model",
+    )
 
     args = parser.parse_args()
 
@@ -82,6 +97,9 @@ if __name__ == "__main__":
     # Load the audio file and run speech command recognition
     audio_input, _ = librosa.load(args.input, sr=learner.sample_rate)
     data = Timeseries(np.expand_dims(audio_input, axis=0))
-    result = learner.infer(data)
+    if args.model == "whisper":
+        result = learner.infer(data, builtin_transcribe=args.builtin_transcribe)
+    else:
+        result = learner.infer(data)
 
     print(f"The word is: {result.data}")

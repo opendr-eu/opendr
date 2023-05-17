@@ -5,28 +5,11 @@ This folder contains a demo script for performing the speech command recognition
 
 ## Demo with audio file
 
-The demo can be run with `demo.py` as follows:
-
-```python
-python demo.py INPUT_FILE --model [matchboxnet|edgespeechnets|quad_selfonn|whisper] 
-```
-
-The following additional parameters are supported:
-
-` --model_path` gives the path to a pretrained model, if not given, downloading from the OpenDR FTP server will be attempted
-
-` --n_class` defines the number of classes supported by the model (default 20). This parameters does not applied to Whisper.
- 
-The following argument only used for Whisper:
-
-` --model_name` gives the name of different model of Whisper varying in number of parameters.
-
-
 ### Example:
 
 1. Download and load model. 
 
-1.1. Download and load model without specify location. The implementation will download to some default folders: Current directory for Whisper.
+1.1. Download and load model without specify location. The implementation will download to some default folders: Current directory for Whisper. To use the buitlin transcribe implementation of Whisper, set `buitlin_transcribe` to True in command line argument.
 ```
 python demo.py example1.wav --model whisper --model-name tiny.en
 ```
