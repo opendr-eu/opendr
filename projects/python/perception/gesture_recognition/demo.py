@@ -50,6 +50,7 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="plus_m_1.5x_416")
     parser.add_argument("--optimize", help="", type=str, default="", choices=["", "onnx", "jit"])
+    parser.add_argument("--max-hands", default=2)
     args = parser.parse_args()
 
     optimize, device, model = args.optimize, args.device, args.model
@@ -74,7 +75,7 @@ if __name__ == '__main__':
             start_time = time.perf_counter()
 
             # Perform inference
-            boxes = gesture_model.infer(img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=2)
+            boxes = gesture_model.infer(img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=args.max_hands)
             end_time = time.perf_counter()
             fps = 1.0 / (end_time - start_time)
 

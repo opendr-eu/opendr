@@ -20,22 +20,21 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.datase
 
 
 def build_dataset(cfg, dataset, class_names, mode, verbose=True, preprocess=True, download=False):
-        dataset_cfg = copy.deepcopy(cfg)
-        if verbose:
-            print("Loading type dataset from {}".format(dataset.path))
+    dataset_cfg = copy.deepcopy(cfg)
+    if verbose:
+        print("Loading type dataset from {}".format(dataset.path))
 
-        if mode == "train":
-            img_path = "{}/train".format(dataset.path)
-            ann_path = "{}/train.json".format(dataset.path)
-        elif mode == "val":
-            img_path = "{}/val".format(dataset.path)
-            ann_path = "{}/val.json".format(dataset.path)
-        else:
-            img_path = "{}/test".format(dataset.path)
-            ann_path = "{}/test.json".format(dataset.path)
-        dataset = CocoDataset(img_path=img_path, ann_path=ann_path, mode=mode, **dataset_cfg)
+    if mode == "train":
+        img_path = "{}/train".format(dataset.path)
+        ann_path = "{}/train.json".format(dataset.path)
+    elif mode == "val":
+        img_path = "{}/val".format(dataset.path)
+        ann_path = "{}/val.json".format(dataset.path)
+    else:
+        img_path = "{}/test".format(dataset.path)
+        ann_path = "{}/test.json".format(dataset.path)
+    dataset = CocoDataset(img_path=img_path, ann_path=ann_path, mode=mode, **dataset_cfg)
 
-        if verbose:
-            print("ExternalDataset loaded.")
-        return dataset
-
+    if verbose:
+        print("ExternalDataset loaded.")
+    return dataset
