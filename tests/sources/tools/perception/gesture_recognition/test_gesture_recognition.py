@@ -17,13 +17,10 @@ import unittest
 import gc
 import shutil
 import os
-import warnings
-from torch.jit import TracerWarning
 import numpy as np
 from opendr.perception.gesture_recognition.gesture_recognition_learner import GestureRecognitionLearner
 from opendr.engine.datasets import ExternalDataset
 import json
-import numpy as np
 import time
 device = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 

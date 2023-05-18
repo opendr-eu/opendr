@@ -6,11 +6,10 @@ https://github.com/hukenovs/hagrid/blob/master/converters/hagrid_to_coco.py
 under public license at https://github.com/hukenovs/hagrid/blob/master/license/en_us.pdf
 '''
 
-import argparse
 import json
 import logging
 import os
-from typing import Tuple, Union
+from typing import Tuple
 
 import numpy as np
 import pandas as pd

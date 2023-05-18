@@ -16,7 +16,6 @@ import argparse
 
 import cv2
 import time
-import sys
 from opendr.engine.data import Image
 from opendr.perception.gesture_recognition.gesture_recognition_learner import GestureRecognitionLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
@@ -56,7 +55,7 @@ if __name__ == '__main__':
     optimize, device, model = args.optimize, args.device, args.model
 
     gesture_model = GestureRecognitionLearner(model_to_use=model, device=device)
-    nanodet.download("./predefined_examples", mode="pretrained")
+    gesture_model.download("./predefined_examples", mode="pretrained")
     gesture_model.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
 
     # Use the first camera available on the system

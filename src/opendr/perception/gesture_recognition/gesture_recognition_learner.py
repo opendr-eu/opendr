@@ -16,7 +16,6 @@ import os
 import datetime
 import json
 import zipfile
-import warnings
 from pathlib import Path
 import random
 import pytorch_lightning as pl
@@ -33,15 +32,10 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.trainer.tas
 from opendr.perception.gesture_recognition.algorithm.data.dataset import build_dataset
 from opendr.perception.gesture_recognition.algorithm.data.dataset.hagrid2coco import convert_to_coco
 
-from opendr.engine.data import Image
-from opendr.engine.target import BoundingBox, BoundingBoxList
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.datasets import ExternalDataset
-from opendr.engine.learners import Learner
 from urllib.request import urlretrieve
 
-import onnxruntime as ort
-from pytorch_lightning.plugins import DDPPlugin
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import (
     cfg,
     load_config,
