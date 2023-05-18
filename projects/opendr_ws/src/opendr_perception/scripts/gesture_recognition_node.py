@@ -131,9 +131,9 @@ def main():
         device = "cpu"
 
     gesture_recognition_node = GestureRecognitionNode(device=device, model=args.model,
-                               input_rgb_image_topic=args.input_rgb_image_topic,
-                               output_rgb_image_topic=args.output_rgb_image_topic,
-                               detections_topic=args.detections_topic, threshold=args.threshold)
+                                                      input_rgb_image_topic=args.input_rgb_image_topic,
+                                                      output_rgb_image_topic=args.output_rgb_image_topic,
+                                                      detections_topic=args.detections_topic, threshold=args.threshold)
     gesture_recognition_node.listen()
 
 

@@ -64,16 +64,20 @@ def make_dummy_dataset(tmp_dir):
             images.append({'file_name': 'image_{}_{}_{}.jpg'.format(name, split, 0), 'height': 416, 'width': 416, 'id': idi})
             images.append({'file_name': 'image_{}_{}_{}.jpg'.format(name, split, 1), 'height': 416, 'width': 416, 'id': idi+1})
             annotations.append({'id': idi, 'bbox': [233.8257552, 238.43682560000002,
-                                118.39368, 145.3367104], 'segmentation': [[233.8257552,
-                                238.43682560000002, 352.2194352, 238.43682560000002,
-                                352.2194352, 383.77353600000004, 233.8257552,
-                                383.77353600000004]], 'image_id': idi, 'category_id': i,
+                                                    118.39368, 145.3367104],
+                                'segmentation': [[233.8257552, 238.43682560000002,
+                                                  352.2194352, 238.43682560000002,
+                                                  352.2194352, 383.77353600000004,
+                                                  233.8257552, 383.77353600000004]],
+                                'image_id': idi, 'category_id': i,
                                 'iscrowd': 0, 'area': 17206.94798335027})
             annotations.append({'id': idi+1, 'bbox': [233.8257552, 238.43682560000002,
-                                118.39368, 145.3367104], 'segmentation': [[233.8257552,
-                                238.43682560000002, 352.2194352, 238.43682560000002,
-                                352.2194352, 383.77353600000004, 233.8257552,
-                                383.77353600000004]], 'image_id': idi+1, 'category_id': i,
+                                                      118.39368, 145.3367104],
+                                'segmentation': [[233.8257552, 238.43682560000002,
+                                                  352.2194352, 238.43682560000002,
+                                                  352.2194352, 383.77353600000004,
+                                                  233.8257552, 383.77353600000004]],
+                                'image_id': idi+1, 'category_id': i,
                                 'iscrowd': 0, 'area': 17206.94798335027})
             idi += 2
         temp = {'images': images, 'annotations': annotations, 'categories': categories}
