@@ -1,7 +1,9 @@
 '''
 Modifications Copyright 2023 - present, OpenDR European Project
 
-This code is modified from https://github.com/hukenovs/hagrid/blob/master/converters/hagrid_to_coco.py under public license at https://github.com/hukenovs/hagrid/blob/master/license/en_us.pdf
+This code is modified from
+https://github.com/hukenovs/hagrid/blob/master/converters/hagrid_to_coco.py
+under public license at https://github.com/hukenovs/hagrid/blob/master/license/en_us.pdf
 '''
 
 import argparse
@@ -152,8 +154,10 @@ def get_dataframe(dataset_annotations, dataset_folder, targets, phase):
     return annotations
 
 
-def convert_to_coco(out='./hagrid_coco_format', dataset_folder='./data/', dataset_annotations='./data/annotations/'): 
-    targets = ['call', 'dislike', 'fist', 'four', 'like', 'mute', 'ok', 'one', 'palm', 'peace', 'rock', 'stop', 'stop_inverted', 'three', 'two_up', 'two_up_inverted', 'three2', 'peace_inverted', 'no_gesture']
+def convert_to_coco(out='./hagrid_coco_format', dataset_folder='./data/', dataset_annotations='./data/annotations/'):
+    targets = ['call', 'dislike', 'fist', 'four', 'like', 'mute', 'ok', 'one', 'palm', 'peace',
+               'rock', 'stop', 'stop_inverted', 'three', 'two_up', 'two_up_inverted',
+               'three2', 'peace_inverted', 'no_gesture']
     labels = {label: num for (label, num) in zip(targets, range(len(targets)))}
     if not os.path.exists(out):
         os.makedirs(out)
@@ -214,4 +218,3 @@ def convert_to_coco(out='./hagrid_coco_format', dataset_folder='./data/', datase
         with open(f"{out}/{phase}.json", "w") as f:
             json_str = json.dumps(res_file)
             f.write(json_str)
-

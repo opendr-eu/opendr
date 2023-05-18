@@ -63,8 +63,9 @@ if __name__ == '__main__':
     image_provider = VideoReader(0)
 
     if args.optimize != "":
-        gesture_model.optimize("./{}/nanodet_{}".format(args.optimize, args.model), optimization=args.optimize,
-                         conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
+        gesture_model.optimize("./{}/nanodet_{}".format(args.optimize, args.model),
+                               optimization=args.optimize, conf_threshold=0.35,
+                               iou_threshold=0.6, nms_max_num=20)
 
     while True:
         counter, avg_fps = 0, 0
@@ -96,4 +97,3 @@ if __name__ == '__main__':
 
             cv2.imshow('Result', img)
             cv2.waitKey(1)
-

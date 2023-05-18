@@ -33,7 +33,8 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 class GestureRecognitionNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/images",
-                 detections_topic="/opendr/gestures", performance_topic=None, device="cuda", model="plus_m_1.5x_416", threshold = 0.35):
+                 detections_topic="/opendr/gestures", performance_topic=None, device="cuda",
+                 model="plus_m_1.5x_416", threshold=0.35):
         """
         Creates a ROS2 Node for gesture recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -147,10 +148,11 @@ def main(args=None):
         device = "cpu"
 
     gesture_recognition_node = GestureRecognitionNode(device=device, model=args.model,
-                                                               input_rgb_image_topic=args.input_rgb_image_topic,
-                                                               output_rgb_image_topic=args.output_rgb_image_topic,
-                                                               detections_topic=args.detections_topic,
-                                                               performance_topic=args.performance_topic, threshold=args.threshold)
+                               input_rgb_image_topic=args.input_rgb_image_topic,
+                               output_rgb_image_topic=args.output_rgb_image_topic,
+                               detections_topic=args.detections_topic,
+                               performance_topic=args.performance_topic,
+                               threshold=args.threshold)
 
     rclpy.spin(gesture_recognition_node)
 

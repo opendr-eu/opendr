@@ -52,7 +52,9 @@ def make_dummy_dataset(tmp_dir):
         annotations = []
         categories = []
         images = []
-        classes = ['call', 'dislike', 'fist', 'four', 'like', 'mute', 'ok', 'one', 'palm', 'peace', 'rock', 'stop', 'stop_inverted', 'three', 'two_up', 'two_up_inverted', 'three2', 'peace_inverted', 'no_gesture']
+        classes = ['call', 'dislike', 'fist', 'four', 'like', 'mute', 'ok', 'one', 'palm',
+                   'peace', 'rock', 'stop', 'stop_inverted', 'three', 'two_up',
+                   'two_up_inverted', 'three2', 'peace_inverted', 'no_gesture']
         for i, name in enumerate(classes):
             categories.append({'supercategory': 'none', 'name': name, 'id': i})
             dummy_image = np.zeros((416, 416, 3))
@@ -61,8 +63,18 @@ def make_dummy_dataset(tmp_dir):
             cv2.imwrite(os.path.join(tmp_dir, split, 'image_{}_{}_{}.jpg'.format(name, split, 1)), dummy_image2)
             images.append({'file_name': 'image_{}_{}_{}.jpg'.format(name, split, 0), 'height': 416, 'width': 416, 'id': idi})
             images.append({'file_name': 'image_{}_{}_{}.jpg'.format(name, split, 1), 'height': 416, 'width': 416, 'id': idi+1})
-            annotations.append({'id': idi, 'bbox': [233.8257552, 238.43682560000002, 118.39368, 145.3367104], 'segmentation': [[233.8257552, 238.43682560000002, 352.2194352, 238.43682560000002, 352.2194352, 383.77353600000004, 233.8257552, 383.77353600000004]], 'image_id': idi, 'category_id': i, 'iscrowd': 0, 'area': 17206.94798335027})
-            annotations.append({'id': idi+1, 'bbox': [233.8257552, 238.43682560000002, 118.39368, 145.3367104], 'segmentation': [[233.8257552, 238.43682560000002, 352.2194352, 238.43682560000002, 352.2194352, 383.77353600000004, 233.8257552, 383.77353600000004]], 'image_id': idi+1, 'category_id': i, 'iscrowd': 0, 'area': 17206.94798335027})
+            annotations.append({'id': idi, 'bbox': [233.8257552, 238.43682560000002,
+                                118.39368, 145.3367104], 'segmentation': [[233.8257552,
+                                238.43682560000002, 352.2194352, 238.43682560000002,
+                                352.2194352, 383.77353600000004, 233.8257552,
+                                383.77353600000004]], 'image_id': idi, 'category_id': i,
+                                'iscrowd': 0, 'area': 17206.94798335027})
+            annotations.append({'id': idi+1, 'bbox': [233.8257552, 238.43682560000002,
+                                118.39368, 145.3367104], 'segmentation': [[233.8257552,
+                                238.43682560000002, 352.2194352, 238.43682560000002,
+                                352.2194352, 383.77353600000004, 233.8257552,
+                                383.77353600000004]], 'image_id': idi+1, 'category_id': i,
+                                'iscrowd': 0, 'area': 17206.94798335027})
             idi += 2
         temp = {'images': images, 'annotations': annotations, 'categories': categories}
         with open(os.path.join(tmp_dir, '{}.json'.format(split)), 'w') as f:
@@ -77,7 +89,9 @@ class TestGestureRecognitionLearner(unittest.TestCase):
               "**********************************")
 
         cls.temp_dir = os.path.join(".", 'temp_gesture_'+str(time.time()))
-        cls.model = GestureRecognitionLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=cls.temp_dir, batch_size=1, iters=1, checkpoint_after_iter=2, lr=1e-4)
+        cls.model = GestureRecognitionLearner(model_to_use=_DEFAULT_MODEL, device=device,
+                                              temp_path=cls.temp_dir, batch_size=1,
+                                              iters=1, checkpoint_after_iter=2, lr=1e-4)
         make_dummy_dataset(cls.temp_dir)
 
     @classmethod
@@ -126,8 +140,10 @@ class TestGestureRecognitionLearner(unittest.TestCase):
         self.model.save(path=os.path.join(self.temp_dir, "test_model"), verbose=False)
         starting_param_1 = list(self.model._model.parameters())[0].detach().clone().to(device)
         self.model.model = None
-        learner2 = GestureRecognitionLearner(model_to_use=_DEFAULT_MODEL, device=device, temp_path=self.temp_dir, batch_size=1,
-        iters=1, checkpoint_after_iter=1, lr=1e-4)
+        learner2 = GestureRecognitionLearner(model_to_use=_DEFAULT_MODEL,
+                                             device=device, temp_path=self.temp_dir,
+                                             batch_size=1, iters=1,
+                                             checkpoint_after_iter=1, lr=1e-4)
         learner2.load(path=os.path.join(self.temp_dir, "test_model"), verbose=False)
         new_param = list(learner2._model.parameters())[0].detach().clone().to(device)
         self.assertTrue(starting_param_1.allclose(new_param))

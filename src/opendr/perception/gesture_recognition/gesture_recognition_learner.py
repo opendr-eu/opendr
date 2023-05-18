@@ -63,9 +63,12 @@ class GestureRecognitionLearner(NanodetLearner):
             if verbose:
                 print('Downloading hagrid dataset....')
             main_url = "https://n-usr-2uzac.s3pd02.sbercloud.ru/b-usr-2uzac-mv4/hagrid/"
-            test_urls = {"test": f"{main_url}test.zip",  "ann_train_val": f"{main_url}ann_train_val.zip", "ann_test": f"{main_url}ann_test.zip"}
+            test_urls = {"test": f"{main_url}test.zip",
+                         "ann_train_val": f"{main_url}ann_train_val.zip", "ann_test": f"{main_url}ann_test.zip"}
 
-            gestures = ["call", "dislike", "fist", "four", "like", "mute", "ok", "one", "palm", "peace_inverted", "peace", "rock", "stop_inverted", "stop", "three", "three2", "two_up_inverted", "two_up"]
+            gestures = ["call", "dislike", "fist", "four", "like", "mute", "ok",
+                        "one", "palm", "peace_inverted", "peace", "rock", "stop_inverted",
+                        "stop", "three", "three2", "two_up_inverted", "two_up"]
             if verbose:
                 print('Downloading annotations....')
             save_path_test = os.path.join(save_path, 'test')

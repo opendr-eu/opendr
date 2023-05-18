@@ -25,6 +25,7 @@ from opendr.engine.data import Image, BoundingBoxList
 from opendr.perception.gesture_recognition.gesture_recognition_learner import GestureRecognitionLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
+
 class GestureRecognitionNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
@@ -58,11 +59,11 @@ class GestureRecognitionNode:
 
         self.bridge = ROSBridge()
 
-        # Initialize the object detector
+        # Initialize the gesture model
         self.gesture_model = GestureRecognitionLearner(model_to_use=model, device=device)
         self.gesture_model.download(path=".", verbose=True)
         self.gesture_model.load("./nanodet_{}".format(model))
-        
+
         self.threshold = threshold
 
     def listen(self):
@@ -100,6 +101,7 @@ class GestureRecognitionNode:
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
             self.image_publisher.publish(self.bridge.to_ros_image(Image(image), encoding='bgr8'))
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_rgb_image_topic", help="Topic name for input rgb image",
@@ -129,9 +131,9 @@ def main():
         device = "cpu"
 
     gesture_recognition_node = GestureRecognitionNode(device=device, model=args.model,
-                                                               input_rgb_image_topic=args.input_rgb_image_topic,
-                                                               output_rgb_image_topic=args.output_rgb_image_topic,
-                                                               detections_topic=args.detections_topic, threshold=args.threshold)
+                               input_rgb_image_topic=args.input_rgb_image_topic,
+                               output_rgb_image_topic=args.output_rgb_image_topic,
+                               detections_topic=args.detections_topic, threshold=args.threshold)
     gesture_recognition_node.listen()
 
 
