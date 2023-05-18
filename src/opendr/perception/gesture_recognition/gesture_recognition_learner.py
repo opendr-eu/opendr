@@ -56,24 +56,16 @@ class GestureRecognitionLearner(NanodetLearner):
 
         super(GestureRecognitionLearner, self).__init__(**kwargs)
 
-        self.ort_session = None
-        self.jit_model = None
-        self.predictor = None
-
-        self.pipeline = None
         self.model = build_model(self.cfg.model)
-        self.logger = None
-        self.task = None
 
     def preprocess_data(self, preprocess=True, download=False, verbose=True, save_path='./data/'):
-        
         if download:
             if verbose:
                 print('Downloading hagrid dataset....')
             main_url = "https://n-usr-2uzac.s3pd02.sbercloud.ru/b-usr-2uzac-mv4/hagrid/"
             test_urls = {"test": f"{main_url}test.zip",  "ann_train_val": f"{main_url}ann_train_val.zip", "ann_test": f"{main_url}ann_test.zip"}
 
-            gestures = ["call", "dislike", "fist","four","like","mute","ok","one","palm","peace_inverted","peace","rock","stop_inverted","stop","three","three2","two_up_inverted","two_up"]
+            gestures = ["call", "dislike", "fist", "four", "like", "mute", "ok", "one", "palm", "peace_inverted", "peace", "rock", "stop_inverted", "stop", "three", "three2", "two_up_inverted", "two_up"]
             if verbose:
                 print('Downloading annotations....')
             save_path_test = os.path.join(save_path, 'test')
@@ -88,15 +80,14 @@ class GestureRecognitionLearner(NanodetLearner):
             with zipfile.ZipFile(os.path.join(save_path, "ann_train_val.zip"), 'r') as zip_ref:
                 zip_ref.extractall(save_path)
             os.remove(os.path.join(save_path, "ann_train_val.zip"))
-            
-            
+
             if verbose:
                 print('Downloading test data....')
             os.system(f"wget {test_urls['test']} -O {save_path_test}/test.zip")
             with zipfile.ZipFile(os.path.join(save_path_test, "test.zip"), 'r') as zip_ref:
                 zip_ref.extractall(save_path_test)
             os.remove(os.path.join(save_path_test, "test.zip"))
-            
+
             save_train = os.path.join(save_path, 'train')
             os.makedirs(save_train, exist_ok=True)
 
@@ -119,12 +110,11 @@ class GestureRecognitionLearner(NanodetLearner):
 
                 os.remove(os.path.join(save_train, "{}.zip".format(target)))
         if preprocess:
-            convert_to_coco(out=save_path, dataset_folder=save_path, dataset_annotations=save_path) 
+            convert_to_coco(out=save_path, dataset_folder=save_path, dataset_annotations=save_path)
         dataset = ExternalDataset(save_path, 'coco')
         val_dataset = ExternalDataset(save_path, 'coco')
         test_dataset = ExternalDataset(save_path, 'coco')
         return dataset, val_dataset, test_dataset
-
 
     def fit(self, dataset, val_dataset, logging_path='', verbose=True, logging=False, seed=123, local_rank=1):
         """
@@ -160,7 +150,7 @@ class GestureRecognitionLearner(NanodetLearner):
             self.logger.info("Setting up data...")
         elif verbose:
             print("Setting up data...")
-        
+
         train_dataset = build_dataset(self.cfg.data.train, dataset, self.cfg.class_names, "train")
         val_dataset = train_dataset if val_dataset is None else \
             build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "val")
@@ -290,7 +280,6 @@ class GestureRecognitionLearner(NanodetLearner):
         test_results = (verbose or logging)
         return trainer.test(self.task, val_dataloader, verbose=test_results)
 
-
     def download(self, path=None, verbose=True,
                  url=OPENDR_SERVER_URL + "/perception/gesture_recognition/nanodet/"):
 
@@ -326,7 +315,7 @@ class GestureRecognitionLearner(NanodetLearner):
             print("Downloading pretrain weights if provided...")
 
         file_url = os.path.join(url, "nanodet_{}".format(model),
-                                    "nanodet_{}.pth".format(model))
+                                     "nanodet_{}.pth".format(model))
         try:
             urlretrieve(file_url, os.path.join(path, "nanodet_{}.pth".format(model)))
 
@@ -376,5 +365,3 @@ class GestureRecognitionLearner(NanodetLearner):
         assert (len(full_path) == 1), f"You must have only one nanodet_{model}.yaml file in your config folder"
         load_config(cfg, full_path[0])
         return cfg
-
-
