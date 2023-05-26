@@ -48,23 +48,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="plus_m_1.5x_416")
-    parser.add_argument("--optimize", help="", type=str, default="", choices=["", "onnx", "jit"])
     parser.add_argument("--max-hands", default=2)
     args = parser.parse_args()
 
-    optimize, device, model = args.optimize, args.device, args.model
+    device, model = args.device, args.model
 
     gesture_model = GestureRecognitionLearner(model_to_use=model, device=device)
-    gesture_model.download("./predefined_examples", mode="pretrained")
+    gesture_model.download("./predefined_examples")
     gesture_model.load("./predefined_examples/nanodet_{}".format(args.model), verbose=True)
 
     # Use the first camera available on the system
     image_provider = VideoReader(0)
-
-    if args.optimize != "":
-        gesture_model.optimize("./{}/nanodet_{}".format(args.optimize, args.model),
-                               optimization=args.optimize, conf_threshold=0.35,
-                               iou_threshold=0.6, nms_max_num=20)
 
     while True:
         counter, avg_fps = 0, 0
