@@ -54,8 +54,6 @@ Parameters:
   Indicates whether to preprocess data located in save_path to COCO format.
 - **download** : *bool, default=False*\
   Indicates whether to download data to save_path.
-- **logging_path** : *str, default=''*\
-  Subdirectory in temp_path to save log files and TensorBoard.
 - **verbose** : *bool, default=True*\
   Enables verbosity.
 - **save_path** : *str, default='./data'*\
