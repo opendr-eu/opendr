@@ -108,7 +108,7 @@ jobs:
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
-          if [ ${{ matrix.package }} = "control/mobile_manipulation" ]; then
+          if [ ${{ matrix.package }} = "control/mobile_manipulation" || ${{ matrix.package }} = "planning/end_to_end_planning" ]; then
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           fi
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -413,7 +413,7 @@ jobs:
         docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
-        if [ ${{ matrix.package }} = "control/mobile_manipulation" ]; then
+        if [ ${{ matrix.package }} = "control/mobile_manipulation" || ${{ matrix.package }} = "planning/end_to_end_planning" ]; then
           docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         else
           docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
