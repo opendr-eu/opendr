@@ -5,7 +5,7 @@
 #           AP_small = 0.079
 #               AP_m = 0.243
 #               AP_l = 0.406
-save_dir: ./workspace/efficient0_320
+save_dir: ./temp/efficient0_320
 check_point_name: EfficientNet_Lite0_320
 model:
   arch:

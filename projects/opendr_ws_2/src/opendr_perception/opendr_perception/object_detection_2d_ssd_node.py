@@ -15,10 +15,12 @@
 
 import argparse
 import mxnet as mx
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
 
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
 from vision_msgs.msg import Detection2DArray
 from opendr_bridge import ROS2Bridge
@@ -32,7 +34,8 @@ from opendr.perception.object_detection_2d import Seq2SeqNMSLearner, SoftNMS, Fa
 class ObjectDetectionSSDNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_objects_annotated",
-                 detections_topic="/opendr/objects", device="cuda", backbone="vgg16_atrous", nms_type='default'):
+                 detections_topic="/opendr/objects", performance_topic=None,
+                 device="cuda", backbone="vgg16_atrous", nms_type='default'):
         """
         Creates a ROS2 Node for object detection with SSD.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -43,6 +46,9 @@ class ObjectDetectionSSDNode(Node):
         :param detections_topic: Topic to which we are publishing the annotations (if None, no object detection message
         is published)
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param backbone: backbone network
@@ -64,6 +70,11 @@ class ObjectDetectionSSDNode(Node):
             self.object_publisher = self.create_publisher(Detection2DArray, detections_topic, 1)
         else:
             self.object_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROS2Bridge()
 
@@ -99,16 +110,24 @@ class ObjectDetectionSSDNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
 
         # Run object detection
         boxes = self.object_detector.infer(image, threshold=0.45, keep_size=False, custom_nms=self.custom_nms)
 
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
+
         if self.object_publisher is not None:
             # Publish detections in ROS message
-            ros_boxes = self.bridge.to_ros_boxes(boxes)  # Convert to ROS boxes
-            self.object_publisher.publish(ros_boxes)
+            self.object_publisher.publish(self.bridge.to_ros_boxes(boxes))
 
         if self.image_publisher is not None:
             # Get an OpenCV image back
@@ -130,6 +149,8 @@ def main(args=None):
                         default="/opendr/image_objects_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone", help="Backbone network, defaults to vgg16_atrous",
                         type=str, default="vgg16_atrous", choices=["vgg16_atrous"])
@@ -155,7 +176,8 @@ def main(args=None):
     object_detection_ssd_node = ObjectDetectionSSDNode(device=device, backbone=args.backbone, nms_type=args.nms_type,
                                                        input_rgb_image_topic=args.input_rgb_image_topic,
                                                        output_rgb_image_topic=args.output_rgb_image_topic,
-                                                       detections_topic=args.detections_topic)
+                                                       detections_topic=args.detections_topic,
+                                                       performance_topic=args.performance_topic)
 
     rclpy.spin(object_detection_ssd_node)
 

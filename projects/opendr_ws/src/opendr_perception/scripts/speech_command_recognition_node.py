@@ -17,7 +17,9 @@
 import rospy
 import torch
 import numpy as np
+from time import perf_counter
 from opendr_bridge import ROSBridge
+from std_msgs.msg import Float32
 from audio_common_msgs.msg import AudioData
 from vision_msgs.msg import Classification2D
 import argparse
@@ -29,13 +31,16 @@ from opendr.perception.speech_recognition import MatchboxNetLearner, EdgeSpeechN
 class SpeechRecognitionNode:
 
     def __init__(self, input_audio_topic="/audio/audio", output_speech_command_topic="/opendr/speech_recognition",
-                 buffer_size=1.5, model="matchboxnet", model_path=None, device="cuda"):
+                 performance_topic=None, buffer_size=1.5, model="matchboxnet", model_path=None, device="cuda"):
         """
         Creates a ROS Node for speech command recognition
         :param input_audio_topic: Topic from which the audio data is received
         :type input_audio_topic: str
         :param output_speech_command_topic: Topic to which the predictions are published
         :type output_speech_command_topic: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param buffer_size: Length of the audio buffer in seconds
         :type buffer_size: float
         :param model: base speech command recognition model: matchboxnet or quad_selfonn
@@ -48,6 +53,11 @@ class SpeechRecognitionNode:
         self.publisher = rospy.Publisher(output_speech_command_topic, Classification2D, queue_size=10)
 
         rospy.Subscriber(input_audio_topic, AudioData, self.callback)
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROSBridge()
 
@@ -88,14 +98,23 @@ class SpeechRecognitionNode:
         :param msg_data: incoming message
         :type msg_data: audio_common_msgs.msg.AudioData
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Accumulate data until the buffer is full
-        data = np.reshape(np.frombuffer(msg_data.data, dtype=np.int16)/32768.0, (1, -1))
+        data = np.reshape(np.frombuffer(msg_data.data, dtype=np.int16) / 32768.0, (1, -1))
         self.data_buffer = np.append(self.data_buffer, data, axis=1)
-        if self.data_buffer.shape[1] > 16000*self.buffer_size:
+        if self.data_buffer.shape[1] > 16000 * self.buffer_size:
 
             # Convert sample to OpenDR Timeseries and perform classification
             input_sample = Timeseries(self.data_buffer)
             class_pred = self.learner.infer(input_sample)
+
+            if self.performance_publisher:
+                end_time = perf_counter()
+                fps = 1.0 / (end_time - start_time)  # NOQA
+                fps_msg = Float32()
+                fps_msg.data = fps
+                self.performance_publisher.publish(fps_msg)
 
             # Publish output
             ros_class = self.bridge.from_category_to_rosclass(class_pred)
@@ -111,6 +130,8 @@ if __name__ == "__main__":
                         help="Listen to input data on this topic")
     parser.add_argument("-o", "--output_speech_command_topic", type=str, default="/opendr/speech_recognition",
                         help="Topic name for speech command output")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"],
                         help="Device to use (cpu, cuda)")
     parser.add_argument("--buffer_size", type=float, default=1.5, help="Size of the audio buffer in seconds")
@@ -135,6 +156,7 @@ if __name__ == "__main__":
 
     speech_node = SpeechRecognitionNode(input_audio_topic=args.input_audio_topic,
                                         output_speech_command_topic=args.output_speech_command_topic,
+                                        performance_topic=args.performance_topic,
                                         buffer_size=args.buffer_size, model=args.model, model_path=args.model_path,
                                         device=device)
     speech_node.listen()
