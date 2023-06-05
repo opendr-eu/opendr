@@ -72,19 +72,19 @@ pip3 install configparser
 
 # Install Torch
 sudo apt-get install --yes libopenblas-dev cmake ninja-build
-TORCH=torch-1.9.0-cp36-cp36m-linux_aarch64.whl
-wget https://nvidia.box.com/shared/static/h1z9sw4bb1ybi0rm3tu8qdj8hs05ljbm.whl -O torch-1.9.0-cp36-cp36m-linux_aarch64.whl
+TORCH=torch-1.13.0a0+d0d6b1f2.nv22.10-cp38-cp38-linux_aarch64.whl
+wget https://developer.download.nvidia.com/compute/redist/jp/v502/pytorch/$TORCH -O $TORCH
 
 pip3 install Cython
 pip3 install $TORCH
-rm ./torch-1.9.0-cp36-cp36m-linux_aarch64.whl
+rm ./$TORCH
 
 # Install Torchvision
-TORCH_VISION=0.10.0
+TORCH_VISION=0.14.1
 sudo apt-get install --yes libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-git clone --branch v0.10.0 https://github.com/pytorch/vision torchvision
+git clone --branch v$TORCH_VISION --single-branch https://github.com/pytorch/vision torchvision
 cd torchvision
-export BUILD_VERSION=0.10.0
+export BUILD_VERSION=$TORCH_VISION
 sudo python3 setup.py install
 cd ../
 rm -r torchvision/
