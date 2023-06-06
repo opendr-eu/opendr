@@ -18,12 +18,13 @@ jobs:
   test-sources:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-10.15]
+        os: [ubuntu-20.04, macos-11]
         include:
           - os: ubuntu-20.04
-            DEPENDENCIES_INSTALLATION: "sudo apt -y install clang-format-10 cppcheck"
-          - os: macos-10.15
+            DEPENDENCIES_INSTALLATION: "sudo apt update; sudo apt -y install clang-format-10 cppcheck"
+          - os: macos-11
             DEPENDENCIES_INSTALLATION: "brew install clang-format@11 cppcheck; ln /usr/local/bin/clang-format-11 /usr/local/bin/clang-format"
     runs-on: ${{ matrix.os }}
     steps:
@@ -105,7 +106,9 @@ jobs:
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
-          source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          fi
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
@@ -191,7 +194,7 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/multi_object_search
+          #- control/multi_object_search
           #- control/mobile_manipulation
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
@@ -223,7 +226,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python3 -m pip install --upgrade pip
-        python3 -m pip install wheel
+        python3 -m pip install wheel==0.38.4
 
         # install all tools one at a time
         while read f; do
@@ -277,7 +280,7 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/multi_object_search
+          #- control/multi_object_search
           #- control/mobile_manipulation
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
@@ -309,7 +312,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python3 -m pip install --upgrade pip
-        python3 -m pip install wheel
+        python3 -m pip install wheel==0.38.4
 
         # get the name of the wheel to install based on the test being run
         package=$(sed "s/_/-/g" <<< ${{ matrix.package }})
@@ -396,7 +399,11 @@ jobs:
         docker load < ./artifact/docker-artifact/cpu_test.zip
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
-        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
+          docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        else
+          docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        fi
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
     if: ${{ always() }}

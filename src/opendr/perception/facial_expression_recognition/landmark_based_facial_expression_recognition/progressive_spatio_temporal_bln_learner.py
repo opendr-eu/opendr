@@ -653,7 +653,7 @@ class ProgressiveSpatioTemporalBLNLearner(Learner):
                           onnx_input,  # model input (or a tuple for multiple inputs)
                           output_name,  # where to save the model (can be a file or file-like object)
                           verbose=verbose,
-                          enable_onnx_checker=True,
+                          opset_version=11,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],  # the model's input names
                           output_names=['onnx_output'],  # the model's output names

@@ -523,7 +523,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         output_names = self.heads.keys()
 
         torch.onnx.export(
-            self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            self.model, inp, output_name, verbose=verbose, opset_version=11,
             do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names
         )
 
@@ -549,6 +549,12 @@ class ObjectTracking2DFairMotLearner(Learner):
 
     def __load_from_pth(self, model, path, use_original_dict=False):
         all_params = torch.load(path, map_location=self.device)
+        state_dict = all_params['state_dict']
+        new_dict = dict()
+        for name, tensor in state_dict.items():
+            new_name = name.replace('offset_mask', 'offset')
+            new_dict[new_name] = tensor
+        all_params['state_dict'] = new_dict
         model.load_state_dict(all_params if use_original_dict else all_params["state_dict"])
 
     def _prepare_datasets(

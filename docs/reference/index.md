@@ -1,6 +1,6 @@
 # OpenDR Toolkit Reference Manual
 
-*Release 2.0.0*
+*Release 2.1.0*
 <div align="center">
   <img src="images/opendr_logo.png" />
 </div>
@@ -45,7 +45,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [edgespeechnets Module](edgespeechnets.md)
             - [quadraticselfonn Module](quadratic-selfonn.md)
         - object detection 2d:
-            - [nanodet Module](nanodet.md)
+            - [nanodet Module](object-detection-2d-nanodet.md)
             - [detr Module](detr.md)
             - [gem Module](gem.md)
             - [retinaface Module](face-detection-2d-retinaface.md)
