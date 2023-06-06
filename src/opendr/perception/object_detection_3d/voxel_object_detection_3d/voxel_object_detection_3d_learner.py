@@ -593,7 +593,7 @@ class VoxelObjectDetection3DLearner(Learner):
             inp,
             output_name,
             verbose=verbose,
-            enable_onnx_checker=True,
+            opset_version=11,
             do_constant_folding=do_constant_folding,
             input_names=input_names,
             output_names=output_names,
