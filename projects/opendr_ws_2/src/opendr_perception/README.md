@@ -1088,3 +1088,47 @@ The following optional arguments are available:
    - `-f or --fps FPS`: data fps (default=`10`)
    - `-d or --dataset_path DATASET_PATH`: path to a dataset, if it does not exist, nano KITTI dataset will be downloaded there (default=`/KITTI/opendr_nano_kitti`)
    - `-ks or --kitti_subsets_path KITTI_SUBSETS_PATH`: path to KITTI subsets, used only if a KITTI dataset is downloaded (default=`../../src/opendr/perception/object_detection_3d/datasets/nano_kitti_subsets`)
+
+### Point Cloud 2 Publisher ROS2 Node
+
+The point cloud 2 dataset publisher, publishes point cloud 2 messages from pre-downloaded dataset SemanticKITTI. It is currently being used by the ROS node [LiDAR Based Panoptic Segmentation ROS Node](#lidar-based-panoptic-segmentation-ros-node).
+
+You can create an instance of this node with any `DatasetIterator` object that returns `(PointCloud, Target)` as elements,
+to use alongside other nodes and datasets.
+You can inspect [the node](./opendr_perception/point_cloud_2_publisher_node.py) and modify it to your needs for other point cloud datasets.
+
+To get a point cloud from a dataset on the disk, you can start a `point_cloud_2_publisher_node.py` node as:
+```shell
+ros2 run opendr_perception point_cloud_2_publisher
+```
+The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-d or --dataset_path DATASET_PATH`: path of the SemanticKITTI dataset to publish the point cloud 2 message (default=`./datasets/semantickitti`)
+   - `-s or --split SPLIT`: split of the dataset to use, only (train, valid, test) are available (default=`valid`)
+   - `-o or --output_point_cloud_2_topic OUTPUT_POINT_CLOUD_2_TOPIC`: topic name to publish the data (default=`/opendr/dataset_point_cloud2`)
+   - `-t or --test_data`: Add this argument if you want to only test this node with the test data available in our server
+
+----
+## Utility ROS2 Nodes
+
+### Performance ROS2 Node
+
+The performance node is used to subscribe to the optional performance topic of a running node and log its performance in terms of the time it
+took to process a single input and produce output and in terms of frames per second. It uses a modifiable rolling window to calculate the average FPS.
+
+You can inspect [the node](./opendr_perception/performance_node.py) and modify it to your needs.
+
+#### Instructions for basic usage:
+
+1. Start the node you want to benchmark as usual but also set the optional argument `--performance_topic` to, for example, `/opendr/performance`
+2. Start the performance node:
+    ```shell
+    ros2 run opendr_perception performance
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_performance_topic INPUT_PERFORMANCE_TOPIC`: topic name for input performance data (default=`/opendr/performance`)
+   - `-w or --window WINDOW`: the window to use in number of frames to calculate the running average FPS (default=`20`)
+
+Note that the `input_performance_topic` of the performance node must match the `performance_topic` of the running node.
+Also note that the running node should properly get input and produce output to publish performance messages for the performance node to use.
