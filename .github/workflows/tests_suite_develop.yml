@@ -62,6 +62,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/pose_estimation
           - perception/fall_detection
+          - perception/gesture_recognition
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition/costgcn
           - perception/skeleton_based_action_recognition/pstgcn
@@ -176,6 +177,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/pose_estimation
           - perception/fall_detection
+          - perception/gesture_recognition
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition/costgcn
           - perception/skeleton_based_action_recognition/pstgcn
@@ -266,6 +268,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/pose_estimation
           - perception/fall_detection
+          - perception/gesture_recognition
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition/costgcn
           - perception/skeleton_based_action_recognition/pstgcn
@@ -376,6 +379,7 @@ jobs:
           - perception/multimodal_human_centric
           - perception/pose_estimation
           - perception/fall_detection
+          - perception/gesture_recognition
           - perception/speech_recognition
           - perception/skeleton_based_action_recognition/costgcn
           - perception/skeleton_based_action_recognition/pstgcn
