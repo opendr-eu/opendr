@@ -36,12 +36,12 @@ Constructor parameters:
   Specifies a path where the algorithm looks for saving the checkpoints along with the logging files. If *''* the `cfg.save_dir` will be used instead.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
-- **weight_decay**: *float, default=None*\
-- **warmup_steps**: *int, default=None*\
-- **warmup_ratio**: *float, default=None*\
-- **lr_schedule_T_max**: *int, default=None*\
-- **lr_schedule_eta_min**: *float, default=None*\
-- **grad_clip**: *int, default=None*\
+- **weight_decay**: *float, default=None*
+- **warmup_steps**: *int, default=None*
+- **warmup_ratio**: *float, default=None*
+- **lr_schedule_T_max**: *int, default=None*
+- **lr_schedule_eta_min**: *float, default=None*
+- **grad_clip**: *int, default=None*
 
 #### `GestureRecognitionLearner.preprocess_data`
 ```python
