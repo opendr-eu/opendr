@@ -33,7 +33,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [lightweight_open_pose Module](lightweight-open-pose.md)
             - [high_resolution_pose_estimation Module](high-resolution-pose-estimation.md)
         - gesture recognition:
-            - [gesture recognition Module](gesture-recognition-learner.md)
+            - [gesture_recognition Module](gesture-recognition-learner.md)
         - activity recognition:
             - [skeleton-based action recognition](skeleton-based-action-recognition.md)
             - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#class-costgcnlearner)
