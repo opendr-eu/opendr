@@ -1,6 +1,8 @@
 ## gesture_recognition module
 
-The gesture recognition module contains the GestureRecognitionLearner class and can be used to recognize and localize 18 hand gestures. The module relies on nanodet object detection module. We provide data processing scripts and a pre-trained model for [Hagrid dataset](https://github.com/hukenovs/hagrid/tree/master).
+The *gesture_recognition* module contains the *GestureRecognitionLearner* class and can be used to recognize and localize 18 hand gestures.
+The module relies on Nanodet object detection module.
+We provide data processing scripts and a pre-trained model for [Hagrid dataset](https://github.com/hukenovs/hagrid/tree/master).
 
 ### Class GestureRecognitionLearner
 Bases: `object_detection_2d.nanodet.NanodetLearner`
