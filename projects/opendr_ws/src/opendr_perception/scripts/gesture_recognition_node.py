@@ -30,7 +30,7 @@ class GestureRecognitionNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
                  output_rgb_image_topic="/opendr/images", detections_topic="/opendr/gestures",
-                 device="cuda", model="plus_m_1.5x_416", threshold=0.5):
+                 performance_topic=None, device="cuda", model="plus_m_1.5x_416", threshold=0.5):
         """
         :param input_rgb_image_topic: Topic from which we are reading the input image
         :type input_rgb_image_topic: str
