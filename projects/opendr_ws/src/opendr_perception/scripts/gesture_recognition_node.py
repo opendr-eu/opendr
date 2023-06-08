@@ -103,7 +103,7 @@ class GestureRecognitionNode:
         ros_boxes = self.bridge.to_ros_bounding_box_list(boxes)  # Convert to ROS boxes
 
         if self.performance_publisher is not None:
-            end_time=perf_counter()
+            end_time = perf_counter()
             fps = 1.0 / (end_time - start_time)
             fps_msg = Float32()
             fps_msg.data = fps
