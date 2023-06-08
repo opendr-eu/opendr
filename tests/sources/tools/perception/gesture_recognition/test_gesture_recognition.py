@@ -86,7 +86,7 @@ class TestGestureRecognitionLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print("\n\n**********************************\nTEST Nanodet Learner\n"
+        print("\n\n**********************************\nTEST GestureRecognition Learner\n"
               "**********************************")
 
         cls.temp_dir = os.path.join(".", 'temp_gesture_'+str(time.time()))
