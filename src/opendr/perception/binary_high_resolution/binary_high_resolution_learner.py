@@ -350,7 +350,7 @@ class BinaryHighResolutionLearner(Learner):
         input_names = ['data']
         output_names = ['output']
 
-        torch.onnx.export(self.model, inp, output_name, verbose=verbose,
+        torch.onnx.export(self.model, inp, output_name, verbose=verbose, opset_version=11,
                           do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
                           dynamic_axes={"data": {0: "batch", 2: "height", 3: "width"}})
 
