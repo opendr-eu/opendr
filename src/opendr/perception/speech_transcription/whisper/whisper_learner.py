@@ -48,7 +48,6 @@ logger = getLogger(__name__)
 class WhisperLearner(Learner):
     def __init__(
         self,
-        model_name: str,
         language: Optional[str] = "en",
         keywords_list: Optional[List[str]] = None,
         device: str = "cuda",
@@ -95,10 +94,10 @@ class WhisperLearner(Learner):
 
         super(WhisperLearner, self).__init__()
 
-        assert model_name in whisper.available_models(), f"Model name: {model_name} is not valid; available models = {whisper.available_models()}"
+        # assert model_name in whisper.available_models(), f"Model name: {model_name} is not valid; available models = {whisper.available_models()}"
 
         self.task = "transcribe"
-        self.model_name = model_name
+        self.model_name = None
         self.language = language
         self.keywords_list = keywords_list
         self.device = device
@@ -130,7 +129,7 @@ class WhisperLearner(Learner):
             beam_size=self.beam_size,
             patience=self.patience,
             length_penalty=self.length_penalty,
-            prompt=self.prompt,
+            # prompt=self.prompt,
             prefix=self.prefix,
             suppress_tokens=self.suppress_tokens,
             suppress_blank=self.suppress_blank,
@@ -161,7 +160,7 @@ class WhisperLearner(Learner):
             RuntimeError: If the specified model is not found.
         """
 
-        alignment_heads = whisper._ALIGNMENT_HEADS[self.model_name]
+        # alignment_heads = whisper._ALIGNMENT_HEADS[self.model_name]
 
         if os.path.isfile(load_path):
             checkpoint_file = open(load_path, "rb").read() if in_memory else load_path
@@ -179,7 +178,7 @@ class WhisperLearner(Learner):
         dims = ModelDimensions(**checkpoint["dims"])
         model = Whisper(dims)
         model.load_state_dict(checkpoint["model_state_dict"])
-        model.set_alignment_heads(alignment_heads)
+        # model.set_alignment_heads(alignment_heads)
 
         return model.to(self.device)
 
@@ -194,6 +193,7 @@ class WhisperLearner(Learner):
 
     def load(
         self,
+        model_name: str,
         model_path: Optional[Union[str, Path]]= None,
         download_dir: Union[str, Path] = "./",
         in_memory: bool = False,
@@ -214,10 +214,17 @@ class WhisperLearner(Learner):
             AssertionError: If the model name from the given path does not match the current model name.
         """
 
+        self.model_name = model_name
         self.download_dir = download_dir
 
         if model_path is None:
             model_path = self._get_model_path()
+        else:
+            name_from_path = os.path.splitext(os.path.basename(model_path))[0]
+            if self.model_name != None:
+                assert name_from_path == self.model_name, f"Model name from path is {name_from_path} but provided model name is {self.model_name}"
+            else:
+                self.model_name = name_from_path
 
         self.model = self._load_model_weights(
             load_path=model_path,
@@ -379,8 +386,8 @@ class WhisperLearner(Learner):
 
     def infer(
         self,
-        batch: Union[Timeseries, np.ndarray, torch.Tensor],
-        builtin_transcribe: bool = False,
+        batch: Union[Timeseries, np.ndarray, torch.Tensor, str],
+        builtin_transcribe: bool = True,
     ) -> Union[Transcription, List[Transcription]]:
         """
         Run inference on a batch of audio sample.
@@ -396,8 +403,10 @@ class WhisperLearner(Learner):
         """
         if isinstance(batch, Timeseries):
             data = batch.numpy().reshape(-1)
-        elif isinstance(batch, torch.tensor) or isinstance(batch, np.ndarray):
+        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
             data = batch
+        elif isinstance(batch, str):
+            data = whisper.load_audio(batch)
         else:
             raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
