@@ -35,7 +35,7 @@ from vosk import Model as VoskModel
 from vosk import KaldiRecognizer, MODEL_PRE_URL, MODEL_LIST_URL, MODEL_DIRS
 
 from opendr.engine.data import Timeseries
-from opendr.engine.target import Transcription
+from opendr.engine.target import VoskTranscription
 from opendr.engine.learners import Learner
 
 
@@ -45,8 +45,6 @@ logger = getLogger(__name__)
 class VoskLearner(Learner):
     def __init__(
         self,
-        model_name: str = None,
-        language: str = None, 
         device: str = "cpu",
         sample_rate: int = 16000,
     ):
@@ -55,8 +53,6 @@ class VoskLearner(Learner):
             logger.warning("The implementation does not support CUDA, using CPU instead.")
             device = "cpu"
         
-        self.model_name = model_name
-        self.language = language
         self.device = device
         self.sample_rate = sample_rate
         self.model = None
@@ -79,14 +75,22 @@ class VoskLearner(Learner):
         pass
 
     def load(
-        self, model_path=None, download_dir=None
+        self, 
+        name: str = None,
+        language: str = None, 
+        model_path=None,
+        download_dir=None,
     ):
+        self.model_name = name
+        self.language = language
         self.download_dir = download_dir
         if model_path is None:
             model_path = self._get_model_path()
 
         self.model = self._load_model_weights(model_path)
         self.rec = KaldiRecognizer(self.model, self.sample_rate)
+        # self.rec.SetWords(True)
+        # self.rec.SetPartialWords(True)
 
     def _get_model_path(self):
         if self.model_name is None:
@@ -172,49 +176,43 @@ class VoskLearner(Learner):
     def eval(self, dataset: Dataset, batch_size: int = 2, save_path: str = None) -> Dict:
         """
         Evaluate the model on the given dataset.
-
-        Args:
-            dataset (Dataset): A speech command dataset.
-            batch_size (int, optional): The batch size for DataLoader.
-            save_path (str, optional): The path to save the evaluation results.
-
-        Returns:
-            Dict: A dictionary containing the evaluation performance metrics.
-
-        Raises:
-            AssertionError: If the model is not loaded.
         """
         return 
 
 
     def infer(
         self,
-        batch: Union[Timeseries, np.ndarray, torch.Tensor]
-    ) -> Transcription:
+        batch: Union[Timeseries, np.ndarray, torch.Tensor, bytes]
+    ) -> VoskTranscription:
 
         if isinstance(batch, Timeseries):
             data = batch.numpy().reshape(-1)
-        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
+        elif isinstance(batch, (bytes, np.ndarray, torch.Tensor)):
             data = batch
         else:
-            raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
+            raise TypeError("batch must be a timeseries, bytes, torch.tensor or np.ndarray")
         
         byte_data = self.preprocess(data)
-        if self.rec.AcceptWaveform(byte_data):
+        accept_waveform = self.rec.AcceptWaveform(byte_data)
+        if accept_waveform:
             output = self.rec.Result()
+            text = json.loads(output)["text"]
         else:
             output = self.rec.PartialResult()
+            text = json.loads(output)["partial"]
 
-        transcribe_text = json.loads(self.rec.FinalResult())["text"]
-        output = Transcription(text=transcribe_text)
+        output = VoskTranscription(text=text, accept_waveform=accept_waveform)
 
         return output
 
-    def preprocess(self, data: Union[np.array, torch.Tensor]) -> torch.Tensor:
+    def preprocess(self, data: Union[bytes, np.array, torch.Tensor]) -> torch.Tensor:
         """
         Preprocess audio data.
 
         """
+        if isinstance(data, bytes):
+            return data
+
         # convert the array to int16, as vosk expects 16-bit integer data.
         data = (data * np.iinfo(np.int16).max).astype(np.int16).tobytes()
 

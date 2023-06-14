@@ -32,13 +32,13 @@ from torch.utils.data import Dataset, DataLoader
 
 import whisper
 from whisper import DecodingResult
-from whisper import _MODELS as MODELS_URL
+from whisper import _MODELS as MODELS_URL, _ALIGNMENT_HEADS as ALIGNMENT_HEADS
 from whisper.model import ModelDimensions, Whisper
 from whisper.normalizers import BasicTextNormalizer, EnglishTextNormalizer
 from whisper.tokenizer import get_tokenizer
 
 from opendr.engine.data import Timeseries
-from opendr.engine.target import Transcription
+from opendr.engine.target import WhisperTranscription
 from opendr.engine.learners import Learner
 
 
@@ -53,8 +53,8 @@ class WhisperLearner(Learner):
         device: str = "cuda",
         temperature: float = 0.0,
         sample_len: Optional[int] = None,
-        best_of: Optional[int] = None,
-        beam_size: Optional[int] = None,
+        best_of: Optional[int] = 5,
+        beam_size: Optional[int] = 5,
         patience: Optional[float] = None,
         length_penalty: Optional[float] = None,
         prompt: Optional[Union[str, List[int]]] = None,
@@ -138,49 +138,6 @@ class WhisperLearner(Learner):
             fp16=self.fp16,
         )
 
-        self.basic_text_normalizer = BasicTextNormalizer()
-
-
-    def _load_model_weights(
-        self,
-        load_path: Union[str, Path],
-        in_memory: bool = False,
-    ) -> torch.nn.Module:
-        """
-        Load pretrained model weights.
-
-        Args:
-            load_path (Union[str, Path]): The path to the pretrained model weights.
-            in_memory (bool, optional): Whether to load the model weights into memory.
-
-        Returns:
-            torch.nn.Module: The loaded model with pretrained weights.
-
-        Raises:
-            RuntimeError: If the specified model is not found.
-        """
-
-        # alignment_heads = whisper._ALIGNMENT_HEADS[self.model_name]
-
-        if os.path.isfile(load_path):
-            checkpoint_file = open(load_path, "rb").read() if in_memory else load_path
-        else:
-            raise RuntimeError(
-                f"Model {load_path} not found; available models = {whisper.available_models()}"
-            )
-
-        with (
-            io.BytesIO(checkpoint_file) if in_memory else open(checkpoint_file, "rb")
-        ) as fp:
-            checkpoint = torch.load(fp, map_location=self.device)
-        del checkpoint_file
-
-        dims = ModelDimensions(**checkpoint["dims"])
-        model = Whisper(dims)
-        model.load_state_dict(checkpoint["model_state_dict"])
-        # model.set_alignment_heads(alignment_heads)
-
-        return model.to(self.device)
 
     def save(self, path: Union[str, Path]):
         """
@@ -193,107 +150,46 @@ class WhisperLearner(Learner):
 
     def load(
         self,
-        model_name: str,
-        model_path: Optional[Union[str, Path]]= None,
+        name: str,
         download_dir: Union[str, Path] = "./",
         in_memory: bool = False,
     ):
         """
-        Load a pretrained model from the specified path or download it if not provided.
-
-        Args:
-            load_path (Union[str, Path], optional): The path to the pretrained model weights.
-            download_root (Union[str, Path], optional): The root directory for downloading the pretrained model.
-            in_memory (bool, optional): Whether to load the model weights into memory.
-
-        Returns:
-            None
-
-        Raises:
-            AssertionError: If download_root is not specified when load_path is None.
-            AssertionError: If the model name from the given path does not match the current model name.
+        Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
         """
 
-        self.model_name = model_name
+        self.model_name = name
         self.download_dir = download_dir
 
-        if model_path is None:
-            model_path = self._get_model_path()
-        else:
-            name_from_path = os.path.splitext(os.path.basename(model_path))[0]
-            if self.model_name != None:
-                assert name_from_path == self.model_name, f"Model name from path is {name_from_path} but provided model name is {self.model_name}"
-            else:
-                self.model_name = name_from_path
-
-        self.model = self._load_model_weights(
-            load_path=model_path,
-            in_memory=in_memory,
-        )
-        self.tokenizer = get_tokenizer(self.model.is_multilingual, language=self.language, task=self.task)
-
-    def _get_model_path(self): 
-        if self.download_dir is None:
-            directory = "./"
-        else:
-            directory = self.download_dir
-
-        self.download(directory)
-        return Path(directory, f"{self.model_name}.pt")
+        self.model = whisper.load_model(name=self.model_name, device=self.device, download_root=self.download_dir, in_memory=in_memory)
 
 
-    def download(self, path: Union[str, Path] = "."):
+    def download(self,
+        name: str,
+        download_dir: str = None,
+     ):
         """
-        Download the pretrained model specified by the current model name.
-
-        Args:
-            path (Union[str, Path], optional): The path to save the downloaded pretrained model.
-
-        Raises:
-            RuntimeError: If the target path for the downloaded model is not a regular file.
-            RuntimeError: If the SHA256 checksum does not match after downloading the model.
+        Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
         """
 
-        url = MODELS_URL[self.model_name]
-        os.makedirs(path, exist_ok=True)
-        expected_sha256 = url.split("/")[-2]
-        download_target = os.path.join(path, os.path.basename(url))
+        download_root = download_dir
+        in_memory = False
 
-        if os.path.exists(download_target) and not os.path.isfile(download_target):
-            raise RuntimeError(f"{download_target} exists and is not a regular file")
-        if os.path.isfile(download_target):
-            with open(download_target, "rb") as f:
-                model_bytes = f.read()
-            if hashlib.sha256(model_bytes).hexdigest() == expected_sha256:
-                pass
-            else:
-                warnings.warn(
-                    f"{download_target} exists, but the SHA256 checksum does not match; re-downloading the file"
-                )
+        if download_root is None:
+            default = os.path.join(os.path.expanduser("~"), ".cache")
+            download_root = os.path.join(os.getenv("XDG_CACHE_HOME", default), "whisper")
 
-        with urllib.request.urlopen(url) as source, open(
-            download_target, "wb"
-        ) as output:
-            with tqdm(
-                total=int(source.info().get("Content-Length")),
-                ncols=80,
-                unit="iB",
-                unit_scale=True,
-                unit_divisor=1024,
-            ) as loop:
-                while True:
-                    buffer = source.read(8192)
-                    if not buffer:
-                        break
-
-                    output.write(buffer)
-                    loop.update(len(buffer))
-
-        model_bytes = open(download_target, "rb").read()
-        if hashlib.sha256(model_bytes).hexdigest() != expected_sha256:
+        if name in MODELS_URL:
+            whisper._download(MODELS_URL[name], download_root, in_memory)
+        elif os.path.isfile(name):
             raise RuntimeError(
-                "Model has been downloaded but the SHA256 checksum does not not match. Please retry loading the model."
+                f"Model {name} should not be a path."
             )
+        else:
+            raise RuntimeError(
+                f"Model {name} not found; available models = {whisper.available_models()}"
+            )
+
 
     def reset(self):
         return
@@ -388,7 +284,7 @@ class WhisperLearner(Learner):
         self,
         batch: Union[Timeseries, np.ndarray, torch.Tensor, str],
         builtin_transcribe: bool = True,
-    ) -> Union[Transcription, List[Transcription]]:
+    ) -> Union[WhisperTranscription, List[WhisperTranscription]]:
         """
         Run inference on a batch of audio sample.
 
@@ -412,7 +308,7 @@ class WhisperLearner(Learner):
 
         if builtin_transcribe:
             decode_results = self.model.transcribe(data, **asdict(self.decode_options))
-            output = Transcription(text=decode_results["text"])
+            return WhisperTranscription(text=decode_results["text"], segments=decode_results["segments"])
         else:
             mel = self.preprocess(data)
             decode_results = self.model.decode(mel=mel, options=self.decode_options)
@@ -423,16 +319,6 @@ class WhisperLearner(Learner):
     def preprocess(self, data: Union[np.array, torch.Tensor]) -> torch.Tensor:
         """
         Preprocess audio data.
-
-        This function pads or trims the input audio data and computes the log Mel spectrogram.
-        The audio data should be a 1-D array for a single audio or a 2-D array with the first
-        dimension being the batch size.
-
-        Args:
-            data (Union[np.array, torch.Tensor]): Input audio data.
-
-        Returns:
-            torch.Tensor: Log Mel spectrogram of the preprocessed audio data.
         """
 
         data = whisper.pad_or_trim(data)
@@ -440,32 +326,17 @@ class WhisperLearner(Learner):
 
         return mel
 
-    def postprocess(self, decode_results: Union[DecodingResult, List[DecodingResult]]) -> Union[Transcription, List[Transcription]]:
+    def postprocess(self, decode_results: Union[DecodingResult, List[DecodingResult]]) -> Union[WhisperTranscription, List[WhisperTranscription]]:
         """
         Postprocess the decoding results.
-
-        This function processes the given decoding results, converting them into a list of Transcription objects.
-        Each Transcription object contains information such as text, tokens, temperature, avg_logprob, compression_ratio,
-        no_speech_prob, language, and language_probs.
-
-        Args:
-            decode_results (Union[Transcription, List[Transcription]]): Decoding results to be postprocessed.
-
-        Returns:
-            List[Transcription]: A list of Transcription objects containing postprocessed decoding result information.
         """       
 
         # Ensure we always work with a list
         if not isinstance(decode_results, list):
             decode_results = [decode_results]
 
-        # results = [
-        #     Transcription(text=self.basic_text_normalizer(self.tokenizer.decode(result.tokens)))
-        #     for result in decode_results
-        # ]
-
         results = [
-            Transcription(text=self.tokenizer.decode(result.tokens))
+            WhisperTranscription(text=result["text"], segments=result["segments"])
             for result in decode_results
         ]
         return results[0] if len(results) == 1 else results
