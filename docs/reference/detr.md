@@ -230,10 +230,10 @@ Documentation on how to use this node can be found [here](../../projects/opendr_
 #### Tutorials and Demos
 
 A tutorial on performing inference is available
-[here](../../projects/perception/object_detection_2d/detr/inference_tutorial.ipynb).
-Furthermore, demos on performing [training](../../projects/perception/object_detection_2d/detr/train_demo.py),
-[evaluation](../../projects/perception/object_detection_2d/detr/eval_demo.py) and
-[inference](../../projects/perception/object_detection_2d/detr/inference_demo.py) are also available.
+[here](../../projects/python/perception/object_detection_2d/detr/inference_tutorial.ipynb).
+Furthermore, demos on performing [training](../../projects/python/perception/object_detection_2d/detr/train_demo.py),
+[evaluation](../../projects/python/perception/object_detection_2d/detr/eval_demo.py) and
+[inference](../../projects/python/perception/object_detection_2d/detr/inference_demo.py) are also available.
 
 
 

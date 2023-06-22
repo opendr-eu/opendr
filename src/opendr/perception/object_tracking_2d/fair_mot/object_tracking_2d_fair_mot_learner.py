@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         image_std=[0.289, 0.274, 0.278],
         frame_rate=30,
         min_box_area=100,
+        use_pretrained_backbone=True,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking2DFairMotLearner, self).__init__(
@@ -122,6 +123,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         self.image_std = image_std
         self.frame_rate = frame_rate
         self.min_box_area = min_box_area
+        self.use_pretrained_backbone = use_pretrained_backbone
 
         main_batch_size = self.batch_size // len(self.gpus)
         rest_batch_size = (self.batch_size - main_batch_size)
@@ -461,12 +463,12 @@ class ObjectTracking2DFairMotLearner(Learner):
         except FileNotFoundError:
             # Create temp directory
             os.makedirs(self.temp_path, exist_ok=True)
-            self.__convert_rpn_to_onnx(
+            self.__convert_to_onnx(
                 input_shape,
                 os.path.join(self.temp_path, "onnx_model_temp.onnx"), do_constant_folding
             )
 
-        self.__load_rpn_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
+        self.__load_from_onnx(os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"))
 
     @staticmethod
     def download(model_name, path, server_url=None):
@@ -521,7 +523,7 @@ class ObjectTracking2DFairMotLearner(Learner):
         output_names = self.heads.keys()
 
         torch.onnx.export(
-            self.model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            self.model, inp, output_name, verbose=verbose, opset_version=11,
             do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names
         )
 
@@ -547,6 +549,12 @@ class ObjectTracking2DFairMotLearner(Learner):
 
     def __load_from_pth(self, model, path, use_original_dict=False):
         all_params = torch.load(path, map_location=self.device)
+        state_dict = all_params['state_dict']
+        new_dict = dict()
+        for name, tensor in state_dict.items():
+            new_name = name.replace('offset_mask', 'offset')
+            new_dict[new_name] = tensor
+        all_params['state_dict'] = new_dict
         model.load_state_dict(all_params if use_original_dict else all_params["state_dict"])
 
     def _prepare_datasets(
@@ -658,7 +666,7 @@ class ObjectTracking2DFairMotLearner(Learner):
 
         self.heads = heads
 
-        self.model = create_model(self.backbone, heads, self.head_conv)
+        self.model = create_model(self.use_pretrained_backbone, self.backbone, heads, self.head_conv)
         self.model.to(self.device)
         self.model.ort_session = None
         self.model.heads_names = heads.keys()

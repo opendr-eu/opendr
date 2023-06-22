@@ -262,7 +262,7 @@ Parameters:
   ssd = SingleShotDetectorLearner(device='cuda')
   ssd.download(".", mode="pretrained")
   ssd.load("./ssd_default_person", verbose=True)
-  img = Image.open(OPENDR_HOME + '/projects/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
+  img = Image.open(OPENDR_HOME + '/projects/python/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
   if not isinstance(img, Image):
       img = Image(img)
   boxes = ssd.infer(img, threshold=0.25, custom_nms=seq2SeqNMSLearner)
@@ -302,4 +302,4 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 
 
 #### References
-<a name="seq2seq_nms-1" href="https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275">[1]</a> Neural Attention-driven Non-Maximum Suppression for Person Detection, [TechRxiv](https://www.techrxiv.org/articles/preprint/Neural_Attention-driven_Non-Maximum_Suppression_for_Person_Detection/16940275).
+<a name="seq2seq_nms-1" href="https://ieeexplore.ieee.org/abstract/document/10107719">[1]</a>  C. Symeonidis, I. Mademlis, I. Pitas and N. Nikolaidis, "Neural Attention-Driven Non-Maximum Suppression for Person Detection" in IEEE Transactions on Image Processing, vol. 32, pp. 2454-2467, 2023, doi: 10.1109/TIP.2023.3268561.

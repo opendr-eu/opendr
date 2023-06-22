@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -846,7 +846,7 @@ class FaceRecognitionLearner(Learner):
         input_names = ['data']
         output_names = ['features']
         output_name = os.path.join(self.temp_path, 'onnx_' + self.backbone + '_backbone_model.onnx')
-        torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+        torch.onnx.export(self.backbone_model, inp, output_name, verbose=verbose, opset_version=11,
                           input_names=input_names, output_names=output_names)
         if self.mode == 'full' and self.network_head == 'classifier':
             if 'cuda' in self.device:
@@ -856,7 +856,7 @@ class FaceRecognitionLearner(Learner):
             input_names = ['features']
             output_names = ['classes']
             output_name = os.path.join(self.temp_path, 'onnx_' + self.network_head + '_head_model.onnx')
-            torch.onnx.export(self.network_head_model, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            torch.onnx.export(self.network_head_model, inp, output_name, verbose=verbose, opset_version=11,
                               input_names=input_names, output_names=output_names)
 
     def optimize(self, do_constant_folding=False):

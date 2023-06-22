@@ -1,2 +1,0 @@
-Flask==1.1.2
-gluoncv==0.10.1.post0

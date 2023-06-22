@@ -31,25 +31,33 @@ jobs:
           - perception/face_recognition
           - perception/heart_anomaly_detection
           - perception/multimodal_human_centric
-          - perception/object_tracking_2d
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/object_tracking_2d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
-          # - perception/object_detection_3d
-          # - control/mobile_manipulation
-          # - simulation/human_model_generation
-          # - control/single_demo_grasp
-          # - perception/object_tracking_3d
+          - simulation/human_model_generation
+          - control/mobile_manipulation
+          #- control/single_demo_grasp
+          #- planning/end_to_end_planning
+          - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -156,23 +164,30 @@ jobs:
           - perception/face_recognition
           - perception/heart_anomaly_detection
           - perception/multimodal_human_centric
-          - perception/object_tracking_2d
           - perception/pose_estimation
           - perception/fall_detection
           - perception/speech_recognition
-          - perception/skeleton_based_action_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
           - perception/semantic_segmentation
+          - perception/object_tracking_2d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
-          - perception/object_detection_3d
-          - control/mobile_manipulation
           - simulation/human_model_generation
+          # - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
           # - perception/object_tracking_3d
@@ -183,12 +198,11 @@ jobs:
         submodules: true
         fetch-depth: 0
     - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.8
     - name: Test Docker
-      run: |
-        tag=$(git describe --tags --abbrev=0)
+      run: |        tag=$(git describe --tags --abbrev=0)
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_${tag} bash
         docker start toolkit
-        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"

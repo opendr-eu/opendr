@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,14 +82,23 @@ class TestFallDetectorLearner(unittest.TestCase):
         img = Image.open(os.path.join(self.temp_dir, "test_images", "fallen.png"))
         # Detector should detect fallen person on fallen.png
         self.assertTrue(self.fall_detector.infer(img)[0][0].data == 1,
-                        msg="Fall detector didn't detect fallen person on fallen.png")
+                        msg="Fall detector didn't detect fallen person on provided image fallen.png")
+        poses = self.pose_estimator.infer(img)
+        self.assertTrue(self.fall_detector.infer(poses)[0][0].data == 1,
+                        msg="Fall detector didn't detect fallen person on poses provided for fallen.png")
 
         img = Image.open(os.path.join(self.temp_dir, "test_images", "standing.png"))
         # Detector should detect standing person on standing.png
         self.assertTrue(self.fall_detector.infer(img)[0][0].data == -1,
                         msg="Fall detector didn't detect standing person on standing.png")
+        poses = self.pose_estimator.infer(img)
+        self.assertTrue(self.fall_detector.infer(poses)[0][0].data == -1,
+                        msg="Fall detector didn't detect standing person on poses provided for standing.png")
 
         img = Image.open(os.path.join(self.temp_dir, "test_images", "no_person.png"))
         # Detector should not detect fallen nor standing person on no_person.png
         self.assertTrue(len(self.fall_detector.infer(img)) == 0,
                         msg="Fall detector detected fallen or standing person on no_person.png")
+        poses = self.pose_estimator.infer(img)
+        self.assertTrue(len(self.fall_detector.infer(poses)) == 0,
+                        msg="Fall detector detected fallen or standing person on poses provided for no_person.png")

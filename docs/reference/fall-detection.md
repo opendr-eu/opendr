@@ -5,8 +5,17 @@ The *fall_detection* module contains the *FallDetectorLearner* class, which inhe
 ### Class FallDetectorLearner
 Bases: `engine.learners.Learner`
 
-The *FallDetectorLearner* class contains the implementation of a naive fall detector algorithm.
-It can be used to perform fall detection on images (inference) using a pose estimator.
+The *FallDetectorLearner* class contains the implementation of a rule-based fall detector algorithm.
+It can be used to perform fall detection on images (inference) using a pose estimator or perform fall detection straight on poses.
+
+This rule-based method can provide **cheap and fast** fall detection capabilities when pose estimation
+is already being used. Its inference time cost is ~0.1% of pose estimation, adding negligible overhead.
+
+However, it **has known limitations** due to its nature. Working with 2D poses means that depending on the 
+orientation of the person, it cannot detect most fallen poses that face the camera. 
+Another example of known false-positive detection occurs when a person is sitting with their knees 
+detectable, but ankles obscured or undetectable, this however is critical for detecting a fallen person
+whose ankles are not visible.
 
 The [FallDetectorLearner](/src/opendr/perception/fall_detection/fall_detector_learner.py) class has the
 following public methods:
@@ -18,8 +27,20 @@ FallDetectorLearner(self, pose_estimator)
 
 Constructor parameters:
 
+- **pose_estimator**: *object, default=None*\
+  Optionally provided pose estimator class used to detect poses that the fall detector uses to determine if a person has fallen.
+
+#### `FallDetectorLearner.initialize`
+```python
+FallDetectorLearner.initialize(self, pose_estimator)
+```
+
+This method is used to initialize the fall detector with a pose estimator, in case one was not provided in the constructor.
+
+Parameters:
+
 - **pose_estimator**: *object*\
-  The provided pose estimator class used to detect poses that the fall detector uses to determine if a person has fallen.
+  Provided pose estimator class used to detect poses that the fall detector uses to determine if a person has fallen.
 
 #### `FallDetectorLearner.eval`
 ```python
@@ -39,11 +60,13 @@ Parameters:
 
 #### `FallDetectorLearner.infer`
 ```python
-FallDetectorLearner.infer(self, img)
+FallDetectorLearner.infer(self, input_)
 ```
 
-This method is used to perform fall detection on an image.
-Returns a list of tuples, one for every person detected, that each contains an `engine.target.Category`, a list of three keypoints that define two lines that are used to determine if the person has fallen, and the complete poses that were detected.
+This method is used to perform fall detection on provided input.
+The input can be either an opendr.engine.data.Image object, an OpenCV image type (ndarray) or a list of poses.
+The list of poses input is helpful when the pose estimator is run externally.
+Returns a list of tuples, one for every person detected, that each contains an `engine.target.Category`, and the corresponding pose that was detected.
 It returns an empty list if no pose detections were made.
 
 The `engine.target.Category` is `1` if person has fallen, `-1` if person is standing and `0` if a person is detected, but
@@ -51,8 +74,8 @@ the algorithm is unable to detect if person is standing or fallen.
 
 Parameters:
 
-- **img**: *object*\
-  Object of type engine.data.Image.
+- **input_**: *object*\
+  Object of type engine.data.Image, ndarray or a list of poses.
 
 #### `FallDetectorLearner.download`
 ```python
@@ -75,7 +98,7 @@ Parameters:
 
 #### Examples
 
-* **Inference and result drawing example on a test image using OpenCV.**
+* **Inference using the pose estimator internally and result drawing example on a test image using OpenCV.**
   ```python
   import cv2
   from opendr.engine.data import Image
@@ -95,7 +118,41 @@ Parameters:
   img = Image.open("test_images/fallen.png")
   detections = fall_detector.infer(img)
   fallen = detections[0][0].data  # Get fallen int from first detection
-  pose = detections[0][2]  # Get pose from first detection
+  pose = detections[0][1]  # Get pose from first detection
+  img = img.opencv()
+  draw(img, pose)  # Draw the detected pose
+  
+  if fallen == 1:
+      x, y, w, h = get_bbox(pose)
+      cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
+      cv2.putText(img, "Detected fallen person", (5, 12), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
+  cv2.imshow('Result', img)
+  cv2.waitKey(0)
+  ```
+
+
+* **Inference using the pose estimator externally, passing a list of poses to infer and result drawing example on a test image using OpenCV.**
+  ```python
+  import cv2
+  from opendr.engine.data import Image
+  from opendr.perception.fall_detection import FallDetectorLearner
+  from opendr.perception.pose_estimation import LightweightOpenPoseLearner
+  from opendr.perception.pose_estimation import draw, get_bbox
+  
+  pose_estimator = LightweightOpenPoseLearner(device="cuda", mobilenet_use_stride=False)
+  pose_estimator.download(verbose=True)  # Download the default pretrained mobilenet model
+  pose_estimator.load("openpose_default")
+  
+  fall_detector = FallDetectorLearner()
+  
+  # Download a sample dataset
+  fall_detector.download(verbose=True)
+  
+  img = Image.open("test_images/fallen.png")
+  poses = pose_estimator.infer(img)
+  detections = fall_detector.infer(poses)
+  fallen = detections[0][0].data  # Get fallen int from first detection
+  pose = detections[0][1]  # Get pose from first detection
   img = img.opencv()
   draw(img, pose)  # Draw the detected pose
   

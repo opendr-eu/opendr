@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>opendr_bridge</name>
+  <version>2.1.0</version>
+  <description>OpenDR ROS2 bridge package. This package provides a way to translate ROS2 messages into OpenDR data types
+      and vice versa.</description>
+  <maintainer email="tefas@csd.auth.gr">OpenDR Project Coordinator</maintainer>
+  <license>Apache License v2.0</license>
+
+  <exec_depend>rclpy</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

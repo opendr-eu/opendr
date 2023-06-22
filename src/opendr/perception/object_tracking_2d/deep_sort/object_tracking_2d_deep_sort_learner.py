@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -262,7 +262,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
 
         return result
 
-    def infer(self, batch, frame_ids=None):
+    def infer(self, batch, frame_ids=None, swap_left_top=False):
 
         if self.tracker is None:
             raise ValueError("No model loaded or created")
@@ -286,7 +286,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
 
             t0 = time.time()
 
-            result = self.tracker.infer(image, frame_id)
+            result = self.tracker.infer(image, frame_id, swap_left_top=swap_left_top)
             results.append(result)
 
             t0 = time.time() - t0
@@ -385,7 +385,7 @@ class ObjectTracking2DDeepSortLearner(Learner):
         output_names = ["output"]
 
         torch.onnx.export(
-            self.tracker.deepsort.extractor.net, inp, output_name, verbose=verbose, enable_onnx_checker=True,
+            self.tracker.deepsort.extractor.net, inp, output_name, verbose=verbose, opset_version=11,
             do_constant_folding=do_constant_folding, input_names=input_names, output_names=output_names,
             dynamic_axes={"data": {0: "batch"}},
         )

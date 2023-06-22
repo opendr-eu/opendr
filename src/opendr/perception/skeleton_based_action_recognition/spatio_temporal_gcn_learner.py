@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -591,7 +591,6 @@ class SpatioTemporalGCNLearner(Learner):
                           output_name,  # where to save the model (can be a file or file-like object)
                           verbose=verbose,
                           opset_version=11,
-                          enable_onnx_checker=True,
                           do_constant_folding=do_constant_folding,
                           input_names=['onnx_input'],  # the model's input names
                           output_names=['onnx_output'],  # the model's output names

@@ -1,3 +1,7 @@
 [submodule "src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS"]
 	path = src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS
 	url = https://github.com/DeepSceneSeg/EfficientPS.git
+[submodule "src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS"]
+	path = src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS
+	url = https://github.com/robot-learning-freiburg/EfficientLPS.git
+	branch = opendr

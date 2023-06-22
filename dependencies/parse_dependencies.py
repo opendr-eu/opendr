@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import os
 import sys
 from configparser import ConfigParser
 
+global flag_efficientNet
+flag_efficientNet = ''
+
 python_prerequisites_file = "python_prerequisites.txt"
 python_file = "python_dependencies.txt"
 linux_file = "linux_dependencies.txt"
@@ -37,12 +40,25 @@ def read_ini(path):
             dependencies = parser.get(section, key)
             if dependencies:
                 for package in dependencies.split('\n'):
+                    if 'efficientNet' in package:
+                        efficientNetTrick(package)
+                        continue
                     with open(summary_file, "a") as f:
                         f.write(os.path.expandvars(package) + '\n')
     read_ini_key('python-dependencies', python_prerequisites_file)
     read_ini_key('python', python_file)
     read_ini_key('linux', linux_file)
 
+
+def efficientNetTrick(package):
+    global flag_efficientNet
+    if 'EfficientLPS' in package:
+        flag_efficientNet = package
+    # EfficientPS works with both versions of efficientNet but EfficientLPS works 
+    # only with EfficientLPS version
+    elif 'EfficientPS' in package and 'EfficientLPS' not in flag_efficientNet:
+        flag_efficientNet = package
+    
 
 # Parse arguments
 section = "runtime"
@@ -65,8 +81,10 @@ read_ini('dependencies.ini')
 # Loop through tools and extract dependencies
 if not global_dependencies:
     opendr_home = os.environ.get('OPENDR_HOME')
-    for dir_to_walk in ['src', 'projects/control/eagerx']:
+    for dir_to_walk in ['src', 'projects/python/control/eagerx']:
         for subdir, dirs, files in os.walk(os.path.join(opendr_home, dir_to_walk)):
             for filename in files:
                 if filename == 'dependencies.ini':
                     read_ini(os.path.join(subdir, filename))
+with open(python_file, "a") as f:
+    f.write(os.path.expandvars(flag_efficientNet) + '\n')

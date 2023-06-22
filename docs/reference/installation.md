@@ -1,18 +1,20 @@
 # Installing OpenDR toolkit
 
 OpenDR can be installed in the following ways:
-1. By cloning this repository (CPU/GPU support)
-2. Using *pip* (CPU/GPU support)
-3. Using *docker* (CPU/GPU support)
+1. Using *pip* (CPU/GPU support)
+2. Using *docker* (CPU/GPU support)
+3. By cloning this repository (CPU/GPU support, for advanced users only)
 
 The following table summarizes the installation options based on your system architecture and OS:
 
-| Installation Method | CPU/GPU  | OS                    |
-|---------------------|----------|-----------------------|
-| Clone & Install     | Both     | Ubuntu 20.04 (x86-64) |
-| pip                 | Both     | Ubuntu 20.04 (x86-64) |
-| docker              | Both     | Linux / Windows       |
+| Installation Method   | OS                    |
+|-----------------------|-----------------------|
+| Clone & Install       | Ubuntu 20.04 (x86-64) |
+| pip                   | Ubuntu 20.04 (x86-64) |
+| docker                | Linux / Windows       |
 
+Note that pip installation includes only the Python API of the toolkit.
+If you need to use all the functionalities of the toolkit (e.g., ROS nodes, etc.), then you need either to use the pre-compiled docker images or to follow the installation instructions for cloning and building the toolkit.
 
 # Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
 
@@ -55,14 +57,11 @@ You can use OpenDR API to change the inference device.
 
 You can also verify the installation by using the supplied Python and C unit tests:
 ```bash
-make unittest
-make ctests
+sudo apt upgrade
 ```
-
-If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
-
-**HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
-If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
+before installing the toolkit and then follow the installation instructions in the relevant section.
+All the required dependencies will be automatically installed (or explicit instructions are provided).
+Other platforms apart from Ubuntu 20.04, e.g., Windows, other Linux distributions, etc., are currently supported through docker images.
 
 # Installing using *pip*
 
@@ -74,7 +73,7 @@ First, install the required dependencies:
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
-pip install wheel
+pip install wheel==0.38.4
 ```
 Then, you  install the Python API of the toolkit using pip:
 ```bash
@@ -96,8 +95,8 @@ For example, if you stick with the default PyTorch version (1.8) and use CUDA11.
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
-pip install wheel
-pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install wheel==0.38.4
+pip install torch==1.13.1+cu116 torchvision==0.14.1 torchaudio==0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install 'git+https://github.com/facebookresearch/detectron2.git'
 pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
@@ -118,42 +117,41 @@ pip install opendr-toolkit-pose-estimation
 ```
 Note that `opendr-toolkit-engine` must be always installed in your system, while multiple tools can be installed in this way.
 OpenDR distributes the following packages that can be installed:
-- *opendr-toolkit-activity_recognition*
-- *opendr-toolkit-speech_recognition*
-- *opendr-toolkit-semantic_segmentation*
-- *opendr-toolkit-skeleton_based_action_recognition*
-- *opendr-toolkit-face_recognition*
-- *opendr-toolkit-facial_expression_recognition*
-- *opendr-toolkit-panoptic_segmentation*
-- *opendr-toolkit-pose_estimation*
-- *opendr-toolkit-compressive_learning*
-- *opendr-toolkit-hyperparameter_tuner*
-- *opendr-toolkit-heart_anomaly_detection*
-- *opendr-toolkit-human_model_generation*
-- *opendr-toolkit-multimodal_human_centric*
-- *opendr-toolkit-object_detection_2d*
-- *opendr-toolkit-object_tracking_2d*
-- *opendr-toolkit-object_detection_3d*
-- *opendr-toolkit-object_tracking_3d*
-- *opendr-toolkit-mobile_manipulation* (requires a functional ROS installation)
-- *opendr-toolkit-single_demo_grasp* (requires a functional ROS installation)
+- *opendr-toolkit-activity-recognition*
+- *opendr-toolkit-speech-recognition*
+- *opendr-toolkit-semantic-segmentation*
+- *opendr-toolkit-skeleton-based-action-recognition*
+- *opendr-toolkit-face-recognition*
+- *opendr-toolkit-facial-expression-recognition*
+- *opendr-toolkit-panoptic-segmentation*
+- *opendr-toolkit-pose-estimation*
+- *opendr-toolkit-compressive-learning*
+- *opendr-toolkit-hyperparameter-tuner*
+- *opendr-toolkit-heart-anomaly-detection*
+- *opendr-toolkit-human-model-generation*
+- *opendr-toolkit-multimodal-human-centric*
+- *opendr-toolkit-object-detection-2d*
+- *opendr-toolkit-object-tracking-2d*
+- *opendr-toolkit-object-detection-3d*
+- *opendr-toolkit-object-tracking-3d*
+- *opendr-toolkit-ambiguity-measure*
+- *opendr-toolkit-fall-detection*
 
-
-Note that `opendr-toolkit` is actually just a metapackage that includes all the afformentioned packages.
+Note that `opendr-toolkit` is actually just a metapackage that includes all the aformentioned packages.
 
 
 # Installing using *docker*
 ## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run the OpenDR image as:
 ```bash
-sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v1.1.1
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v2.1.0
 ```
 The docker automatically runs a Jupyter notebook server that listens at port 8888.
 When launched, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running:
 ```bash
-sudo docker run -it opendr/opendr-toolkit:cpu_v1.1.1 /bin/bash
+sudo docker run -it opendr/opendr-toolkit:cpu_v2.1.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
@@ -162,34 +160,86 @@ source bin/activate.sh
 If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
 ```bash
 xhost +local:root
-sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v1.1.1 /bin/bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v2.1.0 /bin/bash
 ```
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v1.1.1
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v2.1.0
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v1.1.1 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v2.1.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
 source bin/activate.sh
 ```
-## Build the docker images yourself _(optional)_
-Alternatively you can also build the docker images locally using the [Dockerfile](/Dockerfile) ([Dockerfile-cuda](/Dockerfile-cuda) for cuda) provided in the root folder of the toolkit.
 
-For the CPU image, execute the following commands:
+# Installing by cloning OpenDR repository (Ubuntu 20.04, x86, architecture)
+
+This is the recommended way of installing the whole toolkit, since it allows for fully exploiting all the provided functionalities.
+To install the toolkit, please first make sure that you have `git` available on your system.
+```bash
+sudo apt install git
+```
+Then, clone the toolkit:
 ```bash
 git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
-cd opendr
-sudo docker build -t opendr/opendr-toolkit:cpu .
 ```
 
-For the cuda-enabled image, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
+If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable.
+The toolkit defaults to using CPU.
+Therefore, if you want to use GPU, please set this variable accordingly *before* running the installation script:
+```bash
+export OPENDR_DEVICE=gpu
+```
+
+If you want to use ROS or ROS2, then you need to set the `ROS_DISTRO` variable *before* running the installation script so that additional required dependencies are correctly installed.
+This variable should be set to either `noetic` or `melodic` for ROS, and `foxy` or `humble` for ROS2.
+
+You are then ready to install the toolkit:
+```bash
+cd opendr
+./bin/install.sh
+```
+The installation script automatically installs all the required dependencies.
+Note that this might take a while (~10-20min depending on your machine and network connection), while the script also makes system-wide changes.
+Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
+Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
+
+
+The installation script creates a *virtualenv*, where the toolkit is installed.
+To activate OpenDR environment you can just source the `activate.sh`:
+```bash
+source ./bin/activate.sh
+```
+Then, you are ready to use the toolkit!
+
+**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*.
+It only affects the dependency installation.
+You can use OpenDR API to change the inference device.
+
+You can also verify the installation by using the supplied Python and C unit tests:
+```bash
+make unittest
+make ctests
+```
+
+If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
+
+**HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
+If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
+
+
+## Nvidia embedded devices docker
+You can also run the corresponding docker image on an Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
+
+Note that the embedded device should be flashed with Jetpack 4.6.
+
+To enable GPU usage on the embedded device within docker, first edit `/etc/docker/daemon.json` in order to set the default docker runtime:
 ```
 {
     "runtimes": {
@@ -206,18 +256,35 @@ Restart docker afterwards:
 ```
 sudo systemctl restart docker.service
 ```
-Then you can build the supplied dockerfile:
+
+
+You can directly run the corresponding docker image by running one of the below:
 ```bash
-git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+sudo docker run -it opendr/opendr-toolkit:tx2_v2 /bin/bash
+sudo docker run -it opendr/opendr-toolkit:nx_v2 /bin/bash
+sudo docker run -it opendr/opendr-toolkit:agx_v2 /bin/bash
+```
+This will give you access to a bash terminal within the docker.
+
+After that you should enable the environment variables inside the docker with:
+```bash
 cd opendr
-sudo docker build -t opendr/opendr-toolkit:cuda -f Dockerfile-cuda .
+source bin/activate_nvidia.sh
+source /opt/ros/noetic/setup.bash
+source projects/opendr_ws/devel/setup.bash
 ```
 
-In order to run them, the commands are respectively:
-```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cpu
+The embedded devices docker comes preinstalled with the OpenDR toolkit.
+It supports all tools under perception package, as well as all corresponding ROS nodes.
+
+You can enable a USB camera, given it is mounted as `/dev/video0`,  by running the container with the following arguments:
 ```
-and
+xhost +local:root
+sudo docker run -it --privileged -v /dev/video0:/dev/video0 opendr/opendr-toolkit:nx_v2 /bin/bash
 ```
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda
+
+To use the docker on an embedded device with a monitor and a usb camera attached, as well as network access through the hosts network settings you can run:
+```
+xhost +local:root
+sudo docker run -it --privileged --network host -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DSIPLAY -v /dev/video0:/dev/video0 opendr/opendr-toolkit:nx_v2 /bin/bash
 ```

@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ class KalmanTracker3D():
         return TrackingAnnotation3D(
             self.name, self.truncated, self.occluded,
             self.alpha, self.bbox2d,
-            self.kalman_filter.x[4:].reshape(-1),
+            self.kalman_filter.x[4:7].reshape(-1),
             self.kalman_filter.x[:3].reshape(-1),
             float(self.kalman_filter.x[3]),
             self.id,

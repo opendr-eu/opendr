@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2022 OpenDR European Project
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,33 @@ extern "C" {
 /***
  * OpenDR data type for representing classification targets
  */
-struct opendr_category_target {
+struct OpenDRCategoryTarget {
   int data;
   float confidence;
 };
-typedef struct opendr_category_target opendr_category_target_t;
+typedef struct OpenDRCategoryTarget OpenDRCategoryTargetT;
+
+/***
+ * OpenDR data type for representing detection targets
+ */
+struct OpenDRDetectionTarget {
+  int name;
+  float left;
+  float top;
+  float width;
+  float height;
+  float score;
+};
+typedef struct OpenDRDetectionTarget OpenDRDetectionTargetT;
+
+/***
+ * OpenDR data type for representing vectors of detections targets
+ */
+struct OpenDRDetectionVectorTarget {
+  OpenDRDetectionTargetT *startingPointer;
+  int size;
+};
+typedef struct OpenDRDetectionVectorTarget OpenDRDetectionVectorTargetT;
 
 #ifdef __cplusplus
 }

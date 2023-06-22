@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
 
 import torch.nn as nn
 import torchvision.models.resnet as resnet_models
+
+try:
+    from torch.hub import load_state_dict_from_url
+except ImportError:
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
 getters = {'resnet18': resnet_models.resnet18,
            'resnet34': resnet_models.resnet34,
@@ -38,7 +43,7 @@ class ResNet(nn.Module):
 
         if pretrained != '':
             # get pretrained weights
-            state_dict = resnet_models.load_state_dict_from_url(resnet_models.model_urls[model_name], progress=False)
+            state_dict = load_state_dict_from_url(resnet_models.model_urls[model_name], progress=False)
 
             # remove the last classifier layer from pretrained weights
             if pretrained == 'without_classifier':

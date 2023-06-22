@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
 import torch.nn as nn
 import torchvision.models.densenet as densenet_models
 import re
+
+try:
+    from torch.hub import load_state_dict_from_url
+except ImportError:
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
 getters = {'densenet121': densenet_models.densenet121,
            'densenet161': densenet_models.densenet161,
@@ -54,8 +59,7 @@ class DenseNet(nn.Module):
 
         if pretrained != '':
             # get pretrained weights
-            state_dict = densenet_models.load_state_dict_from_url(densenet_models.model_urls[model_name],
-                                                                  progress=False)
+            state_dict = load_state_dict_from_url(densenet_models.model_urls[model_name], progress=False)
 
             # fix naming issue
             # as in https://github.com/pytorch/vision/blob/master/torchvision/models/densenet.py

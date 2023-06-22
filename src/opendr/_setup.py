@@ -1,4 +1,4 @@
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,9 +107,13 @@ def get_dependencies(current_module):
                 parser = ConfigParser()
                 parser.read(join("src/opendr", current_module, path, 'dependencies.ini'))
                 try:
-                    cur_deps = parser.get("runtime", "python").split('\n')
+                    runtime_deps = parser.get("runtime", "python").split('\n')
                 except Exception:
-                    cur_deps = []
+                    runtime_deps = []
+                try:
+                    compilation_deps = parser.get("compilation", "python").split('\n')
+                except Exception:
+                    compilation_deps = []
                 try:
                     opendr_deps = parser.get("runtime", "opendr").split('\n')
                 except Exception:
@@ -124,8 +128,9 @@ def get_dependencies(current_module):
             except Exception:
                 pass
 
+            deps = [x for x in list(set(runtime_deps + compilation_deps)) if x != '']
             # Add dependencies found (filter git-based ones and local ones)
-            for x in cur_deps:
+            for x in deps:
                 if 'git' in x or '${OPENDR_HOME}' in x:
                     skipped_dependencies.append(x)
                 else:
