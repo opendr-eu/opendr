@@ -241,7 +241,7 @@ jobs:
           if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
           if [ "$package" != "opendr" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
 
@@ -288,10 +288,10 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
+          #- control/multi_object_search
           #- control/mobile_manipulation
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
-          #- control/multi_object_search
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -330,27 +330,27 @@ jobs:
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
         # all packages require the engine
-        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
+        python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
 
         # install specific package
         if [ ${{ matrix.package }} == "utils" ]; then
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
+          python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+          python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
           # install required dependencies for derived tools, we do so manually to ensure the local one is used
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           fi
 
           # install the package itself
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+          python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
         
         if [[ ${{ matrix.package }} == "perception/object_detection_2d/retinaface" ]]; then
