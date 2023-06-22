@@ -49,8 +49,10 @@ class WhisperLearner(Learner):
     def __init__(
         self,
         language: Optional[str] = "en",
-        keywords_list: Optional[List[str]] = None,
         device: str = "cuda",
+        logprob_threshold: float = -0.8,
+        no_speech_threshold: float = 0.6,
+        condition_on_previous_text: bool = False,
         temperature: float = 0.0,
         sample_len: Optional[int] = None,
         best_of: Optional[int] = 5,
@@ -71,8 +73,6 @@ class WhisperLearner(Learner):
         Args:
             model_name (str, optional): The name of the model to use for transcription.
             language (Optional[str], optional): The language of the audio input.
-            keywords_list (Optional[List[str]], optional): A list of keywords registered by user.
-            normalized_text (Optional[bool], optional): Whether to normalize the transcribed text.
             device (str, optional): The device to use for processing, either "cpu" or "gpu".
             temperature (float, optional): The sampling temperature during decoding.
             sample_len (Optional[int], optional): The maximum length of the decoded audio.
@@ -99,8 +99,10 @@ class WhisperLearner(Learner):
         self.task = "transcribe"
         self.model_name = None
         self.language = language
-        self.keywords_list = keywords_list
         self.device = device
+        self.logprob_threshold = logprob_threshold
+        self.no_speech_threshold = no_speech_threshold
+        self.condition_on_previous_text = condition_on_previous_text
         self.temperature = temperature
         self.sample_len = sample_len
         self.best_of = best_of
@@ -197,88 +199,12 @@ class WhisperLearner(Learner):
     def fit(self):
         return
 
-    def eval(self, dataset: Dataset, batch_size: int = 2, save_path: str = None) -> Dict:
+    def eval(self, dataset: Dataset, batch_size: int = 2):
         """
         Evaluate the model on the given dataset.
 
-        Args:
-            dataset (Dataset): A speech command dataset.
-            batch_size (int, optional): The batch size for DataLoader.
-            save_path (str, optional): The path to save the evaluation results.
-
-        Returns:
-            Dict: A dictionary containing the evaluation performance metrics.
-
-        Raises:
-            AssertionError: If the model is not loaded.
         """
-        assert self.model is not None, "Model is not loaded. Please load a model before evaluating."
-
-
-        def matching_percentage(hypothesis: List[str], reference: List[str]) -> float:
-            """
-            Compute the accuracy of string predicted by the model and the ground truth.
-            Used in keyword matching.
-
-            Args:
-                hypothesis (List[str]): A list of predicted strings.
-                reference (List[str]): A list of ground truth strings.
-
-            Returns:
-                float: The accuracy of the predicted strings.
-
-            Raises:
-                AssertionError: If the model is not loaded.
-            """
-
-            if len(hypothesis) != len(reference):
-                raise ValueError("Both lists must have the same length.")
-
-            matching_count = sum(h == r for h, r in zip(hypothesis, reference))
-            total_count = len(hypothesis)
-
-            return matching_count / total_count
-
-        normalizer = EnglishTextNormalizer()
-        logger.warning("Used English text normalizer of Whisper to standardize the prediction and reference text.")
-
-        loader = DataLoader(
-            dataset,
-            batch_size=batch_size,
-            shuffle=False,
-            drop_last=False,
-        )
-
-        self.model.eval() 
-        self.model.to(self.device)
-
-        hypotheses = []
-        references = []
-
-        with torch.no_grad():
-            for samples, texts in tqdm(loader):
-                results = self.infer(samples)
-
-                if not isinstance(results, list):
-                    results = [results]
-
-                texts = [normalizer(text) for text in texts]
-                prediction = [normalizer(result.data) for result in results]
-
-                hypotheses.extend(prediction)
-                references.extend(texts)
-
-            data = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
-
-            if save_path is not None:
-                data.to_csv(save_path, index=False)
-
-        mp = matching_percentage(hypothesis=list(data["hypothesis"]), 
-                                 reference=list(data["reference"]))
-        performance = {"total_accuracy": mp}
-
-        return performance
-
+        raise NotImplementedError
 
     def infer(
         self,
@@ -307,7 +233,8 @@ class WhisperLearner(Learner):
             raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
         if builtin_transcribe:
-            decode_results = self.model.transcribe(data, **asdict(self.decode_options))
+            decode_results = self.model.transcribe(data, no_speech_threshold=self.no_speech_threshold, logprob_threshold=self.logprob_threshold, condition_on_previous_text=self.condition_on_previous_text, **asdict(self.decode_options))
+            # print(decode_results)
             return WhisperTranscription(text=decode_results["text"], segments=decode_results["segments"])
         else:
             mel = self.preprocess(data)

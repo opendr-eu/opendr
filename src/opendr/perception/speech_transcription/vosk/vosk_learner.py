@@ -58,7 +58,6 @@ class VoskLearner(Learner):
         self.model = None
         self.rec = None
 
-
     def _load_model_weights(
         self,
         model_path
@@ -89,8 +88,6 @@ class VoskLearner(Learner):
 
         self.model = self._load_model_weights(model_path)
         self.rec = KaldiRecognizer(self.model, self.sample_rate)
-        # self.rec.SetWords(True)
-        # self.rec.SetPartialWords(True)
 
     def _get_model_path(self):
         if self.model_name is None:

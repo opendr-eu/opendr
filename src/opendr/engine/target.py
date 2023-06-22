@@ -14,7 +14,7 @@
 
 from abc import ABC
 import numpy as np
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Any, List
 
 
 class BaseTarget(ABC):
@@ -1129,7 +1129,7 @@ class Heatmap(Target):
         return str(self.data)
 
 
-class Transcription(Target):
+class BaseTranscription(Target):
     """
     The Transcription target is used for speech transcription problems.
     It contains the transcribed text.
@@ -1170,3 +1170,65 @@ class Transcription(Target):
 
     def __str__(self):
         return self.data
+
+
+class WhisperTranscription(BaseTranscription):
+    """
+    WhisperTranscription is a subclass of BaseTranscription and represents a transcription made by the Whisper system.
+    """
+
+    def __init__(self, text, segments: List[Dict]):
+        super().__init__(text)
+
+        self._segments = segments
+
+    @property
+    def segments(self):
+        """
+        Getter of segments field.
+        """
+        return self._segments
+
+    @segments.setter
+    def segments(self, segments):
+        """
+        Setter for segments.
+        """
+        if isinstance(segments, List):
+            self._segments = segments
+        else:
+            raise ValueError("WhisperTranscription expects segments as list.")
+
+
+
+class VoskTranscription(BaseTranscription):
+    """
+    VoskTranscription is a subclass of BaseTranscription and represents a transcription made by the Vosk system.
+    """
+
+    def __init__(self, text, accept_waveform: bool):
+        super().__init__(text=text)
+
+        self._accept_waveform = accept_waveform
+
+    @property
+    def accept_waveform(self):
+        """
+        Getter of accept_waveform field.
+        This returns the accept_waveform field of the corresponding class.
+        :return: the accept_waveform field of the corresponding class
+        :rtype: str
+        """
+        return self._accept_waveform
+
+    @accept_waveform.setter
+    def accept_waveform(self, accept_waveform):
+        """
+        Setter for description.
+        :param: description to be assigned for the winning class
+        """
+        if isinstance(accept_waveform, bool):
+            self._accept_waveform = accept_waveform
+        else:
+            raise ValueError("accept_waveform should be a boolean value.")
+
