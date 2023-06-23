@@ -1,10 +1,23 @@
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import cv2
 cv2.namedWindow('UGV-image', cv2.WINDOW_NORMAL)
 cv2.namedWindow('UGV-segmentation', cv2.WINDOW_NORMAL)
 
 cv2.namedWindow('UAV-image', cv2.WINDOW_NORMAL)
 cv2.namedWindow('UAV-segmentation', cv2.WINDOW_NORMAL)
-
 
 path_ugv='./dataset_location/UGV/'
 path_uav='./dataset_location/UAV/'
@@ -32,7 +45,6 @@ for _ in range(6000):
             cv2.imshow('UGV-segmentation', image_ugv)
             # cv2.waitKey(1)
 
-
         index_one_uav=str(index_uav)
         if((index_uav)%3==0):
             print(index)
@@ -54,7 +66,6 @@ for _ in range(6000):
         index_uav+=1
 
         counter+=1
-
 
         if((counter) % 100==0):
             print(index)
