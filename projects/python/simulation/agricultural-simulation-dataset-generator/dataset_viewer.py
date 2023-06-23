@@ -6,8 +6,8 @@ cv2.namedWindow('UAV-image', cv2.WINDOW_NORMAL)
 cv2.namedWindow('UAV-segmentation', cv2.WINDOW_NORMAL)
 
 
-path_ugv='/home/airlab/Documents/agricultural-environment-robotti-mavicpro/datasets/noon_stormy_empty_193sec/UGV/'
-path_uav='/home/airlab/Documents/agricultural-environment-robotti-mavicpro/datasets/noon_stormy_empty_193sec/UAV/'
+path_ugv='./dataset_location/UGV/'
+path_uav='./dataset_location/UAV/'
 
 i=1 # second
 index=1
