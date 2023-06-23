@@ -1,0 +1,588 @@
+#VRML_SIM R2023a utf8
+# template language: javascript
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# Robotti field robot from AGROINTELLI.
+
+EXTERNPROTO "RobottiCamera.proto"
+EXTERNPROTO "RobottiModule.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/devices/velodyne/protos/VelodyneVLP-16.proto"
+
+PROTO Robotti [
+  field  SFVec3f     translation          0 0 0       # Is `Transform.translation`.
+  field  SFRotation  rotation             0 0 1 0     # Is `Transform.rotation`.
+  field  SFString    name                 "Robotti"   # Is `Robot.name`.
+  field  SFString    controller           "robotti"   # Is `Robot.controller`.
+  field  MFString    controllerArgs       []          # Is `Robot.controllerArgs`.
+  field  SFString    customData           ""          # Is `Robot.customData`.
+  field  SFVec2f     cameraResolution     1024 768    # Camera resolution of the front top, front bottom and rear cameras.
+  field  SFVec2f     cropCameraResolution 148 109     # Camera resolution of the downwards cameras.
+  field  SFBool      supervisor           FALSE       # Is `Robot.supervisor`.
+  field  SFBool      synchronization      TRUE        # Is `Robot.synchronization`.
+  field  SFBool      selfCollision        FALSE       # Is `Robot.selfCollision`.
+  field  SFString    window               "<generic>" # Is `Robot.window`.
+  field  MFNode      implementSlot        []          # Extends the robot with an implement attached to the robot's hitch.
+  field  SFBool      enablePhysics        TRUE        # Defines whether the table should have physics.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    children [
+      Transform {
+        translation 0.485 0 1.013250
+        children [
+          DEF BOOM_SHAPE CadShape {
+            url "meshes/boom.dae"
+          }
+          Solid {
+            rotation 1 0 0 1.570796
+            children [
+              Shape {
+                appearance DEF BOOM_MATERIAL PBRAppearance {
+                  baseColor 0.26 0.3 0.38
+                  roughness 1
+                  metalness 0
+                }
+                geometry Cylinder {
+                  height 3.0
+                  radius 0.09
+                }
+              }
+            ]
+            name "boom"
+            boundingObject Cylinder {
+              height 3
+              radius 0.09
+            }
+            %< if (fields.enablePhysics.value) { >%
+              physics Physics {
+                density -1
+                mass 10
+                centerOfMass [
+                  0 0 0
+                 ]
+                inertiaMatrix [
+                  6.122056 10.6502 6.21507
+                  -5.072528e-05 -0.0002030411 -0.0006095219
+                ]
+              }
+            %< } >%
+          }
+          Solid {
+            translation 0.395805 0 0.159
+            rotation 0 1 0 0.19635
+            children [
+              DEF LIDAR_MOUNT_SHAPE CadShape {
+                url "meshes/lidar_mount.dae"
+              }
+              Solid {
+                translation 0 0 0.033
+                children [
+                  DEF VLP16_SHAPE CadShape {
+                    url "meshes/VLP16.dae"
+                  }
+                  VelodyneVLP-16 {
+                    translation 0 0 0.0681
+                    name "velodyne"
+                  }
+                ]
+                name "velodyne_base"
+                boundingObject Cylinder {
+                  height 0.0717
+                  radius 0.0516
+                }
+                %< if (fields.enablePhysics.value) { >%
+                  physics Physics {
+                    density -1
+                    mass 0.83
+                    centerOfMass [
+                      0 0 0
+                    ]
+                    inertiaMatrix [
+                      0.0009080594 0.0009080594 0.001104962
+                      0 0 0
+                    ]
+                  }
+                %< } >%
+              }
+            ]
+            name "lidar_mount"
+            boundingObject Transform {
+              translation 0 0 0.08
+              children [
+                Box {
+                  size 0.05 0.108 0.055951
+                }
+              ]
+            }
+            %< if (fields.enablePhysics.value) { >%
+              physics Physics {
+                density -1
+                mass 0.037492
+                centerOfMass [
+                  -8.8e-05 0 0.017777
+                ]
+                inertiaMatrix [
+                  7.417026e-05 1.690666e-05 7.242299e-05
+                  -1.815613e-19 2.198022e-09 -1.624981e-19
+                ]
+              }
+            %< } >%
+          }
+          Solid {
+            translation 0.215 0 0.913
+            children [
+              DEF GNSS_MOUNT_SHAPE CadShape {
+                url [
+                  "meshes/gnss_mount.dae"
+                ]
+              }
+              Solid {
+                children [
+                  DEF DGPSs_SHAPE CadShape {
+                    url [
+                      "meshes/DGPSs.dae"
+                    ]
+                  }
+                  DEF HEMISPHERE_V500 GPS {
+                    name "Hemisphere_v500"
+                    accuracy 0.02
+                  }
+                ]
+                name "gnss_base"
+                boundingObject Box {
+                  size 0.21099 0.663 0.17
+                }
+                %< if (fields.enablePhysics.value) { >%
+                  physics Physics {
+                    density -1
+                    mass 3.7
+                    centerOfMass [
+                      0 0 0
+                    ]
+                    inertiaMatrix [
+                      0.1495386 0.01953905 0.1597784
+                      0 0 0
+                    ]
+                  }
+                %< } >%
+              }
+            ]
+            name "gnss_mount"
+            boundingObject Transform {
+              translation -0.085 0 -0.002
+              children [
+                Box {
+                  size 0.45 0.4 0.004
+                }
+              ]
+            }
+            %< if (fields.enablePhysics.value) { >%
+              physics Physics {
+                density -1
+                mass 5.398037
+                centerOfMass [
+                  -0.084129 -0.00072 -0.002
+                ]
+                inertiaMatrix [
+                  0.07170553 0.08873431 0.1604255
+                  -0.0007416371 1.336684e-13 1.137221e-15
+                ]
+              }
+            %< } >%
+          }
+          HingeJoint {
+            jointParameters HingeJointParameters {
+              axis 0 1 0
+              anchor 0.18 0 -0.16
+              dampingConstant 0.1
+              staticFriction 0.1
+            }
+            device [
+              RotationalMotor {
+                name "hitch_joint"
+                minPosition -0.8621927
+                maxTorque 500
+              }
+              PositionSensor {
+                name "hitch_joint_sensor"
+              }
+            ]
+            endPoint Solid {
+              translation 0.18 0 -0.16
+              children [
+                DEF HITCH_SHAPE CadShape {
+                  url [
+                    "meshes/hitch.dae"
+                  ]
+                }
+                Transform {
+                  children [
+                    Shape {
+                      appearance PBRAppearance {
+                        baseColor 0.043584 0.059371 0.095631
+                        roughness 0.8
+                        metalness 0
+                      }
+                    }
+                  ]
+                }
+                Solid {
+                  translation -0.57167 0 0.042073
+                  children [
+                    DEF IMPLEMENT_MOUNT_SHAPE CadShape {
+                      url [
+                        "meshes/implement_mount.dae"
+                      ]
+                    }
+                    Transform {
+                      children IS implementSlot
+                    }
+                  ]
+                  name "implement_mount"
+                  boundingObject Transform {
+                    translation 0.134598 0 -0.011704
+                    children [
+                      Box {
+                        size 0.373075 0.9 0.163649
+                      }
+                    ]
+                  }
+                  %< if (fields.enablePhysics.value) { >%
+                    physics Physics {
+                      density -1
+                      mass 12.721758
+                      centerOfMass [
+                        0.125494 0 -0.030185
+                      ]
+                      inertiaMatrix [
+                        0.0131941 0.05418321 0.04238296
+                        3.555719e-16 -0.005559994 -7.516696e-18
+                      ]
+                    }
+                  %< } >%
+                }
+              ]
+              name "hitch"
+              boundingObject Transform {
+                translation -0.017724 0.001742 0
+                children [
+                  Box {
+                    size 0.765716 0.966535 0.124162
+                  }
+                ]
+              }
+              %< if (fields.enablePhysics.value) { >%
+                physics Physics {
+                  density -1
+                  mass 84.68921
+                  centerOfMass [
+                    0.029914 0 -0.012761
+                  ]
+                  inertiaMatrix [
+                    3.020058 1.654383 4.445581
+                    -5.913949e-08 -0.03076022 -1.119355e-07
+                  ]
+                }
+              %< } >%
+            }
+          }
+          Solid {
+            translation 0.7335 0 -0.025
+            children [
+              DEF FRONT_BUMPER_SHAPE CadShape {
+                url [
+                  "meshes/front_bumper.dae"
+                ]
+              }
+              Transform {
+                rotation 1 0 0 1.570796
+                children [
+                  Shape {
+                    appearance DEF FRONT_BUMPER_MATERIAL PBRAppearance {
+                      baseColor 0.8 0 0
+                      roughness 0.8
+                      metalness 0
+                    }
+                    geometry Cylinder {
+                      height 3
+                      radius 0.009
+                    }
+                  }
+                ]
+              }
+            ]
+            name "front_bumper"
+            boundingObject Group {
+              children [
+                Transform {
+                  translation -0.26362 0 0
+                  children [
+                    Box {
+                      size 0.486241 2.669 0.098197
+                    }
+                  ]
+                }
+                Transform {
+                  translation -0.26362 0 0
+                  children [
+                    Box {
+                      size 0.486241 2.669 0.098197
+                    }
+                  ]
+                }
+                Transform {
+                  rotation 1 0 0 1.570796
+                  children [
+                    Cylinder {
+                      height 3
+                      radius 0.009
+                    }
+                  ]
+                }
+              ]
+            }
+            %< if (fields.enablePhysics.value) { >%
+              physics Physics {
+                density -1
+                mass 10.538222
+                centerOfMass [
+                  -0.096156 0 0
+                ]
+                inertiaMatrix [
+                  4.482922 0.03389693 4.512136
+                  -5.656204e-14 5.135939e-16 -1.653267e-09
+                ]
+              }
+            %< } >%
+          }
+          Solid {
+            translation 0.68 0 0
+            children [
+              DEF PLANT_CAMERA_RACK_SHAPE CadShape {
+                url [
+                  "meshes/plant_camera_rack.dae"
+                ]
+              }
+              RobottiCamera {
+                translation -0.054 1.1025 0
+                rotation 0 1 0 1.570796
+                name "camera_downwards1"
+                width %<= Math.floor(fields.cropCameraResolution.value.x) >%
+                height %<= Math.floor(fields.cropCameraResolution.value.y) >%
+                type "plant"
+                enablePhysics IS enablePhysics
+              }
+              RobottiCamera {
+                translation -0.054 0.3675 0
+                rotation 0 1 0 1.570796
+                name "camera_downwards2"
+                width %<= Math.floor(fields.cropCameraResolution.value.x) >%
+                height %<= Math.floor(fields.cropCameraResolution.value.y) >%
+                type "plant"
+                enablePhysics IS enablePhysics
+              }
+              RobottiCamera {
+                translation -0.054 -0.3675 0
+                rotation 0 1 0 1.570796
+                name "camera_downwards3"
+                width %<= Math.floor(fields.cropCameraResolution.value.x) >%
+                height %<= Math.floor(fields.cropCameraResolution.value.y) >%
+                type "plant"
+                enablePhysics IS enablePhysics
+              }
+              RobottiCamera {
+                translation -0.054 -1.1025 0
+                rotation 0 1 0 1.570796
+                name "camera_downwards4"
+                width %<= Math.floor(fields.cropCameraResolution.value.x) >%
+                height %<= Math.floor(fields.cropCameraResolution.value.y) >%
+                type "plant"
+                enablePhysics IS enablePhysics
+              }
+            ]
+            name "plant_camera_rack"
+            boundingObject Transform {
+              translation 0.01 0 0
+              children [
+                Box {
+                  size 0.02 2.669 0.05
+                }
+              ]
+            }
+            %< if (fields.enablePhysics.value) { >%
+              physics Physics {
+                density -1
+                mass 5.255702
+                centerOfMass [
+                  0.010041 0 0
+                ]
+                inertiaMatrix [
+                  3.118867 0.001850315 3.117707
+                  -3.943686e-14 -1.629629e-17 7.006061e-16
+                ]
+              }
+            %< } >%
+          }
+          RobottiCamera {
+            translation 0.395805 0 0.809
+            rotation 0 1 0 0.981748
+            name "front_top_camera"
+            width %<= Math.floor(fields.cameraResolution.value.x) >%
+            height %<= Math.floor(fields.cameraResolution.value.y) >%
+            enablePhysics IS enablePhysics
+
+          }
+          RobottiCamera {
+            translation 0.368305 0 0.484
+            # rotation 0 1 0 0.5236 restore when RobottiCamera is spherical
+            name "front_bottom_camera"
+            width %<= Math.floor(fields.cameraResolution.value.x) >%
+            height %<= Math.floor(fields.cameraResolution.value.y) >%
+            recognition TRUE
+            enablePhysics IS enablePhysics
+          }
+          RobottiCamera {
+            translation 0.094 0 0.72531
+            rotation -0.38268410513826284 5.000001373695567e-06 0.9238792538256972 3.141571
+            name "rear_camera"
+            width %<= Math.floor(fields.cameraResolution.value.x) >%
+            height %<= Math.floor(fields.cameraResolution.value.y) >%
+            enablePhysics IS enablePhysics
+          }
+        ]
+      }
+      RobottiModule {
+        translation 0.485 -1.5 1.01325
+        side "right"
+        enablePhysics IS enablePhysics
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0 1 0
+          anchor 0.485 1.5 1.01325
+          dampingConstant 15
+          staticFriction 15
+        }
+        device [
+          RotationalMotor {
+            name "left_module_joint"
+            minPosition -0.3
+            maxPosition 0.3
+            maxTorque 10000
+          }
+          PositionSensor {
+            name "left_module_joint_sensor"
+          }
+        ]
+        endPoint RobottiModule {
+          translation 0.485 1.5 1.01325
+          enablePhysics IS enablePhysics
+        }
+      }
+      Solid {
+        translation 0 -0.3 0
+        rotation 0 0.7071067811865476 0.7071067811865476 3.14159
+        children [
+          InertialUnit {
+            name "imu_robotti"
+            translation 0 0 -0.08
+            rotation 0.577349935856137 -0.5773509358560258 -0.577349935856137 -2.094395
+            children [
+              Shape {
+                appearance PBRAppearance {
+                  baseColor 1 1 0
+                  baseColorMap ImageTexture {
+                    url [
+                      "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/samples/devices/worlds/textures/inertial_unit.png"
+                    ]
+                  }
+                  roughness 0.5
+                  metalness 0
+                }
+                geometry Box {
+                  size 0.04 0.04 0.04
+                }
+              }
+            ]
+          }
+
+
+          DEF ROLL_GROUP Group {
+            children [
+              Transform {
+                translation 0 0 -0.02
+                rotation 0 0 1 1.5708
+                children [
+                  Shape {
+                    appearance DEF PLASTIC_APPEARANCE PBRAppearance {
+                      baseColor 1 0.666667 0
+                      roughness 1
+                      metalness 0
+                    }
+                    geometry Cylinder {
+                      height 0.02
+                      radius 0.04
+                      subdivision 16
+                    }
+                  }
+                ]
+              }
+              Transform {
+                translation 0 0 -0.06
+                rotation 0.5773502691896258 -0.5773502691896258 -0.5773502691896258 2.094395
+                children [
+                  Shape {
+                    appearance DEF METAL_APPEARANCE PBRAppearance {
+                      baseColor 0.5 0.5 0.5
+                      roughness 1.1102230246251565e-16
+                      metalness 0
+                    }
+                    geometry Box {
+                      size 0.02 0.06 0.02
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+        boundingObject USE ROLL_GROUP
+      }
+
+    ]
+    name IS name
+    boundingObject Transform {
+      translation 0.623752 0 1.43489
+      children [
+        Box {
+          size 0.566636 1.165 1.362585
+        }
+      ]
+    }
+    %< if (fields.enablePhysics.value) { >%
+      physics Physics {
+        density -1
+        mass 428
+        centerOfMass [
+          0.05 0.2 1
+        ]
+        inertiaMatrix [
+          0.01 0.01 0.01
+          0.0 0.0 0.0
+        ]
+      }
+    %< } >%
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    window IS window
+    recognitionColors [
+      0.71 0.71 0.71
+    ]
+  }
+}

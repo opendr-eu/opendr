@@ -1,0 +1,100 @@
+#VRML_SIM R2023a utf8
+# template language: javascript
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Triton 3.2MP spehrical camera from LUCID with the EVETAR fisheye lens E3402A.
+# Different supporting frames are used depending on the camera type.
+
+PROTO RobottiCamera [
+  field  SFVec3f                    translation     0 0 0
+  field  SFRotation                 rotation        0 0 1 0
+  field  SFString                   name            "camera"
+  field  SFInt32                    width           1024
+  field  SFInt32                    height          768
+  field  SFBool                     recognition     TRUE
+  field  SFString{"field", "plant"} type            "field"
+  field  SFBool                     enablePhysics   TRUE        # Defines whether the table should have physics.
+]
+{
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    children [
+     %< if (fields.type.value == "field") { >%
+      CadShape {
+        url [
+          "meshes/camera_mount.dae"
+        ]
+      }
+     %< } else { >%
+      Transform {
+        translation 0 0 0.033
+        rotation 0 1 0 -1.57
+        children [
+          CadShape {
+            url [
+              "meshes/plant_camera_mount.dae"
+            ]
+          }
+        ]
+      }
+     %< } >%
+      Camera {
+        translation 0.08 0 0.043
+        children [
+          Transform {
+            translation -0.08 0 -0.01
+            children [
+              CadShape {
+                url [
+                  "meshes/camera.dae"
+                ]
+              }
+            ]
+          }
+        ]
+      %< if (fields.recognition.value) { >%
+        recognition Recognition {
+          segmentation TRUE
+          occlusion TRUE
+          maxRange 200
+        }
+      %< } >%
+        name IS name
+        fieldOfView 0.7854
+        width IS width
+        height IS height
+        projection "planar"
+
+      }
+    ]
+    name %<= '"' + fields.name.value + '_mount"' >%
+    boundingObject Transform {
+    %< if (fields.type.value == 'field') { >%
+      translation 0.022 0 0.0436
+    %< } else {  >%
+      translation 0.024 0 0.048
+    %< } >%
+      children [
+        Box {
+        %< if (fields.type.value == 'field') { >%
+          size 0.120944 0.108 0.136436
+        %< } else { >%
+          size 0.115 0.03 0.03
+        %< } >%
+        }
+      ]
+    }
+    %< if (fields.enablePhysics.value) { >%
+      physics Physics {
+        density -1
+      %< if (fields.type.value == 'field') { >%
+        mass 0.126595
+      %< } else {  >%
+        mass 0.32
+      %< } >%
+      }
+    %< } >%
+  }
+}
