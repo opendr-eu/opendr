@@ -55,5 +55,5 @@ In order to manage the dataset location, length, and obstacles use the following
 - **OBSTACLES_PER_SCENARIO**: The number of obstacles (including animal and human) in the scenario
 - **STOP_ON**: To set max second the script gathers the data for dataset.
 
-# Loading and viewiung the dataset
+# Loading, viewing, and using the dataset
 By using the python file ./dataset_viewer.py it is possible to load and view the dataset. **path_ugv** and **path_uav** should be set to the desired dataset folder. 
