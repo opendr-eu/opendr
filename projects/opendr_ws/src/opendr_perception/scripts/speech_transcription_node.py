@@ -154,14 +154,14 @@ class SpeechTranscriptionNode:
                         transcription = self.audio_model.infer(data)
 
                         if transcription.accept_waveform:
-                            print(f"Text: {transcription.data}")
+                            print(f"Text: {transcription.text}")
 
                             ros_transcription = self.bridge.to_ros_transcription(
                                 transcription
                             )
                             self.publisher.publish(ros_transcription)
                         else:
-                            print(f"Partial: {transcription.data}")
+                            print(f"Partial: {transcription.text}")
 
                 else:
                     audio_array = WhisperLearner.load_audio(self.temp_file)
@@ -170,7 +170,7 @@ class SpeechTranscriptionNode:
                         t = self.audio_model.infer(
                             audio_array[-phrase_timeout * self.framerate :]
                         )
-                        if t.data == "" or t.segments[-1]["no_speech_prob"] > 0.6:
+                        if t.text == "" or t.segments[-1]["no_speech_prob"] > 0.6:
                             self.cut_audio = True
                     transcription_whisper = self.audio_model.infer(
                         audio_array, builtin_transcribe=True
@@ -192,7 +192,7 @@ class SpeechTranscriptionNode:
                         )
                     elif self.cut_audio:
                         self.n_sample = audio_array.shape[0]
-                        text = transcription_whisper.data.strip()
+                        text = transcription_whisper.text.strip()
                         transcription = VoskTranscription(
                             text=text, accept_waveform=True
                         )
@@ -201,7 +201,7 @@ class SpeechTranscriptionNode:
                         )
                         self.publisher.publish(ros_transcription)
                     else:
-                        text = transcription_whisper.data.strip()
+                        text = transcription_whisper.text.strip()
                         transcription = VoskTranscription(
                             text=text, accept_waveform=False
                         )
@@ -209,14 +209,7 @@ class SpeechTranscriptionNode:
                     ros_transcription = self.bridge.to_ros_transcription(transcription)
                     self.publisher.publish(ros_transcription)
 
-                    # os.system('cls' if os.name=='nt' else 'clear')
-                    if self.n_sample is not None:
-                        print(text)
-                    else:
-                        print(text)
-
-                # Sleep to prevent busy looping
-                # sleep(0.25)
+                    print(text)
 
     def spin(self):
         rospy.spin()

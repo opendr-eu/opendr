@@ -21,8 +21,10 @@ from logging import getLogger
 import numpy as np
 import sounddevice as sd
 
-from opendr.perception.speech_recognition import WhisperLearner
-
+from opendr.perception.speech_transcription import (
+    WhisperLearner,
+    VoskLearner,
+)
 
 logger = getLogger(__name__)
 
@@ -52,7 +54,7 @@ def record_audio(duration: int, sample_rate: int) -> np.ndarray:
 
 def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable):
     output = transcribe_function(audio_data)
-    output = output[0].data
+    output = output.text
 
     print("Transcription: ", output)
 
@@ -60,25 +62,43 @@ def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable):
 
 
 def wait_for_start_command(learner, sample_rate):
-    print("Waiting for 'Hi Whisper' command...")
-    print("Stop by saying 'Bye Whisper'.")
+    backbone = "Whisper" if isinstance(learner, WhisperLearner) else "Vosk"
+    print(f"Waiting for 'Hi {backbone}' command...")
+    print(f"Stop by saying 'Bye {backbone}'.")
     while True:
         audio_data = record_audio(1, sample_rate)
-        transcription = learner.infer(audio_data)[0].data.lower()
+        transcription = learner.infer(audio_data).text.lower()
         print(f"User said: {transcription}")
-        if "hi whisper" in transcription:
+
+        if isinstance(learner, WhisperLearner) and ("hi whisper" in transcription or "hi, whisper" in transcription):
+            print("Start command received. Starting the loop.")
+            break
+
+        if isinstance(learner, VoskLearner) and ("hi vosk" in transcription or "hi, vosk" in transcription):
             print("Start command received. Starting the loop.")
             break
         time.sleep(1)
 
 
-def main(duration, interval, model_path, model_name, load_path, device):
-    # Initialize the WhisperLearner class and load the model
-    learner = WhisperLearner(model_name=model_name, device=device)
-    learner.load(
-        download_root=model_path,
-        load_path=load_path,
-    )
+def main(backbone, duration, interval, model_path, model_name, language, download_dir, device):
+ 
+    if backbone == "whisper":
+        if model_path is not None:
+            name = model_path
+        else:
+            name = model_name
+        learner = WhisperLearner(language=language, device=device)
+        learner.load(name=name, download_dir=download_dir)
+    elif args.backbone == "vosk":
+        learner = VoskLearner()
+        learner.load(
+            name=model_name,
+            model_path=model_path,
+            language=language,
+            download_dir=download_dir,
+        )
+    else:
+        raise ValueError("invalid backbone")
 
     # Wait for the user to say "hi whisper" before starting the loop
     sample_rate = 16000
@@ -89,9 +109,13 @@ def main(duration, interval, model_path, model_name, load_path, device):
         audio_data = record_audio(duration, sample_rate)
 
         # Transcribe the recorded audio and check for the "bye whisper" command
-        transcription = transcribe_audio(audio_data, learner.infer)
+        transcription = transcribe_audio(audio_data, learner.infer).lower()
 
-        if "bye whisper" in transcription.lower():
+        if backbone == "whisper" and ("bye whisper" in transcription or "bye, whisper" in transcription):
+            print("Stop command received. Exiting the program.")
+            break
+
+        if backbone == "vosk" and ("bye vosk" in transcription or "bye, whisper" in transcription):
             print("Stop command received. Exiting the program.")
             break
 
@@ -123,34 +147,43 @@ if __name__ == "__main__":
         help="Device for running inference.",
     )
     parser.add_argument(
-        "-l",
-        "--load_path",
-        type=str,
-        required=False,
-        help="Path to the pretrained Whisper model.",
+        "--backbone",
+        default="whisper",
+        help="backbone to use for audio processing. Options: whisper, vosk",
+        choices=["whisper", "vosk"],
     )
     parser.add_argument(
-        "-p",
-        "--download_path",
-        default=".",
+        "--model-path",
         type=str,
-        required=False,
-        help="Download path for the pretrained Whisper model.",
+        help="path to the model files, if not given, the pretrained model will be downloaded",
+        default=None,
     )
     parser.add_argument(
-        "--model_name",
+        "--model-name",
         type=str,
-        default="tiny.en",
-        help="Name of the pretrained Whisper model.",
+        help="Specific name for Whisper model",
+        choices=f"Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
+        default=None,
     )
-
+    parser.add_argument(
+        "--language",
+        type=str,
+        help="Language for the model",
+    )
+    parser.add_argument(
+        "--download-dir",
+        type=str,
+        help="Path to the directory where the model will be downloaded",
+    )
     args = parser.parse_args()
 
     main(
+        backbone=args.backbone,
         duration=args.duration,
         interval=args.interval,
-        model_path=args.download_path,
+        model_path=args.download_dir,
         model_name=args.model_name,
-        load_path=args.load_path,
+        language=args.language,
+        download_dir=args.download_dir,
         device=args.device
     )

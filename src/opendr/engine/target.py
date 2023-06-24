@@ -1142,34 +1142,34 @@ class BaseTranscription(Target):
             text (str): Transcribed text
         """
         super().__init__()
-        self.data = text
+        self._text = text
 
     @property
-    def data(self):
+    def text(self):
         """
-        Getter of data.
+        Getter of text.
 
         :return: the actual transcription held by the object
         :rtype: str
         """
-        if self._data is None:
-            raise ValueError("Transcription is empty")
+        if self._text is None:
+            raise ValueError("Transcription text is empty")
 
-        return self._data
+        return self._text
 
-    @data.setter
-    def data(self, data):
+    @text.setter
+    def text(self, text: str):
         """
-        Setter for data. Transcription expects data of str type.
+        Setter for text. Transcription expects data of str type.
         :param: data to be used for creating a Transcription object
         """
-        if isinstance(data, str):
-            self._data = data
+        if isinstance(text, str):
+            self._text = text
         else:
             raise ValueError("Transcription expects strings as data")
 
     def __str__(self):
-        return self.data
+        return self._text
 
 
 class WhisperTranscription(BaseTranscription):

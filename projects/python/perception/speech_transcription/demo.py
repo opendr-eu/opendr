@@ -19,6 +19,7 @@ import argparse
 
 import librosa
 import numpy as np
+
 import torch
 
 from opendr.engine.data import Timeseries
@@ -49,21 +50,23 @@ if __name__ == "__main__":
 
     parser.add_argument("input", type=str, help="Path to the input file")
     parser.add_argument(
-        "--model",
+        "--backbone",
+        default="whisper",
+        help="backbone to use for audio processing. Options: whisper, vosk",
         choices=["whisper", "vosk"],
-        required=True,
-        help="model to be used for transcription: whisper or vosk",
     )
     parser.add_argument(
         "--model-path",
         type=str,
         help="path to the model files, if not given, the pretrained model will be downloaded",
+        default=None,
     )
     parser.add_argument(
         "--model-name",
         type=str,
         help="Specific name for Whisper model",
         choices=f"Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
+        default=None,
     )
     parser.add_argument(
         "--language",
@@ -84,22 +87,27 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Create a learner
-    if args.model == "whisper":
-        learner = WhisperLearner(model_name=args.model_name, fp16=True)
-    elif args.model == "vosk":
-        learner = VoskLearner(model_name=args.model_name, language=args.language)
+    if args.backbone == "whisper":
+        if args.model_path is not None:
+            name = args.model_path
+        else:
+            name = args.model_name
+        learner = WhisperLearner(language=args.language)
+        learner.load(name=name, download_dir=args.download_dir)
+    elif args.backbone == "vosk":
+        learner = VoskLearner()
+        learner.load(
+            name=args.model_name,
+            model_path=args.model_path,
+            language=args.language,
+            download_dir=args.download_dir,
+        )
     else:
-        raise ValueError("Invalid model")
-
-    # Load or download the model
-    learner.load(model_path=args.model_path, download_dir=args.download_dir)
+        raise ValueError("invalid backbone")
 
     # Load the audio file and run speech command recognition
     audio_input, _ = librosa.load(args.input, sr=learner.sample_rate)
     data = Timeseries(np.expand_dims(audio_input, axis=0))
-    if args.model == "whisper":
-        result = learner.infer(data, builtin_transcribe=args.builtin_transcribe)
-    else:
-        result = learner.infer(data)
+    result = learner.infer(data)
 
-    print(f"The word is: {result.data}")
+    print(f"The word is: {result.text}")

@@ -767,6 +767,5 @@ class ROSBridge:
             ros_transcripton.final = ""
 
         ros_transcripton.incremental = transcription.data
-        # ros_transcripton.confidence = None
 
         return ros_transcripton

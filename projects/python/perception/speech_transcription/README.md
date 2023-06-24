@@ -11,68 +11,43 @@ This folder contains a demo script for performing the speech command recognition
 
 1.1. Download and load model without specify location. The implementation will download to some default folders: Current directory for Whisper. To use the buitlin transcribe implementation of Whisper, set `buitlin_transcribe` to True in command line argument.
 ```
-python demo.py example1.wav --model whisper --model-name tiny.en
+python demo.py example1.wav --backbone whisper --model-name tiny.en
 ```
 ```
-python demo.py example1.wav --model vosk --lang en-us
+python demo.py example1.wav --backbone vosk --lang en-us
 ```
 
 1.2. Download model to a specified path and load it to memory.
 ```
-python demo.py example1.wav --model whisper --model-name --download_dir "./pretrained_whisper"
+python demo.py example1.wav --backbone whisper --model-name --download-dir "./whisper_model"
 ```
 ```
-python demo.py example1.wav --mode whisper --lang en-us --download_dir "./pretrained_vosk"
+python demo.py example1.wav --backbone vosk --lang en-us --download-dir "./vosk_model"
 ```
 
 1.3. Load model from a path. For Whisper, path is a file, and for Vosk, path is a directory.
 ```
-python demo.py example1.wav --model whisper --model-name tiny.en --model-path "./pretrained_whisper/tiny.en.pt"
+python demo.py example1.wav --backbone whisper --model-name tiny.en --model-path "./whisper_model/tiny.en.pt"
 ```
 ```
-python demo.py example1.wav --model vosk --language en-us --model-path "./pretrained_vosk/vosk-model-small-en-us-0.15"
+python demo.py example1.wav --backbone vosk --language en-us --model-path "./vosk_model/vosk-model-small-en-us-0.15"
 ```
 
 
 ## Live Demo
 
-The `demo_live.py` is a simple command line tool that uses the `WhisperLearner` model to continuously record and transcribe audio in a loop. It waits for the user to say "Hi Whisper" before starting the loop, and stops the loop when the user says "Bye Whisper". The tool can be configured using several command line arguments.
-
-Here is a list of available arguments:
-
-- `-d` or `--duration`: Duration of the recording in seconds (default: 5)
-- `-i` or `--interval`: Time interval between recordings in seconds (default: 10.0)
-- `--device`: Device for running inference (default: "cpu")
-- `-l` or `--load_path`: Path to the pretrained Whisper model. Use when you already download the model. 
-- `-p` or `--download_path`: Save path for the download pretrained Whisper model (required if not using the default model)
-- `--model_name`: Name of the pretrained Whisper model (default: "tiny.en")
+The `demo_live.py` is a simple command line tool that continuously record and transcribe audio in a loop. It waits for the user to say "Hi Whisper" or "Hi Vosk" before starting the loop, and stops the loop when the user says "Bye Whisper" or "Bye Vosk". The tool can be configured using several command line arguments.
 
 ### Example
 
 Here is an example command that records and transcribes audio every 0.5 seconds, with a recording duration of 2 seconds, using the default Whisper model:
 
 ```
-python demo_live.py -d 2 -i 0.5 --model_name tiny.en --device cuda
+python demo_live.py -d 5 -i 0.25 --backbone whisper --model-name tiny.en --language en --device cuda
 ```
 
-## Whisper Learner Speech Commands Benchmark
-
-The `benchmark.py` evaluate the performance of the Whisper Learner on the Speech Commands dataset.
-
-Here is a list of available arguments:
-
-- `--root`: Root directory of the speech commands dataset (default: `./`)
-- `--url`: URL of the speech commands dataset (choices: `speech_commands_v0.01`, `speech_commands_v0.02`; default: `speech_commands_v0.02`)
-- `--folder_in_archive`: Folder name inside the archive of the speech commands dataset (default: `SpeechCommands`)
-- `--subset`: Subset of the dataset to use (choices: `testing`, `validation`, `training`; default: `testing`)
-- `--device`: Device to use for processing (`cpu` or `cuda`; default: `cuda`)
-- `--batch_size`: Batch size for DataLoader (default: `8`)
-- `--load_path`: Path to model checkpoint (required)
-- `--model_name`: Whisper model name (default: `tiny.en`)
-- `--fp16`: Inference with FP16 (default: `False`)
-
-### Example
-
 ```
-python benchmark.py --root ./ --model_name "tiny.en" --fp16 True --batch_size 8
+python demo_live.py -d 5 -i 0.25 --backbone vosk --language en-us
 ```
+
+
