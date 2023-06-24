@@ -268,6 +268,9 @@ class WhisperLearner(Learner):
         ]
         return results[0] if len(results) == 1 else results
 
+    @staticmethod
+    def load_audio(file: str) -> np.ndarray:
+        return whisper.load_audio(file)
 
     def optimize(self):
         return

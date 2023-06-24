@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This message represents transcription results and related information.
+# This message encodes the live result of a speech recognition process.
+# A series of incremental results might be provided, until a final recognition
+# hypothesis is returned.
 
 Header header
 
-# The transcription results.
-string text 
+string incremental # incremental recognition results
+string final # final recognised text
+
+float64 confidence # confidence of the final recognised speech, [0-1]

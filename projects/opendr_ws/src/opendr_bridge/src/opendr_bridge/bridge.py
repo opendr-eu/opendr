@@ -15,7 +15,7 @@
 from opendr.engine.data import Image, Timeseries, PointCloud
 from opendr.engine.target import (
     Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D,
-    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList, Transcription
+    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList, BaseTranscription, WhisperTranscription, VoskTranscription
 )
 
 import numpy as np
@@ -746,11 +746,11 @@ class ROSBridge:
         Returns:
             transcription: A Transcription object containing the same text as the input ROS object
         """
-        transcription = Transcription(text=ros_transcripton.text)
+        transcription = BaseTranscription(text=ros_transcripton.text)
     
         return transcription
     
-    def to_ros_transcription(self, transcription: Transcription):
+    def to_ros_transcription(self, transcription: VoskTranscription):
         """
         Converts a Transcription object to a ROS transcription object.
     
@@ -761,6 +761,12 @@ class ROSBridge:
             ros_transcripton: A ROS transcription object containing the same text as the input Transcription object
         """
         ros_transcripton = OpenDRTranscription()
-        ros_transcripton.text = transcription.data
-    
+        if transcription.accept_waveform:
+            ros_transcripton.final = transcription.data
+        else:
+            ros_transcripton.final = ""
+
+        ros_transcripton.incremental = transcription.data
+        # ros_transcripton.confidence = None
+
         return ros_transcripton
