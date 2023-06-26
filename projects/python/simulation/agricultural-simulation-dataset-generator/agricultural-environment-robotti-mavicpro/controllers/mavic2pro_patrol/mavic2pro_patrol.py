@@ -1,10 +1,10 @@
-# Copyright 1996-2023 Cyberbotics Ltd.
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,58 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Example of Python controller for Mavic patrolling around the house.
-   Open the robot window to see the camera view.
-   This demonstrates how to go to specific world coordinates using its GPS, imu and gyroscope.
-   The drone reaches a given altitude and patrols from waypoint to waypoint."""
-
 from controller import Robot
-import time
-import math
-import random
 import pathlib
 import os
-import json
-from datetime import date
-
-import time
-
 import sys
+
 try:
     import numpy as np
 except ImportError:
     sys.exit("Warning: 'numpy' module not found.")
 
+
 def clamp(value, value_min, value_max):
     return min(max(value, value_min), value_max)
 
-DATASET_NAME = '../../datasets/noon_stormy_empty_193sec/UAV'
-STOP_ON=193
 
-useMavic=True
+DATASET_NAME = '/dataset_location/UAV'
+STOP_ON = 193
+
+useMavic = True
+
+
 # useMavic=False
 
-
-class Mavic (Robot):
+class Mavic(Robot):
     # Constants, empirically found.
-    K_VERTICAL_THRUST = 68.5  #68.5  # with this thrust, the drone lifts.
-    
+    K_VERTICAL_THRUST = 68.5  # 68.5  # with this thrust, the drone lifts.
+
     # Vertical offset where the robot actually targets to stabilize itself.
-    K_VERTICAL_OFFSET = 0.6 #0.3 #0.6
-    K_VERTICAL_P = 3.0 #1.0 #3.0        # P constant of the vertical PID.
-    K_ROLL_P = 12.5 # 25.0 #50.0           # P constant of the roll PID.
-    K_PITCH_P = 10.0 # 15.0 #30.0          # P constant of the pitch PID.
-    K_PITCH_P = 12.5 # 15.0 #30.0          # P constant of the pitch PID.
+    K_VERTICAL_OFFSET = 0.6  # 0.3 #0.6
+    K_VERTICAL_P = 3.0  # 1.0 #3.0        # P constant of the vertical PID.
+    K_ROLL_P = 12.5  # 25.0 #50.0           # P constant of the roll PID.
+    K_PITCH_P = 12.5  # 15.0 #30.0          # P constant of the pitch PID.
 
-
-    MAX_YAW_DISTURBANCE = 0.4
     MAX_YAW_DISTURBANCE = 1.0
     MAX_PITCH_DISTURBANCE = -1
-    
-    # Precision between the target position and the robot position in meters
-    target_precision = 0.5
-    target_precision = 1.0
 
+    # Precision between the target position and the robot position in meters
+    target_precision = 1.0
 
     def __init__(self):
         Robot.__init__(self)
@@ -75,7 +61,7 @@ class Mavic (Robot):
         self.camera.enable(self.time_step)
         self.camera.recognitionEnable(self.time_step)
         self.camera.enableRecognitionSegmentation()
-        
+
         self.imu = self.getDevice("inertial unit")
         self.imu.enable(self.time_step)
         self.gps = self.getDevice("gps")
@@ -127,11 +113,9 @@ class Mavic (Robot):
                 print("First target: ", self.target_position[0:2])
 
         # if the robot is at the position with a precision of target_precision
-        angle_left = self.target_position[3] - self.current_pose[5]
-        
-        if all([abs(x1 - x2) < self.target_precision for (x1, x2) in zip(self.target_position, self.current_pose[0:2])]):
+        if all([abs(x1 - x2) < self.target_precision for (x1, x2) in
+                zip(self.target_position, self.current_pose[0:2])]):
             # test
-            # if(angle_left < 0.1):
             self.target_index += 1
             if self.target_index > len(waypoints) - 1:
                 self.target_index = 0
@@ -142,12 +126,10 @@ class Mavic (Robot):
                 self.target_altitude = 0
                 self.target_altitude = 5
 
-
         self.target_position[2] = np.arctan2(
             self.target_position[1] - self.current_pose[1], self.target_position[0] - self.current_pose[0])
 
         angle_left = self.target_position[2] - self.current_pose[5]
-
 
         angle_left = (angle_left + 2 * np.pi) % (2 * np.pi)
         if (angle_left > np.pi):
@@ -155,13 +137,13 @@ class Mavic (Robot):
 
         # Turn the robot to the left or to the right according the value and the sign of angle_left
         yaw_disturbance = self.MAX_YAW_DISTURBANCE * angle_left / (2 * np.pi)
-        # non proportional and decreasing function
+        # non-proportional and decreasing function
         pitch_disturbance = clamp(
             np.log10(abs(angle_left)), self.MAX_PITCH_DISTURBANCE, 0.1)
 
         if verbose_movement:
             distance_left = np.sqrt(((self.target_position[0] - self.current_pose[0]) ** 2) + (
-                (self.target_position[1] - self.current_pose[1]) ** 2))
+                    (self.target_position[1] - self.current_pose[1]) ** 2))
             print("target_position 0: {:.4f}, current_pose 0: {:.4f}".format(
                 self.target_position[0], self.current_pose[0]))
             print("target_position 1: {:.4f}, current_pose 1: {:.4f}".format(
@@ -170,37 +152,25 @@ class Mavic (Robot):
                 self.target_position[2], self.current_pose[5]))
             print("target angle real: {:.4f}, current angle: {:.4f}".format(
                 self.target_position[3], self.current_pose[5]))
-                
+
             print("target_position: {}, current_pose: {}".format(
                 self.target_position, self.current_pose))
-                
+
             print("remaning angle: {:.4f}, remaning distance: {:.4f}".format(
                 angle_left, distance_left))
         return yaw_disturbance, pitch_disturbance
 
-
-    def save_device_measurements(self, index, second, cameras, lidar, gps, objects, static_objects):
-    
-        
+    def save_device_measurements(self, index, second, objects, static_objects):
 
         index = index.zfill(6)
-        from time import gmtime, strftime
-    
-        curr_time = round(time.time()*1000)
-        # print("Milliseconds since epoch:",curr_time)
-    
 
-        number=int(index)
-
+        number = int(index)
 
         index = str(second) + '_' + str(index)
 
-    
-        if(number % 3==0):
-    
-            # RGB Camera images
-            # for device in cameras:
+        if (number % 3 == 0):
 
+            # RGB Camera images
             dir_name = os.path.join(DATASET_NAME, self.camera.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             self.camera.saveImage(os.path.join(dir_name, index + ".jpg"), 100)
@@ -217,37 +187,35 @@ class Mavic (Robot):
                     f.write('"{}" {} {} {} {}\n'.format(object.getModel(), position[0], position[1], size[0], size[1]))
 
                     # print(object.getModel()),
-    
-    
-        if(number % 20==0):
+
+        if (number % 20 == 0):
             # GPS
             dir_name = os.path.join(DATASET_NAME, self.gps.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
                 value = self.gps.getValues()
                 f.write(f'{value[0]} {value[1]} {value[2]}')
-    
+
         # IMU
         dir_name = os.path.join(DATASET_NAME, self.imu.getName())
         pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
             value = self.imu.getRollPitchYaw()
             f.write(f'{value[0]} {value[1]} {value[2]}')
-    
-        if(number % 3==0):
-    
+
+        if (number % 3 == 0):
+
             # Objects position
             dir_name = os.path.join(DATASET_NAME, 'annotations', 'scene')
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
                 for object in objects:
                     f.write(f'"{object}" \n')
-               
+
                 for object in static_objects:
                     position = object['position']
                     type_name = object['type name']
                     f.write(f'"{type_name}" {position[0]} {position[1]} {position[2]}\n')
-    
 
     def run(self):
         t1 = self.getTime()
@@ -255,18 +223,17 @@ class Mavic (Robot):
         roll_disturbance = 0
         pitch_disturbance = 0
         yaw_disturbance = 0
-        #asdasda
 
         # Specify the patrol coordinates
-        waypoints = [[-30, 20], [-60, 20], [-60, 10], [-30, 5]]
+        waypoints = [[-45, -8, 5, 0.065], [-35, -8, 5, 0.065], [-25, -8, 5, 0.065], [-15, -8, 5, 0.065],
+                     [-5, -8, 5, 0.065], [+5, -8, 5, 1.57 + 0.065],
+                     [+5, -2, 5, 1.57 + 0.065], [+5, -2, 5, 1.57 + 0.065], [+5, -2, 5, 1.57 + 0.065],
+                     [+5, -2, 5, 3.14 + 0.065],
+                     [-10, -0, 5, 3.14 + 0.065], [-20, -0, 5, 3.14 + 0.065], [-30, -0, 5, 3.14 + 0.065],
+                     [-40, -0, 5, 3.14 + 0.065], [-50, -0, 5, 3.14 + 0.065],
+                     [-52, 6.0, 5, 1.57 + 0.065], [-35, 8.0, 5, 1.57 + 0.065], [-25, 8.0, 5, 1.57 + 0.065],
+                     [-15, 8.0, 5, 1.57 + 0.065], [+5, 8.0, 5, 1.57 + 0.065]]
 
-
-        waypoints = [[-45, -8, 5, 0.065],[-35, -8, 5, 0.065],[-25, -8, 5, 0.065],[-15, -8, 5, 0.065],[-5, -8, 5, 0.065],[+5, -8, 5, 1.57+0.065],
-                     [+5, -2, 5, 1.57+0.065],[+5, -2, 5, 1.57+0.065],[+5, -2, 5, 1.57+0.065],[+5, -2, 5, 3.14+0.065],
-                     [-10, -0, 5, 3.14+0.065],[-20, -0, 5, 3.14+0.065],[-30, -0, 5, 3.14+0.065],[-40, -0, 5, 3.14+0.065],[-50, -0, 5, 3.14+0.065],
-                     [-52, 6.0, 5, 1.57+0.065],[-35, 8.0, 5, 1.57+0.065],[-25, 8.0, 5, 1.57+0.065],[-15, 8.0, 5, 1.57+0.065],[+5, 8.0, 5, 1.57+0.065]]
-
-        
         # target altitude of the robot in meters
         self.target_altitude = 15
         self.target_altitude = 5
@@ -275,22 +242,16 @@ class Mavic (Robot):
         index = 1
         second = 1
 
-
-
-    
-        categories = []
         obstacle_classes = ['CharacterSkin', 'Cat', 'Cow', 'Deer', 'Dog', 'Fox', 'Horse', 'Rabbit', 'Sheep']
-        
+
         # retrieve static objects
         static_objects = []
 
-
-        object_classes = ['AgriculturalWarehouse', 'Barn', 'Tractor', 'BungalowStyleHouse', 'HouseWithGarage', 'Silo', 'SimpleTree',
+        object_classes = ['AgriculturalWarehouse', 'Barn', 'Tractor', 'BungalowStyleHouse', 'HouseWithGarage', 'Silo',
+                          'SimpleTree',
                           'Forest', 'PicketFenceWithDoor', 'PicketFence', 'Forest', 'Road', 'StraightRoadSegment',
                           'RoadIntersection']
         object_classes += obstacle_classes
-
-
 
         while self.step(self.time_step) != -1:
 
@@ -298,13 +259,11 @@ class Mavic (Robot):
             roll, pitch, yaw = self.imu.getRollPitchYaw()
             x_pos, y_pos, altitude = self.gps.getValues()
             roll_acceleration, pitch_acceleration, _ = self.gyro.getValues()
-            
-
 
             self.set_position([x_pos, y_pos, altitude, roll, pitch, yaw])
 
             if altitude > self.target_altitude - 1:
-            
+
                 # as soon as it reach the target altitude, compute the disturbances to go to the given waypoints.
                 if self.getTime() - t1 > 0.1:
                     yaw_disturbance, pitch_disturbance = self.move_to_target(
@@ -315,7 +274,7 @@ class Mavic (Robot):
                     # print('x_pos: {}, y_pos: {}, altitude: {}'.format(x_pos, y_pos, altitude))
 
             # else:
-                # print('altitude: {}, target altitude: {}'.format(altitude, self.target_altitude))
+            # print('altitude: {}, target altitude: {}'.format(altitude, self.target_altitude))
 
             roll_input = self.K_ROLL_P * clamp(roll, -1, 1) + roll_acceleration + roll_disturbance
             pitch_input = self.K_PITCH_P * clamp(pitch, -1, 1) + pitch_acceleration + pitch_disturbance
@@ -332,35 +291,30 @@ class Mavic (Robot):
             self.front_right_motor.setVelocity(-front_right_motor_input)
             self.rear_left_motor.setVelocity(-rear_left_motor_input)
             self.rear_right_motor.setVelocity(rear_right_motor_input)
-            
-            objects=[]
+
+            objects = []
             for object in self.camera.getRecognitionObjects():
-
-
                 objects.append(object.getModel())
 
+            self.save_device_measurements(str(data_index), str(second), objects,
+                                          static_objects)
 
-            
-            self.save_device_measurements(str(data_index), str(second), 'cameras', 'lidar', 'gps', objects, static_objects)
-    
             # print('mavic 357')
             data_index += 1
             index += 1
-            if(index % 100==0):
+            if (index % 100 == 0):
                 print(f'Mavic second: {second}')
-                second+=1
-                index=1
-                data_index=1
-                # if(second==193):
-                    # time.sleep(1000000)
-                if(second==STOP_ON):
+                second += 1
+                index = 1
+                data_index = 1
 
+                if (second == STOP_ON):
                     index = RECORDS_PER_SCENARIO
 
 
 # To use this controller, the basicTimeStep should be set to 8 and the defaultDamping
 # with a linear and angular damping both of 0.5
 
-if(useMavic):
+if (useMavic):
     robot = Mavic()
     robot.run()
