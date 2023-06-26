@@ -27,7 +27,7 @@ def clamp(value, value_min, value_max):
     return min(max(value, value_min), value_max)
 
 
-DATASET_NAME = '/dataset_location/UAV'
+DATASET_NAME = 'dataset_location/UAV'
 STOP_ON = 193
 
 useMavic = True
@@ -253,7 +253,9 @@ class Mavic(Robot):
                           'RoadIntersection']
         object_classes += obstacle_classes
 
-        while self.step(self.time_step) != -1:
+        MAX_RECORDS_PER_SCENARIO=19300
+
+        while (self.step(self.time_step) != -1) and index < MAX_RECORDS_PER_SCENARIO:
 
             # Read sensors
             roll, pitch, yaw = self.imu.getRollPitchYaw()
@@ -309,7 +311,7 @@ class Mavic(Robot):
                 data_index = 1
 
                 if (second == STOP_ON):
-                    index = RECORDS_PER_SCENARIO
+                    index = MAX_RECORDS_PER_SCENARIO
 
 
 # To use this controller, the basicTimeStep should be set to 8 and the defaultDamping
