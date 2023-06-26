@@ -55,7 +55,6 @@ if (useRobotti):
     global already_set_the_velocity
     already_set_the_velocity = False
 
-
     def save_datasets_info(count, categories):
         print(count)
         with open(os.path.join(DATASET_NAME, "data.json"), 'w') as f:
@@ -67,7 +66,6 @@ if (useRobotti):
                 'size': index - 1
             }
             f.write(json.dumps(data))
-
 
     def save_device_measurements_old(index, cameras, lidar, gps, objects, static_objects):
         index = index.zfill(6)
@@ -123,7 +121,6 @@ if (useRobotti):
                 position = object['position']
                 type_name = object['type name']
                 f.write(f'"{type_name}" {position[0]} {position[1]} {position[2]}\n')
-
 
     def save_device_measurements(index, second, cameras, lidar, gps, objects, static_objects):
         index = index.zfill(6)
@@ -202,7 +199,6 @@ if (useRobotti):
                     type_name = object['type name']
                     f.write(f'"{type_name}" {position[0]} {position[1]} {position[2]}\n')
 
-
     def generate_environment(supervisor, field_size):
 
         root_node = supervisor.getRoot()
@@ -249,7 +245,6 @@ if (useRobotti):
 
         return {'size': [ground_size_x, ground_size_y], 'translation': [ground_tx, 0]}
 
-
     def generate_obstacles(supervisor, objects, obstacle_classes):
         # clean up existing on if needed
         for object in objects:
@@ -288,7 +283,6 @@ if (useRobotti):
             objects.append(root_children_field.getMFNode(-1))
         return objects
 
-
     def move_object(object, field):
         # randomly set the translation and rotation fields
         pos_x = (random.uniform(0, 1) - 0.5) * field['size'][0] + field['translation'][0]
@@ -299,7 +293,6 @@ if (useRobotti):
         angle = random.uniform(0, 1) * 2 * math.pi
         rotation_field = object.getField('rotation')
         rotation_field.setSFRotation([0, 0, 1, angle])
-
 
     def move_robot(robot, field, turn_right=False, turn_left=False):
         global already_set_the_velocity
@@ -332,7 +325,6 @@ if (useRobotti):
             rightMotorRear.setVelocity(0.2 * MAX_SPEED)
 
             already_set_the_velocity = False
-
 
     supervisor = Supervisor()
     root_node = supervisor.getRoot()
