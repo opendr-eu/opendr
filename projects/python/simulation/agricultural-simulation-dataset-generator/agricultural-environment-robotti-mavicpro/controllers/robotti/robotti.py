@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from controller import Robot, Motor, Camera, Lidar, LidarPoint, GPS, CameraRecognitionObject
+from controller import Robot, Camera, Lidar
 
 MAX_SPEED = 6.28
 
