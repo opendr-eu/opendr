@@ -146,7 +146,7 @@ jobs:
         submodules: true
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v5.1
+      uses: tj-actions/branch-names@v7
     - name: Build image
       run: |
         docker build --no-cache --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --build-arg ros_distro=noetic --file Dockerfile .
@@ -215,7 +215,7 @@ jobs:
         path: artifact
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v5.1
+      uses: tj-actions/branch-names@v7
     - name: Test Wheel
       run: |
         export OPENDR_HOME=$PWD
@@ -304,7 +304,7 @@ jobs:
         path: artifact
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v5.1
+      uses: tj-actions/branch-names@v7
     - name: Test Wheel Separate
       run: |
         export OPENDR_HOME=$PWD
