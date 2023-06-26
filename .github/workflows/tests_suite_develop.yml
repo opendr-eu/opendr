@@ -352,7 +352,7 @@ jobs:
           # install the package itself
           python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
         fi
-        
+
         if [[ ${{ matrix.package }} == "perception/object_detection_2d/retinaface" ]]; then
           cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
         fi
@@ -401,7 +401,7 @@ jobs:
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
-          - control/multi_object_search
+          # - control/multi_object_search # needs CUDA Docker container
     runs-on: ubuntu-20.04
     steps:
     - name: Download artifact
