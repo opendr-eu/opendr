@@ -20,6 +20,7 @@ from opendr.engine.data import Image
 from opendr.perception.semantic_segmentation import SamLearner
 from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
+import os
 
 
 if __name__ == '__main__':
@@ -35,6 +36,12 @@ if __name__ == '__main__':
     detector.load("./predefined_examples/nanodet_{}".format("m"), verbose=True)
 
     sam = SamLearner(device=args.device)
+
+    # get the current working directory
+    current_working_directory = os.getcwd()
+
+    # print output to the console
+    print(current_working_directory)
 
     img = cv2.imread(args.image)  # "../office_chair.jpg")
 
