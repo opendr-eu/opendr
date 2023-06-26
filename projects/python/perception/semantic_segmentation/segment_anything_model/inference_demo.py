@@ -18,7 +18,7 @@ import time
 import matplotlib.pyplot as plt
 from opendr.engine.data import Image
 from opendr.perception.semantic_segmentation import SamLearner
-from opendr.perception.object_detection_2d.yolov5.yolov5_learner import YOLOv5DetectorLearner
+from opendr.perception.object_detection_2d import NanodetLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
@@ -30,7 +30,9 @@ if __name__ == '__main__':
     parser.add_argument("--show", help="Whether to open result image", default=False, action="store_true")
     args = parser.parse_args()
 
-    yolo_detector = YOLOv5DetectorLearner(model_name="yolov5l6.pt", device="cpu")
+    detector = NanodetLearner(model_to_use="m", device=args.device)
+    detector.download("./predefined_examples", mode="pretrained")
+    detector.load("./predefined_examples/nanodet_{}".format("m"), verbose=True)
 
     sam = SamLearner(device=args.device)
 
@@ -40,13 +42,13 @@ if __name__ == '__main__':
 
     start_time_full = time.perf_counter()
 
-    detections = yolo_detector.infer(odr_img)
-    draw_bounding_boxes(img, detections, yolo_detector.classes, line_thickness=3)
+    detections = detector.infer(odr_img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
+    draw_bounding_boxes(img, detections, class_names=detector.classes, line_thickness=3)
 
     blended_img = img
     for d in detections:
-        print("found bounding box class:", yolo_detector.classes[int(d.name)])
-        if yolo_detector.classes[int(d.name)] == args.detect_class:
+        print("found bounding box class:", detector.classes[int(d.name)])
+        if detector.classes[int(d.name)] == args.detect_class:
             print("running segmentation on class:", args.detect_class)
             start_time = time.perf_counter()
             # Perform segmentation
