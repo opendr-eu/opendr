@@ -253,7 +253,7 @@ class Mavic(Robot):
                           'RoadIntersection']
         object_classes += obstacle_classes
 
-        MAX_RECORDS_PER_SCENARIO=19300
+        MAX_RECORDS_PER_SCENARIO = 19300
 
         while (self.step(self.time_step) != -1) and index < MAX_RECORDS_PER_SCENARIO:
 
