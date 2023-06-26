@@ -22,29 +22,49 @@ from opendr.perception.object_detection_2d.yolov5.yolov5_learner import YOLOv5De
 from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 
-yolo_detector = YOLOv5DetectorLearner(model_name="yolov5l6.pt", device="cpu")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--image", help="Image path", type=str)
+    parser.add_argument("-dc", "--detect_class", help="Class to segment out of yolov5 classes", type=str)
+    parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
+    parser.add_argument("--show", help="Whether to open result image", default=False, action="store_true")
+    args = parser.parse_args()
 
-sam = SamLearner(device="cuda")
+    yolo_detector = YOLOv5DetectorLearner(model_name="yolov5l6.pt", device="cpu")
 
-img = cv2.imread("../example.jpg")
+    sam = SamLearner(device=args.device)
 
-start_time = time.perf_counter()
-odr_img = Image(img)
-detections = yolo_detector.infer(odr_img)
-draw_bounding_boxes(img, detections, yolo_detector.classes, line_thickness=3)
+    img = cv2.imread(args.image)  # "../office_chair.jpg")
 
-blended_img = None
-for d in detections:
-    if yolo_detector.classes[int(d.name)] == "person":
+    odr_img = Image(img)
 
-        # Perform segmentation
-        mask, scores, logits, bbox_prompt = sam.infer(img, d)
+    start_time_full = time.perf_counter()
 
-        blended_img = sam.draw(img, bbox_prompt, mask)
+    detections = yolo_detector.infer(odr_img)
+    draw_bounding_boxes(img, detections, yolo_detector.classes, line_thickness=3)
 
-end_time = time.perf_counter()
-fps = 1.0 / (end_time - start_time)
+    blended_img = img
+    for d in detections:
+        print("found bounding box class:", yolo_detector.classes[int(d.name)])
+        if yolo_detector.classes[int(d.name)] == args.detect_class:
+            print("running segmentation on class:", args.detect_class)
+            start_time = time.perf_counter()
+            # Perform segmentation
+            mask, scores, logits, bbox_prompt = sam.infer(img, d)
 
-cv2.imshow('Result', blended_img)
-cv2.waitKey(0)
-print(fps)
+            blended_img = sam.draw(blended_img, bbox_prompt, mask)
+
+            end_time = time.perf_counter()
+            fps = round(1.0 / (end_time - start_time), 2)
+            print(f"{round(end_time - start_time, 2)} seconds per sam inference, fps:{fps}")
+
+    end_time_full = time.perf_counter()
+    fps = round(1.0 / (end_time_full - start_time_full), 2)
+    print(f"{round(end_time_full - start_time_full, 2)} seconds for detection+sam, fps:{fps}")
+
+    if args.show:
+        try:
+            cv2.imshow('Result', blended_img)
+        except:
+            cv2.imshow('Result', img)
+        cv2.waitKey(0)
