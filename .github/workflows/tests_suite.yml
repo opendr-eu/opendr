@@ -399,6 +399,8 @@ jobs:
           - control/multi_object_search
     runs-on: ubuntu-20.04
     steps:
+    - name: Free Disk Space
+      uses: jlumbroso/free-disk-space@v1.2.0
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
