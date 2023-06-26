@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     start_time_full = time.perf_counter()
 
-    detections = detector.infer(odr_img, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=20)
+    detections = detector.infer(odr_img)
     draw_bounding_boxes(img, detections, class_names=detector.classes, line_thickness=3)
 
     blended_img = img
