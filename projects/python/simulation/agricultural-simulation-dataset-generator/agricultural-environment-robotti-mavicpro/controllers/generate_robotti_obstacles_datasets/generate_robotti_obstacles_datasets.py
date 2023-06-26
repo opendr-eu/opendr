@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from controller import Supervisor, Camera, Lidar, GPS, Robot, Motor, InertialUnit
-
-import sys
-
-try:
-    import numpy as np
-except ImportError:
-    sys.exit("Warning: 'numpy' module not found.")
+from controller import Supervisor, Camera, Lidar, GPS
 
 useRobotti = True
 
@@ -39,9 +32,9 @@ if (useRobotti):
     # print("The epoch is:",epoch)
 
     FIELD_SIZE = [40, 14]
-    DATASET_NAME = '../../datasets/noon_stormy_empty_193sec/UGV'
+    DATASET_NAME = 'dataset_location/UGV'
 
-    RECORDS_PER_SCENARIO = 12000
+    MAX_RECORDS_PER_SCENARIO = 19300
     OBSTACLES_PER_SCENARIO = 12
     STOP_ON = 193
 
@@ -406,7 +399,7 @@ if (useRobotti):
     for object in objects:
         move_object(object, field)
 
-    while index < RECORDS_PER_SCENARIO:
+    while index < MAX_RECORDS_PER_SCENARIO:
         current_time = time.time()
         if (current_time - start_time < 1):
             records_per_second += 1
@@ -468,7 +461,7 @@ if (useRobotti):
             second += 1
             index = 1
             if (second == STOP_ON):
-                index = RECORDS_PER_SCENARIO
+                index = MAX_RECORDS_PER_SCENARIO
 
     save_datasets_info(index - 1, categories)
     print('Completed.')
