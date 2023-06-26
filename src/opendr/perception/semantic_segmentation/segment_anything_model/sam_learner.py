@@ -93,7 +93,7 @@ class SamLearner(Learner):
             box=bbox_prompt[None, :],
             multimask_output=multimask,
         )
-
+        self.model.reset_image()
         end_time = time.perf_counter()
         fps = 1.0 / (end_time - start_time)
         print("Predict fps:", fps)
