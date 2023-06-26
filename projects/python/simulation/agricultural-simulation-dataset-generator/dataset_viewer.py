@@ -20,8 +20,8 @@ cv2.namedWindow('UGV-segmentation', cv2.WINDOW_NORMAL)
 cv2.namedWindow('UAV-image', cv2.WINDOW_NORMAL)
 cv2.namedWindow('UAV-segmentation', cv2.WINDOW_NORMAL)
 
-path_ugv = '/dataset_location/UGV/'
-path_uav = '/dataset_location/UAV/'
+path_ugv = 'dataset_location/UGV/'
+path_uav = 'dataset_location/UAV/'
 
 i = 1  # second
 index = 1
