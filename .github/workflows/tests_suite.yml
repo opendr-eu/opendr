@@ -417,7 +417,7 @@ jobs:
         fi
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
-    if: ${{ always() }}
+    if: ${{ github.event_name == 'schedule' }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
