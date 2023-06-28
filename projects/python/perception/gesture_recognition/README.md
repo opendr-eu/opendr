@@ -7,5 +7,5 @@ The dataset is trained on images with distance to camera of 1..4 meters, so simi
 
 Demo can be run as follows:
 ```python
-python3 demo.py --max_hands 2 
+python3 webcam_demo.py --max_hands 2 
 ```
