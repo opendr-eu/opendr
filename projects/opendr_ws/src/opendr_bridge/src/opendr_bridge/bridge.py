@@ -762,10 +762,10 @@ class ROSBridge:
         """
         ros_transcripton = OpenDRTranscription()
         if transcription.accept_waveform:
-            ros_transcripton.final = transcription.data
+            ros_transcripton.final = transcription.text
         else:
             ros_transcripton.final = ""
 
-        ros_transcripton.incremental = transcription.data
+        ros_transcripton.incremental = transcription.text
 
         return ros_transcripton

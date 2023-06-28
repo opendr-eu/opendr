@@ -155,14 +155,13 @@ class SpeechTranscriptionNode:
 
                         if transcription.accept_waveform:
                             print(f"Text: {transcription.text}")
-
-                            ros_transcription = self.bridge.to_ros_transcription(
-                                transcription
-                            )
-                            self.publisher.publish(ros_transcription)
                         else:
                             print(f"Partial: {transcription.text}")
 
+                        ros_transcription = self.bridge.to_ros_transcription(
+                            transcription
+                        )
+                        self.publisher.publish(ros_transcription)
                 else:
                     audio_array = WhisperLearner.load_audio(self.temp_file)
                     phrase_timeout = 2  # Seconds
