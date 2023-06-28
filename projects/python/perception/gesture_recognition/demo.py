@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="plus_m_1.5x_416")
-    parser.add_argument("--max-hands", default=2)
+    parser.add_argument("--max-hands", type=int, default=2)
     args = parser.parse_args()
 
     device, model = args.device, args.model
