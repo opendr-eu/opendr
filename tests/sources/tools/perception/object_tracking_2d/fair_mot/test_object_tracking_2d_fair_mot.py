@@ -91,6 +91,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -122,6 +123,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -154,6 +156,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -175,6 +178,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -204,6 +208,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -216,6 +221,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner2 = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
@@ -235,6 +241,7 @@ class TestObjectTracking2DFairMotLearner(unittest.TestCase):
 
             learner = ObjectTracking2DFairMotLearner(
                 iters=1,
+                batch_size=2,
                 num_epochs=1,
                 checkpoint_after_iter=3,
                 temp_path=self.temp_dir,
