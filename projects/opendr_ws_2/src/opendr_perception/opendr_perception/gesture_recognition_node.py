@@ -32,7 +32,7 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 class GestureRecognitionNode(Node):
 
-    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/images",
+    def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/image_gesture_annotated",
                  detections_topic="/opendr/gestures", performance_topic=None, device="cuda",
                  model="plus_m_1.5x_416", threshold=0.5):
         """
@@ -123,10 +123,10 @@ def main(args=None):
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/rgb_gesture_images_annotated")
+                        default="/opendr/image_gesture_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/rgb_gestures")
+                        default="/opendr/gestures")
     parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
                         type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
