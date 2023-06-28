@@ -30,7 +30,7 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 class GestureRecognitionNode:
 
     def __init__(self, input_rgb_image_topic="/usb_cam/image_raw",
-                 output_rgb_image_topic="/opendr/images", detections_topic="/opendr/gestures",
+                 output_rgb_image_topic="/opendr/image_gesture_annotated", detections_topic="/opendr/gestures",
                  performance_topic=None, device="cuda", model="plus_m_1.5x_416", threshold=0.5):
         """
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -42,7 +42,7 @@ class GestureRecognitionNode:
         is published)
         :type detections_topic:  str
         :param performance_topic: Topic to which performance information is published
-        :type performace_topis: str
+        :type performance_topic: str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model: the name of the model of which we want to load the config file
@@ -125,10 +125,10 @@ def main():
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/rgb_gesture_images_annotated")
+                        default="/opendr/image_gesture_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/rgb_gestures")
+                        default="/opendr/gestures")
     parser.add_argument("--performance_topic", help="Topic name for performance messages", type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu", choices=["cuda", "cpu"])
     parser.add_argument("--threshold", help="Confidence threshold for prediction", type=float, default=0.5)
