@@ -306,7 +306,10 @@ class GestureRecognitionLearner(NanodetLearner):
 
         file_url = os.path.join(url, "nanodet_{}".format(model),
                                 "nanodet_{}.ckpt".format(model))
-        urlretrieve(file_url, os.path.join(path, "nanodet_{}.ckpt".format(model)))
+        if not os.path.exists(os.path.join(path, "nanodet_{}.ckpt".format(model))):
+            urlretrieve(file_url, os.path.join(path, "nanodet_{}.ckpt".format(model)))
+        else:
+            print("Checkpoint already exists.")
 
         if verbose:
             print("Downloading pretrain weights if provided...")
@@ -314,7 +317,10 @@ class GestureRecognitionLearner(NanodetLearner):
         file_url = os.path.join(url, "nanodet_{}".format(model),
                                      "nanodet_{}.pth".format(model))
         try:
-            urlretrieve(file_url, os.path.join(path, "nanodet_{}.pth".format(model)))
+            if not os.path.exists(os.path.join(path, "nanodet_{}.pth".format(model))):
+                urlretrieve(file_url, os.path.join(path, "nanodet_{}.pth".format(model)))
+            else:
+                print("Weights file already exists.")
 
             if verbose:
                 print("Making metadata...")
