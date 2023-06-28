@@ -689,7 +689,7 @@ Their documentation can be found [here](../../../../docs/reference/skeleton-base
 2. You are then ready to start the skeleton-based human action recognition node:
    1. Skeleton-based action recognition node
       ```shell
-      ros2 run opendr_perception skeleton_based_action_recognition_node.py
+      ros2 run opendr_perception skeleton_based_action_recognition
       ```
       The following optional argument is available for the skeleton-based action recognition node:
       - `--model` MODEL: model to use, options are `stgcn` or `pstgcn`, (default=`stgcn`)
@@ -698,7 +698,7 @@ Their documentation can be found [here](../../../../docs/reference/skeleton-base
 
    2. Continual skeleton-based action recognition node
       ```shell
-      ros2 run opendr_perception continual_skeleton_based_action_recognition_node.py
+      ros2 run opendr_perception continual_skeleton_based_action_recognition
       ```
       The following optional argument is available for the continual skeleton-based action recognition node:
       - `--model` MODEL: model to use, options are `costgcn`, (default=`costgcn`)
@@ -760,7 +760,7 @@ You can find the corresponding IDs regarding activity recognition [here](https:/
 
 ### RGB Gesture Recognition ROS2 Node
 
-For gesture recognition, the ROS2 [node](./opendr_perception/gesture_recognition_node.py) is based on the gesture recognition learner defined [here](../../../../src/opendr/perception/gesture_recognition/), and the documentation of the learner can be found [here](../../../../docs/reference/gesture-recognition-learner.md).
+For gesture recognition, the ROS2 [node](./opendr_perception/gesture_recognition_node.py) is based on the gesture recognition learner defined [here](../../../../src/opendr/perception/gesture_recognition/gesture_recognition_learner.py), and the documentation of the learner can be found [here](../../../../docs/reference/gesture-recognition-learner.md).
 
 #### Instructions for basic usage:
 
@@ -768,20 +768,20 @@ For gesture recognition, the ROS2 [node](./opendr_perception/gesture_recognition
 
 2. Start the gesture recognition node:
    ```shell
-   ros2 run opendr_perception gesture_recognition_node.py
+   ros2 run opendr_perception gesture_recognition
    ```
    The following arguments are available:
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
-   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/rgb_gesture_images_annotated`)
-   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/rgb_gestures`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_gesture_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/gestures`)
    - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--threshold THRESHOLD`: Confidence threshold for predictions (default=0.5)
    - `--model MODEL`: Config file name of the model that will be used (default=`plus_m_1.5x_416)`
 
 3. Default output topics:
-   - Output images: `/opendr/rgb_gesture_images_annotated`
-   - Detection messages: `/opendr/rgb_gestures`
+   - Output images: `/opendr/image_gesture_annotated`
+   - Detection messages: `/opendr/gestures`
 
 ## RGB + Infrared input
 
