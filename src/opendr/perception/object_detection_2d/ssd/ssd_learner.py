@@ -160,7 +160,7 @@ class SingleShotDetectorLearner(Learner):
         model_name = os.path.basename(os.path.normpath(path))
         if verbose:
             print("Model name:", model_name, "-->", os.path.join(path, model_name + ".json"))
-        with open(os.path.join(path, model_name + ".json")) as f:
+        with open(os.path.join(path, model_name + ".json"), encoding='utf-8-sig') as f:
             metadata = json.load(f)
 
         self.backbone = metadata["backbone"]
@@ -571,7 +571,7 @@ class SingleShotDetectorLearner(Learner):
         return eval_dict
 
     def infer(self, img, threshold=0.2, keep_size=False, custom_nms: NMSCustom=None,
-              nms_thresh=0.45, nms_topk=400, post_nms=100):
+              nms_thresh=0.45, nms_topk=400, post_nms=100, extract_maps=False):
         """
         Performs inference on a single image and returns the resulting bounding boxes.
         :param img: image to perform inference on
@@ -647,7 +647,10 @@ class SingleShotDetectorLearner(Learner):
                                    name=class_IDs[idx, :],
                                    score=scores[idx, :])
                 bounding_boxes.data.append(bbox)
-
+        if extract_maps:
+            maps = self._model.features(x)
+            maps_save = maps[0][0].swapaxes(dim1=0, dim2=1).swapaxes(dim1=1, dim2=2).asnumpy().astype(dtype=np.float16)
+            return bounding_boxes, maps_save
         return bounding_boxes
 
     @staticmethod
