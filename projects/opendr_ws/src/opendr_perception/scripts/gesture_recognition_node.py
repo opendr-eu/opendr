@@ -125,10 +125,10 @@ def main():
                         type=str, default="/usb_cam/image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/images")
+                        default="/opendr/rgb_gesture_images_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/gestures")
+                        default="/opendr/rgb_gestures")
     parser.add_argument("--performance_topic", help="Topic name for performance messages", type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cpu", choices=["cuda", "cpu"])
     parser.add_argument("--threshold", help="Confidence threshold for prediction", type=float, default=0.5)

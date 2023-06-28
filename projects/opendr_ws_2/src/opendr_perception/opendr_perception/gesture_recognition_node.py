@@ -34,7 +34,7 @@ class GestureRecognitionNode(Node):
 
     def __init__(self, input_rgb_image_topic="image_raw", output_rgb_image_topic="/opendr/images",
                  detections_topic="/opendr/gestures", performance_topic=None, device="cuda",
-                 model="plus_m_1.5x_416", threshold=0.35):
+                 model="plus_m_1.5x_416", threshold=0.5):
         """
         Creates a ROS2 Node for gesture recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -123,15 +123,15 @@ def main(args=None):
                         type=str, default="image_raw")
     parser.add_argument("-o", "--output_rgb_image_topic", help="Topic name for output annotated rgb image",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/images")
+                        default="/opendr/rgb_gesture_images_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
-                        default="/opendr/objects")
+                        default="/opendr/rgb_gestures")
     parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
                         type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model that config file will be used", type=str, default="plus_m_1.5x_416")
-    parser.add_argument("--threshold", help="Confidence threshold for inference", default=0.35)
+    parser.add_argument("--threshold", help="Confidence threshold for inference", default=0.5)
     args = parser.parse_args()
 
     try:
