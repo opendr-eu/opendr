@@ -112,7 +112,7 @@ jobs:
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
   build-wheel:
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
@@ -159,7 +159,7 @@ jobs:
           cpu_test.zip
   test-wheel:
     needs: build-wheel
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
@@ -248,7 +248,7 @@ jobs:
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-wheel-separate:
     needs: build-wheel
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     strategy:
       fail-fast: false
       matrix:
@@ -364,38 +364,38 @@ jobs:
         package:
           - engine
           - utils
-          #- perception/activity_recognition
-          #- perception/compressive_learning
-          #- perception/face_recognition
-          #- perception/heart_anomaly_detection
-          #- perception/multimodal_human_centric
-          #- perception/pose_estimation
-          #- perception/fall_detection
-          #- perception/speech_recognition
-          #- perception/skeleton_based_action_recognition/costgcn
-          #- perception/skeleton_based_action_recognition/pstgcn
-          #- perception/skeleton_based_action_recognition/stbln
-          #- perception/skeleton_based_action_recognition/stgcn
-          #- perception/skeleton_based_action_recognition/tagcn
-          #- perception/semantic_segmentation
-          # - perception/binary_high_resolution
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
+          - perception/semantic_segmentation
+          - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
-          #- perception/object_detection_2d/centernet
-          #- perception/object_detection_2d/detr
-          #- perception/object_detection_2d/gem
-          #- perception/object_detection_2d/ssd
-          #- perception/object_detection_2d/nanodet
-          #- perception/object_detection_2d/yolov3
-          #- perception/object_detection_2d/yolov5
-          #- perception/object_detection_2d/retinaface
-          #- perception/object_detection_2d/nms
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
           # - perception/object_detection_3d # passes, but disabled due to free() crash
-          #- perception/facial_expression_recognition
-          #- simulation/human_model_generation
-          #- control/mobile_manipulation
-          #- control/single_demo_grasp
-          #- planning/end_to_end_planning
+          - perception/facial_expression_recognition
+          - simulation/human_model_generation
+          - control/mobile_manipulation
+          - control/single_demo_grasp
+          - planning/end_to_end_planning
           # - control/multi_object_search # needs CUDA Docker container
     runs-on: ubuntu-20.04
     steps:
@@ -417,7 +417,7 @@ jobs:
         fi
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
-    if: ${{ github.event_name == 'schedule' }}
+    if: ${{ always() }}
     strategy:
       matrix:
         os: [ubuntu-20.04]
