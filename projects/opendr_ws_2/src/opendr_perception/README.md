@@ -760,7 +760,7 @@ You can find the corresponding IDs regarding activity recognition [here](https:/
 
 ### RGB Gesture Recognition ROS2 Node
 
-For gesture recognition, the ROS [node](./opendr_perception/gesture_recognition_node.py) is based on the gesture recognition learner defined [here](../../../../src/opendr/perception/gesture_recognition/), and the documentation of the learner can be found [here](../../../../docs/reference/gesture-recognition-learner.md).
+For gesture recognition, the ROS2 [node](./opendr_perception/gesture_recognition_node.py) is based on the gesture recognition learner defined [here](../../../../src/opendr/perception/gesture_recognition/), and the documentation of the learner can be found [here](../../../../docs/reference/gesture-recognition-learner.md).
 
 #### Instructions for basic usage:
 
@@ -768,7 +768,7 @@ For gesture recognition, the ROS [node](./opendr_perception/gesture_recognition_
 
 2. Start the gesture recognition node:
    ```shell
-   rosrun opendr_perception gesture_recognition_node.py
+   ros2 run opendr_perception gesture_recognition_node.py
    ```
    The following arguments are available:
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
