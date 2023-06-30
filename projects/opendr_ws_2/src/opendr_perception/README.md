@@ -911,7 +911,9 @@ EdgeSpeechNets currently does not have a pretrained model available for download
 
 ### Intent Recognition ROS2 Node
 
-A ROS2 node for recognizing intents from language. It is recommended to use this node together with the speech transcription node that would transcribe the speech into text and infer intent from it.
+A ROS2 node for recognizing intents from language.
+This node should be used together with the speech transcription node that would transcribe the speech into text and infer intent from it.
+The provided intent recognition node subscribes to the speech transcription output topic.
 
 You can find the intent recognition ROS node python script [here](./opendr_perception/intent_recognition_node.py) to inspect the code and modify if you wish for your needs.
 The node makes use of the toolkit's intent recognition [learner](../../../../src/opendr/perception/multimodal_human_centric/intent_recognition_learner/intent_recognition_learner.py), and the documentation can be found [here](../../../../docs/reference/intent-recognition-learner.md).
