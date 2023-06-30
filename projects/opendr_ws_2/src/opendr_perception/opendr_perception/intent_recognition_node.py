@@ -64,7 +64,7 @@ class IntentRecognitionNode(Node):
         super().__init__('intent_recognition_node')
 
         self.input_transcription_subscriber = self.create_subscription(
-            String, input_transcription_topic, self.callback, 1)
+            OpenDRTranscription, input_transcription_topic, self.callback, 1)
 
         if output_intent_topic is not None:
             self.intent_publisher = self.create_publisher(
