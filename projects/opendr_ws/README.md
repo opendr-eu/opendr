@@ -91,6 +91,8 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 1. [Audiovisual Emotion Recognition](src/opendr_perception/README.md#audiovisual-emotion-recognition-ros-node)
 ## Audio input
 1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros-node)
+## Text input
+1. [Intent Recognition](src/opendr_perception/README.md#intent-recognition-ros-node)
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros-node)

@@ -63,6 +63,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Module](rgbd-hand-gesture-learner.md)
             - [audiovisual_emotion_recognition_learner Module](audiovisual-emotion-recognition-learner.md)
+            - [intent_recognition_learner Module](intent-recognition-learner.md)
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
