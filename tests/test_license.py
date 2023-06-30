@@ -98,6 +98,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/heart_anomaly_detection/attention_neural_bag_of_feature/algorithm',
             'src/opendr/simulation/human_model_generation/utilities/PIFu',
             'src/opendr/perception/multimodal_human_centric/rgbd_hand_gesture_learner/algorithm/architectures',
+            'src/opendr/perception/multimodal_human_centric/intent_recognition_learner/algorithm/',
             'src/opendr/perception/skeleton_based_action_recognition/algorithm',
             'projects/python/simulation/synthetic_multi_view_facial_image_generation/algorithm',
             'projects/opendr_ws/devel',
