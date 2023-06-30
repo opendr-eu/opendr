@@ -99,9 +99,9 @@ def get_intent_learner(text_backbone, device, cache_path):
     learner = IntentRecognitionLearner(text_backbone=text_backbone, mode='language',
                                        device=device, log_path='logs', results_path='results',
                                        output_path='outputs', cache_path=cache_path)
-    #learner.download('pretrained_models/')
-    #learner.load('pretrained_models/', args.text_backbone + '.pth')
-    #learner.trim('language')
+    # learner.download('pretrained_models/')
+    # learner.load('pretrained_models/', args.text_backbone + '.pth')
+    # learner.trim('language')
     learner.load("/media/kateryna/KINGSTON/albert_language2.pth")
     return learner
 

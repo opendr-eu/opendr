@@ -180,7 +180,8 @@ class IntentRecognitionLearner(Learner):
         '''
         assert modality in ['audio', 'video', 'language', 'joint'], 'Unknown modality: {}'.format(modality)
         assert (
-            modality == self.train_config.mode or self.train_config.mode == 'joint'), 'Inference on modality {} not supported with mode {}'.format(
+            modality == self.train_config.mode or self.train_config.mode == 'joint'), \
+            'Inference on modality {} not supported with mode {}'.format(
             modality, self.train_config.mode)
 
         self._update_verbosity(silent, verbose)
@@ -220,14 +221,14 @@ class IntentRecognitionLearner(Learner):
 
     def download(self, path):
         server_url = os.path.join(OPENDR_SERVER_URL,
-            'perception',
-            'multimodal_human_centric',
-            'intent_recognition_learner')
+                                  'perception',
+                                  'multimodal_human_centric',
+                                  'intent_recognition_learner')
 
         model_name = '{}_{}'.format(self.train_config.text_backbone, 'language')
         weights_url = os.path.join(server_url, '{}.pth'.format(model_name))
         urlretrieve(weights_url, path)
-        
+
     def optimize(self):
         return NotImplementedError
 

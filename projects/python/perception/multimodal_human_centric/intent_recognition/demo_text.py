@@ -32,8 +32,8 @@ if __name__ == '__main__':
                                        device=args.device, log_path='logs',
                                        cache_path=args.cache_path, results_path='result',
                                        output_path='outputs')
-    #learner.download('pretrained_models/')
-    #learner.load('pretrained_models/', args.text_backbone + '.pth')
+    # learner.download('pretrained_models/')
+    # learner.load('pretrained_models/', args.text_backbone + '.pth')
 
     while True:
         raw_text = input('Enter text: ')
