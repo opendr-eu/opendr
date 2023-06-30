@@ -1,7 +1,8 @@
 ## intent_recognition module
 
 The *intent_recognition* module contains the *IntentRecognitionModule* class and can be used to recognize 20 intents of a person based on text.
-It is recommended to use *IntentRecognitionModule* together with *SpeechTranscriptionModule* to enable intent recognition based on transcribed speech. The module supports multimodal training on face, speech, and text data to facilitate improved inference on text modality.
+It is recommended to use *IntentRecognitionModule* together with *SpeechTranscriptionModule* to enable intent recognition based on transcribed speech.
+The module supports multimodal training on face (vision), speech (audio), and text data to facilitate improved unimodal inference on text modality.
 
 We provide data processing scripts and pre-trained model for [MIntRec dataset](https://github.com/thuiar/MIntRec).
 
@@ -13,17 +14,17 @@ The learner has the following public methods:
 ```python
 IntentRecognitionLearner(self, text_backbone, mode, log_path, cache_path, results_path, output_path, device, benchmark)
 ```
-/
+
 Constructor parameters:
 
 - **text_backbone**: *{"bert-base-uncased", "albert-base-v2", "prajjwal1/bert-small", "prajjwal1/bert-mini", "prajjwal1/bert-tiny"}, default="bert-base-uncased"*\
-  Specifies the text backbone to be used. The name matches the corresponding huggingface hub model.
+  Specifies the text backbone to be used. The name matches the corresponding huggingface hub model, e.g., [prajjwal1/bert-small](https://huggingface.co/prajjwal1/bert-small).
 - **mode**: *{'language', 'joint'}, default="joint"*\
-  Specifies the mode of the model. 'Language' corresponds to text-only model, 'Joint' corresponds to multimodal model with modalities trained jointly.
+  Specifies the modality of the model. 'Language' corresponds to text-only model, 'Joint' corresponds to multimodal model with vision, audio, and language modalities trained jointly.
 - **log_path**: *str, default="logs"*\
   Specifies the path where to store the logs.
 - **cache_path**: *str, default="cache"*\
-  Specifies the path for cache.
+  Specifies the path for cache, mainly used for tokenizer files.
 - **results_path**: *str, default="results"*\
   Specifies where to store the results (performance metrics).
 - **output_path**: *str, default="outputs"*\
@@ -31,14 +32,14 @@ Constructor parameters:
 - **device**: *str, default="cuda"*\
   Specifies the device to be used for training.
 - **benchmark**: *{"MIntRec"}, default="MIntRec"*\
-  Specifies the benchmark (dataset) to be used for training and defines the labels, number of classes, etc.
+  Specifies the benchmark (dataset) to be used for training. The benchmark defines the class labels, feature dimensionalities, etc.
 
 #### `IntentRecognitionLearner.fit`
 ```python
 IntentRecognitionLearner.fit(self, dataset, val_dataset, verbose, silent)
 ```
 
-This method is used for training the algorithm on a train dataset and validating on a val dataset.
+This method is used for training the algorithm on a training dataset and validating on a validation dataset.
 
 Parameters:
 
@@ -62,8 +63,8 @@ Parameters:
 
 - **dataset** : *object*\
   Object that holds the evaluation dataset.
-- **modality**: *str*\
-  Specifies the modality to be used for inference. Should either match the current training mode of the learner, or for a learner trained in joint mode, any modality can be used for inference.
+- **modality**: *str*, {'audio', 'video', 'language', 'joint'}\
+  Specifies the modality to be used for inference. Should either match the current training mode of the learner, or for a learner trained in joint (multimodal) mode, any modality can be used for inference, although we do not recommend using only video or only audio.
 - **verbose**: *bool, default=False*\
   If True, provides detailed logs.
 - **silent**: *bool, default=False*\
@@ -76,14 +77,14 @@ Parameters:
 IntentRecognitionLearner.infer(self, batch, modality)
 ```
 
-This method is used to perform inference from a given text.
+This method is used to perform inference from given language sequence (text).
 Returns a list of `engine.target.Category` objects, which contains calss predictions and confidence scores for each sentence in the input sequence.
 
 Parameters:
 - **batch**: *dict*\
   Dictionary with input data with keys corresponding to modalities, e.g. {'text': 'Hello'}.
 - **modality**: *str, default='language'*\
-  Modality to be used for inference. Currently, inference from raw data is only supported for text.
+  Modality to be used for inference. Currently, inference from raw data is only supported for language modality (text).
 
 #### `IntentRecognitionLearner.save`
 ```python
@@ -110,30 +111,26 @@ Parameters:
 
 #### `IntentRecognitionLearner.download`
 ```python
-IntentRecognitionLearner.download(self, path, model, verbose, url)
+IntentRecognitionLearner.download(self, path)
 ```
 
-Downloads the provided pretrained model.
+Downloads the provided pretrained model into 'path'.
 
 Parameters:
 
-- **path**: *str, default=None*\
-  Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
-- **verbose**: *bool, default=True*\
-  Enables the maximum verbosity.
-- **url**: *str, default=OpenDR FTP URL*\
-  URL of the FTP server.
+- **path**: *str*\
+  Specifies the folder where data will be downloaded. 
 
 #### `IntentRecognitionLearner.trim`
 ```python
 IntentRecognitionLearner.trim(self, modality)
 ```
 
-This method is used to convert a model trained in a multimodal manner for unimodal inference. This will drop unnecessary layers corresponding to other modalities for computational efficiency.
+This method is used to convert a model trained in a multimodal manner ('joint' mode) for unimodal inference. This will drop unnecessary layers corresponding to other modalities for computational efficiency.
 
 Parameters:
 - **modality**: *str, default='language'*\
-  Modality to convert the model
+  Modality to which to convert the model
 
 #### Examples
 
