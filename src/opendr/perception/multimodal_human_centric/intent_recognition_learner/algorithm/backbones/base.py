@@ -16,6 +16,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 '''
 
+
 import logging
 from torch import nn
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.backbones.FusionNets.MULT import MULT

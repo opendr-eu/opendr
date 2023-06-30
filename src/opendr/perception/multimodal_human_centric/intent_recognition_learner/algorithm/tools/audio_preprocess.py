@@ -15,6 +15,8 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 '''
+
+
 from moviepy.editor import VideoFileClip
 from tqdm import tqdm
 from transformers import Wav2Vec2Processor, Wav2Vec2Model
