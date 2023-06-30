@@ -2,7 +2,6 @@ import torch
 from torch import nn
 from torch.nn import Parameter
 import torch.nn.functional as F
-import sys
 
 # Code adapted from the fairseq repo.
 
@@ -64,8 +63,6 @@ class MultiheadAttention(nn.Module):
         assert embed_dim == self.embed_dim
         assert list(query.size()) == [tgt_len, bsz, embed_dim]
         assert key.size() == value.size()
-
-        aved_state = None
 
         if qkv_same:
             # self-attention

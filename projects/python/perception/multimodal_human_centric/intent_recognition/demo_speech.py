@@ -193,7 +193,7 @@ if __name__ == "__main__":
         "--model-name",
         type=str,
         help="Specific name for Whisper model",
-        choices=f"Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', \
+        choices="Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', \
                  'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
         default=None,
     )

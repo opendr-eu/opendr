@@ -90,21 +90,6 @@ class IntentRecognitionNode(Node):
 
         self.get_logger().info("Intent recognition node initialized")
 
-    def listen(self):
-        """
-        Start the node and begin processing input data.
-        """
-        rospy.init_node(
-            'opendr_intent_recognition_nanodet_node',
-            anonymous=True)
-        rospy.Subscriber(
-            self.input_transcription_topic,
-            OpenDRTranscription,
-            self.callback,
-            queue_size=1)
-        rospy.loginfo("Intent recognition node started.")
-        rospy.spin()
-
     def callback(self, data):
         """
         Callback that processes the input data and publishes to the corresponding topics.

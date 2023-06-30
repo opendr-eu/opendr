@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import onnxruntime as ort
 from urllib.request import urlretrieve
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.configs.base import ParamManager
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.data.text_pre import (
@@ -32,13 +31,9 @@ from opendr.engine.target import Category
 from torch.utils.data import DataLoader
 import torch
 import logging
-from pathlib import Path
-import warnings
-import json
 import datetime
 import nltk.data
 import os
-import string
 import nltk
 nltk.download("punkt")
 

@@ -23,7 +23,6 @@ from vision_msgs.msg import ObjectHypothesis
 from opendr_bridge import ROSBridge
 
 from opendr.perception.multimodal_human_centric import IntentRecognitionLearner
-from std_msgs.msg import String
 from opendr_bridge.msg import OpenDRTranscription
 
 LABELS = [

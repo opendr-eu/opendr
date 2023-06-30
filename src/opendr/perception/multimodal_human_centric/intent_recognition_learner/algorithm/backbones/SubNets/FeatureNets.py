@@ -1,9 +1,5 @@
-import torch
 from torch import nn
-import torch.nn.functional as F
-from transformers import BertModel, BertPreTrainedModel, AlbertModel
-
-__all__ = ['BERTEncoder', 'Albertv2Encoder']
+from transformers import BertModel, AlbertModel
 
 
 def model_factory(args):

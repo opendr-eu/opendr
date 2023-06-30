@@ -1,4 +1,3 @@
-import torch
 import logging
 from torch import nn
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.backbones.FusionNets.MULT import MULT

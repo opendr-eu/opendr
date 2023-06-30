@@ -3,8 +3,6 @@ import torch
 import numpy as np
 import pandas as pd
 import random
-import logging
-import copy
 from .metrics import Metrics
 
 
@@ -48,7 +46,6 @@ def load_npy(path, file_name):
 def save_model(model, model_dir, accs={}, name='pytorch_model.pth'):
     save_model = model.module if hasattr(model, 'module') else model
     model_file = os.path.join(model_dir, name)
-    model_config_file = os.path.join(model_dir, 'config.json')
     save_dict = {'state_dict': save_model.state_dict()}
     save_dict.update(accs)
     torch.save(save_dict, model_file)
@@ -81,8 +78,6 @@ def save_results(args, test_results, debug_args=None, suff='', results_file_name
     for key in metrics.eval_metrics:
         results[key] = round(test_results[key] * 100, 2)
 
-    eval_key = 'eval_' + args.eval_monitor
-
     _vars = [args.text_backbone, args.seed, args.logger_name]
     _names = ['dataset',  'method', 'text_backbone', 'seed', 'logger_name']
 
@@ -108,4 +103,3 @@ def save_results(args, test_results, debug_args=None, suff='', results_file_name
         new = pd.DataFrame(results, index=[1])
         df1 = df1.append(new, ignore_index=True)
         df1.to_csv(results_path, index=False)
-    data_diagram = pd.read_csv(results_path)

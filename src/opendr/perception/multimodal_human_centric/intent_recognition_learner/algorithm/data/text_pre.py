@@ -1,7 +1,6 @@
 import os
 import csv
 import sys
-import logging
 from transformers import BertTokenizer, AlbertTokenizer
 
 __all__ = ['TextDataset']

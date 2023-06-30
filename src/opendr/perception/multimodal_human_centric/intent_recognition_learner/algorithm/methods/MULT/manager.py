@@ -51,7 +51,6 @@ class MULT:
         best_joint = 0
 
         silent = self.logger.getEffectiveLevel() >= 40
-        verbose = self.logger.getEffectiveLevel() <= 10
 
         for epoch in trange(int(self.args.num_train_epochs), desc="Epoch", disable=silent):
             self.model.train()
@@ -328,7 +327,6 @@ class MULT:
             return self.train_joint(train_dataloader, val_dataloader)
 
         silent = self.logger.getEffectiveLevel() >= 40
-        verbose = self.logger.getEffectiveLevel() <= 10
         best_joint = 0
         for epoch in trange(int(self.args.num_train_epochs), desc="Epoch", disable=silent):
             self.model.train()
@@ -384,7 +382,6 @@ class MULT:
 
         total_labels = torch.empty(0, dtype=torch.long).to(self.device)
         total_preds = torch.empty(0, dtype=torch.long).to(self.device)
-        total_features = torch.empty((0, self.model.model.combined_dim)).to(self.device)
         total_logits = torch.empty((0, self.args.num_labels)).to(self.device)
 
         loss_record = AverageMeter()

@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import pickle
-import logging
 
 __all__ = ['VideoDataset']
 

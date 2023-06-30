@@ -7,7 +7,6 @@ from .video_pre import VideoDataset
 from .audio_pre import AudioDataset
 from .__init__ import benchmarks
 from opendr.engine.datasets import DatasetIterator
-from easydict import EasyDict
 
 
 class MIntRecDataset(DatasetIterator):

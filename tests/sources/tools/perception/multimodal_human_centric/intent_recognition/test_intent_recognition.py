@@ -14,10 +14,7 @@
 import unittest
 import torch
 import tempfile
-import numpy as np
-import random
 import os
-import shutil
 import time
 # OpenDR imports
 from opendr.engine.target import Category

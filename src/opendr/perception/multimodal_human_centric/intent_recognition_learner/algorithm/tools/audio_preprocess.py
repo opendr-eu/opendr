@@ -1,8 +1,7 @@
-from moviepy.editor import *
+from moviepy.editor import VideoFileClip
 from tqdm import tqdm
 from transformers import Wav2Vec2Processor, Wav2Vec2Model
 import os
-import argparse
 import pickle
 import argparse
 import librosa

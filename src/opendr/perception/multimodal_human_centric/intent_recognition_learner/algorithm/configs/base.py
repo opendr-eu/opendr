@@ -1,4 +1,3 @@
-import importlib
 from easydict import EasyDict
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.configs.mult_bert import Param
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.data import benchmarks
