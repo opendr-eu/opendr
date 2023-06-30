@@ -1,5 +1,5 @@
-import os
 import csv
+import os
 import sys
 from transformers import BertTokenizer, AlbertTokenizer
 

@@ -22,8 +22,8 @@ from rclpy.node import Node
 
 from std_msgs.msg import Float32
 from vision_msgs.msg import ObjectHypothesis
-from opendr_bridge import ROS2Bridge
 
+from opendr_bridge import ROS2Bridge
 from opendr.perception.multimodal_human_centric import IntentRecognitionLearner
 from std_msgs.msg import String
 from opendr_bridge.msg import OpenDRTranscription
