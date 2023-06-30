@@ -17,8 +17,8 @@ copies or substantial portions of the Software.
 '''
 
 
-from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
 import logging
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
 
 
 class AverageMeter(object):
