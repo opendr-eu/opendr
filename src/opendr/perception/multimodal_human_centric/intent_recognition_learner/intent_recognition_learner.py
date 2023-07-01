@@ -24,7 +24,7 @@ from opendr.perception.multimodal_human_centric.intent_recognition_learner.algor
     save_results
 )
 from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.backbones.base import ModelManager
-from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.methods import MULT
+from opendr.perception.multimodal_human_centric.intent_recognition_learner.algorithm.methods.MULT.manager import MULT
 from opendr.engine.learners import Learner
 from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.target import Category
