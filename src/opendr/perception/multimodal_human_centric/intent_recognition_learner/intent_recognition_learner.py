@@ -220,7 +220,10 @@ class IntentRecognitionLearner(Learner):
                                   'multimodal_human_centric',
                                   'intent_recognition_learner')
 
-        model_name = '{}_{}'.format(self.train_config.text_backbone, 'language')
+        if 'prajjwal1/' in self.train_config.text_backbone:
+            model_name = self.train_config.text_backbone.split('/')[1]
+        else:
+            model_name = self.train_config.text_backbone
         weights_url = os.path.join(server_url, '{}.pth'.format(model_name))
         urlretrieve(weights_url, path)
 

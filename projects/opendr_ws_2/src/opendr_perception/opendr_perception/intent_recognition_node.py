@@ -90,7 +90,7 @@ class IntentRecognitionNode(Node):
         if not os.path.exists('pretrained_models/{}.pth'.format(text_backbone)):
             self.learner.download('pretrained_models/')
         self.learner.load('pretrained_models/{}.pth'.format(text_backbone))
- 
+
         self.last_phrase = ""
 
         self.get_logger().info("Intent recognition node initialized")
