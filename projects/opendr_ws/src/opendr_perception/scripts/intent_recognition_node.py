@@ -16,7 +16,7 @@
 import argparse
 import torch
 from time import perf_counter
-
+import os
 import rospy
 from std_msgs.msg import Float32
 from vision_msgs.msg import ObjectHypothesis
