@@ -43,7 +43,7 @@ class IntentRecognitionNode(Node):
             output_intent_topic="/opendr/intent",
             performance_topic=None,
             device="cuda",
-            text_backbone="albert-base-v2", cache_path='cache'):
+            text_backbone="bert-base-uncased", cache_path='cache'):
         """
         Creates a ROS2 Node for intent recognition.
         :param input_transcription_topic: topic where input text is published
@@ -79,13 +79,19 @@ class IntentRecognitionNode(Node):
 
         self.bridge = ROS2Bridge()
 
-        # Initialize the object detector
-        self.learner = IntentRecognitionLearner(
-            text_backbone=text_backbone, mode='language', device=device, cache_path=cache_path)
-        # self.learner.download(path=".")
-        # self.learner.load()
+        if text_backbone in ['bert-small', 'bert-mini', 'bert-tiny']:
+            backbone = 'prajjwal1/'+text_backbone
+        else:
+            backbone = text_backbone
+
+        # Initialize the learner
+        self.learner = IntentRecognitionLearner(text_backbone=backbone, mode='language',
+                                                device=device, cache_path=cache_path)
+        if not os.path.exists('pretrained_models/{}.pth'.format(text_backbone)):
+            self.learner.download('pretrained_models/')
+        self.learner.load('pretrained_models/{}.pth'.format(text_backbone))
+ 
         self.last_phrase = ""
-        self.learner.load('albert_language2.pth')
 
         self.get_logger().info("Intent recognition node initialized")
 
@@ -151,7 +157,9 @@ def main():
         "--text_backbone",
         help="Text backbone that will be used",
         type=str,
-        default="albert-base-v2")
+        default="bert-base-uncased",
+        choices=["bert-base-uncased", "albert-base-v2", "bert-small", "bert-mini", "bert-tiny"])
+
     parser.add_argument(
         "--cache_path",
         help="Text backbone that will be used",

@@ -35,20 +35,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.text_backbone == 'bert-small':
-        args.text_backbone = 'prajjwal1/bert-small'
+        text_backbone = 'prajjwal1/bert-small'
     elif args.text_backbone == 'bert-mini':
-        args.text_backbone = 'prajjwal1/bert-mini'
+        text_backbone = 'prajjwal1/bert-mini'
     elif args.text_backbone == 'bert-tiny':
-        args.text_backbone = 'prajjwal1/bert-tiny'
+        text_backbone = 'prajjwal1/bert-tiny'
+    else:
+        text_backbone = args.text_backbone
 
     modality = 'language'
 
-    learner = IntentRecognitionLearner(text_backbone=args.text_backbone, mode=modality,
+    learner = IntentRecognitionLearner(text_backbone=text_backbone, mode=modality,
                                        device=args.device, log_path='logs',
                                        cache_path=args.cache_path, results_path='result',
                                        output_path='outputs')
-    # learner.download('pretrained_models/')
-    # learner.load('pretrained_models/', args.text_backbone + '.pth')
+    if not os.path.exists('pretrained_models/{}.pth'.format(args.text_backbone)):
+        learner.download('pretrained_models/')
+    learner.load('pretrained_models/{}.pth'.format(args.text_backbone))
 
     while True:
         raw_text = input('Enter text: ')

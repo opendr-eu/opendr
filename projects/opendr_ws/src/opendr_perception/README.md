@@ -920,7 +920,7 @@ The node makes use of the toolkit's intent recognition [learner](../../../../src
    - `-o or --output_intent_topic OUTPUT_INTENT_TOPIC`: topic name for predicted intent (default=`/opendr/intent`)
    - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to be used for inference (default=`cuda`)
-   - `--text_backbone TEXT_BACKBONE`: text backbone tobe used, choices are `bert-base-uncased`, `albert-base-v2`, `prajjwal1/bert-small`, `prajjwal1/bert-mini`, `prajjwal1/bert-tiny` (default=`albert-base-v2`)
+   - `--text_backbone TEXT_BACKBONE`: text backbone tobe used, choices are `bert-base-uncased`, `albert-base-v2`, `bert-small`, `bert-mini`, `bert-tiny` (default=`bert-base-uncased`)
    - `--cache_path CACHE_PATH`: cache path for tokenizer files (default=`./cache/`)
 
 3. Default output topics:

@@ -91,18 +91,20 @@ def wait_for_start_command(learner, sample_rate):
 
 def get_intent_learner(text_backbone, device, cache_path):
     if args.text_backbone == 'bert-small':
-        args.text_backbone = 'prajjwal1/bert-small'
+        text_backbone = 'prajjwal1/bert-small'
     elif args.text_backbone == 'bert-mini':
-        args.text_backbone = 'prajjwal1/bert-mini'
+        text_backbone = 'prajjwal1/bert-mini'
     elif args.text_backbone == 'bert-tiny':
-        args.text_backbone = 'prajjwal1/bert-tiny'
+        text_backbone = 'prajjwal1/bert-tiny'
+    else:
+        text_backbone = args.text_backbone
     learner = IntentRecognitionLearner(text_backbone=text_backbone, mode='language',
                                        device=device, log_path='logs', results_path='results',
                                        output_path='outputs', cache_path=cache_path)
-    # learner.download('pretrained_models/')
-    # learner.load('pretrained_models/', args.text_backbone + '.pth')
-    # learner.trim('language')
-    learner.load("/media/kateryna/KINGSTON/albert_language2.pth")
+    if not os.path.exists('pretrained_models/{}.pth'.format(args.text_backbone)):
+        learner.download('pretrained_models/')
+    learner.load('pretrained_models/{}.pth'.format(args.text_backbone))
+
     return learner
 
 
@@ -127,7 +129,6 @@ def main(backbone, text_backbone, duration, interval, model_path, model_name, la
         raise ValueError("invalid backbone")
 
     intent_learner = get_intent_learner(text_backbone, device, cache_path)
-    intent_learner.load('/media/kateryna/KINGSTON/albert_language2.pth')
 
     # Wait for the user to say "hi whisper" before starting the loop
     sample_rate = 16000
