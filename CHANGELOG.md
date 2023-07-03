@@ -1,7 +1,7 @@
 # OpenDR Toolkit Change Log
 
 ## Version 2.2.0
-Released on May, 16th, 2023.
+Released on July, 3rd, 2023.
 
   - Dependency Updates ([#431](https://github.com/opendr-eu/opendr/pull/431)):
     - Updated PyTorch version from 1.9.0 to 1.13.1.
