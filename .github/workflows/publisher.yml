@@ -2,6 +2,8 @@ name: Publisher
 
 # Trigger on new github release, a tag with format vX.Y.Z is expected (used to tag the docker)
 on:
+  pull_request:
+    types: [labeled]
   release:
     types: [published]
 
@@ -16,7 +18,7 @@ jobs:
   publish-wheel:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v7
+    - uses: actions/checkout@v3
       with:
         submodules: true
     - name: Set up Python 3.8
