@@ -13,29 +13,19 @@
 # limitations under the License.
 
 
-from typing import Union, Iterable, Optional, List, Dict
+from typing import Union, Iterable, Optional, List
 from dataclasses import asdict
-import os
-import io
-import hashlib
 from logging import getLogger
-import warnings
-import urllib
+import os
 
-import pandas as pd
 import numpy as np
 from pathlib import Path
-from tqdm import tqdm
 
 import torch
-from torch.utils.data import Dataset, DataLoader
-
+from torch.utils.data import Dataset
 import whisper
 from whisper import DecodingResult
-from whisper import _MODELS as MODELS_URL, _ALIGNMENT_HEADS as ALIGNMENT_HEADS
-from whisper.model import ModelDimensions, Whisper
-from whisper.normalizers import BasicTextNormalizer, EnglishTextNormalizer
-from whisper.tokenizer import get_tokenizer
+from whisper import _MODELS as MODELS_URL
 
 from opendr.engine.data import Timeseries
 from opendr.engine.target import WhisperTranscription
@@ -53,7 +43,9 @@ class WhisperLearner(Learner):
         logprob_threshold: float = -0.8,
         no_speech_threshold: float = 0.6,
         condition_on_previous_text: bool = False,
+        word_timestamps: bool = False,
         temperature: float = 0.0,
+        compression_ratio_threshold: Optional[float] = 2.4,
         sample_len: Optional[int] = None,
         best_of: Optional[int] = 5,
         beam_size: Optional[int] = 5,
@@ -71,30 +63,88 @@ class WhisperLearner(Learner):
         Initialize a new instance of the WhisperLearner class, a subclass of the Learner class.
 
         Args:
-            model_name (str, optional): The name of the model to use for transcription.
-            language (Optional[str], optional): The language of the audio input.
-            device (str, optional): The device to use for processing, either "cpu" or "gpu".
-            temperature (float, optional): The sampling temperature during decoding.
-            sample_len (Optional[int], optional): The maximum length of the decoded audio.
-            best_of (Optional[int], optional): The number of samples to generate and select the best from.
-            beam_size (Optional[int], optional): The size of the beam search during decoding.
-            patience (Optional[float], optional): The patience value for early stopping during decoding.
-            length_penalty (Optional[float], optional): The length penalty applied during decoding.
-            prompt (Optional[Union[str, List[int]]], optional): The prompt for the model during decoding.
-            prefix (Optional[Union[str, List[int]]], optional): The prefix for the model during decoding.
-            suppress_tokens (Optional[Union[str, Iterable[int]]], optional): The tokens to suppress during decoding.
-            suppress_blank (bool, optional): Whether to suppress blank tokens during decoding.
-            without_timestamps (bool, optional): Whether to generate timestamps during decoding.
-            max_initial_timestamp (Optional[float], optional): The maximum initial timestamp during decoding.
-            fp16 (bool, optional): Whether to use half-precision floating-point format to perform inference.
+
+            temperature: Union[float, Tuple[float, ...]]
+                Temperature for sampling. It can be a tuple of temperatures, which will be successively used
+                upon failures according to either `compression_ratio_threshold` or `logprob_threshold`.
+                When use infer method with builtin_transcribe=False, the temperature must be a number.
+
+            compression_ratio_threshold: float
+                If the gzip compression ratio is above this value, treat as failed.
+
+            logprob_threshold (float):
+                If the average log probability over sampled tokens is below this value, treat as failed
+
+            no_speech_threshold (float):
+                If the no_speech probability is higher than this value AND the average log probability over sampled tokens is below `logprob_threshold`, consider the segment as silent
+
+            condition_on_previous_text: bool
+                If True, the previous output of the model is provided as a prompt for the next window;
+                disabling may make the text inconsistent across windows, but the model becomes less prone to
+                getting stuck in a failure loop, such as repetition looping or timestamps going out of sync.
+
+            word_timestamps: bool
+                Extract word-level timestamps using the cross-attention pattern and dynamic time warping,
+                and include the timestamps for each word in each segment.
+
+
+
+
+
+            device (str):
+                device to use for PyTorch inference, either "cpu" or "gpu".
+
+
+
+            Decode parameters:
+
+            language (Optional[str]):
+                language spoken in the audio, specify None to perform language detection.
+
+            temperature (Optional[float]):
+                When using infer method with builtin_transcribe=True, we call the transcribe function of Whisper, which
+                iteratively set the value of temperature from the given tuple or float.
+
+            sample_len (Optinal[int]):
+                Maximum number of tokens to sample.
+
+            best_of (Optional[int]):
+                Number of candidates when sampling with non-zero temperature.
+
+            beam_size (Optional[int]):
+                Number of beams in beam search, only applicable when temperature is zero.
+
+            patience (Optional[float]):
+                Optional patience value to use in beam decoding, as in https://arxiv.org/abs/2204.05424, the default (1.0) is equivalent to conventional beam search.
+
+            length_penalty (Optional[float]):
+                Optional token length penalty coefficient (alpha) as in https://arxiv.org/abs/1609.08144, uses simple length normalization by default.
+
+            prompt (Optional[Union[str, List[int]]]):
+                Text or tokens to feed as the prompt; for more info: # https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
+
+            prefix (Optional[Union[str, List[int]]]):
+                Text or tokens to feed as the prefix; for more info: # https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
+
+            suppress_tokens (Optional[Union[str, Iterable[int]]]):
+                Comma-separated list of token ids to suppress during sampling; '-1' will suppress most special characters except common punctuations.
+
+            suppress_blank (bool):
+                Suppress blank outputs.
+
+            without_timestamps (bool):
+                Use <|notimestamps|> to sample text tokens only, the timestamp will be multiple of 30 seconds if the audio file is longer than 30 seconds.
+
+            max_initial_timestamp (Optional[float])
+
+            fp16 (bool):
+                whether to perform inference in fp16. fp16 is not available on CPU.
 
         Raises:
             AssertionError: If the model name is not valid.
         """
 
         super(WhisperLearner, self).__init__()
-
-        # assert model_name in whisper.available_models(), f"Model name: {model_name} is not valid; available models = {whisper.available_models()}"
 
         self.task = "transcribe"
         self.model_name = None
@@ -103,7 +153,9 @@ class WhisperLearner(Learner):
         self.logprob_threshold = logprob_threshold
         self.no_speech_threshold = no_speech_threshold
         self.condition_on_previous_text = condition_on_previous_text
+        self.word_timestamps = word_timestamps
         self.temperature = temperature
+        self.compression_ratio_threshold = compression_ratio_threshold
         self.sample_len = sample_len
         self.best_of = best_of
         self.beam_size = beam_size
@@ -140,14 +192,7 @@ class WhisperLearner(Learner):
             fp16=self.fp16,
         )
 
-
-    def save(self, path: Union[str, Path]):
-        """
-        Save model weights to path
-
-        Args:
-            path (Union[str, Path]): Directory in which to save model weights. 
-        """
+    def save(self):
         pass
 
     def load(
@@ -160,16 +205,24 @@ class WhisperLearner(Learner):
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
         """
 
+        if name is None:
+            raise ValueError("Please specify a model name or path to model checkpoint.")
+
         self.model_name = name
         self.download_dir = download_dir
 
-        self.model = whisper.load_model(name=self.model_name, device=self.device, download_root=self.download_dir, in_memory=in_memory)
+        self.model = whisper.load_model(
+            name=self.model_name,
+            device=self.device,
+            download_root=self.download_dir,
+            in_memory=in_memory,
+        )
 
-
-    def download(self,
+    def download(
+        self,
         name: str,
         download_dir: str = None,
-     ):
+    ):
         """
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
         """
@@ -179,19 +232,18 @@ class WhisperLearner(Learner):
 
         if download_root is None:
             default = os.path.join(os.path.expanduser("~"), ".cache")
-            download_root = os.path.join(os.getenv("XDG_CACHE_HOME", default), "whisper")
+            download_root = os.path.join(
+                os.getenv("XDG_CACHE_HOME", default), "whisper"
+            )
 
         if name in MODELS_URL:
             whisper._download(MODELS_URL[name], download_root, in_memory)
         elif os.path.isfile(name):
-            raise RuntimeError(
-                f"Model {name} should not be a path."
-            )
+            raise RuntimeError(f"Model {name} should not be a path.")
         else:
             raise RuntimeError(
                 f"Model {name} not found; available models = {whisper.available_models()}"
             )
-
 
     def reset(self):
         return
@@ -233,9 +285,19 @@ class WhisperLearner(Learner):
             raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
         if builtin_transcribe:
-            decode_results = self.model.transcribe(data, no_speech_threshold=self.no_speech_threshold, logprob_threshold=self.logprob_threshold, condition_on_previous_text=self.condition_on_previous_text, **asdict(self.decode_options))
-            # print(decode_results)
-            return WhisperTranscription(text=decode_results["text"], segments=decode_results["segments"])
+            decode_results = self.model.transcribe(
+                data,
+                compression_ratio_threshold=self.compression_ratio_threshold,
+                no_speech_threshold=self.no_speech_threshold,
+                logprob_threshold=self.logprob_threshold,
+                condition_on_previous_text=self.condition_on_previous_text,
+                word_timestamps=self.word_timestamps,
+                **asdict(self.decode_options),
+            )
+            print(decode_results)
+            return WhisperTranscription(
+                text=decode_results["text"], segments=decode_results["segments"]
+            )
         else:
             mel = self.preprocess(data)
             decode_results = self.model.decode(mel=mel, options=self.decode_options)
@@ -253,10 +315,12 @@ class WhisperLearner(Learner):
 
         return mel
 
-    def postprocess(self, decode_results: Union[DecodingResult, List[DecodingResult]]) -> Union[WhisperTranscription, List[WhisperTranscription]]:
+    def postprocess(
+        self, decode_results: Union[DecodingResult, List[DecodingResult]]
+    ) -> Union[WhisperTranscription, List[WhisperTranscription]]:
         """
         Postprocess the decoding results.
-        """       
+        """
 
         # Ensure we always work with a list
         if not isinstance(decode_results, list):
