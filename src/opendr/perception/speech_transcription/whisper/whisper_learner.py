@@ -16,7 +16,6 @@
 import os
 from dataclasses import asdict
 from logging import getLogger
-from pathlib import Path
 from typing import Iterable, List, Optional, Union
 
 import numpy as np
@@ -211,11 +210,17 @@ class WhisperLearner(Learner):
     def load(
         self,
         name: str,
-        download_dir: Union[str, Path] = "./",
+        download_dir: str = "./",
         in_memory: bool = False,
     ):
         """
+        Load a Whisper ASR model.
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
+
+        Args:
+            name (str): name or path to model checkpoint.
+            download_dir (str, optional): directory to save the downloaded model. Defaults to "./".
+            in_memory (bool, optional): whether to load the model in memory. Defaults to False.
         """
 
         if name is None:
@@ -234,10 +239,15 @@ class WhisperLearner(Learner):
     def download(
         self,
         name: str,
-        download_dir: str = None,
+        download_dir: Optional[str] = None,
     ):
         """
+        Download Whisper model.
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
+
+        Args:
+            name (str): name of model. 
+            download_dir (str, optional): directory to save the downloaded model. Defaults to "./".
         """
 
         download_root = download_dir
@@ -263,11 +273,11 @@ class WhisperLearner(Learner):
         audio: Union[Timeseries, np.ndarray, torch.Tensor, str],
     ) -> WhisperTranscription:
         """
-        Run inference on an audio sample.
+        Run inference on an audio sample. Please call the load() method before calling this method.
 
         Args:
-            audio (Union[Timeseries, np.ndarray, torch.Tensor, str]):
-                The audio sample as a Timeseries, torch.Tensor, or np.ndarray or a string of file path.
+            audio (Union[Timeseries, np.ndarray, torch.Tensor, str]): The audio sample as a Timeseries, torch.Tensor, or 
+            np.ndarray or a string of file path.
 
         Returns:
             WhisperTranscription: Transcription results with side information.
@@ -303,6 +313,15 @@ class WhisperLearner(Learner):
 
     @staticmethod
     def load_audio(file: str) -> np.ndarray:
+        """
+        Load audio from a file.
+
+        Args
+            file (str): Path to audio file.
+
+        Returns:
+            np.ndarray: Audio data.
+        """
         return whisper.load_audio(file)
 
     def save(self):

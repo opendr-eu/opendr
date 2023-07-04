@@ -20,7 +20,7 @@ import requests
 from logging import getLogger
 from pathlib import Path
 from re import match
-from typing import Union
+from typing import Union, Optional
 from urllib.request import urlretrieve
 
 import numpy as np
@@ -69,16 +69,35 @@ class VoskLearner(Learner):
         self.model = None
         self.rec = None
 
-    def _load_model_weights(self, model_path) -> VoskModel:
+    def _load_model_weights(self, model_path: str) -> VoskModel:
+        """
+        Load model weights.
+
+        Args:
+            model_path (str): Path to the Vosk model.
+
+        Returns:
+            VoskModel: Vosk model.
+        """
         return VoskModel(model_path=model_path)
 
     def load(
         self,
-        name: str = None,
-        language: str = None,
-        model_path=None,
-        download_dir=None,
+        name: Optional[str] = None,
+        language: Optional[str] = None,
+        model_path: Optional[str] = None,
+        download_dir: Optional[str] = None,
     ):
+        """
+        Loads the Vosk model and initializes the recognizer.
+
+        Args:
+            name (str): Full name of the Vosk model.
+            language (str): Language of the Vosk model. Vosk will decide the default model for this language.
+            model_path (str): Path to the Vosk model.
+            download_dir (str): Directory to download the Vosk model to.
+        """
+
         self.model_name = name
         self.language = language
         self.download_dir = download_dir
@@ -88,20 +107,28 @@ class VoskLearner(Learner):
         self.model = self._load_model_weights(model_path)
         self.rec = KaldiRecognizer(self.model, self.sample_rate)
 
-    def _get_model_path(self):
+    def _get_model_path(self) -> str:
+        """
+        Construct model path from model name or language parameters.
+        Adapted from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L65
+
+        Returns:
+            str: Path to the Vosk model.
+        """
+
         if self.model_name is None:
             model_path = self._get_model_by_lang(self.language)
         else:
             model_path = self._get_model_by_name(self.model_name)
         return str(model_path)
 
-    def _get_model_by_name(self, model_name: str):
+    def _get_model_by_name(self, model_name: str) -> Path:
         """
+        Download model given its name.
         Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L72
 
         Args:
-            model_name: str
-                Full name of the Vosk model.
+            model_name (str): Full name of the Vosk model.
         """
 
         if self.download_dir is None:
@@ -126,13 +153,13 @@ class VoskLearner(Learner):
             self.download(Path(directory, result_model[0]))
             return Path(directory, result_model[0])
 
-    def _get_model_by_lang(self, lang: str):
+    def _get_model_by_lang(self, lang: str) -> Path:
         """
+        Download model given its language.
         Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L89
 
         Args:
-            lang: str
-                Language of the Vosk model. Vosk will decide he default model for this language.
+            lang (str): Language of the Vosk model. Vosk will decide he default model for this language.
         """
 
         if self.download_dir is None:
@@ -165,13 +192,13 @@ class VoskLearner(Learner):
             self.download(Path(directory, result_model[0]))
             return Path(directory, result_model[0])
 
-    def download(self, model_name: str):
+    def download(self, model_name: Path):
         """
+        Download model given its full name.
         Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L108
 
         Args:
-            model_name: str
-                Full name of the Vosk model.
+            model_name (str): Full name of the Vosk model.
         """
 
         if not (model_name.parent).exists():
@@ -216,17 +243,17 @@ class VoskLearner(Learner):
         self, audio: Union[Timeseries, torch.Tensor, np.ndarray, bytes]
     ) -> VoskTranscription:
         """
-        Run inference on an audio sample.
+        Run inference on an audio sample. Please call the load() method before calling this method.
 
         Args:
-            audio (Union[Timeseries, np.ndarray, torch.Tensor, bytes]):
-                The audio sample as a Timeseries, torch.Tensor, or np.ndarray or bytes.
+            audio (Union[Timeseries, np.ndarray, torch.Tensor, bytes]): The audio sample as a Timeseries, torch.Tensor, or 
+            np.ndarray or bytes.
 
         Returns:
             VoskTranscription: Transcription results with side informmation.
 
         Raises:
-            TypeError: If the input batch is not a Timeseries, torch.Tensor, np.ndarray or str.
+            TypeError: If the input batch is not a Timeseries, torch.Tensor, np.ndarray or byte.
         """
 
         if isinstance(audio, (Timeseries, torch.Tensor)):
@@ -251,11 +278,10 @@ class VoskLearner(Learner):
 
     def preprocess(self, data: Union[np.ndarray, bytes]) -> bytes:
         """
-        Preprocess audio data.
+        Convert audio data to bytes.
 
         Args:
-            data (Union[np.ndarray, bytes]):
-                pad or trim the data to a desired length for Whisper and compute log mel spectrogram.
+            data (Union[np.ndarray, bytes]): Audio data
 
         Returns:
             bytes: Audio data in bytes.

@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
 import wave
 import argparse
 from queue import Queue
@@ -38,10 +39,10 @@ class SpeechTranscriptionNode:
     def __init__(
         self,
         backbone: str,
-        model_name: str = None,
-        model_path: str = None,
-        language: str = None,
-        download_dir: str = None,
+        model_name: Optional[str] = None,
+        model_path: Optional[str] = None,
+        language: Optional[str] = None,
+        download_dir: Optional[str] = None,
         input_audio_topic: str = "/audio/audio",
         output_transcription_topic: str = "/opendr/speech_transcription",
         node_topic: str = "opendr_transcription_node",
