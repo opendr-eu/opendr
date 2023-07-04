@@ -75,7 +75,6 @@ class WhisperLearner(Learner):
             temperature: Union[float, Tuple[float, ...]]
                 Temperature for sampling. It can be a tuple of temperatures, which will be successively used
                 upon failures according to either `compression_ratio_threshold` or `logprob_threshold`.
-                When use infer method with builtin_transcribe=False, the temperature must be a number.
 
             compression_ratio_threshold: float
                 If the gzip compression ratio is above this value, treat as failed.
@@ -102,18 +101,10 @@ class WhisperLearner(Learner):
             append_punctuations: str
                 If word_timestamps is True, merge these punctuation symbols with the previous word.
 
-            device (str):
-                device to use for PyTorch inference, either "cpu" or "gpu".
-
-
             Decode parameters: The following parameters is use in the decode process.
 
             language (Optional[str]):
                 language spoken in the audio, specify None to perform language detection.
-
-            temperature (Optional[float]):
-                When using infer method with builtin_transcribe=True, we call the transcribe function of Whisper, which
-                iteratively set the value of temperature from the given tuple or float.
 
             sample_len (Optinal[int]):
                 Maximum number of tokens to sample.
@@ -155,11 +146,16 @@ class WhisperLearner(Learner):
 
             fp16 (bool):
                 whether to perform inference in fp16. fp16 is not available on CPU.
+
+            Other parameters:
+
+            device (str):
+                device to use for PyTorch inference, either "cpu" or "gpu".
         """
 
         super(WhisperLearner, self).__init__()
 
-        # Parameters for built-in transcribe function of Whisper.
+        # Parameters for transcribe function of Whisper.
         self.verbose = verbose
         self.temperature = temperature
         self.compression_ratio_threshold = compression_ratio_threshold
@@ -266,7 +262,6 @@ class WhisperLearner(Learner):
     def infer(
         self,
         audio: Union[Timeseries, np.ndarray, torch.Tensor, str],
-        builtin_transcribe: bool = True,
     ) -> Union[WhisperTranscription, List[WhisperTranscription]]:
         """
         Run inference on a batch of audio sample.
@@ -275,16 +270,13 @@ class WhisperLearner(Learner):
             audio (Union[Timeseries, np.ndarray, torch.Tensor, str]):
                 The audio sample as a Timeseries, torch.Tensor, or np.ndarray or a string of file path.
 
-            builtin_transcribe (bool):
-                If True, use the built-in transcribe function of Whisper. Otherwise, use the Whisper decode method with give
-                more low-level control.
-
         Returns:
             Union[WhisperTranscription, List[WhisperTranscription]]: Transcription results.
 
         Raises:
             TypeError: If the input batch is not a Timeseries, torch.Tensor, np.ndarray or str.
         """
+
         if isinstance(audio, Timeseries):
             data = audio.numpy().reshape(-1)
         elif isinstance(audio, (torch.Tensor, np.ndarray)):
@@ -294,64 +286,21 @@ class WhisperLearner(Learner):
         else:
             raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
-        if builtin_transcribe:
-            decode_results = self.model.transcribe(
-                data,
-                verbose=self.verbose,
-                compression_ratio_threshold=self.compression_ratio_threshold,
-                no_speech_threshold=self.no_speech_threshold,
-                logprob_threshold=self.logprob_threshold,
-                condition_on_previous_text=self.condition_on_previous_text,
-                word_timestamps=self.word_timestamps,
-                prepend_punctuations=self.prepend_punctuations,
-                append_punctuations=self.append_punctuations,
-                **asdict(self.decode_options),
-            )
-            return WhisperTranscription(
-                text=decode_results["text"], segments=decode_results["segments"]
-            )
-        else:
-            mel = self.preprocess(data)
-            decode_result = self.model.decode(mel=mel, options=self.decode_options)
-            output = self.postprocess(decode_result)
-
-        return output
-
-    def preprocess(self, data: Union[torch.Tensor, np.ndarray]) -> torch.Tensor:
-        """
-        Preprocess audio data.
-
-        Args:
-            data (Union[Timeseries, np.ndarray, torch.Tensor, str]):
-                pad or trim the data to a desired length for Whisper and compute log mel spectrogram.
-
-        Returns:
-            torch.Tensor: log mel spectrogram.
-        """
-
-        data = whisper.pad_or_trim(data)
-        mel = whisper.log_mel_spectrogram(data, device=self.device)
-
-        return mel
-
-    def postprocess(
-        self, decode_result: DecodingResult
-    ) -> WhisperTranscription:
-        """
-        Postprocess the decoding results.
-
-        Args:
-            decode_result (DecodingResult):
-                Decoding results from Whisper format.
-
-        Returns:
-            WhisperTranscription: Transcription result.
-        """
-
-        print(decode_result)
-        result = WhisperTranscription(text=decode_result.text, segments=decode_result["segments"])
-
-        return result
+        decode_results = self.model.transcribe(
+            data,
+            verbose=self.verbose,
+            compression_ratio_threshold=self.compression_ratio_threshold,
+            no_speech_threshold=self.no_speech_threshold,
+            logprob_threshold=self.logprob_threshold,
+            condition_on_previous_text=self.condition_on_previous_text,
+            word_timestamps=self.word_timestamps,
+            prepend_punctuations=self.prepend_punctuations,
+            append_punctuations=self.append_punctuations,
+            **asdict(self.decode_options),
+        )
+        return WhisperTranscription(
+            text=decode_results["text"], segments=decode_results["segments"]
+        )
 
     @staticmethod
     def load_audio(file: str) -> np.ndarray:

@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import argparse
 
 import librosa
@@ -24,27 +23,25 @@ import torch
 
 from opendr.engine.data import Timeseries
 from opendr.perception.speech_transcription import (
-    WhisperLearner,
     VoskLearner,
+    WhisperLearner,
 )
+
 
 def str2bool(v):
     if isinstance(v, bool):
         return v
-    if v.lower() in ('True', 'true'):
+    if v.lower() in ("True", "true"):
         return True
-    elif v.lower() in ('False', 'false'):
+    elif v.lower() in ("False", "false"):
         return False
     else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 if __name__ == "__main__":
     # Select the device to perform inference on
-    try:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-    except:
-        device = "cpu"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     parser = argparse.ArgumentParser()
 
@@ -65,7 +62,8 @@ if __name__ == "__main__":
         "--model-name",
         type=str,
         help="Specific name for Whisper model",
-        choices=f"Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
+        choices="Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium',"
+        "'large-v1', 'large-v2', 'large']",
         default=None,
     )
     parser.add_argument(
@@ -110,4 +108,4 @@ if __name__ == "__main__":
     data = Timeseries(np.expand_dims(audio_input, axis=0))
     result = learner.infer(data)
 
-    print(f"The word is: {result.text}")
+    print(f"The transcription is: {result.text}")

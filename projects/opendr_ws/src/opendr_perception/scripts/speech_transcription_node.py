@@ -171,10 +171,10 @@ class SpeechTranscriptionNode:
                         )
                         if t.text == "" or t.segments[-1]["no_speech_prob"] > 0.6:
                             self.cut_audio = True
-                    transcription_whisper = self.audio_model.infer(
-                        audio_array, builtin_transcribe=True
-                    )
+                    transcription_whisper = self.audio_model.infer(audio_array)
+
                     segments = transcription_whisper.segments
+
                     if len(segments) > 1 and segments[-1]["text"] != "":
                         last_segment = segments[-1]
                         start_timestamp = last_segment["start"]
