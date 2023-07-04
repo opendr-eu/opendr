@@ -24,7 +24,6 @@ import numpy as np
 import torch
 
 import whisper
-from whisper import DecodingResult
 from whisper import _MODELS as MODELS_URL
 
 from opendr.engine.data import Timeseries
