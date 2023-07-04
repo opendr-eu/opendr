@@ -23,6 +23,8 @@ from tempfile import NamedTemporaryFile
 
 import numpy as np
 
+import torch
+
 import rospy
 from audio_common_msgs.msg import AudioData
 from opendr_bridge.msg import OpenDRTranscription
@@ -32,7 +34,7 @@ from opendr.perception.speech_transcription import (
     VoskLearner,
 )
 from opendr_bridge import ROSBridge
-from opendr.engine.target import VoskTranscription
+from opendr.engine.target import WhisperTranscription, VoskTranscription
 
 
 class SpeechTranscriptionNode:
@@ -46,6 +48,7 @@ class SpeechTranscriptionNode:
         input_audio_topic: str = "/audio/audio",
         output_transcription_topic: str = "/opendr/speech_transcription",
         node_topic: str = "opendr_transcription_node",
+        device: str = "cuda",
         sample_width: int = 2,
         framerate: int = 16000,
     ):
@@ -58,14 +61,15 @@ class SpeechTranscriptionNode:
         self.model_name = model_name
         self.model_path = model_path
         self.language = language
-        self.download_dir = download_dir
+        self.download_dir = download_dir if download_dir is not None else "./"
+        self.device = device
+        self.sample_width = sample_width
+        self.framerate = framerate
 
         # Initialize model
         if self.backbone == "whisper":
-            if self.model_path is not None:
-                name = self.model_path
-            else:
-                name = self.model_name
+            name = self.model_path if self.model_path is not None else self.model_name
+            assert name is not None, "Please specify a model name or path for Whisper."
             # Load Whisper model
             self.audio_model = WhisperLearner(language=self.language)
             self.audio_model.load(name=name, download_dir=self.download_dir)
@@ -79,11 +83,6 @@ class SpeechTranscriptionNode:
                 download_dir=self.download_dir,
             )
 
-        self.last_sample = b""
-        self.cut_audio = False
-
-        self.temp_file = NamedTemporaryFile().name
-
         self.subscriber = rospy.Subscriber(input_audio_topic, AudioData, self.callback)
         self.publisher = rospy.Publisher(
             output_transcription_topic, OpenDRTranscription, queue_size=10
@@ -91,18 +90,57 @@ class SpeechTranscriptionNode:
 
         self.bridge = ROSBridge()
 
+        self.temp_file = NamedTemporaryFile().name
+        self.last_sample = b""
+        self.cut_audio = False
+        self.n_sample = None
+
         # Start processing thread
         self.processing_thread = Thread(target=self.process_audio)
         self.processing_thread.start()
 
-        self.sample_width = sample_width
-        self.framerate = framerate
-
-        self.n_sample = None
 
     def callback(self, data):
         # Add data to queue
         self.data_queue.put(data.data)
+
+    def _postprocess_whisper(self, audio_array: np.ndarray, transcription: WhisperTranscription) -> OpenDRTranscription:
+        segments = transcription.segments
+
+        if len(segments) > 1 and segments[-1]["text"] != "":
+            # Detect ending a phrase.
+            print("Detect ending a phrase.")
+            last_segment = segments[-1]
+            start_timestamp = last_segment["start"]
+            self.n_sample = int(self.framerate * start_timestamp)
+            self.cut_audio = True
+
+            text = [
+                segments[i]["text"].strip()
+                for i in range(len(segments) - 1)
+            ]
+            text = " ".join(text)
+            vosk_transcription = VoskTranscription(
+                text=text, accept_waveform=True
+            )
+        elif self.cut_audio:
+            # Long period of silence.
+            print("Long period of silence.")
+            self.n_sample = audio_array.shape[0]
+            text = transcription.text.strip()
+            vosk_transcription = VoskTranscription(
+                text=text, accept_waveform=True
+            )
+        else:
+            text = transcription.text.strip()
+            vosk_transcription = VoskTranscription(
+                text=text, accept_waveform=False
+            )
+
+        print(text)
+        ros_transcription = self.bridge.to_ros_transcription(vosk_transcription)
+
+        return ros_transcription
 
     def process_audio(self):
         while not rospy.is_shutdown():
@@ -170,46 +208,16 @@ class SpeechTranscriptionNode:
                         t = self.audio_model.infer(
                             audio_array[-phrase_timeout * self.framerate :]
                         )
-                        if t.text == "" or t.segments[-1]["no_speech_prob"] > 0.6:
+                        if t.text == "" or t.segments[-1]["no_speech_prob"] > 0.5:
+                            print(t.segments[-1]["no_speech_prob"])
                             self.cut_audio = True
                     transcription_whisper = self.audio_model.infer(audio_array)
 
-                    segments = transcription_whisper.segments
-
-                    if len(segments) > 1 and segments[-1]["text"] != "":
-                        last_segment = segments[-1]
-                        start_timestamp = last_segment["start"]
-                        self.n_sample = int(self.framerate * start_timestamp)
-                        self.cut_audio = True
-
-                        text = [
-                            segments[i]["text"].strip()
-                            for i in range(len(segments) - 1)
-                        ]
-                        text = " ".join(text)
-                        transcription = VoskTranscription(
-                            text=text, accept_waveform=True
-                        )
-                    elif self.cut_audio:
-                        self.n_sample = audio_array.shape[0]
-                        text = transcription_whisper.text.strip()
-                        transcription = VoskTranscription(
-                            text=text, accept_waveform=True
-                        )
-                        ros_transcription = self.bridge.to_ros_transcription(
-                            transcription
-                        )
-                        self.publisher.publish(ros_transcription)
-                    else:
-                        text = transcription_whisper.text.strip()
-                        transcription = VoskTranscription(
-                            text=text, accept_waveform=False
-                        )
-
-                    ros_transcription = self.bridge.to_ros_transcription(transcription)
+                    ros_transcription = self._postprocess_whisper(
+                        audio_array, transcription_whisper
+                    )
                     self.publisher.publish(ros_transcription)
 
-                    print(text)
 
     def spin(self):
         rospy.spin()
@@ -253,10 +261,36 @@ if __name__ == "__main__":
     parser.add_argument(
         "--sample-width", type=int, default=2, help="sample width for audio data"
     )
+    parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\" for Whisper and \"cpu\" for Vosk",
+        type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument(
         "--framerate", type=int, default=16000, help="framerate for audio data"
     )
     args = parser.parse_args()
+
+    try:
+        if args.device == "cuda" and torch.cuda.is_available():
+            if args.backbone == "whisper":
+                device = "cuda"
+            else:
+                print("Vosk only supports CPU. Using CPU instead.")
+                device = "cpu"
+        elif args.device == "cuda":
+            print("GPU not found. Using CPU instead.")
+            device = "cpu"
+        else:
+            print("Using CPU.")
+            device = "cpu"
+    except:
+        print("Using CPU.")
+        device = "cpu"
+
+    if args.backbone == "whisper" and args.framerate != 16000:
+        print("Whisper only supports 16000 Hz. Using 16000 Hz instead.")
+        framerate = 16000
+    else:
+        framerate = args.framerate
+
 
     try:
         node = SpeechTranscriptionNode(backbone=args.backbone,
@@ -267,8 +301,9 @@ if __name__ == "__main__":
             input_audio_topic=args.input_audio_topic,
             output_transcription_topic=args.output_transcription_topic,
             node_topic=args.node_topic,
+            device=args.device,
             sample_width=args.sample_width,
-            framerate=args.framerate,
+            framerate=framerate,
         )
         node.spin()
     except rospy.ROSInterruptException:
