@@ -13,30 +13,28 @@
 # limitations under the License.
 
 
-from typing import Union, Iterable, Optional, List, Dict
+import json
 import os
 import sys
-from logging import getLogger
 import requests
+from logging import getLogger
+from pathlib import Path
 from re import match
-import json
+from typing import Union
 from urllib.request import urlretrieve
 
-import pandas as pd
 import numpy as np
-from pathlib import Path
 from tqdm import tqdm
 from zipfile import ZipFile
 
 import torch
-from torch.utils.data import Dataset, DataLoader
 
-from vosk import Model as VoskModel
 from vosk import KaldiRecognizer, MODEL_PRE_URL, MODEL_LIST_URL, MODEL_DIRS
+from vosk import Model as VoskModel
 
 from opendr.engine.data import Timeseries
-from opendr.engine.target import VoskTranscription
 from opendr.engine.learners import Learner
+from opendr.engine.target import VoskTranscription
 
 
 logger = getLogger(__name__)
@@ -48,35 +46,36 @@ class VoskLearner(Learner):
         device: str = "cpu",
         sample_rate: int = 16000,
     ):
+        """
+        The VoskLearner class extends the base Learner class and incorporates the
+        functionality of the Vosk speech recognition library.
+
+        Args:
+            device: str
+                The device to use for computations. Currently only supports CPU.
+            sample_rate: int
+                The sample rate to be used by the Vosk model.
+        """
+
         super(VoskLearner, self).__init__()
         if device == "cuda":
-            logger.warning("The implementation does not support CUDA, using CPU instead.")
+            logger.warning(
+                "The implementation does not support CUDA, using CPU instead."
+            )
             device = "cpu"
-        
+
         self.device = device
         self.sample_rate = sample_rate
         self.model = None
         self.rec = None
 
-    def _load_model_weights(
-        self,
-        model_path
-    ) -> torch.nn.Module:
+    def _load_model_weights(self, model_path) -> VoskModel:
         return VoskModel(model_path=model_path)
 
-    def save(self, path: Union[str, Path]):
-        """
-        Save model weights to path
-
-        Args:
-            path (Union[str, Path]): Directory in which to save model weights. 
-        """
-        pass
-
     def load(
-        self, 
+        self,
         name: str = None,
-        language: str = None, 
+        language: str = None,
         model_path=None,
         download_dir=None,
     ):
@@ -96,7 +95,15 @@ class VoskLearner(Learner):
             model_path = self._get_model_by_name(self.model_name)
         return str(model_path)
 
-    def _get_model_by_name(self, model_name):
+    def _get_model_by_name(self, model_name: str):
+        """
+        Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L72
+
+        Args:
+            model_name: str
+                Full name of the Vosk model.
+        """
+
         if self.download_dir is None:
             for directory in MODEL_DIRS:
                 if directory is None or not Path(directory).exists():
@@ -109,7 +116,9 @@ class VoskLearner(Learner):
             directory = self.download_dir
 
         response = requests.get(MODEL_LIST_URL, timeout=10)
-        result_model = [model["name"] for model in response.json() if model["name"] == model_name]
+        result_model = [
+            model["name"] for model in response.json() if model["name"] == model_name
+        ]
         if result_model == []:
             print("model name %s does not exist" % (model_name))
             sys.exit(1)
@@ -117,22 +126,38 @@ class VoskLearner(Learner):
             self.download(Path(directory, result_model[0]))
             return Path(directory, result_model[0])
 
-    def _get_model_by_lang(self, lang):
+    def _get_model_by_lang(self, lang: str):
+        """
+        Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L89
+
+        Args:
+            lang: str
+                Language of the Vosk model. Vosk will decide he default model for this language.
+        """
+
         if self.download_dir is None:
             for directory in MODEL_DIRS:
                 if directory is None or not Path(directory).exists():
                     continue
                 model_file_list = os.listdir(directory)
-                model_file = [model for model in model_file_list if
-                        match(r"vosk-model(-small)?-{}".format(lang), model)]
+                model_file = [
+                    model
+                    for model in model_file_list
+                    if match(r"vosk-model(-small)?-{}".format(lang), model)
+                ]
                 if model_file != []:
                     return Path(directory, model_file[0])
         else:
             directory = self.download_dir
 
         response = requests.get(MODEL_LIST_URL, timeout=10)
-        result_model = [model["name"] for model in response.json() if
-                model["lang"] == lang and model["type"] == "small" and model["obsolete"] == "false"]
+        result_model = [
+            model["name"]
+            for model in response.json()
+            if model["lang"] == lang
+            and model["type"] == "small"
+            and model["obsolete"] == "false"
+        ]
         if result_model == []:
             print("lang %s does not exist" % (lang))
             sys.exit(1)
@@ -140,55 +165,79 @@ class VoskLearner(Learner):
             self.download(Path(directory, result_model[0]))
             return Path(directory, result_model[0])
 
-    def download(self, model_name):
+    def download(self, model_name: str):
+        """
+        Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L108
+
+        Args:
+            model_name: str
+                Full name of the Vosk model.
+        """
+
         if not (model_name.parent).exists():
             (model_name.parent).mkdir(parents=True)
-        with tqdm(unit="B", unit_scale=True, unit_divisor=1024, miniters=1,
-                desc=(MODEL_PRE_URL + str(model_name.name) + ".zip").rsplit("/",
-                    maxsplit=1)[-1]) as t:
+        with tqdm(
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+            miniters=1,
+            desc=(MODEL_PRE_URL + str(model_name.name) + ".zip").rsplit(
+                "/", maxsplit=1
+            )[-1],
+        ) as t:
             reporthook = self.download_progress_hook(t)
-            urlretrieve(MODEL_PRE_URL + str(model_name.name) + ".zip",
-                    str(model_name) + ".zip", reporthook=reporthook, data=None)
+            urlretrieve(
+                MODEL_PRE_URL + str(model_name.name) + ".zip",
+                str(model_name) + ".zip",
+                reporthook=reporthook,
+                data=None,
+            )
             t.total = t.n
             with ZipFile(str(model_name) + ".zip", "r") as model_ref:
                 model_ref.extractall(model_name.parent)
             Path(str(model_name) + ".zip").unlink()
 
     def download_progress_hook(self, t):
+        """
+        Adapted from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L122
+        """
         last_b = [0]
+
         def update_to(b=1, bsize=1, tsize=None):
             if tsize not in (None, -1):
                 t.total = tsize
             displayed = t.update((b - last_b[0]) * bsize)
             last_b[0] = b
             return displayed
+
         return update_to
 
-    def reset(self):
-        return
-
-    def fit(self):
-        return
-
-    def eval(self, dataset: Dataset, batch_size: int = 2, save_path: str = None) -> Dict:
-        """
-        Evaluate the model on the given dataset.
-        """
-        return 
-
-
     def infer(
-        self,
-        batch: Union[Timeseries, np.ndarray, torch.Tensor, bytes]
+        self, audio: Union[Timeseries, torch.Tensor, np.ndarray, bytes]
     ) -> VoskTranscription:
+        """
+        Run inference on an audio sample.
 
-        if isinstance(batch, Timeseries):
-            data = batch.numpy().reshape(-1)
-        elif isinstance(batch, (bytes, np.ndarray, torch.Tensor)):
-            data = batch
+        Args:
+            audio (Union[Timeseries, np.ndarray, torch.Tensor, bytes]):
+                The audio sample as a Timeseries, torch.Tensor, or np.ndarray or bytes.
+
+        Returns:
+            VoskTranscription: Transcription results with side informmation.
+
+        Raises:
+            TypeError: If the input batch is not a Timeseries, torch.Tensor, np.ndarray or str.
+        """
+
+        if isinstance(audio, (Timeseries, torch.Tensor)):
+            data = audio.numpy().reshape(-1)
+        elif isinstance(audio, (bytes, np.ndarray)):
+            data = audio
         else:
-            raise TypeError("batch must be a timeseries, bytes, torch.tensor or np.ndarray")
-        
+            raise TypeError(
+                "batch must be a timeseries, bytes, torch.tensor or np.ndarray"
+            )
+
         byte_data = self.preprocess(data)
         accept_waveform = self.rec.AcceptWaveform(byte_data)
         if accept_waveform:
@@ -198,31 +247,38 @@ class VoskLearner(Learner):
             output = self.rec.PartialResult()
             text = json.loads(output)["partial"]
 
-        output = VoskTranscription(text=text, accept_waveform=accept_waveform)
+        return VoskTranscription(text=text, accept_waveform=accept_waveform)
 
-        return output
-
-    def preprocess(self, data: Union[bytes, np.array, torch.Tensor]) -> torch.Tensor:
+    def preprocess(self, data: Union[np.ndarray, bytes]) -> bytes:
         """
         Preprocess audio data.
 
+        Args:
+            data (Union[np.ndarray, bytes]):
+                pad or trim the data to a desired length for Whisper and compute log mel spectrogram.
+
+        Returns:
+            bytes: Audio data in bytes.
         """
         if isinstance(data, bytes):
             return data
 
-        # convert the array to int16, as vosk expects 16-bit integer data.
+        # Convert the array to int16, as vosk expects 16-bit integer data.
         data = (data * np.iinfo(np.int16).max).astype(np.int16).tobytes()
 
         return data
 
-    def postprocess(
-        self,
-    ):
-        """
-        Postprocess the decoding results.
-        """       
+    def save(self):
         return
 
+    def reset(self):
+        return
+
+    def fit(self):
+        return
+
+    def eval(self):
+        return
 
     def optimize(self):
         return
