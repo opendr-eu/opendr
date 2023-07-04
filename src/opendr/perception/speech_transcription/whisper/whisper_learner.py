@@ -13,23 +13,23 @@
 # limitations under the License.
 
 
-from typing import Union, Iterable, Optional, List
+import os
 from dataclasses import asdict
 from logging import getLogger
-import os
+from pathlib import Path
+from typing import Iterable, List, Optional, Union
 
 import numpy as np
-from pathlib import Path
 
 import torch
-from torch.utils.data import Dataset
+
 import whisper
 from whisper import DecodingResult
 from whisper import _MODELS as MODELS_URL
 
 from opendr.engine.data import Timeseries
-from opendr.engine.target import WhisperTranscription
 from opendr.engine.learners import Learner
+from opendr.engine.target import WhisperTranscription
 
 
 logger = getLogger(__name__)
@@ -38,17 +38,19 @@ logger = getLogger(__name__)
 class WhisperLearner(Learner):
     def __init__(
         self,
-        language: Optional[str] = "en",
-        device: str = "cuda",
+        verbose: Optional[bool] = None,
+        temperature: float = 0.0,
+        compression_ratio_threshold: Optional[float] = 2.4,
         logprob_threshold: float = -0.8,
         no_speech_threshold: float = 0.6,
         condition_on_previous_text: bool = False,
         word_timestamps: bool = False,
-        temperature: float = 0.0,
-        compression_ratio_threshold: Optional[float] = 2.4,
+        prepend_punctuations: str = "\"'“¿([{-",
+        append_punctuations: str = "\"'.。,，!！?？:：”)]}、",
+        language: Optional[str] = "en",
         sample_len: Optional[int] = None,
-        best_of: Optional[int] = 5,
-        beam_size: Optional[int] = 5,
+        best_of: Optional[int] = None,
+        beam_size: Optional[int] = None,
         patience: Optional[float] = None,
         length_penalty: Optional[float] = None,
         prompt: Optional[Union[str, List[int]]] = None,
@@ -58,11 +60,17 @@ class WhisperLearner(Learner):
         without_timestamps: bool = False,
         max_initial_timestamp: Optional[float] = 1.0,
         fp16: bool = True,
+        device: str = "cuda",
     ):
         """
-        Initialize a new instance of the WhisperLearner class, a subclass of the Learner class.
+        Initialize transcription model that uses Whisper.
 
         Args:
+            Transribe parameters: The following parameters is use in the built-in transcribe function of Whisper.
+
+            verbose: bool
+                Whether to display the text being decoded to the console. If True, displays all the details,
+                If False, displays minimal details. If None, does not display anything.
 
             temperature: Union[float, Tuple[float, ...]]
                 Temperature for sampling. It can be a tuple of temperatures, which will be successively used
@@ -76,7 +84,8 @@ class WhisperLearner(Learner):
                 If the average log probability over sampled tokens is below this value, treat as failed
 
             no_speech_threshold (float):
-                If the no_speech probability is higher than this value AND the average log probability over sampled tokens is below `logprob_threshold`, consider the segment as silent
+                If the no_speech probability is higher than this value AND the average log probability over sampled tokens is
+                below `logprob_threshold`, consider the segment as silent
 
             condition_on_previous_text: bool
                 If True, the previous output of the model is provided as a prompt for the next window;
@@ -87,16 +96,17 @@ class WhisperLearner(Learner):
                 Extract word-level timestamps using the cross-attention pattern and dynamic time warping,
                 and include the timestamps for each word in each segment.
 
+            prepend_punctuations: str
+                If word_timestamps is True, merge these punctuation symbols with the next word.
 
-
-
+            append_punctuations: str
+                If word_timestamps is True, merge these punctuation symbols with the previous word.
 
             device (str):
                 device to use for PyTorch inference, either "cpu" or "gpu".
 
 
-
-            Decode parameters:
+            Decode parameters: The following parameters is use in the decode process.
 
             language (Optional[str]):
                 language spoken in the audio, specify None to perform language detection.
@@ -115,47 +125,54 @@ class WhisperLearner(Learner):
                 Number of beams in beam search, only applicable when temperature is zero.
 
             patience (Optional[float]):
-                Optional patience value to use in beam decoding, as in https://arxiv.org/abs/2204.05424, the default (1.0) is equivalent to conventional beam search.
+                Optional patience value to use in beam decoding, as in https://arxiv.org/abs/2204.05424, the default (1.0) is
+                equivalent to conventional beam search.
 
             length_penalty (Optional[float]):
-                Optional token length penalty coefficient (alpha) as in https://arxiv.org/abs/1609.08144, uses simple length normalization by default.
+                Optional token length penalty coefficient (alpha) as in https://arxiv.org/abs/1609.08144, uses simple length
+                normalization by default.
 
             prompt (Optional[Union[str, List[int]]]):
-                Text or tokens to feed as the prompt; for more info: # https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
+                Text or tokens to feed as the prompt; for more info:
+                https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
 
             prefix (Optional[Union[str, List[int]]]):
-                Text or tokens to feed as the prefix; for more info: # https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
+                Text or tokens to feed as the prefix; for more info:
+                https://github.com/openai/whisper/discussions/117#discussioncomment-3727051
 
             suppress_tokens (Optional[Union[str, Iterable[int]]]):
-                Comma-separated list of token ids to suppress during sampling; '-1' will suppress most special characters except common punctuations.
+                Comma-separated list of token ids to suppress during sampling; '-1' will suppress most special characters except
+                common punctuations.
 
             suppress_blank (bool):
                 Suppress blank outputs.
 
             without_timestamps (bool):
-                Use <|notimestamps|> to sample text tokens only, the timestamp will be multiple of 30 seconds if the audio file is longer than 30 seconds.
+                Use <|notimestamps|> to sample text tokens only, the timestamp will be multiple of 30 seconds if the audio file
+                is longer than 30 seconds.
 
             max_initial_timestamp (Optional[float])
 
             fp16 (bool):
                 whether to perform inference in fp16. fp16 is not available on CPU.
-
-        Raises:
-            AssertionError: If the model name is not valid.
         """
 
         super(WhisperLearner, self).__init__()
 
-        self.task = "transcribe"
-        self.model_name = None
-        self.language = language
-        self.device = device
+        # Parameters for built-in transcribe function of Whisper.
+        self.verbose = verbose
+        self.temperature = temperature
+        self.compression_ratio_threshold = compression_ratio_threshold
         self.logprob_threshold = logprob_threshold
         self.no_speech_threshold = no_speech_threshold
         self.condition_on_previous_text = condition_on_previous_text
         self.word_timestamps = word_timestamps
-        self.temperature = temperature
-        self.compression_ratio_threshold = compression_ratio_threshold
+        self.prepend_punctuations = prepend_punctuations
+        self.append_punctuations = append_punctuations
+
+        # Parameters for decoding process.
+        self.task = "transcribe"
+        self.language = language
         self.sample_len = sample_len
         self.best_of = best_of
         self.beam_size = beam_size
@@ -168,7 +185,11 @@ class WhisperLearner(Learner):
         self.without_timestamps = without_timestamps
         self.max_initial_timestamp = max_initial_timestamp
         self.fp16 = fp16
+
+        # Other parameters.
+        self.model_name = None
         self.sample_rate = 16000
+        self.device = device
 
         if self.device == "cpu" and self.fp16:
             logger.warning("FP16 is not supported on CPU, using FP32 instead.")
@@ -183,7 +204,7 @@ class WhisperLearner(Learner):
             beam_size=self.beam_size,
             patience=self.patience,
             length_penalty=self.length_penalty,
-            # prompt=self.prompt,
+            prompt=self.prompt,
             prefix=self.prefix,
             suppress_tokens=self.suppress_tokens,
             suppress_blank=self.suppress_blank,
@@ -191,9 +212,6 @@ class WhisperLearner(Learner):
             max_initial_timestamp=self.max_initial_timestamp,
             fp16=self.fp16,
         )
-
-    def save(self):
-        pass
 
     def load(
         self,
@@ -245,69 +263,70 @@ class WhisperLearner(Learner):
                 f"Model {name} not found; available models = {whisper.available_models()}"
             )
 
-    def reset(self):
-        return
-
-    def fit(self):
-        return
-
-    def eval(self, dataset: Dataset, batch_size: int = 2):
-        """
-        Evaluate the model on the given dataset.
-
-        """
-        raise NotImplementedError
-
     def infer(
         self,
-        batch: Union[Timeseries, np.ndarray, torch.Tensor, str],
+        audio: Union[Timeseries, np.ndarray, torch.Tensor, str],
         builtin_transcribe: bool = True,
     ) -> Union[WhisperTranscription, List[WhisperTranscription]]:
         """
         Run inference on a batch of audio sample.
 
         Args:
-            batch (Union[Timeseries, np.ndarray, torch.Tensor]): The audio sample as a Timeseries, torch.Tensor, or np.ndarray.
+            audio (Union[Timeseries, np.ndarray, torch.Tensor, str]):
+                The audio sample as a Timeseries, torch.Tensor, or np.ndarray or a string of file path.
+
+            builtin_transcribe (bool):
+                If True, use the built-in transcribe function of Whisper. Otherwise, use the Whisper decode method with give
+                more low-level control.
 
         Returns:
-            List[Dict]: The inference results.
+            Union[WhisperTranscription, List[WhisperTranscription]]: Transcription results.
 
         Raises:
-            TypeError: If the input batch is not a Timeseries, torch.Tensor, or np.ndarray.
+            TypeError: If the input batch is not a Timeseries, torch.Tensor, np.ndarray or str.
         """
-        if isinstance(batch, Timeseries):
-            data = batch.numpy().reshape(-1)
-        elif isinstance(batch, torch.Tensor) or isinstance(batch, np.ndarray):
-            data = batch
-        elif isinstance(batch, str):
-            data = whisper.load_audio(batch)
+        if isinstance(audio, Timeseries):
+            data = audio.numpy().reshape(-1)
+        elif isinstance(audio, (torch.Tensor, np.ndarray)):
+            data = audio
+        elif isinstance(audio, str):
+            data = whisper.load_audio(audio)
         else:
             raise TypeError("batch must be a timeseries, torch.tensor or np.ndarray")
 
         if builtin_transcribe:
             decode_results = self.model.transcribe(
                 data,
+                verbose=self.verbose,
                 compression_ratio_threshold=self.compression_ratio_threshold,
                 no_speech_threshold=self.no_speech_threshold,
                 logprob_threshold=self.logprob_threshold,
                 condition_on_previous_text=self.condition_on_previous_text,
                 word_timestamps=self.word_timestamps,
+                prepend_punctuations=self.prepend_punctuations,
+                append_punctuations=self.append_punctuations,
                 **asdict(self.decode_options),
             )
-            print(decode_results)
             return WhisperTranscription(
                 text=decode_results["text"], segments=decode_results["segments"]
             )
         else:
             mel = self.preprocess(data)
-            decode_results = self.model.decode(mel=mel, options=self.decode_options)
-            output = self.postprocess(decode_results)
+            decode_result = self.model.decode(mel=mel, options=self.decode_options)
+            output = self.postprocess(decode_result)
 
         return output
 
-    def preprocess(self, data: Union[np.array, torch.Tensor]) -> torch.Tensor:
+    def preprocess(self, data: Union[torch.Tensor, np.ndarray]) -> torch.Tensor:
         """
         Preprocess audio data.
+
+        Args:
+            data (Union[Timeseries, np.ndarray, torch.Tensor, str]):
+                pad or trim the data to a desired length for Whisper and compute log mel spectrogram.
+
+        Returns:
+            torch.Tensor: log mel spectrogram.
         """
 
         data = whisper.pad_or_trim(data)
@@ -316,25 +335,39 @@ class WhisperLearner(Learner):
         return mel
 
     def postprocess(
-        self, decode_results: Union[DecodingResult, List[DecodingResult]]
-    ) -> Union[WhisperTranscription, List[WhisperTranscription]]:
+        self, decode_result: DecodingResult
+    ) -> WhisperTranscription:
         """
         Postprocess the decoding results.
+
+        Args:
+            decode_result (DecodingResult):
+                Decoding results from Whisper format.
+
+        Returns:
+            WhisperTranscription: Transcription result.
         """
 
-        # Ensure we always work with a list
-        if not isinstance(decode_results, list):
-            decode_results = [decode_results]
+        print(decode_result)
+        result = WhisperTranscription(text=decode_result.text, segments=decode_result["segments"])
 
-        results = [
-            WhisperTranscription(text=result["text"], segments=result["segments"])
-            for result in decode_results
-        ]
-        return results[0] if len(results) == 1 else results
+        return result
 
     @staticmethod
     def load_audio(file: str) -> np.ndarray:
         return whisper.load_audio(file)
+
+    def save(self):
+        pass
+
+    def reset(self):
+        return
+
+    def fit(self):
+        return
+
+    def eval(self):
+        return
 
     def optimize(self):
         return
