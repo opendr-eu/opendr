@@ -104,6 +104,21 @@ class SpeechTranscriptionNode:
         # Add data to queue
         self.data_queue.put(data.data)
 
+    def _vad(self, audio_array: np.ndarray) -> bool:
+        """
+        Voice activity detection. Detect long silence in the latest part of the
+        audio. If silence is detected, reset the audio data.
+        """
+        phrase_timeout = 2  # Seconds
+        if audio_array.shape[0] > phrase_timeout * self.framerate:
+            t = self.audio_model.infer(
+                audio_array[-phrase_timeout * self.framerate :]
+            )
+            if t.text == "" or t.segments[-1]["no_speech_prob"] > 0.5:
+                return True
+
+        return False
+
     def _postprocess_whisper(self, audio_array: np.ndarray, transcription: WhisperTranscription) -> OpenDRTranscription:
         segments = transcription.segments
 
@@ -152,11 +167,10 @@ class SpeechTranscriptionNode:
                 while not self.data_queue.empty():
                     new_data += self.data_queue.get()
 
-                # print(self.cut_audio)
                 if self.backbone == "vosk":
-                    self.last_sample = new_data
+                    self.last_sample = new_data  # Vosk operates on short utterances.
                 else:
-                    self.last_sample += new_data
+                    self.last_sample += new_data  # Whisper operates on long sequence of text.
 
                 # Write wav data to the temporary file.
                 with wave.open(self.temp_file, "wb") as f:
@@ -167,14 +181,20 @@ class SpeechTranscriptionNode:
                     numpy_data = np.frombuffer(self.last_sample, dtype=np.int16)
                     if self.backbone == "whisper" and self.cut_audio:
                         if self.n_sample is not None:
+
+                            # If the audio is short, the start of the final phrase
+                            # detected by Whisper may not be correct.
                             if self.n_sample < numpy_data.shape[0]:
                                 if self.n_sample >= 3200:
                                     numpy_data = numpy_data[(self.n_sample - 3200) :]
+                                    self.last_sample = self.last_sample[
+                                        ((self.n_sample - 3200) * 2) :
+                                    ]  # N 2 bytes per sample, need to be test.
                                 else:
                                     numpy_data = numpy_data[(self.n_sample) :]
-                                self.last_sample = self.last_sample[
-                                    (self.n_sample * 2) :
-                                ]
+                                    self.last_sample = self.last_sample[
+                                        (self.n_sample * 2) :
+                                    ]
                                 self.n_sample = None
                                 print("--------------------------")
 
@@ -203,21 +223,13 @@ class SpeechTranscriptionNode:
                         self.publisher.publish(ros_transcription)
                 else:
                     audio_array = WhisperLearner.load_audio(self.temp_file)
-                    phrase_timeout = 2  # Seconds
-                    if audio_array.shape[0] > phrase_timeout * self.framerate:
-                        t = self.audio_model.infer(
-                            audio_array[-phrase_timeout * self.framerate :]
-                        )
-                        if t.text == "" or t.segments[-1]["no_speech_prob"] > 0.5:
-                            print(t.segments[-1]["no_speech_prob"])
-                            self.cut_audio = True
+                    self.cut_audio = self._vad(audio_array)
                     transcription_whisper = self.audio_model.infer(audio_array)
 
                     ros_transcription = self._postprocess_whisper(
                         audio_array, transcription_whisper
                     )
                     self.publisher.publish(ros_transcription)
-
 
     def spin(self):
         rospy.spin()
