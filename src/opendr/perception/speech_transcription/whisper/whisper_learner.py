@@ -16,11 +16,15 @@
 import os
 from dataclasses import asdict
 from logging import getLogger
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, List, Dict, Optional, Union
 
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
+import jiwer
 
 import torch
+from torch.utils.data import Dataset, DataLoader
 
 import whisper
 from whisper import _MODELS as MODELS_URL
@@ -333,8 +337,53 @@ class WhisperLearner(Learner):
     def fit(self):
         return
 
-    def eval(self):
-        return
+    def eval(self, dataset: Dataset, save_path_csv: Optional[str] = None) -> Dict:
+        """
+        Evaluate Whisper model on the given dataset.
+
+        Args:
+            dataset (Dataset): A speech dataset.
+            save_path_csv (str, optional): The path to save the evaluation results.
+
+        Returns:
+            Dict: A dictionary containing the word error rate (WER).
+
+        Raises:
+            AssertionError: If the model is not loaded.
+        """
+
+        assert self.model is not None, "Model is not loaded. Please load a model before evaluating."
+
+        loader = DataLoader(
+            dataset,
+            batch_size=1,
+            shuffle=False,
+            drop_last=False,
+        )
+
+        hypotheses = []
+        references = []
+
+        with torch.no_grad():
+            for audio, text in tqdm(loader):
+                # Remove batch dimension
+                audio = audio[0]
+                text = text[0]
+
+                result = self.infer(audio)
+
+                hypotheses.append(result.text.lower())
+                references.append(text.lower())
+
+            transcriptions = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
+            if save_path_csv is not None:
+                transcriptions.to_csv(save_path_csv, index=False)
+
+        wer = jiwer.wer(list(transcriptions["reference"]), list(transcriptions["hypothesis"]))
+
+        return {"wer": wer}
+
+
 
     def optimize(self):
         return

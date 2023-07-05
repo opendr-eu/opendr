@@ -20,14 +20,17 @@ import requests
 from logging import getLogger
 from pathlib import Path
 from re import match
-from typing import Union, Optional
+from typing import Dict, Union, Optional
 from urllib.request import urlretrieve
 
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from zipfile import ZipFile
+import jiwer
 
 import torch
+from torch.utils.data import Dataset, DataLoader
 
 from vosk import KaldiRecognizer, MODEL_PRE_URL, MODEL_LIST_URL, MODEL_DIRS
 from vosk import Model as VoskModel
@@ -301,13 +304,57 @@ class VoskLearner(Learner):
         """
         Reset the recognizer.
         """
+        assert self.rec is not None, "KalidRecognizer is not loaded. Please the load() method before resetting."
         self.rec.Reset()
 
     def fit(self):
         return
 
-    def eval(self):
-        return
+    def eval(self, dataset: Dataset, save_path_csv: Optional[str] = None) -> Dict:
+        """
+        Evaluate Vosk model on the given dataset.
+
+        Args:
+            dataset (Dataset): A speech dataset.
+            save_path_csv (str, optional): The path to save the evaluation results.
+
+        Returns:
+            Dict: A dictionary containing the word error rate (WER).
+
+        Raises:
+            AssertionError: If the model is not loaded.
+        """
+
+        assert self.model is not None and self.rec is not None, "Model and KaldiRecognizer is not loaded. Please load a model before evaluating."
+
+        loader = DataLoader(
+            dataset,
+            batch_size=1,
+            shuffle=False,
+            drop_last=False,
+        )
+
+        hypotheses = []
+        references = []
+
+        for audio, text in tqdm(loader):
+            # Remove batch dimension
+            audio = audio[0]
+            text = text[0]
+
+            result = self.infer(audio)
+            self.reset()
+
+            hypotheses.append(result.text.lower())
+            references.append(text.lower())
+
+        transcriptions = pd.DataFrame(dict(hypothesis=hypotheses, reference=references))
+        if save_path_csv is not None:
+            transcriptions.to_csv(save_path_csv, index=False)
+
+        wer = jiwer.wer(list(transcriptions["reference"]), list(transcriptions["hypothesis"]))
+
+        return {"wer": wer}
 
     def optimize(self):
         return
