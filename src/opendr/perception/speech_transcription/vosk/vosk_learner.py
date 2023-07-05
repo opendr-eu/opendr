@@ -298,7 +298,10 @@ class VoskLearner(Learner):
         return
 
     def reset(self):
-        return
+        """
+        Reset the recognizer.
+        """
+        self.rec.Reset()
 
     def fit(self):
         return
