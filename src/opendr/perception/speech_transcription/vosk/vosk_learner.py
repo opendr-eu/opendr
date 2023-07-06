@@ -300,6 +300,9 @@ class VoskLearner(Learner):
         return
 
     def reset(self):
+        return
+
+    def reset_rec(self):
         """
         Reset the recognizer.
         """
@@ -342,7 +345,7 @@ class VoskLearner(Learner):
             text = text[0]
 
             result = self.infer(audio)
-            self.reset()
+            self.reset_rec()
 
             hypotheses.append(result.text.lower())
             references.append(text.lower())
