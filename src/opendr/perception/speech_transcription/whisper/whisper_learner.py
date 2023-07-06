@@ -230,12 +230,11 @@ class WhisperLearner(Learner):
             raise ValueError("Please specify a model name or path to model checkpoint.")
 
         self.model_name = name
-        self.download_dir = download_dir
 
         self.model = whisper.load_model(
             name=self.model_name,
             device=self.device,
-            download_root=self.download_dir,
+            download_root=download_dir,
             in_memory=in_memory,
         )
 
@@ -331,7 +330,11 @@ class WhisperLearner(Learner):
         return
 
     def reset(self):
-        return
+        """
+        Reset Whisper model.
+        """
+        self.model_name = None
+        self.model = None
 
     def fit(self):
         return

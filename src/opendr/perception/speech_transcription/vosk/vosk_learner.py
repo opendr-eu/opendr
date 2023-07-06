@@ -300,7 +300,14 @@ class VoskLearner(Learner):
         return
 
     def reset(self):
-        return
+        """
+        Reset Vosk model, KalidRecognizer and other parameters.
+        """
+        self.model_name = None
+        self.language = None
+        self.download_dir = None
+        self.model = None
+        self.rec = None
 
     def reset_rec(self):
         """
