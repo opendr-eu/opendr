@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 from dataclasses import asdict
 from logging import getLogger
@@ -382,8 +381,6 @@ class WhisperLearner(Learner):
         wer = jiwer.wer(list(transcriptions["reference"]), list(transcriptions["hypothesis"]))
 
         return {"wer": wer}
-
-
 
     def optimize(self):
         return
