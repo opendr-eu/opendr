@@ -18,6 +18,7 @@ from logging import getLogger
 import torch
 import torchaudio
 
+from opendr.engine.datasets import DatasetIterator
 from opendr.perception.speech_transcription import (
     VoskLearner,
     WhisperLearner,
@@ -30,7 +31,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 logger = getLogger(__name__)
 
 
-class LibriSpeech(torch.utils.data.Dataset):
+class LibriSpeech(DatasetIterator):
     """
     A simple class to wrap LibriSpeech and trim/pad the audio to 30 seconds.
     It will drop the last few seconds of a very small portion of the utterances.

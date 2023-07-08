@@ -15,7 +15,7 @@
 import os
 from dataclasses import asdict
 from logging import getLogger
-from typing import Iterable, List, Dict, Optional, Union
+from typing import Iterable, List, Tuple, Dict, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -23,12 +23,13 @@ from tqdm import tqdm
 import jiwer
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 import whisper
 from whisper import _MODELS as MODELS_URL
 
 from opendr.engine.data import Timeseries
+from opendr.engine.datasets import DatasetIterator
 from opendr.engine.learners import Learner
 from opendr.engine.target import WhisperTranscription
 
@@ -40,7 +41,7 @@ class WhisperLearner(Learner):
     def __init__(
         self,
         verbose: Optional[bool] = None,
-        temperature: float = 0.0,
+        temperature: Union[float, Tuple[float, ...]] = 0.0,
         compression_ratio_threshold: Optional[float] = 2.4,
         logprob_threshold: float = -0.8,
         no_speech_threshold: float = 0.6,
@@ -105,7 +106,7 @@ class WhisperLearner(Learner):
             Decode parameters: The following parameters is use in the decode process.
 
             language: Optional[str]
-                language spoken in the audio, specify None to perform language detection.
+                Language spoken in the audio, specify None to perform language detection.
 
             sample_len: Optinal[int]
                 Maximum number of tokens to sample.
@@ -144,14 +145,15 @@ class WhisperLearner(Learner):
                 is longer than 30 seconds.
 
             max_initial_timestamp: Optional[float]
+                Limit the range of timestamp tokens that can be generated at the beginning of a sequence.
 
             fp16: bool
-                whether to perform inference in fp16. fp16 is not available on CPU.
+                Whether to perform inference in fp16. fp16 is not available on CPU.
 
             Other parameters:
 
             device: str
-                device to use for PyTorch inference, either "cpu" or "gpu".
+                Device to use for PyTorch inference, either "cpu" or "cuda".
         """
 
         super(WhisperLearner, self).__init__()
@@ -195,7 +197,7 @@ class WhisperLearner(Learner):
         self.decode_options = whisper.DecodingOptions(
             task=self.task,
             language=self.language,
-            temperature=self.temperature,
+            temperature=self.temperature if isinstance(self.temperature, float) else 0.0,
             sample_len=self.sample_len,
             best_of=self.best_of,
             beam_size=self.beam_size,
@@ -218,7 +220,7 @@ class WhisperLearner(Learner):
         in_memory: bool = False,
     ):
         """
-        Load a Whisper ASR model.
+        Loads Whisper model using Whisper builtin load() method. This method will download model if necessary.
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
 
         Args:
@@ -351,12 +353,12 @@ class WhisperLearner(Learner):
     def fit(self):
         return
 
-    def eval(self, dataset: Dataset, save_path_csv: Optional[str] = None) -> Dict:
+    def eval(self, dataset: DatasetIterator, save_path_csv: Optional[str] = None) -> Dict:
         """
         Evaluate Whisper model on the given dataset.
 
         Args:
-            dataset (Dataset): A speech dataset.
+            dataset (DatasetIterator): A speech dataset.
             save_path_csv (str, optional): The path to save the evaluation results.
 
         Returns:

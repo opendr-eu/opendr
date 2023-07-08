@@ -29,12 +29,13 @@ from zipfile import ZipFile
 import jiwer
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 from vosk import KaldiRecognizer, MODEL_PRE_URL, MODEL_LIST_URL, MODEL_DIRS
 from vosk import Model as VoskModel
 
 from opendr.engine.data import Timeseries
+from opendr.engine.datasets import DatasetIterator
 from opendr.engine.learners import Learner
 from opendr.engine.target import VoskTranscription
 
@@ -54,9 +55,9 @@ class VoskLearner(Learner):
 
         Args:
             device: str
-                The device to use for computations. Currently only supports CPU.
+                The device to use for computations. Currently only supports cpu. Defaults to "cpu".
             sample_rate: int
-                The sample rate to be used by the Vosk model.
+                The sample rate to be used by the Vosk model. Defaults to 16000.
         """
 
         super(VoskLearner, self).__init__()
@@ -91,7 +92,7 @@ class VoskLearner(Learner):
         download_dir: Optional[str] = None,
     ):
         """
-        Loads the Vosk model and initializes the recognizer.
+        Loads the Vosk model and initializes the recognizer. The method will download model if necessary.
 
         Args:
             name (str, optional): Full name of the Vosk model.
@@ -206,11 +207,11 @@ class VoskLearner(Learner):
 
     def download(self, model_name: Path):
         """
-        Download model given its full name.
+        Download model given a local path including the full name of the Vosk model.
         Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L108
 
         Args:
-            model_name (str): Full name of the Vosk model.
+            model_name (Path): Path to download model to, including the full name of the Vosk model.
         """
 
         if not (model_name.parent).exists():
@@ -328,12 +329,12 @@ class VoskLearner(Learner):
     def fit(self):
         return
 
-    def eval(self, dataset: Dataset, save_path_csv: Optional[str] = None) -> Dict:
+    def eval(self, dataset: DatasetIterator, save_path_csv: Optional[str] = None) -> Dict:
         """
         Evaluate Vosk model on the given dataset.
 
         Args:
-            dataset (Dataset): A speech dataset.
+            dataset (DatasetIterator): A speech dataset.
             save_path_csv (str, optional): The path to save the evaluation results.
 
         Returns:
