@@ -94,46 +94,52 @@ class VoskLearner(Learner):
         Loads the Vosk model and initializes the recognizer.
 
         Args:
-            name (str): Full name of the Vosk model.
-            language (str): Language of the Vosk model. Vosk will decide the default model for this language.
-            model_path (str): Path to the Vosk model.
-            download_dir (str): Directory to download the Vosk model to.
+            name (str, optional): Full name of the Vosk model.
+            language (str, optional): Language of the Vosk model. Vosk will decide the default model for this language.
+            model_path (str, optional): Path to the Vosk model.
+            download_dir (str, optional): Directory to download the Vosk model to.
         """
 
         self.model_name = name
         self.language = language
-        self.download_dir = download_dir
         if model_path is None:
-            model_path = self._get_model_path()
+            model_path = self._get_model_path(download_dir)
 
         self.model = self._load_model_weights(model_path)
         self.rec = KaldiRecognizer(self.model, self.sample_rate)
 
-    def _get_model_path(self) -> str:
+    def _get_model_path(self, download_dir: Optional[str] = None) -> str:
         """
         Construct model path from model name or language parameters.
         Adapted from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L65
+
+        Args:
+            download_dir (str, optional): Directory to download the Vosk model to.
 
         Returns:
             str: Path to the Vosk model.
         """
 
         if self.model_name is None:
-            model_path = self._get_model_by_lang(self.language)
+            model_path = self._get_model_by_lang(self.language, download_dir)
         else:
-            model_path = self._get_model_by_name(self.model_name)
+            model_path = self._get_model_by_name(self.model_name, download_dir)
         return str(model_path)
 
-    def _get_model_by_name(self, model_name: str) -> Path:
+    def _get_model_by_name(self, model_name: str, download_dir: Optional[str] = None) -> Path:
         """
         Download model given its name.
         Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L72
 
         Args:
             model_name (str): Full name of the Vosk model.
+            download_dir (str, optional): Directory to download the Vosk model to.
+
+        Returns:
+            str: Path to the Vosk model.
         """
 
-        if self.download_dir is None:
+        if download_dir is None:
             for directory in MODEL_DIRS:
                 if directory is None or not Path(directory).exists():
                     continue
@@ -142,29 +148,33 @@ class VoskLearner(Learner):
                 if model_file != []:
                     return Path(directory, model_file[0])
         else:
-            directory = self.download_dir
+            directory = download_dir
 
         response = requests.get(MODEL_LIST_URL, timeout=10)
         result_model = [
             model["name"] for model in response.json() if model["name"] == model_name
         ]
         if result_model == []:
-            print("model name %s does not exist" % (model_name))
+            logger.info(f"model name {model_name} does not exist")
             sys.exit(1)
         else:
             self.download(Path(directory, result_model[0]))
             return Path(directory, result_model[0])
 
-    def _get_model_by_lang(self, lang: str) -> Path:
+    def _get_model_by_lang(self, lang: str, download_dir: Optional[str] = None) -> Path:
         """
         Download model given its language.
         Adpated from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L89
 
         Args:
             lang (str): Language of the Vosk model. Vosk will decide he default model for this language.
+            download_dir (str, optional): Directory to download the Vosk model to.
+
+        Returns:
+            str: Path to the Vosk model.
         """
 
-        if self.download_dir is None:
+        if download_dir is None:
             for directory in MODEL_DIRS:
                 if directory is None or not Path(directory).exists():
                     continue
@@ -177,7 +187,7 @@ class VoskLearner(Learner):
                 if model_file != []:
                     return Path(directory, model_file[0])
         else:
-            directory = self.download_dir
+            directory = download_dir
 
         response = requests.get(MODEL_LIST_URL, timeout=10)
         result_model = [
@@ -188,7 +198,7 @@ class VoskLearner(Learner):
             and model["obsolete"] == "false"
         ]
         if result_model == []:
-            print("lang %s does not exist" % (lang))
+            logger.info(f"lang {lang} does not exist")
             sys.exit(1)
         else:
             self.download(Path(directory, result_model[0]))
@@ -305,7 +315,6 @@ class VoskLearner(Learner):
         """
         self.model_name = None
         self.language = None
-        self.download_dir = None
         self.model = None
         self.rec = None
 

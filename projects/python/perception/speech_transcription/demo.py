@@ -86,12 +86,8 @@ if __name__ == "__main__":
 
     # Create a learner
     if args.backbone == "whisper":
-        if args.model_path is not None:
-            name = args.model_path
-        else:
-            name = args.model_name
         learner = WhisperLearner(language=args.language)
-        learner.load(name=name, download_dir=args.download_dir)
+        learner.load(name=args.model_name, model_path=args.model_path, download_dir=args.download_dir)
     elif args.backbone == "vosk":
         learner = VoskLearner()
         learner.load(

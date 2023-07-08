@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from logging import getLogger
 
 import torch
 import torchaudio
@@ -22,7 +23,11 @@ from opendr.perception.speech_transcription import (
     WhisperLearner,
 )
 
+
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+logger = getLogger(__name__)
 
 
 class LibriSpeech(torch.utils.data.Dataset):
@@ -64,5 +69,6 @@ learner_dict = {
 }
 
 for name, learner in learner_dict.items():
+    logger.info(f"Evaluating {name.upper()} model...")
     results = learner.eval(dataset, save_path_csv=f"./librispeech_{name}.csv")
     print(f"{name.upper()} WER: {results['wer'] * 100:.2f} %")

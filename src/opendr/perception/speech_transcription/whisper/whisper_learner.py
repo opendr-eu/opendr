@@ -212,8 +212,9 @@ class WhisperLearner(Learner):
 
     def load(
         self,
-        name: str,
-        download_dir: str = "./",
+        name: Optional[str] = None,
+        model_path: Optional[str] = None,
+        download_dir: Optional[str] = None,
         in_memory: bool = False,
     ):
         """
@@ -221,24 +222,29 @@ class WhisperLearner(Learner):
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
 
         Args:
-            name (str): name or path to model checkpoint.
+            name (str): name of Whisper model. Could be: tiny.en, tiny, base, base.en, etc. Defaults to None.
+            model_path (str, optional): path to model checkpoint. Defaults to None.
             download_dir (str, optional): directory to save the downloaded model. Defaults to "./".
             in_memory (bool, optional): whether to load the model in memory. Defaults to False.
         """
 
-        if name is None:
+        if model_path is not None:
+            if os.path.isfile(model_path):
+                self.model_name = os.path.splitext(os.path.basename(model_path))[1]
+                whisper_path = model_path
+            else:
+                raise ValueError(f"{name} is not a correct path to a model checkpoint.")
+        elif name is not None:
+            if name in whisper.available_models():
+                self.model_name = name
+                whisper_path = name
+            else:
+                raise ValueError(f"{name} is not a correct Whisper model name.")
+        else:
             raise ValueError("Please specify a model name or path to model checkpoint.")
 
-        if name in whisper.available_models():
-            self.model_name = name
-        else:
-            if os.path.isfile(name):
-                self.model_name = os.path.splitext(os.path.basename(name))[0]
-            else:
-                raise ValueError(f"{name} is either not a valid Whisper model name or the path to a model checkpoint.")
-
         self.model = whisper.load_model(
-            name=name,
+            name=whisper_path,
             device=self.device,
             download_root=download_dir,
             in_memory=in_memory,
