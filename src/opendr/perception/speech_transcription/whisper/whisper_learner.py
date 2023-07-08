@@ -229,10 +229,16 @@ class WhisperLearner(Learner):
         if name is None:
             raise ValueError("Please specify a model name or path to model checkpoint.")
 
-        self.model_name = name
+        if name in whisper.available_models():
+            self.model_name = name
+        else:
+            if os.path.isfile(name):
+                self.model_name = os.path.splitext(os.path.basename(name))[0]
+            else:
+                raise ValueError(f"{name} is either not a valid Whisper model name or the path to a model checkpoint.")
 
         self.model = whisper.load_model(
-            name=self.model_name,
+            name=name,
             device=self.device,
             download_root=download_dir,
             in_memory=in_memory,
