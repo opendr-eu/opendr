@@ -36,10 +36,6 @@ python demo.py example1.wav --backbone vosk --language en-us --model-path "./vos
 
 The `demo_live.py` is a simple command line tool that continuously record and transcribe audio in a loop. It waits for the user to say "start" before starting the loop, and stops the loop when the user says "stop".
 
-### Example
-
-Here is an example command that records and transcribes audio every 0.5 seconds, with a recording duration of 2 seconds, using the default Whisper model:
-
 ```
 python demo_live.py -d 5 -i 0.25 --backbone whisper --model-name tiny.en --language en --device cuda
 ```
@@ -48,7 +44,7 @@ python demo_live.py -d 5 -i 0.25 --backbone whisper --model-name tiny.en --langu
 python demo_live.py -d 5 -i 0.25 --backbone vosk --language en-us
 ```
 
-## Evaluate on a dataset.
+## Evaluate on a dataset
 The script `eval.py` will evaluate Whipper `tiny.en` model and Vosk `vosk-model-small-en-us-0.15` model on the test-clean split of LibriSpeech dataset. The word error rate is reported.
 
 ```
