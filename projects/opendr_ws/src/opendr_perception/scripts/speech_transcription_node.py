@@ -27,15 +27,17 @@ import numpy as np
 
 import torch
 
-import rospy
+import rclpy
+from rclpy.node import Node
 from audio_common_msgs.msg import AudioData
-from opendr_bridge.msg import OpenDRTranscription
 
+from opendr_bridge.msg import OpenDRTranscription
 from opendr.perception.speech_transcription import (
     WhisperLearner,
     VoskLearner,
 )
-from opendr_bridge import ROSBridge
+
+from opendr_bridge import ROS2Bridge
 from opendr.engine.target import WhisperTranscription, VoskTranscription
 
 
@@ -51,7 +53,7 @@ def optional_float(string):
     return None if string == "None" else float(string)
 
 
-class SpeechTranscriptionNode:
+class SpeechTranscriptionNode(Node):
     def __init__(
         self,
         backbone: str,
@@ -72,7 +74,7 @@ class SpeechTranscriptionNode:
         sample_rate: int = 16000,
     ):
         """
-        Creates a ROS Node for speech transcription using Whisper or Vosk.
+        Creates a ROS2 Node for speech transcription using Whisper or Vosk.
 
         :param backbone: Backbone to use for audio processing. Options: whisper, vosk.
         :type backbone: str
@@ -123,11 +125,10 @@ class SpeechTranscriptionNode:
         :param sample_rate: Sampling rate for audio data. Check your audio source for correct value.
         :type sample_rate: int.
         """
-        rospy.init_node(node_topic)
+        super().__init__(node_topic)
 
         self.data_queue = Queue()
 
-        self.node_topic = node_topic
         self.backbone = backbone
         self.model_name = model_name
         self.model_path = model_path
@@ -169,12 +170,12 @@ class SpeechTranscriptionNode:
                 download_dir=self.download_dir,
             )
 
-        self.subscriber = rospy.Subscriber(input_audio_topic, AudioData, self.callback)
-        self.publisher = rospy.Publisher(
-            output_transcription_topic, OpenDRTranscription, queue_size=10
+        self.create_subscription(AudioData, input_audio_topic, self.callback)
+        self.publisher = self.create_publisher(
+             OpenDRTranscription, output_transcription_topic, queue_size=10
         )
 
-        self.bridge = ROSBridge()
+        self.bridge = ROS2Bridge()
 
         self.temp_file = NamedTemporaryFile().name
         self.last_sample = b""
@@ -494,25 +495,27 @@ if __name__ == "__main__":
     else:
         temperature = [temperature]
 
-    try:
-        node = SpeechTranscriptionNode(
-            backbone=args.backbone,
-            model_name=args.model_name,
-            model_path=args.model_path,
-            download_dir=args.download_dir,
-            language=None if args.language.lower() == "none" else args.language,
-            phrase_timeout=args.phrase_timeout,
-            temperature=temperature,
-            logprob_threshold=args.logprob_threshold,
-            no_speech_threshold=args.no_speech_threshold,
-            input_audio_topic=args.input_audio_topic,
-            output_transcription_topic=args.output_transcription_topic,
-            node_topic=args.node_topic,
-            verbose=args.verbose,
-            device=args.device,
-            sample_width=args.sample_width,
-            sample_rate=sample_rate,
-        )
-        node.spin()
-    except rospy.ROSInterruptException:
-        pass 
+    transcription_node = SpeechTranscriptionNode(
+        backbone=args.backbone,
+        model_name=args.model_name,
+        model_path=args.model_path,
+        download_dir=args.download_dir,
+        language=None if args.language.lower() == "none" else args.language,
+        phrase_timeout=args.phrase_timeout,
+        temperature=temperature,
+        logprob_threshold=args.logprob_threshold,
+        no_speech_threshold=args.no_speech_threshold,
+        input_audio_topic=args.input_audio_topic,
+        output_transcription_topic=args.output_transcription_topic,
+        node_topic=args.node_topic,
+        verbose=args.verbose,
+        device=args.device,
+        sample_width=args.sample_width,
+        sample_rate=sample_rate,
+    )
+        
+    rclpy.spin(transcription_node)
+
+    transcription_node.destroy_node()
+    rclpy.shutdown()
+

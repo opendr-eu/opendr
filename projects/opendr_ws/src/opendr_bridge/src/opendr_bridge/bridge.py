@@ -758,29 +758,26 @@ class ROSBridge:
             ros_boxes_3d.detections.append(box)
         return ros_boxes_3d
 
-    def from_ros_transcription(self, ros_transcripton):
+    def from_ros_transcription(self, ros_transcripton: OpenDRTranscription) -> VoskTranscription:
         """
         Converts a ROS transcription object to a Transcription object.
-    
-        Args:
-            ros_transcripton: A ROS transcription object
-    
-        Returns:
-            transcription: A Transcription object containing the same text as the input ROS object
+        :param ros_transcripton: A ROS transcription message.
+        :type ros_transcripton: OpenDRTranscription
+        :return: A Transcription object containing the same text as the input ROS object
+        :rtype: VoskTranscription.
         """
-        transcription = BaseTranscription(text=ros_transcripton.text)
+        accept_waveform = ros_transcripton.final != ""
+        transcription = VoskTranscription(text=ros_transcripton.text, accept_waveform=accept_waveform)
     
         return transcription
     
-    def to_ros_transcription(self, transcription: VoskTranscription):
+    def to_ros_transcription(self, transcription: VoskTranscription) -> OpenDRTranscription:
         """
         Converts a Transcription object to a ROS transcription object.
-    
-        Args:
-            transcription (Transcription): A Transcription object
-    
-        Returns:
-            ros_transcripton: A ROS transcription object containing the same text as the input Transcription object
+        :param transcription: A VoskTranscription object.
+        :type transcription: VoskTranscription.
+        :return: An OpenDRTranscription object containing the same text as the input Transcription object.
+        :rtype: OpenDRTranscription.
         """
         ros_transcripton = OpenDRTranscription()
         if transcription.accept_waveform:
