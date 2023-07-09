@@ -71,6 +71,58 @@ class SpeechTranscriptionNode:
         sample_width: int = 2,
         sample_rate: int = 16000,
     ):
+        """
+        Creates a ROS Node for speech transcription using Whisper or Vosk.
+
+        :param backbone: Backbone to use for audio processing. Options: whisper, vosk.
+        :type backbone: str
+
+        :param model_name: Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper, 
+        vosk-model-small-en-us-0.15 for Vosk.
+        :type model_name: str
+
+        :param model_path: Path to model files.
+        :type model_path: str
+
+        :param language: Language to use for audio processing. Example: 'en' for Whisper, 'en-us' for Vosk."
+        :type language: str
+
+        :param download_dir: Directory to download models to.
+        :type download_dir: str
+
+        :param temperature: Temperature to use for whisper decoding.
+        :type temperature: Union[float, Tuple[float, ...]]
+
+        :param logprob_threshold: Threshold for certainty in produced transcription.
+        :type logprob_threshold: Optional[float]
+
+        :param no_speech_threshold: Threshold for detecting long silence in Whisper.
+        :type no_speech_threshold: float.
+
+        :param phrase_timeout: The most recent seconds used for detecting long silence in Whisper.
+        :type phrase_timeout: float.
+
+        :param input_audio_topic: Name of the topic to subscribe.
+        :type input_audio_topic: str.
+
+        :param output_transcription_topic: Name of the topic to publish.
+        :type output_transcription_topic: str.
+
+        :param node_topic: Name of the transcription ros node.
+        :type node_topic: str.
+
+        :param verbose: Display transcription.
+        :type verbose: bool.
+
+        :param device: Device to use, either 'cpu; or 'cuda' for Whisper and 'cpu' for Vosk.
+        :type device: str.
+
+        :param sample_width: Sample width to write audio data to wav file. Check your audio source for correct value.
+        :type sample_width: int.
+
+        :param sample_rate: Sampling rate for audio data. Check your audio source for correct value.
+        :type sample_rate: int.
+        """
         rospy.init_node(node_topic)
 
         self.data_queue = Queue()
@@ -134,10 +186,15 @@ class SpeechTranscriptionNode:
         self.processing_thread.start()
 
     def callback(self, data):
-        # Add data to queue
+        """
+        Put data to queue.
+        """
         self.data_queue.put(data.data)
 
     def _write_to_wav(self, numpy_data: np.ndarray):
+        """
+        Write numpy array to wav file.
+        """
         # Write wav data to the temporary file.
         with wave.open(self.temp_file, "wb") as f:
             f.setnchannels(1)
@@ -166,8 +223,8 @@ class SpeechTranscriptionNode:
         """
         Display the transcription
 
-        Args:
-            transcription (VoskTranscription): Transcription from Vosk model.
+        :param transcription: Transcription from Vosk model.
+        :type transcription: VoskTranscription.
         """
         if transcription.accept_waveform:
             print(f"Text: {transcription.text}")
@@ -223,6 +280,9 @@ class SpeechTranscriptionNode:
         """
         Voice activity detection. Detect long silence in the latest part of the
         audio. If silence is detected, reset the audio data.
+
+        :param audio_array: Audio data for some recent seconds.
+        :type audio_array: np.ndarray.
         """
         if audio_array.shape[0] > self.phrase_timeout * self.sample_rate:
             t = self.audio_model.infer(
@@ -241,6 +301,12 @@ class SpeechTranscriptionNode:
     ) -> VoskTranscription:
         """
         Detecting if a phrase in ended. Whisper does natively support this functionality.
+
+        :param audio_array: Audio data.
+        :type audio_array: np.ndarray.
+
+        :param transcription: Transcription for Whisper learner inference.
+        :type transcription: VoskTranscription
         """
         segments = transcription.segments
 
@@ -310,25 +376,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "--backbone",
         default="whisper",
-        help="backbone to use for audio processing. Options: whisper, vosk",
+        help="Backbone to use for audio processing. Options: whisper, vosk",
         choices=["whisper", "vosk"],
     )
     parser.add_argument(
         "--model-name",
         default=None,
-        help="model to use for audio processing. Options: tiny, small, medium, large",
+        help="Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper,"
+        "vosk-model-small-en-us-0.15 for Vosk.",
     )
-    parser.add_argument("--model-path", default=None, help="path to model")
+    parser.add_argument("--model-path", default=None, help="Path to model files")
     parser.add_argument(
-        "--download-dir", default=None, help="directory to download models to"
+        "--download-dir", default=None, help="Directory to download models to"
     )
     parser.add_argument(
         "--language",
         default="en",
-        help="language to use for audio processing. Example: 'en' for Whisper, 'en-us' for Vosk.",
+        help="Language to use for audio processing. Example: 'en' for Whisper, 'en-us' for Vosk.",
     )
     parser.add_argument(
-        "--temperature", type=float, default=0, help="temperature to use for sampling"
+        "--temperature", type=float, default=0, help="Temperature to use for whisper decoding."
     )
     parser.add_argument(
         "--temperature_increment_on_fallback",
@@ -346,7 +413,7 @@ if __name__ == "__main__":
         "--phrase-timeout",
         default=2.0,
         type=float,
-        help="Use for detecting long silence in Whisper.",
+        help="The most recent seconds used for detecting long silence in Whisper.",
     )
     parser.add_argument(
         "--no-speech-threshold",
@@ -357,33 +424,35 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input-audio-topic",
         default="/audio/audio",
-        help="name of the topic to subscribe",
+        help="Name of the topic to subscribe.",
     )
     parser.add_argument(
         "--output-transcription-topic",
         default="/opendr/speech_transcription",
-        help="name of the topic to publish",
+        help="Name of the topic to publish.",
     )
     parser.add_argument(
         "--node-topic",
         default="opendr_transcription_node",
-        help="name of the transcription ros node",
+        help="Name of the transcription ros node.",
     )
     parser.add_argument(
         "--verbose", default=False, type=str2bool, help="Display transcription."
     )
     parser.add_argument(
-        "--sample-width", type=int, default=2, help="sample width for audio data"
+        "--sample-width", type=int, default=2, help="Sample width to write audio data to wav file."
+        "Check your audio source for correct value."
     )
     parser.add_argument(
         "--device",
-        help='Device to use, either "cpu" or "cuda" for Whisper and "cpu" for Vosk',
+        help="Device to use, either 'cpu; or 'cuda' for Whisper and 'cpu' for Vosk",
         type=str,
         default="cuda",
         choices=["cuda", "cpu"],
     )
     parser.add_argument(
-        "--sample-rate", type=int, default=16000, help="sample_rate for audio data"
+        "--sample-rate", type=int, default=16000, help="Sampling rate for audio data."
+        "Check your audio source for correct value."
     )
     args = parser.parse_args()
 
@@ -413,7 +482,8 @@ if __name__ == "__main__":
         if args.model_name.endswith(".en") and args.language not in {"en", "English"}:
             if args.language is not None:
                 warnings.warn(
-                    f"{args.model_name} is an English-only model but receipted language is '{args.language}'; using English instead."
+                    f"{args.model_name} is an English-only model but receipted language is '{args.language}';"
+                    "using English instead."
                 )
             args.language = "en"
 
@@ -445,4 +515,4 @@ if __name__ == "__main__":
         )
         node.spin()
     except rospy.ROSInterruptException:
-        pass
+        pass 
