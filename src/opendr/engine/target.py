@@ -1131,12 +1131,12 @@ class Heatmap(Target):
 
 class BaseTranscription(Target):
     """
-    The Transcription target is used for speech transcription problems.
-    It contains the transcribed text.
+    This target is used for speech transcription problems. It contains the transcribed text.
     """
 
     def __init__(self, text: str):
-        """Initialize a transcription.
+        """
+        Construct a new BaseTranscription object based on the given text.
 
         Args:
             text (str): Transcribed text
@@ -1174,7 +1174,8 @@ class BaseTranscription(Target):
 
 class WhisperTranscription(BaseTranscription):
     """
-    WhisperTranscription is a subclass of BaseTranscription and represents a transcription made by the Whisper system.
+    This target stores transcription from Whisper outputs, transcription text and other side information such as segment, 
+    timestamp, no speech probability, etc.
     """
 
     def __init__(self, text, segments: List[Dict]):
@@ -1203,7 +1204,8 @@ class WhisperTranscription(BaseTranscription):
 
 class VoskTranscription(BaseTranscription):
     """
-    VoskTranscription is a subclass of BaseTranscription and represents a transcription made by the Vosk system.
+    This target stores transcription from Vosk outputs, including, transcription text and information if a phrase was 
+    finised or not.
     """
 
     def __init__(self, text, accept_waveform: bool):
