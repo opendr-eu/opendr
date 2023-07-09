@@ -1201,7 +1201,6 @@ class WhisperTranscription(BaseTranscription):
             raise ValueError("WhisperTranscription expects segments as list.")
 
 
-
 class VoskTranscription(BaseTranscription):
     """
     This target stores transcription from Vosk outputs, including, transcription text and information if a phrase was 
