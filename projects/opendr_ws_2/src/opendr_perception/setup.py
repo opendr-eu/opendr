@@ -58,6 +58,7 @@ setup(
             opendr_perception.continual_skeleton_based_action_recognition_node:main',
             'gesture_recognition = opendr_perception.gesture_recognition_node:main',
             'performance = opendr_perception.performance_node:main',
+            'speech_transcription = opendr_perception.speech_transcription_node:main',
         ],
     },
 )
