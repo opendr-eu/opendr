@@ -20,6 +20,8 @@ import message_filters
 import cv2
 import numpy as np
 import argparse
+from time import perf_counter
+from std_msgs.msg import Float32
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
@@ -30,15 +32,16 @@ from opendr.engine.data import Image
 
 class ObjectDetectionGemNode:
     def __init__(
-        self,
-        input_rgb_image_topic="/camera/color/image_raw",
-        input_infra_image_topic="/camera/infra/image_raw",
-        output_rgb_image_topic="/opendr/rgb_image_objects_annotated",
-        output_infra_image_topic="/opendr/infra_image_objects_annotated",
-        detections_topic="/opendr/objects",
-        device="cuda",
-        pts_rgb=None,
-        pts_infra=None,
+            self,
+            input_rgb_image_topic="/camera/color/image_raw",
+            input_infra_image_topic="/camera/infra/image_raw",
+            output_rgb_image_topic="/opendr/rgb_image_objects_annotated",
+            output_infra_image_topic="/opendr/infra_image_objects_annotated",
+            detections_topic="/opendr/objects",
+            performance_topic=None,
+            device="cuda",
+            pts_rgb=None,
+            pts_infra=None,
     ):
         """
         Creates a ROS Node for object detection with GEM
@@ -55,6 +58,9 @@ class ObjectDetectionGemNode:
         :param detections_topic: Topic to which we are publishing the annotations (if None, we are
         not publishing annotations)
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param pts_rgb: Point on the rgb image that define alignment with the infrared image. These are camera
@@ -80,6 +86,12 @@ class ObjectDetectionGemNode:
             self.detection_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=10)
         else:
             self.detection_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
+
         if pts_infra is None:
             pts_infra = np.array(
                 [
@@ -206,6 +218,8 @@ class ObjectDetectionGemNode:
         :param msg_ir: input infrared image message
         :type msg_ir: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert images to OpenDR standard
         image_rgb = self.bridge.from_ros_image(msg_rgb).opencv()
         image_ir_raw = self.bridge.from_ros_image(msg_ir, "bgr8").opencv()
@@ -213,6 +227,13 @@ class ObjectDetectionGemNode:
 
         # Perform inference on images
         boxes, w_sensor1, _ = self.gem_learner.infer(image_rgb, image_ir)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
@@ -244,6 +265,8 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/objects")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -268,5 +291,6 @@ if __name__ == "__main__":
         input_infra_image_topic=args.input_infra_image_topic,
         output_infra_image_topic=args.output_infra_image_topic,
         detections_topic=args.detections_topic,
+        performance_topic=args.performance_topic,
     )
     detection_estimation_node.listen()

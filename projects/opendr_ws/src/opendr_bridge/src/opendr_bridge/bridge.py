@@ -196,6 +196,28 @@ class ROSBridge:
                             confidence=ros_hypothesis.score)
         return category
 
+    def to_ros_box(self, box):
+        """
+        Converts an OpenDR BoundingBox into a Detection2D that can carry the same information.
+        The bounding box is represented by its center coordinates as well as its width/height dimensions.
+        :param box: OpenDR bounding box to be converted
+        :type box: engine.target.BoundingBox
+        :return: ROS message with the Detection2D including the bounding box
+        :rtype: vision_msgs.msg.Detection2D
+        """
+        ros_box = Detection2D()
+        ros_box.bbox = BoundingBox2D()
+        ros_box.results.append(ObjectHypothesisWithPose())
+        ros_box.bbox.center = Pose2D()
+        ros_box.bbox.center.x = box.left + box.width / 2.
+        ros_box.bbox.center.y = box.top + box.height / 2.
+        ros_box.bbox.size_x = box.width
+        ros_box.bbox.size_y = box.height
+        ros_box.results[0].id = int(box.name)
+        if box.confidence:
+            ros_box.results[0].score = box.confidence
+        return ros_box
+
     def to_ros_boxes(self, box_list):
         """
         Converts an OpenDR BoundingBoxList into a Detection2DArray msg that can carry the same information.

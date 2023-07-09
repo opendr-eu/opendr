@@ -745,15 +745,15 @@ class EfficientLpsLearner(Learner):
             colors = colors[sem]  # Get the colors for each semantic label
             if return_pointcloud_type == "panoptic":
                 inst[sem >= 8] = -1  # Set the instance labels of the stuff classes to -1
-
-                n_inst = np.unique(inst)[-2]  # Get the number of instances
-                # Generate a new palette for the instances
-                new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8)
-                for i in range(new_palette.shape[0]):  # Assign new color into instances
-                    color = new_palette[i]  # Get the color from new PALETTE
-                    while color in PALETTE:  # Make sure that the new color is not in the semantic palette
-                        color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)
-                    colors[inst == i] = color  # Assign the new color to the instance
+                if np.unique(inst).shape[0] > 1:
+                    n_inst = np.unique(inst)[-2]  # Get the number of instances
+                    # Generate a new palette for the instances
+                    new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8)
+                    for i in range(new_palette.shape[0]):  # Assign new color into instances
+                        color = new_palette[i]  # Get the color from new PALETTE
+                        while color in PALETTE:  # Make sure that the new color is not in the semantic palette
+                            color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)
+                        colors[inst == (i+1)] = color  # Assign the new color to the instance
                 points = np.c_[x, y, z, colors]  # Concatenate the points with the colors
 
             elif return_pointcloud_type == "semantic":
@@ -761,14 +761,15 @@ class EfficientLpsLearner(Learner):
 
             elif return_pointcloud_type == "instance":
                 colors[sem >= 8] = np.array([0, 0, 0]).reshape(1, 3)  # Set the colors of the stuff classes to black
+                inst[sem >= 8] = -1
                 n_inst = np.unique(inst)[-2]  # Get the number of instances
                 # Generate a new palette for the instances
                 new_palette = np.random.randint(0, 255, size=(n_inst, 3), dtype=np.uint8)
                 for i in range(new_palette.shape[0]):  # Assign new color into instances
                     color = new_palette[i]  # Get the color from new PALETTE
-                    if color == np.array([0, 0, 0]).reshape(1, 3):  # Make sure that the new color is not black
+                    if np.array_equal(color, np.array([0, 0, 0]).reshape(1, 3)):  # Make sure that the new color is not black
                         color = np.random.randint(0, 255, size=(1, 3), dtype=np.uint8)
-                    colors[inst == i] = color  # Assign the new color to the instance
+                    colors[inst == (i+1)] = color  # Assign the new color to the instance
                 points = np.c_[x, y, z, colors]  # Concatenate the points with the colors
 
             else:
