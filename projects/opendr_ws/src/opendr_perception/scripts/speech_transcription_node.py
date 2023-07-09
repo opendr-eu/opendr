@@ -27,17 +27,15 @@ import numpy as np
 
 import torch
 
-import rclpy
-from rclpy.node import Node
+import rospy
 from audio_common_msgs.msg import AudioData
-
 from opendr_bridge.msg import OpenDRTranscription
+
 from opendr.perception.speech_transcription import (
     WhisperLearner,
     VoskLearner,
 )
-
-from opendr_bridge import ROS2Bridge
+from opendr_bridge import ROSBridge
 from opendr.engine.target import WhisperTranscription, VoskTranscription
 
 
@@ -53,7 +51,7 @@ def optional_float(string):
     return None if string == "None" else float(string)
 
 
-class SpeechTranscriptionNode(Node):
+class SpeechTranscriptionNode:
     def __init__(
         self,
         backbone: str,
@@ -74,7 +72,7 @@ class SpeechTranscriptionNode(Node):
         sample_rate: int = 16000,
     ):
         """
-        Creates a ROS2 Node for speech transcription using Whisper or Vosk.
+        Creates a ROS Node for speech transcription using Whisper or Vosk.
 
         :param backbone: Backbone to use for audio processing. Options: whisper, vosk.
         :type backbone: str
@@ -125,7 +123,7 @@ class SpeechTranscriptionNode(Node):
         :param sample_rate: Sampling rate for audio data. Check your audio source for correct value.
         :type sample_rate: int.
         """
-        super().__init__(node_topic)
+        rospy.init_node(node_topic)
 
         self.data_queue = Queue()
 
@@ -170,12 +168,12 @@ class SpeechTranscriptionNode(Node):
                 download_dir=self.download_dir,
             )
 
-        self.create_subscription(AudioData, input_audio_topic, self.callback)
-        self.publisher = self.create_publisher(
-             OpenDRTranscription, output_transcription_topic, queue_size=10
+        self.subscriber = rospy.Subscriber(input_audio_topic, AudioData, self.callback)
+        self.publisher = rospy.Publisher(
+            output_transcription_topic, OpenDRTranscription, queue_size=10
         )
 
-        self.bridge = ROS2Bridge()
+        self.bridge = ROSBridge()
 
         self.temp_file = NamedTemporaryFile().name
         self.last_sample = b""
@@ -495,27 +493,25 @@ if __name__ == "__main__":
     else:
         temperature = [temperature]
 
-    transcription_node = SpeechTranscriptionNode(
-        backbone=args.backbone,
-        model_name=args.model_name,
-        model_path=args.model_path,
-        download_dir=args.download_dir,
-        language=None if args.language.lower() == "none" else args.language,
-        phrase_timeout=args.phrase_timeout,
-        temperature=temperature,
-        logprob_threshold=args.logprob_threshold,
-        no_speech_threshold=args.no_speech_threshold,
-        input_audio_topic=args.input_audio_topic,
-        output_transcription_topic=args.output_transcription_topic,
-        node_topic=args.node_topic,
-        verbose=args.verbose,
-        device=args.device,
-        sample_width=args.sample_width,
-        sample_rate=sample_rate,
-    )
-        
-    rclpy.spin(transcription_node)
-
-    transcription_node.destroy_node()
-    rclpy.shutdown()
-
+    try:
+        transcription_node = SpeechTranscriptionNode(
+            backbone=args.backbone,
+            model_name=args.model_name,
+            model_path=args.model_path,
+            download_dir=args.download_dir,
+            language=None if args.language.lower() == "none" else args.language,
+            phrase_timeout=args.phrase_timeout,
+            temperature=temperature,
+            logprob_threshold=args.logprob_threshold,
+            no_speech_threshold=args.no_speech_threshold,
+            input_audio_topic=args.input_audio_topic,
+            output_transcription_topic=args.output_transcription_topic,
+            node_topic=args.node_topic,
+            verbose=args.verbose,
+            device=args.device,
+            sample_width=args.sample_width,
+            sample_rate=sample_rate,
+        )
+        transcription_node.spin()
+    except rospy.ROSInterruptException:
+        pass 
