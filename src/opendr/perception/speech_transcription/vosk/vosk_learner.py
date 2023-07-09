@@ -225,7 +225,7 @@ class VoskLearner(Learner):
                 "/", maxsplit=1
             )[-1],
         ) as t:
-            reporthook = self.download_progress_hook(t)
+            reporthook = self._download_progress_hook(t)
             urlretrieve(
                 MODEL_PRE_URL + str(model_name.name) + ".zip",
                 str(model_name) + ".zip",
@@ -237,7 +237,7 @@ class VoskLearner(Learner):
                 model_ref.extractall(model_name.parent)
             Path(str(model_name) + ".zip").unlink()
 
-    def download_progress_hook(self, t):
+    def _download_progress_hook(self, t):
         """
         Adapted from https://github.com/alphacep/vosk-api/blob/master/python/vosk/__init__.py#L122
         """
@@ -278,7 +278,7 @@ class VoskLearner(Learner):
                 "batch must be a timeseries, bytes, torch.tensor or np.ndarray"
             )
 
-        byte_data = self.preprocess(data)
+        byte_data = self._preprocess(data)
         accept_waveform = self.rec.AcceptWaveform(byte_data)
         if accept_waveform:
             output = self.rec.Result()
@@ -289,7 +289,7 @@ class VoskLearner(Learner):
 
         return VoskTranscription(text=text, accept_waveform=accept_waveform)
 
-    def preprocess(self, data: Union[np.ndarray, bytes]) -> bytes:
+    def _preprocess(self, data: Union[np.ndarray, bytes]) -> bytes:
         """
         Convert audio data to bytes.
 
@@ -312,7 +312,7 @@ class VoskLearner(Learner):
 
     def reset(self):
         """
-        Reset Vosk model, KalidRecognizer and other parameters.
+        Set Vosk model, model name, language, and KalidRecognizer to None. Use before loading a new model.
         """
         self.model_name = None
         self.language = None
@@ -321,7 +321,7 @@ class VoskLearner(Learner):
 
     def reset_rec(self):
         """
-        Reset the recognizer.
+        Reset the KalidRecognizer.
         """
         assert self.rec is not None, "KalidRecognizer is not loaded. Please the load() method before resetting."
         self.rec.Reset()

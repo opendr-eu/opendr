@@ -345,7 +345,7 @@ class WhisperLearner(Learner):
 
     def reset(self):
         """
-        Reset Whisper model.
+        Set Whisper model and model name attributes to None. Use before loading a new model.
         """
         self.model_name = None
         self.model = None

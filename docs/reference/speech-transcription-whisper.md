@@ -130,7 +130,7 @@ Parameters:
 #### `WhisperLearner.download`
 
 ```python
-Whisper.download(self, name, download_dir)
+WhisperLearner.download(self, name, download_dir)
 ```
 
 This method downloads Whisper model.
@@ -140,6 +140,13 @@ Parameters:
   Name or path of model.
 - **download_dir**: *Optional[str], default=None*\
   Directory to save the downloaded model.
+
+#### `WhisperLearner.reset`
+```python
+WhisperLearner.reset(self)
+```
+
+This method sets Whisper model and model name attributes to `None`. Use before loading a new model.
 
 #### Examples
 

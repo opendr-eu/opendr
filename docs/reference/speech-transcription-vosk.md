@@ -92,6 +92,21 @@ Parameters:
     Path to download model to, including the full name of the Vosk model.
 
 
+#### `VoskLearner.reset`
+```python
+VoskLearner.reset(self)
+```
+
+This method sets Vosk model, model name, language, and KalidRecognizer to `None`. Use before load a new model.
+
+
+#### `VoskLearner.reset_rec`
+```python
+VoskLearner.reset_rec(self)
+```
+
+This method resets the KalidRecognizer.
+
 #### Examples
 
 * **Download and load a model by its name and infer a sample from an existing file.**
