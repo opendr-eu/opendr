@@ -28,11 +28,11 @@ Constructor parameters:
 - **temperature**: *Union[float, Tuple[float, ...]], default=0.0*\
   Temperature for sampling. It can be a tuple of temperatures, which will be successively used
   upon failures according to either `compression_ratio_threshold` or `logprob_threshold`.
-- **compression_ratio_threshold**: *float, default=2.4*\
+- **compression_ratio_threshold**: *Optional[float], default=2.4*\
   If the gzip compression ratio is above this value, treat as failed.
-- **logprob_threshold**: *float, default=-0.8*\
+- **logprob_threshold**: *Optional[float], default=-0.8*\
   If the average log probability over sampled tokens is below this value, treat as failed
-- **no_speech_threshold**: *float, default=0.6*\
+- **no_speech_threshold**: *Optional[float], default=0.6*\
   If the no_speech probability is higher than this value AND the average log probability over sampled tokens is below `logprob_threshold`, consider the segment as silent.
 - **condition_on_previous_text**: *bool, default=False*\
   If True, the previous output of the model is provided as a prompt for the next window;

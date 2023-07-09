@@ -41,10 +41,10 @@ class WhisperLearner(Learner):
     def __init__(
         self,
         verbose: Optional[bool] = None,
-        temperature: Union[float, Tuple[float, ...]] = 0.0,
+        temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1),
         compression_ratio_threshold: Optional[float] = 2.4,
-        logprob_threshold: float = -0.8,
-        no_speech_threshold: float = 0.6,
+        logprob_threshold: Optional[float] = -0.8,
+        no_speech_threshold: Optional[float] = 0.6,
         condition_on_previous_text: bool = False,
         word_timestamps: bool = False,
         prepend_punctuations: str = "\"'“¿([{-",
@@ -78,13 +78,13 @@ class WhisperLearner(Learner):
                 Temperature for sampling. It can be a tuple of temperatures, which will be successively used
                 upon failures according to either `compression_ratio_threshold` or `logprob_threshold`.
 
-            compression_ratio_threshold: float
+            compression_ratio_threshold: Optional[float]
                 If the gzip compression ratio is above this value, treat as failed.
 
-            logprob_threshold: float 
+            logprob_threshold: Optional[float] 
                 If the average log probability over sampled tokens is below this value, treat as failed
 
-            no_speech_threshold: float
+            no_speech_threshold: Optional[float]
                 If the no_speech probability is higher than this value AND the average log probability over sampled tokens is
                 below `logprob_threshold`, consider the segment as silent
 
