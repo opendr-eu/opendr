@@ -19,6 +19,7 @@ from typing import Tuple, Union, Optional
 import wave
 import argparse
 import warnings
+from time import perf_counter
 from queue import Queue
 from threading import Thread
 from tempfile import NamedTemporaryFile
@@ -28,6 +29,7 @@ import numpy as np
 import torch
 
 import rospy
+from std_msgs.msg import Float32
 from audio_common_msgs.msg import AudioData
 from opendr_bridge.msg import OpenDRTranscription
 
@@ -65,7 +67,7 @@ class SpeechTranscriptionNode:
         phrase_timeout: float = 2,
         input_audio_topic: str = "/audio/audio",
         output_transcription_topic: str = "/opendr/speech_transcription",
-        node_topic: str = "opendr_transcription_node",
+        performance_topic: Optional[str] = None,
         verbose: bool = False,
         device: str = "cuda",
         sample_width: int = 2,
@@ -108,8 +110,9 @@ class SpeechTranscriptionNode:
         :param output_transcription_topic: Name of the topic to publish.
         :type output_transcription_topic: str.
 
-        :param node_topic: Name of the transcription ros node.
-        :type node_topic: str.
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic: str
 
         :param verbose: Display transcription.
         :type verbose: bool.
@@ -123,7 +126,7 @@ class SpeechTranscriptionNode:
         :param sample_rate: Sampling rate for audio data. Check your audio source for correct value.
         :type sample_rate: int.
         """
-        rospy.init_node(node_topic)
+        rospy.init_node("opendr_transcription_node")
 
         self.data_queue = Queue()
 
@@ -151,7 +154,7 @@ class SpeechTranscriptionNode:
                 logprob_threshold=self.logprob_threshold,
                 no_speech_threshold=self.no_speech_threshold,
                 language=self.language,
-                device=args.device,
+                device=self.device,
             )
             self.audio_model.load(
                 name=self.model_name,
@@ -172,6 +175,10 @@ class SpeechTranscriptionNode:
         self.publisher = rospy.Publisher(
             output_transcription_topic, OpenDRTranscription, queue_size=10
         )
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROSBridge()
 
@@ -358,6 +365,9 @@ class SpeechTranscriptionNode:
         while not rospy.is_shutdown():
             # Check if there is any data in the queue
             if not self.data_queue.empty():
+                if self.performance_publisher:
+                    start_time = perf_counter()
+
                 # Process audio
                 if self.backbone == "vosk":
                     self._vosk_preprocess_audio()
@@ -365,6 +375,13 @@ class SpeechTranscriptionNode:
                 else:
                     self._whisper_preprocess_audio()
                     self._whisper_process_and_publish()
+
+                if self.performance_publisher:
+                    end_time = perf_counter()
+                    fps = 1.0 / (end_time - start_time)
+                    fps_msg = Float32()
+                    fps_msg.data = fps
+                    self.performance_publisher.publish(fps_msg)
 
     def spin(self):
         rospy.spin()
@@ -374,23 +391,23 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process some integers.")
     parser.add_argument(
         "--backbone",
-        default="whisper",
+        default="vosk",
         help="Backbone to use for audio processing. Options: whisper, vosk",
         choices=["whisper", "vosk"],
     )
     parser.add_argument(
-        "--model-name",
+        "--model_name",
         default=None,
         help="Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper,"
         "vosk-model-small-en-us-0.15 for Vosk.",
     )
-    parser.add_argument("--model-path", default=None, help="Path to model files")
+    parser.add_argument("--model_path", default=None, help="Path to model files")
     parser.add_argument(
-        "--download-dir", default=None, help="Directory to download models to"
+        "--download_dir", default=None, help="Directory to download models to"
     )
     parser.add_argument(
         "--language",
-        default="en",
+        default="en-us",
         help="Language to use for audio processing. Example: 'en' for Whisper, 'en-us' for Vosk.",
     )
     parser.add_argument(
@@ -403,44 +420,38 @@ if __name__ == "__main__":
         help="temperature to increase when falling back when the decoding fails to meet either of the thresholds below",
     )
     parser.add_argument(
-        "--logprob-threshold",
+        "--logprob_threshold",
         default=-0.8,
         type=float,
         help="Threshold for certainty in produced transcription.",
     )
     parser.add_argument(
-        "--phrase-timeout",
+        "--phrase_timeout",
         default=2.0,
         type=float,
         help="The most recent seconds used for detecting long silence in Whisper.",
     )
     parser.add_argument(
-        "--no-speech-threshold",
+        "--no_speech_threshold",
         default=0.6,
         type=float,
         help="Threshold for detecting long silence in Whisper.",
     )
     parser.add_argument(
-        "--input-audio-topic",
+        "-i", "--input_audio_topic",
         default="/audio/audio",
         help="Name of the topic to subscribe.",
     )
     parser.add_argument(
-        "--output-transcription-topic",
+        "-o", "--output_transcription_topic",
         default="/opendr/speech_transcription",
         help="Name of the topic to publish.",
     )
     parser.add_argument(
-        "--node-topic",
-        default="opendr_transcription_node",
-        help="Name of the transcription ros node.",
-    )
-    parser.add_argument(
-        "--verbose", default=False, type=str2bool, help="Display transcription."
-    )
-    parser.add_argument(
-        "--sample-width", type=int, default=2, help="Sample width to write audio data to wav file."
-        "Check your audio source for correct value."
+        "--performance_topic", 
+        type=str, 
+        default=None,
+        help="Topic name for performance messages, disabled (None) by default",
     )
     parser.add_argument(
         "--device",
@@ -450,7 +461,14 @@ if __name__ == "__main__":
         choices=["cuda", "cpu"],
     )
     parser.add_argument(
-        "--sample-rate", type=int, default=16000, help="Sampling rate for audio data."
+        "--verbose", default=False, type=str2bool, help="Display transcription."
+    )
+    parser.add_argument(
+        "--sample_width", type=int, default=2, help="Sample width to write audio data to wav file."
+        "Check your audio source for correct value."
+    )
+    parser.add_argument(
+        "--sample_rate", type=int, default=16000, help="Sampling rate for audio data."
         "Check your audio source for correct value."
     )
     args = parser.parse_args()
@@ -506,9 +524,9 @@ if __name__ == "__main__":
             no_speech_threshold=args.no_speech_threshold,
             input_audio_topic=args.input_audio_topic,
             output_transcription_topic=args.output_transcription_topic,
-            node_topic=args.node_topic,
+            performance_topic=args.performance_topic,
             verbose=args.verbose,
-            device=args.device,
+            device=device,
             sample_width=args.sample_width,
             sample_rate=sample_rate,
         )
