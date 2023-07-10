@@ -946,7 +946,8 @@ The node makes use of the toolkit's speech transcription tools:
    - `--backbone {vosk,whisper}`: Backbone model for speech transcription
    - `--model_name MODEL_NAME`: Specific model name for each backbone. Example: 'tiny', 'tiny.en', 'base', 'base.en' for Whisper, 'vosk-model-small-en-us-0.15' for Vosk (default=`None`) 
    - `--model_path MODEL_PATH`: Path to downloaded model files (default=`None`) 
-   - `--language LANGUAGE`: Whisper uses the language parameter to avoid language dectection. Vosk uses the langauge paremeter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk. (default=`en-us`)
+   - `--language LANGUAGE`: Whisper uses the language parameter to avoid language dectection. Vosk uses the langauge paremeter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk (default=`en-us`)
+   - `--verbose VERBOSE`: Display transcription (default=`False`) 
 
 3. Default output topics:
    -  Speech transcription: `/opendr/speech_transcription`
