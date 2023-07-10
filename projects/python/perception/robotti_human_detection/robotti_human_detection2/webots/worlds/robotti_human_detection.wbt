@@ -1,0 +1,5637 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/garden/protos/PicketFenceWithDoor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/garden/protos/PicketFence.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/Grass.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/trees/protos/Forest.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/buildings/protos/HouseWithGarage.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/road/protos/StraightRoadSegment.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/road/protos/RoadIntersection.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/SandyGround.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/buildings/protos/BungalowStyleHouse.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/vehicles/protos/generic/Tractor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/master/projects/objects/buildings/protos/Silo.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/master/projects/objects/floors/protos/Ditch.proto"
+EXTERNPROTO "../protos/AgriculturalWarehouse.proto"
+EXTERNPROTO "../protos/Robotti.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/solids/protos/SolidBox.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/trees/protos/SimpleTree.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/humans/skin_animated_humans/protos/CharacterSkin.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Cat.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Cow.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Deer.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Dog.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Fox.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Horse.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Rabbit.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Sheep.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/buildings/protos/Barn.proto"
+IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/Soil.proto"
+
+WorldInfo {
+  info [
+    "This simulation shows a Robotti detecting humans in a field environment."
+  ]
+  title "Simulation of Agrointelli Robotti field robot"
+  CFM 0.0001
+  ERP 0.4
+  lineScale 1
+  contactProperties [
+    ContactProperties {
+      material1 "ground"
+      material2 "wheel_material"
+      coulombFriction [
+        5
+      ]
+      softERP 0.5
+      softCFM 1e-05
+    }
+  ]
+}
+Viewpoint {
+  orientation -0.10996782587396065 -0.36205758534830884 0.9256464671591992 5.6490947137517065
+  position -83.63780248723208 47.00428324846145 22.50355875258501
+  follow "Robotti"
+  followType "None"
+}
+TexturedBackground {
+  texture "noon_cloudy_countryside"
+}
+TexturedBackgroundLight {
+  texture "noon_cloudy_countryside"
+  luminosity 2
+}
+Solid {
+  translation -122.5 -52.5 0
+  children [
+    Shape {
+      appearance Grass {
+        colorOverride 0.477089 0.553338 0.26006
+        type "mossy"
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate {
+          point [
+            -77.5 -147.5 0
+            77.5 -147.5 0
+            -77.5 147.5 0
+            77.5 147.5 0
+          ]
+        }
+        texCoord TextureCoordinate {
+          point [
+            0 0
+            77.5 0
+            0 147.5
+            77.5 147.5
+          ]
+        }
+        coordIndex [
+          2, 0, 1, 3, -1
+        ]
+        texCoordIndex [
+          2, 0, 1, 3, -1
+        ]
+      }
+    }
+  ]
+  name "grass"
+  model "floor"
+  contactMaterial "ground"
+  boundingObject Pose {
+    translation 0 0 0.005
+    children [
+      Box {
+        size 155 292 0.01
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 79.5 -52.5 0
+  children [
+    Shape {
+      appearance Grass {
+        colorOverride 0.477089 0.553338 0.26006
+        type "mossy"
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate {
+          point [
+            -120.5 -147.5 0
+            120.5 -147.5 0
+            -120.5 147.5 0
+            120.5 147.5 0
+          ]
+        }
+        texCoord TextureCoordinate {
+          point [
+            0 0
+            120.5 0
+            0 147.5
+            120.5 147.5
+          ]
+        }
+        coordIndex [
+          2, 0, 1, 3, -1
+        ]
+        texCoordIndex [
+          2, 0, 1, 3, -1
+        ]
+      }
+    }
+  ]
+  name "grass(2)"
+  model "floor"
+  contactMaterial "ground"
+  boundingObject Pose {
+    translation 0 0 0.005
+    children [
+      Box {
+        size 241 295 0.01
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation 0 147.5 0
+  children [
+    Shape {
+      appearance Grass {
+        colorOverride 0.477089 0.553338 0.26006
+        type "mossy"
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate {
+          point [
+            -200 -52.5 0
+            200 -52.5 0
+            -200 52.5 0
+            200 52.5 0
+          ]
+        }
+        texCoord TextureCoordinate {
+          point [
+            0 0
+            200 0
+            0 52.5
+            200 52.5
+          ]
+        }
+        coordIndex [
+          2, 0, 1, 3, -1
+        ]
+        texCoordIndex [
+          2, 0, 1, 3, -1
+        ]
+      }
+    }
+  ]
+  name "grass(1)"
+  model "floor"
+  contactMaterial "ground"
+  boundingObject Pose {
+    translation 0 0 0.005
+    children [
+      Box {
+        size 400 105 0.01
+      }
+    ]
+  }
+  locked TRUE
+}
+Solid {
+  translation -43 95 -0.55
+  rotation 1 0 0 1.5707996938995747
+  children [
+    Shape {
+      appearance SandyGround {
+        colorOverride 0.28333 0.222705 0.16527
+        textureTransform NULL
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate {
+          point [
+            -2 -0.55 0
+            2 -0.55 0
+            -2 0.55 0
+            2 0.55 0
+          ]
+        }
+        texCoord TextureCoordinate {
+          point [
+            0 0
+            2 0
+            0 0.55
+            2 0.55
+          ]
+        }
+        coordIndex [
+          2, 0, 1, 3, -1
+        ]
+        texCoordIndex [
+          2, 0, 1, 3, -1
+        ]
+      }
+    }
+  ]
+  name "ditch end"
+  model "floor"
+  contactMaterial "ground"
+  boundingObject Plane {
+    size 4 1.1
+  }
+  locked TRUE
+}
+Ditch {
+  translation -43 -52.5 0
+  rotation 0 0 1 1.5708
+  size 295 4 1
+  waterHeight 0.19
+  appearance SandyGround {
+    colorOverride 0.28333 0.222705 0.16527
+    textureTransform TextureTransform {
+      scale 200 4
+    }
+  }
+}
+Robotti {
+  translation -21.0925 6.93132 0.03
+  rotation -0.8849144806843816 -0.3985595870443581 -0.2409909074013416 0.0028107951406763526
+  controller "<extern>"
+  supervisor TRUE
+}
+DEF ROBERT Robot {
+  translation 2.58568 14.9503 0.01
+  rotation 0 0 1 -2.094395307179586
+  children [
+    CharacterSkin {
+      name "Robert"
+      model "Robert"
+    }
+  ]
+  name "robert"
+  controller "bvh_animation"
+  controllerArgs [
+    "-d"
+    "Robert"
+    "-f"
+    "../../motions/walk.bvh"
+    "-l"
+  ]
+  supervisor TRUE
+}
+AgriculturalWarehouse {
+  translation 73.64 -26.99 0
+}
+Barn {
+  translation 61.0024 29.1738 0
+  rotation 0 0 1 -2.8797953071795863
+  scale 1.5
+}
+Barn {
+  translation 61.5815 19.908 0
+  rotation 0 0 1 -2.8797953071795863
+  name "barn(1)"
+}
+Barn {
+  translation 56.8388 37.4065 0
+  rotation 0 0 1 -2.8797953071795863
+  name "barn(2)"
+}
+Barn {
+  translation -170.61 -65.8974 0
+  rotation 0 0 -1 2.05009e-06
+  scale 1.5
+  name "barn(3)"
+}
+Barn {
+  translation 132.431 174.496 1.13687e-13
+  rotation 0 0 1 -1.5707953071795862
+  scale 1.5
+  name "barn(4)"
+}
+Tractor {
+  translation 76.1981184178993 -3.6353614283550355 0.41751063278521583
+  rotation -0.05057328368620563 0.01516057157924168 0.9986052773977239 2.559861337583246
+}
+BungalowStyleHouse {
+  translation 157.561 171.415 -2.84217e-14
+  rotation 0 0 1 3.14159
+  appearance PBRAppearance {
+    baseColor 0.736706 0.936004 0.986664
+    roughness 1
+    metalness 0
+  }
+}
+PicketFenceWithDoor {
+  translation 42.31 18.7 0
+  rotation 0 0 1 0.261799
+}
+PicketFence {
+  translation 42.31 18.7 0
+  rotation 0 0 1 0.261799
+  numberOfSegments 5
+}
+PicketFence {
+  translation 44.5164 10.4722 0
+  rotation 0 0 1 1.0472
+  name "picket fence(1)"
+  numberOfSegments 3
+}
+PicketFence {
+  translation 48.9756 7.8972 0
+  rotation 0 0 1 1.5708
+  name "picket fence(2)"
+  numberOfSegments 3
+}
+PicketFence {
+  translation 54.0956 7.8972 0
+  rotation 0 0 1 1.8326
+  name "picket fence(3)"
+  numberOfSegments 15
+}
+PicketFence {
+  translation 41.1283 23.1046 0
+  rotation 0 0 1 -2.8797953071795863
+  name "picket fence(4)"
+  numberOfSegments 8
+}
+PicketFence {
+  translation 37.5945 36.3002 0
+  rotation 0 0 1 2.87979
+  name "picket fence(5)"
+  numberOfSegments 3
+}
+PicketFence {
+  translation 38.9231 41.2558 0
+  rotation 0 0 -1 -2.094395307179586
+  name "picket fence(6)"
+  numberOfSegments 3
+}
+PicketFence {
+  translation 43.3632 43.8208 0
+  rotation 0 0 -1 -1.8325953071795862
+  name "picket fence(7)"
+  numberOfSegments 15
+}
+SimpleTree {
+  translation -23.8392 17.7294 -3.55271e-15
+}
+SimpleTree {
+  translation -28.947 17.7816 -3.55271e-15
+  name "tree(1)"
+}
+SimpleTree {
+  translation -34.5777 17.4849 2.34479e-13
+  name "tree(2)"
+}
+SimpleTree {
+  translation -31.9863 -36.2336 7.10543e-15
+  name "tree(3)"
+  type "hackberry tree"
+}
+SimpleTree {
+  translation -38.639 -31.2876 -3.55271e-15
+  name "tree(4)"
+  type "hackberry tree"
+}
+SimpleTree {
+  translation -51.9 -36.6071 -3.55271e-15
+  name "tree(5)"
+  type "hackberry tree"
+}
+DEF FIELD_MUD SolidBox {
+  translation -0.51 -55.11 0
+  name "field mud"
+  size 81 65 0.1
+  contactMaterial "ground"
+  appearance Soil {
+    textureTransform TextureTransform {
+      scale 100 100
+    }
+    color 0.233341 0.176318 0.112779
+  }
+  castShadows FALSE
+}
+Forest {
+  translation 9.65 85.13 0
+  shape [
+    -120 -10
+    -120 -11
+    75 -11
+    75 -10
+  ]
+  type "hackberry tree"
+  groundTexture []
+}
+Forest {
+  translation 9.65 -108.61 0
+  shape [
+    -110 -10
+    -110 -11
+    90 -11
+    90 -10
+  ]
+  density 0.5
+  type "hackberry tree"
+  groundTexture []
+}
+Forest {
+  translation -86.21 18.15 0
+  rotation 0 0 1 1.5707996938995747
+  shape [
+    -100 -10
+    -100 -11
+    100 -11
+    100 -10
+  ]
+  type "hackberry tree"
+  groundTexture []
+}
+Forest {
+  translation 107.85 -10.71 0
+  rotation 0 0 1 1.5707996938995747
+  shape [
+    -100 -10
+    -100 -11
+    100 -11
+    100 -10
+  ]
+  density 0.3
+  type "hackberry tree"
+  groundTexture []
+}
+HouseWithGarage {
+  translation -167.98 114.94 0
+}
+StraightRoadSegment {
+  translation -152.83 -200.62 0.2
+  rotation 0 0 1 1.5708
+  length 342
+}
+StraightRoadSegment {
+  translation -152.83 158.37 0.2
+  rotation 0 0 1 1.5708
+  name "road(1)"
+  length 42
+}
+StraightRoadSegment {
+  translation -161.309 149.857 0.2
+  rotation 0 0 1 -3.1415853071795863
+  name "road(2)"
+  length 39
+}
+StraightRoadSegment {
+  translation -144.339 149.857 0.2
+  rotation 0 0 1 7.33682e-06
+  name "road(3)"
+  length 345
+}
+StraightRoadSegment {
+  translation 84.891 146.007 0.2
+  rotation 0 0 1 -1.5707853071795865
+  name "road(4)"
+  numberOfLanes 1
+  rightBorder FALSE
+  leftBorder FALSE
+  length 204
+  appearance SandyGround {
+    colorOverride 0.313329 0.236713 0.127428
+  }
+}
+RoadIntersection {
+  translation -152.808 149.88 0.2
+  rotation 0 0 1 0.785398
+}
+Silo {
+  translation 74.2149 -50.7068 -7.10543e-15
+  rotation 0 0 1 -2.6179956132800117
+}
+DEF FIELD_SOIL Pose {
+  translation -34.59 -11.2 -0.08
+  children [
+    SimpleTree {
+      rotation 0 0 1 0.09967846155453562
+      name "plant_0_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 1.6 0
+      rotation 0 0 1 1.9580175549979046
+      name "plant_0_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 3.2 0
+      rotation 0 0 1 2.6318232037150358
+      name "plant_0_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 4.8 0
+      rotation 0 0 1 1.9243189727688355
+      name "plant_0_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 6.4 0
+      rotation 0 0 1 1.213272060454268
+      name "plant_0_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 8 0
+      rotation 0 0 1 0.19126515924137916
+      name "plant_0_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 9.6 0
+      rotation 0 0 1 2.1746548142672384
+      name "plant_0_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 11.2 0
+      rotation 0 0 1 0.296518422320965
+      name "plant_0_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 12.8 0
+      rotation 0 0 1 2.916063978010084
+      name "plant_0_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 14.4 0
+      rotation 0 0 1 0.41135307291266
+      name "plant_0_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 16 0
+      rotation 0 0 1 0.8746746306717824
+      name "plant_0_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 17.6 0
+      rotation 0 0 1 0.6248733795626267
+      name "plant_0_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 19.2 0
+      rotation 0 0 1 1.534310733400388
+      name "plant_0_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 0 20.8 0
+      rotation 0 0 1 1.0283092349358995
+      name "plant_0_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 0 0
+      rotation 0 0 1 1.430880961475829
+      name "plant_1_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 1.6 0
+      rotation 0 0 1 1.6740367764588595
+      name "plant_1_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 3.2 0
+      rotation 0 0 1 0.13879998800456608
+      name "plant_1_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 4.8 0
+      rotation 0 0 1 2.8376063660172792
+      name "plant_1_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 6.4 0
+      rotation 0 0 1 0.07834691217129491
+      name "plant_1_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 8 0
+      rotation 0 0 1 0.5937682312255638
+      name "plant_1_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 9.6 0
+      rotation 0 0 1 1.4658851032067455
+      name "plant_1_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 11.2 0
+      rotation 0 0 1 3.0654564890868667
+      name "plant_1_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 12.8 0
+      rotation 0 0 1 3.0626504258793763
+      name "plant_1_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 14.4 0
+      rotation 0 0 1 0.36369938750354625
+      name "plant_1_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 16 0
+      rotation 0 0 1 1.7353639177324567
+      name "plant_1_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 17.6 0
+      rotation 0 0 1 2.2683621076802534
+      name "plant_1_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 19.2 0
+      rotation 0 0 1 0.4134679952000626
+      name "plant_1_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 1 20.8 0
+      rotation 0 0 1 0.22249037362596388
+      name "plant_1_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 0 0
+      rotation 0 0 1 1.648992920129005
+      name "plant_2_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 1.6 0
+      rotation 0 0 1 1.6597187804536222
+      name "plant_2_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 3.2 0
+      rotation 0 0 1 2.333031879023361
+      name "plant_2_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 4.8 0
+      rotation 0 0 1 3.0195507058451536
+      name "plant_2_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 6.4 0
+      rotation 0 0 1 0.07081249332572322
+      name "plant_2_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 8 0
+      rotation 0 0 1 2.294532440596627
+      name "plant_2_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 9.6 0
+      rotation 0 0 1 0.1440743521470687
+      name "plant_2_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 11.2 0
+      rotation 0 0 1 0.1325591232292533
+      name "plant_2_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 12.8 0
+      rotation 0 0 1 2.5674507437271625
+      name "plant_2_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 14.4 0
+      rotation 0 0 1 0.5311917533130981
+      name "plant_2_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 16 0
+      rotation 0 0 1 2.337046906159767
+      name "plant_2_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 17.6 0
+      rotation 0 0 1 0.2298830885643384
+      name "plant_2_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 19.2 0
+      rotation 0 0 1 1.7363838793353314
+      name "plant_2_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 2 20.8 0
+      rotation 0 0 1 1.608561605155116
+      name "plant_2_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 0 0
+      rotation 0 0 1 0.6747849076039499
+      name "plant_3_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 1.6 0
+      rotation 0 0 1 1.457803709508254
+      name "plant_3_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 3.2 0
+      rotation 0 0 1 2.4145399460351915
+      name "plant_3_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 4.8 0
+      rotation 0 0 1 1.8399491346502799
+      name "plant_3_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 6.4 0
+      rotation 0 0 1 1.3978993187248936
+      name "plant_3_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 8 0
+      rotation 0 0 1 0.6926143362684509
+      name "plant_3_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 9.6 0
+      rotation 0 0 1 3.061858575868622
+      name "plant_3_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 11.2 0
+      rotation 0 0 1 1.1986935334745392
+      name "plant_3_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 12.8 0
+      rotation 0 0 1 1.637924524039706
+      name "plant_3_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 14.4 0
+      rotation 0 0 1 3.0247385504874287
+      name "plant_3_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 16 0
+      rotation 0 0 1 2.0559808648147118
+      name "plant_3_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 17.6 0
+      rotation 0 0 1 2.3799530632906865
+      name "plant_3_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 19.2 0
+      rotation 0 0 1 1.1580266532192236
+      name "plant_3_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 3 20.8 0
+      rotation 0 0 1 1.174363502380023
+      name "plant_3_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 0 0
+      rotation 0 0 1 2.9653173213696555
+      name "plant_4_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 1.6 0
+      rotation 0 0 1 0.46406986750752255
+      name "plant_4_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 3.2 0
+      rotation 0 0 1 2.7161381576011476
+      name "plant_4_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 4.8 0
+      rotation 0 0 1 2.882093920392931
+      name "plant_4_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 6.4 0
+      rotation 0 0 1 2.3679258963538707
+      name "plant_4_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 8 0
+      rotation 0 0 1 1.9523502484134285
+      name "plant_4_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 9.6 0
+      rotation 0 0 1 0.3746919522301568
+      name "plant_4_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 11.2 0
+      rotation 0 0 1 1.013178686224073
+      name "plant_4_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 12.8 0
+      rotation 0 0 1 0.11302326271693189
+      name "plant_4_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 14.4 0
+      rotation 0 0 1 2.197221185604201
+      name "plant_4_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 16 0
+      rotation 0 0 1 1.0682443443907421
+      name "plant_4_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 17.6 0
+      rotation 0 0 1 2.5910204764518343
+      name "plant_4_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 19.2 0
+      rotation 0 0 1 3.1083488701159916
+      name "plant_4_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 4 20.8 0
+      rotation 0 0 1 1.5370404794385015
+      name "plant_4_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 0 0
+      rotation 0 0 1 2.0290210019478763
+      name "plant_5_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 1.6 0
+      rotation 0 0 1 1.6344630014765469
+      name "plant_5_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 3.2 0
+      rotation 0 0 1 2.912394387789373
+      name "plant_5_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 4.8 0
+      rotation 0 0 1 0.7041707514498305
+      name "plant_5_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 6.4 0
+      rotation 0 0 1 2.2529053090567777
+      name "plant_5_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 8 0
+      rotation 0 0 1 2.286736318390091
+      name "plant_5_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 9.6 0
+      rotation 0 0 1 1.3882926459913896
+      name "plant_5_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 11.2 0
+      rotation 0 0 1 1.2655317218433466
+      name "plant_5_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 12.8 0
+      rotation 0 0 1 0.29607927266167666
+      name "plant_5_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 14.4 0
+      rotation 0 0 1 1.096675905528086
+      name "plant_5_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 16 0
+      rotation 0 0 1 0.04332435739650208
+      name "plant_5_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 17.6 0
+      rotation 0 0 1 2.6039468649350996
+      name "plant_5_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 19.2 0
+      rotation 0 0 1 0.9823688791466728
+      name "plant_5_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 5 20.8 0
+      rotation 0 0 1 2.1462991599380556
+      name "plant_5_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 0 0
+      rotation 0 0 1 1.1073089441759243
+      name "plant_6_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 1.6 0
+      rotation 0 0 1 0.2721447609663731
+      name "plant_6_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 3.2 0
+      rotation 0 0 1 2.295357515464605
+      name "plant_6_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 4.8 0
+      rotation 0 0 1 1.3209255146803454
+      name "plant_6_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 6.4 0
+      rotation 0 0 1 1.9354887631649087
+      name "plant_6_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 8 0
+      rotation 0 0 1 0.22135019934155542
+      name "plant_6_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 9.6 0
+      rotation 0 0 1 1.168548021402337
+      name "plant_6_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 11.2 0
+      rotation 0 0 1 1.6443529998161075
+      name "plant_6_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 12.8 0
+      rotation 0 0 1 0.11819535919834406
+      name "plant_6_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 14.4 0
+      rotation 0 0 1 0.7950435555160293
+      name "plant_6_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 16 0
+      rotation 0 0 1 2.9070928140156935
+      name "plant_6_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 17.6 0
+      rotation 0 0 1 1.5037654371559692
+      name "plant_6_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 19.2 0
+      rotation 0 0 1 2.051101941354379
+      name "plant_6_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 6 20.8 0
+      rotation 0 0 1 1.1942682007904553
+      name "plant_6_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 0 0
+      rotation 0 0 1 1.0667821233146324
+      name "plant_7_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 1.6 0
+      rotation 0 0 1 0.36224883503692656
+      name "plant_7_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 3.2 0
+      rotation 0 0 1 0.5731177803205335
+      name "plant_7_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 4.8 0
+      rotation 0 0 1 2.874285625042384
+      name "plant_7_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 6.4 0
+      rotation 0 0 1 3.014748217779141
+      name "plant_7_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 8 0
+      rotation 0 0 1 0.06598102138267006
+      name "plant_7_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 9.6 0
+      rotation 0 0 1 2.149450697348371
+      name "plant_7_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 11.2 0
+      rotation 0 0 1 1.718912017027915
+      name "plant_7_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 12.8 0
+      rotation 0 0 1 2.257278191191085
+      name "plant_7_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 14.4 0
+      rotation 0 0 1 1.0163850988535785
+      name "plant_7_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 16 0
+      rotation 0 0 1 1.8449272232631717
+      name "plant_7_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 17.6 0
+      rotation 0 0 1 2.0173642096565843
+      name "plant_7_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 19.2 0
+      rotation 0 0 1 1.382425973788509
+      name "plant_7_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 7 20.8 0
+      rotation 0 0 1 2.3348146817766446
+      name "plant_7_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 0 0
+      rotation 0 0 1 1.0311113281664483
+      name "plant_8_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 1.6 0
+      rotation 0 0 1 2.1696987265741607
+      name "plant_8_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 3.2 0
+      rotation 0 0 1 2.1976550510431094
+      name "plant_8_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 4.8 0
+      rotation 0 0 1 2.5710309839006444
+      name "plant_8_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 6.4 0
+      rotation 0 0 1 0.7214195768726187
+      name "plant_8_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 8 0
+      rotation 0 0 1 1.005457067737851
+      name "plant_8_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 9.6 0
+      rotation 0 0 1 0.7337395659552696
+      name "plant_8_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 11.2 0
+      rotation 0 0 1 2.3587449239601193
+      name "plant_8_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 12.8 0
+      rotation 0 0 1 1.5025550115019586
+      name "plant_8_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 14.4 0
+      rotation 0 0 1 1.3882246371398412
+      name "plant_8_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 16 0
+      rotation 0 0 1 2.1468543333215364
+      name "plant_8_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 17.6 0
+      rotation 0 0 1 2.1032546380581456
+      name "plant_8_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 19.2 0
+      rotation 0 0 1 2.410205942252814
+      name "plant_8_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 8 20.8 0
+      rotation 0 0 1 1.374996123269302
+      name "plant_8_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 0 0
+      rotation 0 0 1 0.14144800467837765
+      name "plant_9_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 1.6 0
+      rotation 0 0 1 2.9733451153867425
+      name "plant_9_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 3.2 0
+      rotation 0 0 1 3.060017595962288
+      name "plant_9_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 4.8 0
+      rotation 0 0 1 1.1855307540368927
+      name "plant_9_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 6.4 0
+      rotation 0 0 1 2.376356117032951
+      name "plant_9_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 8 0
+      rotation 0 0 1 2.438941218361278
+      name "plant_9_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 9.6 0
+      rotation 0 0 1 1.9752367079478965
+      name "plant_9_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 11.2 0
+      rotation 0 0 1 1.0696630228496353
+      name "plant_9_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 12.8 0
+      rotation 0 0 1 0.23789562572396564
+      name "plant_9_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 14.4 0
+      rotation 0 0 1 2.5593234960941764
+      name "plant_9_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 16 0
+      rotation 0 0 1 1.4475285652295917
+      name "plant_9_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 17.6 0
+      rotation 0 0 1 2.858502323473492
+      name "plant_9_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 19.2 0
+      rotation 0 0 1 2.84866953441883
+      name "plant_9_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 9 20.8 0
+      rotation 0 0 1 2.268049783611484
+      name "plant_9_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 0 0
+      rotation 0 0 1 2.8514121439559323
+      name "plant_10_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 1.6 0
+      rotation 0 0 1 2.1321407777265953
+      name "plant_10_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 3.2 0
+      rotation 0 0 1 2.8934437766850385
+      name "plant_10_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 4.8 0
+      rotation 0 0 1 0.0800177657059001
+      name "plant_10_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 6.4 0
+      rotation 0 0 1 1.7815401681262213
+      name "plant_10_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 8 0
+      rotation 0 0 1 0.33259585329214175
+      name "plant_10_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 9.6 0
+      rotation 0 0 1 1.1748706685305557
+      name "plant_10_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 11.2 0
+      rotation 0 0 1 0.14410560815467932
+      name "plant_10_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 12.8 0
+      rotation 0 0 1 3.1139214239145225
+      name "plant_10_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 14.4 0
+      rotation 0 0 1 2.6853030419696804
+      name "plant_10_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 16 0
+      rotation 0 0 1 1.3880570103178955
+      name "plant_10_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 17.6 0
+      rotation 0 0 1 0.4111970863722833
+      name "plant_10_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 19.2 0
+      rotation 0 0 1 0.6680490893717856
+      name "plant_10_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 10 20.8 0
+      rotation 0 0 1 1.7466645929188702
+      name "plant_10_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 0 0
+      rotation 0 0 1 1.194663727778382
+      name "plant_11_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 1.6 0
+      rotation 0 0 1 1.8912706752843442
+      name "plant_11_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 3.2 0
+      rotation 0 0 1 2.4727798334406548
+      name "plant_11_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 4.8 0
+      rotation 0 0 1 0.495389370975542
+      name "plant_11_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 6.4 0
+      rotation 0 0 1 0.3800063541619639
+      name "plant_11_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 8 0
+      rotation 0 0 1 1.4177735070316262
+      name "plant_11_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 9.6 0
+      rotation 0 0 1 1.2671105074951468
+      name "plant_11_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 11.2 0
+      rotation 0 0 1 2.806355923522741
+      name "plant_11_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 12.8 0
+      rotation 0 0 1 1.7636264459152962
+      name "plant_11_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 14.4 0
+      rotation 0 0 1 2.636436620171807
+      name "plant_11_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 16 0
+      rotation 0 0 1 1.1184056012174857
+      name "plant_11_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 17.6 0
+      rotation 0 0 1 1.9082633931596746
+      name "plant_11_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 19.2 0
+      rotation 0 0 1 0.9521280991963805
+      name "plant_11_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 11 20.8 0
+      rotation 0 0 1 2.6287979361541685
+      name "plant_11_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 0 0
+      rotation 0 0 1 1.185937478395522
+      name "plant_12_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 1.6 0
+      rotation 0 0 1 1.181771113932807
+      name "plant_12_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 3.2 0
+      rotation 0 0 1 2.68726983220152
+      name "plant_12_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 4.8 0
+      rotation 0 0 1 1.320640954020406
+      name "plant_12_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 6.4 0
+      rotation 0 0 1 2.699858565123508
+      name "plant_12_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 8 0
+      rotation 0 0 1 2.686049810339967
+      name "plant_12_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 9.6 0
+      rotation 0 0 1 2.8465072976535954
+      name "plant_12_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 11.2 0
+      rotation 0 0 1 0.2456355918339108
+      name "plant_12_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 12.8 0
+      rotation 0 0 1 1.0197997196719892
+      name "plant_12_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 14.4 0
+      rotation 0 0 1 1.487897887665068
+      name "plant_12_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 16 0
+      rotation 0 0 1 2.205219170281665
+      name "plant_12_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 17.6 0
+      rotation 0 0 1 2.529269449640866
+      name "plant_12_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 19.2 0
+      rotation 0 0 1 2.054540392203228
+      name "plant_12_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 12 20.8 0
+      rotation 0 0 1 2.542262309682012
+      name "plant_12_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 0 0
+      rotation 0 0 1 2.2350650623364827
+      name "plant_13_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 1.6 0
+      rotation 0 0 1 1.5238572402203212
+      name "plant_13_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 3.2 0
+      rotation 0 0 1 2.9119025165694303
+      name "plant_13_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 4.8 0
+      rotation 0 0 1 1.5685170846621166
+      name "plant_13_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 6.4 0
+      rotation 0 0 1 0.3539778709291102
+      name "plant_13_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 8 0
+      rotation 0 0 1 2.954506420861008
+      name "plant_13_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 9.6 0
+      rotation 0 0 1 1.155960362800182
+      name "plant_13_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 11.2 0
+      rotation 0 0 1 0.07070116797280498
+      name "plant_13_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 12.8 0
+      rotation 0 0 1 0.5967688873177486
+      name "plant_13_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 14.4 0
+      rotation 0 0 1 2.0398247939381884
+      name "plant_13_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 16 0
+      rotation 0 0 1 0.28672149589687507
+      name "plant_13_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 17.6 0
+      rotation 0 0 1 2.5008668553518603
+      name "plant_13_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 19.2 0
+      rotation 0 0 1 1.4706861510821683
+      name "plant_13_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 13 20.8 0
+      rotation 0 0 1 1.2672821468200728
+      name "plant_13_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 0 0
+      rotation 0 0 1 2.0851967729220746
+      name "plant_14_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 1.6 0
+      rotation 0 0 1 1.0897923288581155
+      name "plant_14_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 3.2 0
+      rotation 0 0 1 2.820599002139255
+      name "plant_14_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 4.8 0
+      rotation 0 0 1 2.0721596700352816
+      name "plant_14_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 6.4 0
+      rotation 0 0 1 1.5760550854049062
+      name "plant_14_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 8 0
+      rotation 0 0 1 1.3657059368566231
+      name "plant_14_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 9.6 0
+      rotation 0 0 1 2.8299357651996973
+      name "plant_14_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 11.2 0
+      rotation 0 0 1 0.3494456337656264
+      name "plant_14_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 12.8 0
+      rotation 0 0 1 0.3249242439830491
+      name "plant_14_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 14.4 0
+      rotation 0 0 1 0.8193155489477011
+      name "plant_14_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 16 0
+      rotation 0 0 1 0.3442134195100693
+      name "plant_14_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 17.6 0
+      rotation 0 0 1 2.2878768304667236
+      name "plant_14_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 19.2 0
+      rotation 0 0 1 2.907896718322447
+      name "plant_14_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 14 20.8 0
+      rotation 0 0 1 0.03230204489591335
+      name "plant_14_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 0 0
+      rotation 0 0 1 0.3489363444012469
+      name "plant_15_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 1.6 0
+      rotation 0 0 1 0.3408477522478712
+      name "plant_15_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 3.2 0
+      rotation 0 0 1 1.437860614262639
+      name "plant_15_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 4.8 0
+      rotation 0 0 1 0.22422963367540155
+      name "plant_15_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 6.4 0
+      rotation 0 0 1 0.20669783073043893
+      name "plant_15_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 8 0
+      rotation 0 0 1 1.3261360985308746
+      name "plant_15_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 9.6 0
+      rotation 0 0 1 2.2301919107696797
+      name "plant_15_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 11.2 0
+      rotation 0 0 1 1.939547614730592
+      name "plant_15_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 12.8 0
+      rotation 0 0 1 0.005738148634803189
+      name "plant_15_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 14.4 0
+      rotation 0 0 1 2.5326459069978555
+      name "plant_15_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 16 0
+      rotation 0 0 1 0.8543830788146695
+      name "plant_15_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 17.6 0
+      rotation 0 0 1 1.0361519534539938
+      name "plant_15_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 19.2 0
+      rotation 0 0 1 2.210543066319823
+      name "plant_15_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 15 20.8 0
+      rotation 0 0 1 2.3535915726351457
+      name "plant_15_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 0 0
+      rotation 0 0 1 1.0374756946579504
+      name "plant_16_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 1.6 0
+      rotation 0 0 1 0.09365402745803393
+      name "plant_16_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 3.2 0
+      rotation 0 0 1 0.09557543210577489
+      name "plant_16_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 4.8 0
+      rotation 0 0 1 0.9250586725523113
+      name "plant_16_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 6.4 0
+      rotation 0 0 1 0.23551315681039234
+      name "plant_16_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 8 0
+      rotation 0 0 1 0.9087561704298462
+      name "plant_16_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 9.6 0
+      rotation 0 0 1 1.7166430154681864
+      name "plant_16_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 11.2 0
+      rotation 0 0 1 0.2136838033428508
+      name "plant_16_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 12.8 0
+      rotation 0 0 1 0.2851895719605347
+      name "plant_16_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 14.4 0
+      rotation 0 0 1 2.5179314014754564
+      name "plant_16_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 16 0
+      rotation 0 0 1 0.5328270464409481
+      name "plant_16_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 17.6 0
+      rotation 0 0 1 0.4686546039136794
+      name "plant_16_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 19.2 0
+      rotation 0 0 1 0.17931660496392052
+      name "plant_16_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 16 20.8 0
+      rotation 0 0 1 2.133271448355548
+      name "plant_16_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 0 0
+      rotation 0 0 1 1.6855434189300955
+      name "plant_17_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 1.6 0
+      rotation 0 0 1 0.4548331101624379
+      name "plant_17_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 3.2 0
+      rotation 0 0 1 2.075704201487109
+      name "plant_17_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 4.8 0
+      rotation 0 0 1 1.2601111244946228
+      name "plant_17_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 6.4 0
+      rotation 0 0 1 1.606017097178301
+      name "plant_17_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 8 0
+      rotation 0 0 1 2.306588569252664
+      name "plant_17_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 9.6 0
+      rotation 0 0 1 2.370791125681857
+      name "plant_17_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 11.2 0
+      rotation 0 0 1 0.9074978985338039
+      name "plant_17_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 12.8 0
+      rotation 0 0 1 1.999548740765948
+      name "plant_17_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 14.4 0
+      rotation 0 0 1 3.0352140876445035
+      name "plant_17_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 16 0
+      rotation 0 0 1 0.7321155620011323
+      name "plant_17_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 17.6 0
+      rotation 0 0 1 0.15775707681851456
+      name "plant_17_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 19.2 0
+      rotation 0 0 1 2.3602470075253104
+      name "plant_17_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 17 20.8 0
+      rotation 0 0 1 0.7568945416381307
+      name "plant_17_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 0 0
+      rotation 0 0 1 1.1692218527351435
+      name "plant_18_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 1.6 0
+      rotation 0 0 1 2.2441875298674017
+      name "plant_18_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 3.2 0
+      rotation 0 0 1 1.9428183382084883
+      name "plant_18_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 4.8 0
+      rotation 0 0 1 0.15022664739552982
+      name "plant_18_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 6.4 0
+      rotation 0 0 1 0.04503529172580172
+      name "plant_18_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 8 0
+      rotation 0 0 1 2.200366395424965
+      name "plant_18_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 9.6 0
+      rotation 0 0 1 0.20020045789111884
+      name "plant_18_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 11.2 0
+      rotation 0 0 1 3.020425512065149
+      name "plant_18_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 12.8 0
+      rotation 0 0 1 2.9506533976405156
+      name "plant_18_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 14.4 0
+      rotation 0 0 1 2.7779245548393177
+      name "plant_18_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 16 0
+      rotation 0 0 1 0.2678605347606574
+      name "plant_18_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 17.6 0
+      rotation 0 0 1 3.09042524147474
+      name "plant_18_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 19.2 0
+      rotation 0 0 1 0.652662887872706
+      name "plant_18_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 18 20.8 0
+      rotation 0 0 1 2.0629155231298397
+      name "plant_18_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 0 0
+      rotation 0 0 1 1.3057924592195427
+      name "plant_19_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 1.6 0
+      rotation 0 0 1 2.5210200982249296
+      name "plant_19_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 3.2 0
+      rotation 0 0 1 0.8297103319925492
+      name "plant_19_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 4.8 0
+      rotation 0 0 1 1.7209088379326705
+      name "plant_19_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 6.4 0
+      rotation 0 0 1 0.8998111511335704
+      name "plant_19_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 8 0
+      rotation 0 0 1 1.5508128415574594
+      name "plant_19_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 9.6 0
+      rotation 0 0 1 2.847877920657397
+      name "plant_19_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 11.2 0
+      rotation 0 0 1 3.116627344084038
+      name "plant_19_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 12.8 0
+      rotation 0 0 1 2.274685338166726
+      name "plant_19_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 14.4 0
+      rotation 0 0 1 2.7193947310319393
+      name "plant_19_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 16 0
+      rotation 0 0 1 0.4150584580570214
+      name "plant_19_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 17.6 0
+      rotation 0 0 1 1.2098729389353502
+      name "plant_19_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 19.2 0
+      rotation 0 0 1 1.0098489108473647
+      name "plant_19_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 19 20.8 0
+      rotation 0 0 1 0.32931736872391626
+      name "plant_19_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 0 0
+      rotation 0 0 1 0.10634199060594798
+      name "plant_20_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 1.6 0
+      rotation 0 0 1 0.3110147458619547
+      name "plant_20_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 3.2 0
+      rotation 0 0 1 1.4900333132038435
+      name "plant_20_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 4.8 0
+      rotation 0 0 1 1.549181511326092
+      name "plant_20_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 6.4 0
+      rotation 0 0 1 2.0560634186164206
+      name "plant_20_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 8 0
+      rotation 0 0 1 0.9743541532142966
+      name "plant_20_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 9.6 0
+      rotation 0 0 1 2.6615507225410706
+      name "plant_20_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 11.2 0
+      rotation 0 0 1 2.447327042142133
+      name "plant_20_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 12.8 0
+      rotation 0 0 1 2.072465384322711
+      name "plant_20_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 14.4 0
+      rotation 0 0 1 0.12285351733112562
+      name "plant_20_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 16 0
+      rotation 0 0 1 2.8297264555668438
+      name "plant_20_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 17.6 0
+      rotation 0 0 1 3.079920928013416
+      name "plant_20_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 19.2 0
+      rotation 0 0 1 1.8807958339015356
+      name "plant_20_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 20 20.8 0
+      rotation 0 0 1 1.716409133385527
+      name "plant_20_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 0 0
+      rotation 0 0 1 1.3503377076051073
+      name "plant_21_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 1.6 0
+      rotation 0 0 1 1.7513362161339532
+      name "plant_21_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 3.2 0
+      rotation 0 0 1 2.313869862908718
+      name "plant_21_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 4.8 0
+      rotation 0 0 1 2.693648547306921
+      name "plant_21_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 6.4 0
+      rotation 0 0 1 2.052674106186177
+      name "plant_21_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 8 0
+      rotation 0 0 1 1.3670373319061173
+      name "plant_21_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 9.6 0
+      rotation 0 0 1 1.9756216675801386
+      name "plant_21_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 11.2 0
+      rotation 0 0 1 2.6345060282510193
+      name "plant_21_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 12.8 0
+      rotation 0 0 1 2.2625226832296037
+      name "plant_21_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 14.4 0
+      rotation 0 0 1 0.6872101666401654
+      name "plant_21_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 16 0
+      rotation 0 0 1 2.221369654809058
+      name "plant_21_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 17.6 0
+      rotation 0 0 1 0.2852322742452893
+      name "plant_21_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 19.2 0
+      rotation 0 0 1 1.6152327604136223
+      name "plant_21_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 21 20.8 0
+      rotation 0 0 1 2.884317254671378
+      name "plant_21_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 0 0
+      rotation 0 0 1 0.8985508672774956
+      name "plant_22_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 1.6 0
+      rotation 0 0 1 2.7558843889008378
+      name "plant_22_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 3.2 0
+      rotation 0 0 1 1.95674731629899
+      name "plant_22_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 4.8 0
+      rotation 0 0 1 2.6631301918085692
+      name "plant_22_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 6.4 0
+      rotation 0 0 1 1.2142278379438307
+      name "plant_22_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 8 0
+      rotation 0 0 1 1.1778192251687143
+      name "plant_22_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 9.6 0
+      rotation 0 0 1 3.1374741976670126
+      name "plant_22_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 11.2 0
+      rotation 0 0 1 2.253231349459241
+      name "plant_22_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 12.8 0
+      rotation 0 0 1 0.08056575315082741
+      name "plant_22_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 14.4 0
+      rotation 0 0 1 2.0581804788079774
+      name "plant_22_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 16 0
+      rotation 0 0 1 2.8242046213029157
+      name "plant_22_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 17.6 0
+      rotation 0 0 1 1.3251422212493689
+      name "plant_22_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 19.2 0
+      rotation 0 0 1 2.3623327531779372
+      name "plant_22_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 22 20.8 0
+      rotation 0 0 1 0.8141631402281284
+      name "plant_22_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 0 0
+      rotation 0 0 1 2.910192055992404
+      name "plant_23_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 1.6 0
+      rotation 0 0 1 1.8252289335748904
+      name "plant_23_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 3.2 0
+      rotation 0 0 1 1.1925554817714041
+      name "plant_23_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 4.8 0
+      rotation 0 0 1 1.8579541538924957
+      name "plant_23_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 6.4 0
+      rotation 0 0 1 1.1720230531739504
+      name "plant_23_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 8 0
+      rotation 0 0 1 0.5077842336789694
+      name "plant_23_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 9.6 0
+      rotation 0 0 1 2.5443019645155713
+      name "plant_23_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 11.2 0
+      rotation 0 0 1 2.3808374088652284
+      name "plant_23_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 12.8 0
+      rotation 0 0 1 1.6011908138206785
+      name "plant_23_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 14.4 0
+      rotation 0 0 1 0.22111564558110733
+      name "plant_23_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 16 0
+      rotation 0 0 1 0.2530073182047638
+      name "plant_23_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 17.6 0
+      rotation 0 0 1 1.7128106176356275
+      name "plant_23_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 19.2 0
+      rotation 0 0 1 1.2188691904179898
+      name "plant_23_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 23 20.8 0
+      rotation 0 0 1 0.5481796685139669
+      name "plant_23_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 0 0
+      rotation 0 0 1 0.48821909065035285
+      name "plant_24_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 1.6 0
+      rotation 0 0 1 2.5302260994287056
+      name "plant_24_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 3.2 0
+      rotation 0 0 1 2.8258577999581704
+      name "plant_24_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 4.8 0
+      rotation 0 0 1 2.541616390696365
+      name "plant_24_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 6.4 0
+      rotation 0 0 1 0.6453154667180002
+      name "plant_24_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 8 0
+      rotation 0 0 1 1.0984967075752154
+      name "plant_24_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 9.6 0
+      rotation 0 0 1 0.4631913560652329
+      name "plant_24_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 11.2 0
+      rotation 0 0 1 1.8118307010372183
+      name "plant_24_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 12.8 0
+      rotation 0 0 1 0.9314313410473389
+      name "plant_24_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 14.4 0
+      rotation 0 0 1 2.492621064576252
+      name "plant_24_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 16 0
+      rotation 0 0 1 1.0353753271355408
+      name "plant_24_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 17.6 0
+      rotation 0 0 1 0.6778699985459031
+      name "plant_24_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 19.2 0
+      rotation 0 0 1 1.9648245920903358
+      name "plant_24_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 24 20.8 0
+      rotation 0 0 1 0.37349527101142665
+      name "plant_24_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 0 0
+      rotation 0 0 1 0.45642401140006
+      name "plant_25_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 1.6 0
+      rotation 0 0 1 0.8019798791893274
+      name "plant_25_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 3.2 0
+      rotation 0 0 1 2.4058305421187183
+      name "plant_25_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 4.8 0
+      rotation 0 0 1 1.6051251608726238
+      name "plant_25_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 6.4 0
+      rotation 0 0 1 2.6358770188182343
+      name "plant_25_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 8 0
+      rotation 0 0 1 1.5837283116747167
+      name "plant_25_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 9.6 0
+      rotation 0 0 1 0.7942879730017801
+      name "plant_25_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 11.2 0
+      rotation 0 0 1 0.8129537805897932
+      name "plant_25_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 12.8 0
+      rotation 0 0 1 1.4150054508911063
+      name "plant_25_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 14.4 0
+      rotation 0 0 1 2.0827826050066194
+      name "plant_25_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 16 0
+      rotation 0 0 1 1.8716262437394202
+      name "plant_25_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 17.6 0
+      rotation 0 0 1 1.2499919462255018
+      name "plant_25_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 19.2 0
+      rotation 0 0 1 0.9482898773357936
+      name "plant_25_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 25 20.8 0
+      rotation 0 0 1 0.39132710022526934
+      name "plant_25_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 0 0
+      rotation 0 0 1 2.226705523584923
+      name "plant_26_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 1.6 0
+      rotation 0 0 1 3.104747716127946
+      name "plant_26_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 3.2 0
+      rotation 0 0 1 2.795970283200719
+      name "plant_26_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 4.8 0
+      rotation 0 0 1 3.0589753122389283
+      name "plant_26_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 6.4 0
+      rotation 0 0 1 2.6618519166551264
+      name "plant_26_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 8 0
+      rotation 0 0 1 0.9454334024962201
+      name "plant_26_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 9.6 0
+      rotation 0 0 1 0.20548465380592734
+      name "plant_26_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 11.2 0
+      rotation 0 0 1 2.9980919785322184
+      name "plant_26_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 12.8 0
+      rotation 0 0 1 0.041131713191317705
+      name "plant_26_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 14.4 0
+      rotation 0 0 1 3.1087862693107664
+      name "plant_26_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 16 0
+      rotation 0 0 1 1.5004811405941811
+      name "plant_26_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 17.6 0
+      rotation 0 0 1 0.09100551106302575
+      name "plant_26_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 19.2 0
+      rotation 0 0 1 2.514043826121378
+      name "plant_26_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 26 20.8 0
+      rotation 0 0 1 1.3639289799948033
+      name "plant_26_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 0 0
+      rotation 0 0 1 3.0785105351455564
+      name "plant_27_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 1.6 0
+      rotation 0 0 1 2.9015490540020874
+      name "plant_27_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 3.2 0
+      rotation 0 0 1 1.1917892207203673
+      name "plant_27_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 4.8 0
+      rotation 0 0 1 2.9266399971553367
+      name "plant_27_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 6.4 0
+      rotation 0 0 1 0.16242490220274863
+      name "plant_27_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 8 0
+      rotation 0 0 1 2.158040572241742
+      name "plant_27_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 9.6 0
+      rotation 0 0 1 0.10068270604174838
+      name "plant_27_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 11.2 0
+      rotation 0 0 1 1.7374096807053117
+      name "plant_27_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 12.8 0
+      rotation 0 0 1 1.0685921228094637
+      name "plant_27_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 14.4 0
+      rotation 0 0 1 1.2601080733383834
+      name "plant_27_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 16 0
+      rotation 0 0 1 2.495086715984411
+      name "plant_27_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 17.6 0
+      rotation 0 0 1 1.2955480957578456
+      name "plant_27_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 19.2 0
+      rotation 0 0 1 2.884170310429091
+      name "plant_27_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 27 20.8 0
+      rotation 0 0 1 2.454603595325362
+      name "plant_27_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 0 0
+      rotation 0 0 1 1.556759173591556
+      name "plant_28_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 1.6 0
+      rotation 0 0 1 1.1564398683371298
+      name "plant_28_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 3.2 0
+      rotation 0 0 1 0.9273514633978707
+      name "plant_28_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 4.8 0
+      rotation 0 0 1 0.7841581995740392
+      name "plant_28_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 6.4 0
+      rotation 0 0 1 2.01634909618917
+      name "plant_28_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 8 0
+      rotation 0 0 1 1.0454375652770274
+      name "plant_28_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 9.6 0
+      rotation 0 0 1 2.4582012640891016
+      name "plant_28_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 11.2 0
+      rotation 0 0 1 1.3568607561759543
+      name "plant_28_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 12.8 0
+      rotation 0 0 1 0.4118308100148579
+      name "plant_28_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 14.4 0
+      rotation 0 0 1 1.8500261557426225
+      name "plant_28_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 16 0
+      rotation 0 0 1 0.7032667817077687
+      name "plant_28_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 17.6 0
+      rotation 0 0 1 3.015423904338722
+      name "plant_28_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 19.2 0
+      rotation 0 0 1 1.0091642228388908
+      name "plant_28_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 28 20.8 0
+      rotation 0 0 1 0.6555468892092732
+      name "plant_28_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 0 0
+      rotation 0 0 1 1.7552649072517184
+      name "plant_29_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 1.6 0
+      rotation 0 0 1 0.6761407692519701
+      name "plant_29_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 3.2 0
+      rotation 0 0 1 0.12032235256063549
+      name "plant_29_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 4.8 0
+      rotation 0 0 1 1.9737543540684706
+      name "plant_29_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 6.4 0
+      rotation 0 0 1 0.4725178924610161
+      name "plant_29_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 8 0
+      rotation 0 0 1 1.3965293002597192
+      name "plant_29_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 9.6 0
+      rotation 0 0 1 2.998300777373042
+      name "plant_29_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 11.2 0
+      rotation 0 0 1 2.9490404234122516
+      name "plant_29_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 12.8 0
+      rotation 0 0 1 1.236185964485992
+      name "plant_29_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 14.4 0
+      rotation 0 0 1 2.6893217791622437
+      name "plant_29_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 16 0
+      rotation 0 0 1 2.642417793668508
+      name "plant_29_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 17.6 0
+      rotation 0 0 1 3.018029566791232
+      name "plant_29_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 19.2 0
+      rotation 0 0 1 1.9461641948504633
+      name "plant_29_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 29 20.8 0
+      rotation 0 0 1 2.255771310985492
+      name "plant_29_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 0 0
+      rotation 0 0 1 1.758587755577215
+      name "plant_30_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 1.6 0
+      rotation 0 0 1 2.3999927277543596
+      name "plant_30_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 3.2 0
+      rotation 0 0 1 1.856128781510292
+      name "plant_30_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 4.8 0
+      rotation 0 0 1 1.881935329086853
+      name "plant_30_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 6.4 0
+      rotation 0 0 1 0.3458505627466308
+      name "plant_30_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 8 0
+      rotation 0 0 1 0.06337850998029587
+      name "plant_30_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 9.6 0
+      rotation 0 0 1 2.2814395249837096
+      name "plant_30_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 11.2 0
+      rotation 0 0 1 1.7690261037507455
+      name "plant_30_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 12.8 0
+      rotation 0 0 1 0.5377732082993202
+      name "plant_30_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 14.4 0
+      rotation 0 0 1 1.6880154550165951
+      name "plant_30_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 16 0
+      rotation 0 0 1 2.099981984533889
+      name "plant_30_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 17.6 0
+      rotation 0 0 1 0.6988363906870149
+      name "plant_30_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 19.2 0
+      rotation 0 0 1 0.918339185634311
+      name "plant_30_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 30 20.8 0
+      rotation 0 0 1 2.0964134782528356
+      name "plant_30_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 0 0
+      rotation 0 0 1 0.17700157098909233
+      name "plant_31_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 1.6 0
+      rotation 0 0 1 1.426564928734735
+      name "plant_31_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 3.2 0
+      rotation 0 0 1 0.8256727609594507
+      name "plant_31_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 4.8 0
+      rotation 0 0 1 3.0354232344655103
+      name "plant_31_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 6.4 0
+      rotation 0 0 1 1.4557926789065114
+      name "plant_31_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 8 0
+      rotation 0 0 1 1.1016563501808638
+      name "plant_31_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 9.6 0
+      rotation 0 0 1 0.2961701511309871
+      name "plant_31_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 11.2 0
+      rotation 0 0 1 0.4662566486961042
+      name "plant_31_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 12.8 0
+      rotation 0 0 1 0.8448887325729937
+      name "plant_31_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 14.4 0
+      rotation 0 0 1 0.4654184455191252
+      name "plant_31_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 16 0
+      rotation 0 0 1 1.4996488096330494
+      name "plant_31_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 17.6 0
+      rotation 0 0 1 1.9030924275532282
+      name "plant_31_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 19.2 0
+      rotation 0 0 1 1.9863903899540694
+      name "plant_31_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 31 20.8 0
+      rotation 0 0 1 3.1038996027435304
+      name "plant_31_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 0 0
+      rotation 0 0 1 0.05277268759631376
+      name "plant_32_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 1.6 0
+      rotation 0 0 1 0.6040876518614466
+      name "plant_32_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 3.2 0
+      rotation 0 0 1 2.6922094871246545
+      name "plant_32_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 4.8 0
+      rotation 0 0 1 1.6334879113026848
+      name "plant_32_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 6.4 0
+      rotation 0 0 1 0.4128012733200259
+      name "plant_32_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 8 0
+      rotation 0 0 1 0.18165004635004905
+      name "plant_32_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 9.6 0
+      rotation 0 0 1 0.2459182793891084
+      name "plant_32_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 11.2 0
+      rotation 0 0 1 0.8967462377300331
+      name "plant_32_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 12.8 0
+      rotation 0 0 1 2.043878291930973
+      name "plant_32_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 14.4 0
+      rotation 0 0 1 0.47466631853039337
+      name "plant_32_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 16 0
+      rotation 0 0 1 1.1495095612087387
+      name "plant_32_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 17.6 0
+      rotation 0 0 1 2.585401045959279
+      name "plant_32_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 19.2 0
+      rotation 0 0 1 0.419903072061098
+      name "plant_32_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 32 20.8 0
+      rotation 0 0 1 2.972934113053926
+      name "plant_32_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 0 0
+      rotation 0 0 1 1.5413207712862
+      name "plant_33_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 1.6 0
+      rotation 0 0 1 1.6596272011913469
+      name "plant_33_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 3.2 0
+      rotation 0 0 1 0.9319347105073771
+      name "plant_33_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 4.8 0
+      rotation 0 0 1 2.4201563300862468
+      name "plant_33_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 6.4 0
+      rotation 0 0 1 0.9329841986462977
+      name "plant_33_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 8 0
+      rotation 0 0 1 0.4963202594900398
+      name "plant_33_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 9.6 0
+      rotation 0 0 1 0.7731803517028893
+      name "plant_33_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 11.2 0
+      rotation 0 0 1 2.7971694493506103
+      name "plant_33_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 12.8 0
+      rotation 0 0 1 0.18751107054188088
+      name "plant_33_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 14.4 0
+      rotation 0 0 1 2.266631866155212
+      name "plant_33_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 16 0
+      rotation 0 0 1 1.779698882787792
+      name "plant_33_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 17.6 0
+      rotation 0 0 1 0.3287549608273071
+      name "plant_33_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 19.2 0
+      rotation 0 0 1 1.4484625499636958
+      name "plant_33_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 33 20.8 0
+      rotation 0 0 1 0.5899783923577729
+      name "plant_33_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 0 0
+      rotation 0 0 1 1.018996470591997
+      name "plant_34_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 1.6 0
+      rotation 0 0 1 0.17059038900105533
+      name "plant_34_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 3.2 0
+      rotation 0 0 1 0.887483670618723
+      name "plant_34_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 4.8 0
+      rotation 0 0 1 0.4326994779130258
+      name "plant_34_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 6.4 0
+      rotation 0 0 1 2.778507828154594
+      name "plant_34_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 8 0
+      rotation 0 0 1 0.1586612784484874
+      name "plant_34_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 9.6 0
+      rotation 0 0 1 1.5323626928944716
+      name "plant_34_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 11.2 0
+      rotation 0 0 1 3.0943146606905194
+      name "plant_34_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 12.8 0
+      rotation 0 0 1 2.693587253449836
+      name "plant_34_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 14.4 0
+      rotation 0 0 1 0.75797230595428
+      name "plant_34_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 16 0
+      rotation 0 0 1 3.03175473416556
+      name "plant_34_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 17.6 0
+      rotation 0 0 1 0.16230720355841693
+      name "plant_34_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 19.2 0
+      rotation 0 0 1 2.3491242275348236
+      name "plant_34_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 34 20.8 0
+      rotation 0 0 1 0.3620674802644552
+      name "plant_34_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 0 0
+      rotation 0 0 1 0.19862411834942342
+      name "plant_35_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 1.6 0
+      rotation 0 0 1 0.09663364861505816
+      name "plant_35_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 3.2 0
+      rotation 0 0 1 2.123293063110082
+      name "plant_35_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 4.8 0
+      rotation 0 0 1 0.9689268022259679
+      name "plant_35_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 6.4 0
+      rotation 0 0 1 0.25409091016021906
+      name "plant_35_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 8 0
+      rotation 0 0 1 1.605022975086336
+      name "plant_35_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 9.6 0
+      rotation 0 0 1 0.0860972373840263
+      name "plant_35_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 11.2 0
+      rotation 0 0 1 1.715994208113148
+      name "plant_35_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 12.8 0
+      rotation 0 0 1 0.34399617395345683
+      name "plant_35_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 14.4 0
+      rotation 0 0 1 2.3362581610104507
+      name "plant_35_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 16 0
+      rotation 0 0 1 0.4289675274592636
+      name "plant_35_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 17.6 0
+      rotation 0 0 1 0.19815019915766202
+      name "plant_35_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 19.2 0
+      rotation 0 0 1 2.3380916530354368
+      name "plant_35_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 35 20.8 0
+      rotation 0 0 1 0.5190768590090193
+      name "plant_35_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 0 0
+      rotation 0 0 1 1.7313131178204282
+      name "plant_36_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 1.6 0
+      rotation 0 0 1 2.479109647056731
+      name "plant_36_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 3.2 0
+      rotation 0 0 1 1.5717877993870977
+      name "plant_36_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 4.8 0
+      rotation 0 0 1 1.3186134951263797
+      name "plant_36_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 6.4 0
+      rotation 0 0 1 2.1230547259146006
+      name "plant_36_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 8 0
+      rotation 0 0 1 1.4469222232719017
+      name "plant_36_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 9.6 0
+      rotation 0 0 1 0.9315698888606705
+      name "plant_36_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 11.2 0
+      rotation 0 0 1 0.3273880675761505
+      name "plant_36_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 12.8 0
+      rotation 0 0 1 3.0579032798916517
+      name "plant_36_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 14.4 0
+      rotation 0 0 1 2.7624719483783635
+      name "plant_36_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 16 0
+      rotation 0 0 1 1.4385421005507912
+      name "plant_36_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 17.6 0
+      rotation 0 0 1 1.7555121646846512
+      name "plant_36_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 19.2 0
+      rotation 0 0 1 0.9920214781968748
+      name "plant_36_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 36 20.8 0
+      rotation 0 0 1 3.0475626323382063
+      name "plant_36_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 0 0
+      rotation 0 0 1 2.305407515321649
+      name "plant_37_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 1.6 0
+      rotation 0 0 1 0.04865779107573173
+      name "plant_37_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 3.2 0
+      rotation 0 0 1 0.3216359987124647
+      name "plant_37_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 4.8 0
+      rotation 0 0 1 2.5729799319749227
+      name "plant_37_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 6.4 0
+      rotation 0 0 1 2.9745441218381
+      name "plant_37_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 8 0
+      rotation 0 0 1 2.6069557727230483
+      name "plant_37_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 9.6 0
+      rotation 0 0 1 3.065104527439835
+      name "plant_37_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 11.2 0
+      rotation 0 0 1 1.972186506415363
+      name "plant_37_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 12.8 0
+      rotation 0 0 1 2.5053779212368528
+      name "plant_37_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 14.4 0
+      rotation 0 0 1 0.5464933900523998
+      name "plant_37_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 16 0
+      rotation 0 0 1 1.496942639112794
+      name "plant_37_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 17.6 0
+      rotation 0 0 1 0.6892397798200087
+      name "plant_37_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 19.2 0
+      rotation 0 0 1 2.9133677253149397
+      name "plant_37_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 37 20.8 0
+      rotation 0 0 1 2.208061352418926
+      name "plant_37_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 0 0
+      rotation 0 0 1 1.506021510648246
+      name "plant_38_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 1.6 0
+      rotation 0 0 1 1.1173585665466534
+      name "plant_38_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 3.2 0
+      rotation 0 0 1 0.061876388210197225
+      name "plant_38_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 4.8 0
+      rotation 0 0 1 1.4486835531201925
+      name "plant_38_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 6.4 0
+      rotation 0 0 1 2.698854790078413
+      name "plant_38_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 8 0
+      rotation 0 0 1 3.1182429937049476
+      name "plant_38_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 9.6 0
+      rotation 0 0 1 3.0579786320832762
+      name "plant_38_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 11.2 0
+      rotation 0 0 1 2.4901876806993317
+      name "plant_38_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 12.8 0
+      rotation 0 0 1 0.34605687946882085
+      name "plant_38_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 14.4 0
+      rotation 0 0 1 2.5624001335188917
+      name "plant_38_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 16 0
+      rotation 0 0 1 1.3891648767116267
+      name "plant_38_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 17.6 0
+      rotation 0 0 1 1.819907018769609
+      name "plant_38_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 19.2 0
+      rotation 0 0 1 2.871058190052731
+      name "plant_38_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 38 20.8 0
+      rotation 0 0 1 1.5465851610908827
+      name "plant_38_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 0 0
+      rotation 0 0 1 0.45286661947884704
+      name "plant_39_0"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 1.6 0
+      rotation 0 0 1 0.697252467679799
+      name "plant_39_1"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 3.2 0
+      rotation 0 0 1 0.1816468536051112
+      name "plant_39_2"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 4.8 0
+      rotation 0 0 1 1.5410011644831598
+      name "plant_39_3"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 6.4 0
+      rotation 0 0 1 1.216182970464224
+      name "plant_39_4"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 8 0
+      rotation 0 0 1 1.8766314199510585
+      name "plant_39_5"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 9.6 0
+      rotation 0 0 1 1.490827965739517
+      name "plant_39_6"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 11.2 0
+      rotation 0 0 1 1.7574629368600754
+      name "plant_39_7"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 12.8 0
+      rotation 0 0 1 2.5973522187247267
+      name "plant_39_8"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 14.4 0
+      rotation 0 0 1 1.8751363887877823
+      name "plant_39_9"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 16 0
+      rotation 0 0 1 2.4416012073749984
+      name "plant_39_10"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 17.6 0
+      rotation 0 0 1 2.5279461130063683
+      name "plant_39_11"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 19.2 0
+      rotation 0 0 1 2.0241332063348048
+      name "plant_39_12"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+    SimpleTree {
+      translation 39 20.8 0
+      rotation 0 0 1 0.11945926288091768
+      name "plant_39_13"
+      type "hazel tree"
+      height 0.4
+      radius 0.4
+      enableBoundingObject FALSE
+    }
+  ]
+}
+DEF FIELD_MUD SolidBox {
+  translation -15.62 0 0
+  name "field mud(1)"
+  size 50 32.400000000000006 0.1
+  contactMaterial "ground"
+  appearance Soil {
+    textureTransform TextureTransform {
+      scale 100 100
+    }
+    color 0.233341 0.176318 0.112779
+  }
+  castShadows FALSE
+}
+Sheep {
+  translation 46.1357 41.9189 1.77636e-14
+}
+Sheep {
+  translation 46.2823 35.1494 3.1606e-20
+  rotation 0 0 1 2.35619
+  name "sheep(1)"
+}
+Sheep {
+  translation 47.1385 40.8428 2.13163e-14
+  rotation 0 0 1 3.14159
+  name "sheep(2)"
+}
+Sheep {
+  translation 48.5403 38.2015 1.06582e-14
+  rotation 0 0 1 -1.8325953071795862
+  name "sheep(7)"
+}
+Sheep {
+  translation 41.8992 39.5131 4.08563e-14
+  rotation 0 0 -1 -2.094395307179586
+  name "sheep(6)"
+}
+Sheep {
+  translation 43.7713 39.366 1.77636e-14
+  rotation 0 0 -1 -2.094395307179586
+  name "sheep(5)"
+}
+Sheep {
+  translation 45.3423 28.6675 2.84217e-14
+  rotation 0 0 -1 -0.523595307179586
+  name "sheep(3)"
+}
+Sheep {
+  translation 42.8471 40.7739 -1.5099e-13
+  rotation 0 0 1 2.87979
+  name "sheep(4)"
+}
+Deer {
+  translation -34.0759 -35.5341 3.73035e-14
+  rotation 0 0 1 1.8326
+}
+Horse {
+  translation -54.8922 -65.3112 -7.06102e-14
+  rotation 0 0 1 -1.047195307179586
+  colorBody 0.388235 0.270588 0.172549
+  colorHair 0 0 0
+}
+Horse {
+  translation -55.8105 -65.9495 -2.04281e-14
+  rotation 0 0 1 1.8326
+  name "horse(1)"
+  colorBody 0.388235 0.270588 0.172549
+  colorHair 0 0 0
+}
+Horse {
+  translation -54.0334 -70.3127 -2.84217e-14
+  rotation 0 0 1 1.0472
+  name "horse(2)"
+  colorBody 0.388235 0.270588 0.172549
+  colorHair 0 0 0
+}
+Rabbit {
+  translation 0 -50.87 0.07
+  rotation 0 0 1 1.0472
+}
