@@ -19,6 +19,7 @@ from typing import Tuple, Union, Optional
 import wave
 import argparse
 import warnings
+from time import perf_counter
 from queue import Queue
 from threading import Thread
 from tempfile import NamedTemporaryFile
@@ -30,8 +31,9 @@ import torch
 import rclpy
 from rclpy.node import Node
 from audio_common_msgs.msg import AudioData
+from std_msgs.msg import Float32
 
-from opendr_interface.msg import OpenDRTranscription, OpenDRPose2D
+from opendr_interface.msg import OpenDRTranscription
 from opendr.perception.speech_transcription import (
     WhisperLearner,
     VoskLearner,
@@ -65,9 +67,9 @@ class SpeechTranscriptionNode(Node):
         logprob_threshold: Optional[float] = -0.8,
         no_speech_threshold: float = 0.6,
         phrase_timeout: float = 2,
-        input_audio_topic: str = "/audio/audio",
+        input_audio_topic: str = "/audio",
         output_transcription_topic: str = "/opendr/speech_transcription",
-        node_topic: str = "opendr_transcription_node",
+        performance_topic: Optional[str] = None,
         verbose: bool = False,
         device: str = "cuda",
         sample_width: int = 2,
@@ -110,8 +112,9 @@ class SpeechTranscriptionNode(Node):
         :param output_transcription_topic: Name of the topic to publish.
         :type output_transcription_topic: str.
 
-        :param node_topic: Name of the transcription ros node.
-        :type node_topic: str.
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic: str
 
         :param verbose: Display transcription.
         :type verbose: bool.
@@ -125,7 +128,7 @@ class SpeechTranscriptionNode(Node):
         :param sample_rate: Sampling rate for audio data. Check your audio source for correct value.
         :type sample_rate: int.
         """
-        super().__init__(node_topic)
+        super().__init__("opendr_transcription_node")
 
         self.data_queue = Queue()
 
@@ -172,8 +175,13 @@ class SpeechTranscriptionNode(Node):
 
         self.create_subscription(AudioData, input_audio_topic, self.callback, 1)
         self.publisher = self.create_publisher(
-             OpenDRPose2D, output_transcription_topic, 1
+             OpenDRTranscription, output_transcription_topic, 1
         )
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
 
         self.bridge = ROS2Bridge()
 
@@ -181,6 +189,7 @@ class SpeechTranscriptionNode(Node):
         self.last_sample = b""
         self.cut_audio = False
         self.n_sample = None
+        self.vad = None
 
         # Start processing thread
         self.processing_thread = Thread(target=self.process_audio)
@@ -204,6 +213,9 @@ class SpeechTranscriptionNode(Node):
             # Convert audio data to numpy array
 
             f.writeframes(numpy_data.tobytes())
+
+        # audio = self.audio_model.load_audio(self.temp_file)
+        # print(f"audio.shape: {audio.shape}")
 
     def _vosk_preprocess_audio(self):
         """
@@ -258,23 +270,23 @@ class SpeechTranscriptionNode(Node):
                 self.data_queue.get()
             )  # Whisper operates on long sequence of text.
 
-        numpy_data = np.frombuffer(self.last_sample, dtype=np.int16)
-        if self.cut_audio and self.n_sample is not None:
-            # If the audio is short, the start of the final phrase
-            # detected by Whisper may not be correct.
-            if self.n_sample < numpy_data.shape[0]:
-                if self.n_sample >= 3200:
-                    numpy_data = numpy_data[(self.n_sample - 3200) :]
-                    self.last_sample = self.last_sample[
-                        ((self.n_sample - 3200) * 2) :
-                    ]  # N 2 bytes per sample.
-                else:
-                    numpy_data = numpy_data[(self.n_sample) :]
-                    self.last_sample = self.last_sample[(self.n_sample * 2) :]
+        if self.n_sample is not None:
+            assert self.n_sample * 2 < len(self.last_sample)
+        if len(self.last_sample) < 3200:
+            # Audio too short.
+            if self.cut_audio or self.vad:
+                pass
+        else:
+            if self.cut_audio:
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.cut_audio = False
+                self.n_sample = None
+            elif self.vad:
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.vad = False
                 self.n_sample = None
 
-            self.cut_audio = False
-
+        numpy_data = np.frombuffer(self.last_sample, dtype=np.int16)
         self._write_to_wav(numpy_data)
 
     def _whisper_vad(self, audio_array: np.ndarray) -> bool:
@@ -285,6 +297,7 @@ class SpeechTranscriptionNode(Node):
         :param audio_array: Audio data for some recent seconds.
         :type audio_array: np.ndarray.
         """
+        print(f"vad check: {audio_array.shape[0]}")
         if audio_array.shape[0] > self.phrase_timeout * self.sample_rate:
             t = self.audio_model.infer(
                 audio_array[-int(self.phrase_timeout * self.sample_rate) :]
@@ -313,6 +326,8 @@ class SpeechTranscriptionNode(Node):
 
         accept_waveform = True
         if len(segments) > 1 and segments[-1]["text"] != "":
+            if self.verbose:
+                print("End of phrase detected.")
             last_segment = segments[-1]
             start_timestamp = last_segment["start"]
             self.n_sample = int(self.sample_rate * start_timestamp)
@@ -321,7 +336,7 @@ class SpeechTranscriptionNode(Node):
             text = " ".join(
                 [segments[i]["text"].strip() for i in range(len(segments) - 1)]
             )
-        elif self.cut_audio:
+        elif self.vad:
             if self.verbose:
                 print("Long period of silence.")
             self.n_sample = audio_array.shape[0]
@@ -341,7 +356,7 @@ class SpeechTranscriptionNode(Node):
         Process the audio data by Whisper and publish the transcription.
         """
         audio_array = WhisperLearner.load_audio(self.temp_file)
-        self.cut_audio = self._whisper_vad(audio_array)
+        self.vad = self._whisper_vad(audio_array)
         transcription_whisper = self.audio_model.infer(audio_array)
 
         vosk_transcription = self._postprocess_whisper(
@@ -357,9 +372,12 @@ class SpeechTranscriptionNode(Node):
         """
         Process the audio data from the queue and publish the transcription.
         """
-        while not rospy.is_shutdown():
+        while rclpy.ok():
             # Check if there is any data in the queue
             if not self.data_queue.empty():
+                if self.performance_publisher:
+                    start_time = perf_counter()
+
                 # Process audio
                 if self.backbone == "vosk":
                     self._vosk_preprocess_audio()
@@ -368,31 +386,38 @@ class SpeechTranscriptionNode(Node):
                     self._whisper_preprocess_audio()
                     self._whisper_process_and_publish()
 
+                if self.performance_publisher:
+                    end_time = perf_counter()
+                    fps = 1.0 / (end_time - start_time)
+                    fps_msg = Float32()
+                    fps_msg.data = fps
+                    self.performance_publisher.publish(fps_msg)
+
 
 def main(args=None):
     rclpy.init(args=args)
 
-    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backbone",
-        default="whisper",
-        help="Backbone to use for audio processing. Options: whisper, vosk",
-        choices=["whisper", "vosk"],
+        default="vosk",
+        help="Backbone model for speech transcription. Options: vosk, whisper",
+        choices=["vosk", "whisper"],
     )
     parser.add_argument(
-        "--model-name",
+        "--model_name",
         default=None,
-        help="Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper,"
+        help="Specific model name for each backbone. Example: tiny, tiny.en, base, base.en for Whisper,"
         "vosk-model-small-en-us-0.15 for Vosk.",
     )
-    parser.add_argument("--model-path", default=None, help="Path to model files")
+    parser.add_argument("--model_path", default=None, help="Path to downloaded model files")
     parser.add_argument(
-        "--download-dir", default=None, help="Directory to download models to"
+        "--download_dir", default=None, help="Directory to download models to"
     )
     parser.add_argument(
         "--language",
-        default="en",
-        help="Language to use for audio processing. Example: 'en' for Whisper, 'en-us' for Vosk.",
+        default="en-us",
+        help="Whisper uses the language parameter to avoid language detection, Vosk uses the language paramter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk.",
     )
     parser.add_argument(
         "--temperature", type=float, default=0, help="Temperature to use for whisper decoding."
@@ -404,44 +429,38 @@ def main(args=None):
         help="temperature to increase when falling back when the decoding fails to meet either of the thresholds below",
     )
     parser.add_argument(
-        "--logprob-threshold",
+        "--logprob_threshold",
         default=-0.8,
         type=float,
         help="Threshold for certainty in produced transcription.",
     )
     parser.add_argument(
-        "--phrase-timeout",
+        "--phrase_timeout",
         default=2.0,
         type=float,
         help="The most recent seconds used for detecting long silence in Whisper.",
     )
     parser.add_argument(
-        "--no-speech-threshold",
+        "--no_speech_threshold",
         default=0.6,
         type=float,
         help="Threshold for detecting long silence in Whisper.",
     )
     parser.add_argument(
-        "--input-audio-topic",
-        default="/audio/audio",
+        "-i", "--input_audio_topic",
+        default="/audio",
         help="Name of the topic to subscribe.",
     )
     parser.add_argument(
-        "--output-transcription-topic",
+        "-o", "--output_transcription_topic",
         default="/opendr/speech_transcription",
         help="Name of the topic to publish.",
     )
     parser.add_argument(
-        "--node-topic",
-        default="opendr_transcription_node",
-        help="Name of the transcription ros node.",
-    )
-    parser.add_argument(
-        "--verbose", default=False, type=str2bool, help="Display transcription."
-    )
-    parser.add_argument(
-        "--sample-width", type=int, default=2, help="Sample width to write audio data to wav file."
-        "Check your audio source for correct value."
+        "--performance_topic", 
+        type=str, 
+        default=None,
+        help="Topic name for performance messages, disabled (None) by default",
     )
     parser.add_argument(
         "--device",
@@ -451,7 +470,14 @@ def main(args=None):
         choices=["cuda", "cpu"],
     )
     parser.add_argument(
-        "--sample-rate", type=int, default=16000, help="Sampling rate for audio data."
+        "--verbose", default=False, type=str2bool, help="Display transcription."
+    )
+    parser.add_argument(
+        "--sample_width", type=int, default=2, help="Sample width to write audio data to wav file."
+        "Check your audio source for correct value."
+    )
+    parser.add_argument(
+        "--sample_rate", type=int, default=16000, help="Sampling rate for audio data."
         "Check your audio source for correct value."
     )
     args = parser.parse_args()
@@ -506,7 +532,7 @@ def main(args=None):
         no_speech_threshold=args.no_speech_threshold,
         input_audio_topic=args.input_audio_topic,
         output_transcription_topic=args.output_transcription_topic,
-        node_topic=args.node_topic,
+        performance_topic=args.performance_topic,
         verbose=args.verbose,
         device=device,
         sample_width=args.sample_width,
@@ -518,3 +544,6 @@ def main(args=None):
     transcription_node.destroy_node()
     rclpy.shutdown()
 
+
+if __name__ == "__main__":
+    main()
