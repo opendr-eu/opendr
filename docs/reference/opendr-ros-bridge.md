@@ -443,6 +443,34 @@ Parameters:
 - **ros_detection_box**: *vision_msgs.Detection2D*\
   The box to be converted.
 
+#### `ROSBridge.from_ros_transcription`
+
+```python
+ROSBridge.from_ros_transcription(self, ros_transcription)
+```
+
+Converts an `OpenDRTranscription` object to a `VoskTranscription` object.
+
+Parameters:
+
+- **ros_transcription**: *opendr_bridge.msg.OpenDRTranscription*\
+ A ROS transcription message to be converted.
+
+
+##### `ROSBridge.to_ros_transcription`
+
+```python
+ROSBridge.to_ros_transcription(self, transcription)
+```
+
+Converts a `VoskTranscription` object to an `OpenDRTranscription` object.
+
+Parameters:
+
+- **transcription**: *opendr.engine.target.VoskTranscription*\
+ A VoskTranscription object to be converted.
+
+
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivalent to `engine.data.Image`
 2. `opendr_bridge.msg.Pose` is used as an equivalent to `engine.target.Pose`
@@ -453,6 +481,7 @@ Parameters:
 6. `vision_msgs.msg.Detection3DArray`  is used as an equivalent to `engine.target.BoundingBox3DList`.
 7. `sensor_msgs.msg.PointCloud`  is used as an equivalent to `engine.data.PointCloud`.
 8. `sensor_msgs.msg.PointCloud2`  is used as an equivalent to `engine.data.PointCloud`.
+9. `opendr_bridge.msg.OpenDRTranscription` is used as an equivalent to `engine.target.VoskTranscription`.
 
 ## ROS services
 The following ROS services are implemented (`srv` folder):

@@ -186,6 +186,7 @@ class SpeechTranscriptionNode:
         self.last_sample = b""
         self.cut_audio = False
         self.n_sample = None
+        self.vad = None
 
         # Start processing thread
         self.processing_thread = Thread(target=self.process_audio)
@@ -263,23 +264,23 @@ class SpeechTranscriptionNode:
                 self.data_queue.get()
             )  # Whisper operates on long sequence of text.
 
-        numpy_data = np.frombuffer(self.last_sample, dtype=np.int16)
-        if self.cut_audio and self.n_sample is not None:
-            # If the audio is short, the start of the final phrase
-            # detected by Whisper may not be correct.
-            if self.n_sample < numpy_data.shape[0]:
-                if self.n_sample >= 3200:
-                    numpy_data = numpy_data[(self.n_sample - 3200) :]
-                    self.last_sample = self.last_sample[
-                        ((self.n_sample - 3200) * 2) :
-                    ]  # N 2 bytes per sample.
-                else:
-                    numpy_data = numpy_data[(self.n_sample) :]
-                    self.last_sample = self.last_sample[(self.n_sample * 2) :]
+        if self.n_sample is not None:
+            assert self.n_sample * 2 < len(self.last_sample)
+        if len(self.last_sample) < 3200:
+            # Audio too short.
+            if self.cut_audio or self.vad:
+                pass
+        else:
+            if self.cut_audio:
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.cut_audio = False
+                self.n_sample = None
+            elif self.vad:
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.vad = False
                 self.n_sample = None
 
-            self.cut_audio = False
-
+        numpy_data = np.frombuffer(self.last_sample, dtype=np.int16)
         self._write_to_wav(numpy_data)
 
     def _whisper_vad(self, audio_array: np.ndarray) -> bool:
@@ -318,6 +319,8 @@ class SpeechTranscriptionNode:
 
         accept_waveform = True
         if len(segments) > 1 and segments[-1]["text"] != "":
+            if self.verbose:
+                print("End of phrase detected.")
             last_segment = segments[-1]
             start_timestamp = last_segment["start"]
             self.n_sample = int(self.sample_rate * start_timestamp)
@@ -326,7 +329,7 @@ class SpeechTranscriptionNode:
             text = " ".join(
                 [segments[i]["text"].strip() for i in range(len(segments) - 1)]
             )
-        elif self.cut_audio:
+        elif self.vad:
             if self.verbose:
                 print("Long period of silence.")
             self.n_sample = audio_array.shape[0]
@@ -346,7 +349,7 @@ class SpeechTranscriptionNode:
         Process the audio data by Whisper and publish the transcription.
         """
         audio_array = WhisperLearner.load_audio(self.temp_file)
-        self.cut_audio = self._whisper_vad(audio_array)
+        self.vad = self._whisper_vad(audio_array)
         transcription_whisper = self.audio_model.infer(audio_array)
 
         vosk_transcription = self._postprocess_whisper(
@@ -387,28 +390,28 @@ class SpeechTranscriptionNode:
         rospy.spin()
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process some integers.")
+def main():
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--backbone",
         default="vosk",
-        help="Backbone to use for audio processing. Options: whisper, vosk",
-        choices=["whisper", "vosk"],
+        help="Backbone model for speech transcription. Options: vosk, whisper",
+        choices=["vosk", "whisper"],
     )
     parser.add_argument(
         "--model_name",
         default=None,
-        help="Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper,"
+        help="Specific model name for each backbone. Example: tiny, tiny.en, base, base.en for Whisper,"
         "vosk-model-small-en-us-0.15 for Vosk.",
     )
-    parser.add_argument("--model_path", default=None, help="Path to model files")
+    parser.add_argument("--model_path", default=None, help="Path to downloaded model files")
     parser.add_argument(
         "--download_dir", default=None, help="Directory to download models to"
     )
     parser.add_argument(
         "--language",
         default="en-us",
-        help="Language to use for audio processing. Example: 'en' for Whisper, 'en-us' for Vosk.",
+        help="Whisper uses the language parameter to avoid language detection, Vosk uses the language paramter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk.",
     )
     parser.add_argument(
         "--temperature", type=float, default=0, help="Temperature to use for whisper decoding."
@@ -533,3 +536,7 @@ if __name__ == "__main__":
         transcription_node.spin()
     except rospy.ROSInterruptException:
         pass 
+
+
+if __name__ == "__main__":
+    main()

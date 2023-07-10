@@ -952,7 +952,7 @@ The node makes use of the toolkit's speech transcription tools:
     ```
     The following optional arguments are available (More in the source code):
    - `-h or --help`: show a help message and exit
-   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio`)
    - `-o or --output_speech_transcription_topic OUTPUT_TRANSCRIPTION_TOPIC`: topic name for speech transcription output (default=`/opendr/speech_transcription`)
    - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--backbone {vosk,whisper}`: Backbone model for speech transcription

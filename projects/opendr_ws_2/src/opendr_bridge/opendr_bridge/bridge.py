@@ -736,7 +736,7 @@ class ROS2Bridge:
     def from_ros_transcription(self, ros_transcripton: OpenDRTranscription) -> VoskTranscription:
         """
         Converts an OpenDRTranscription object to a VoskTranscription object.
-        :param ros_transcripton: A ROS transcription message.
+        :param ros_transcripton: A ROS transcription message to be converted.
         :type ros_transcripton: OpenDRTranscription.
         :return: A Transcription object containing the same text as the input ROS object.
         :rtype: VoskTranscription.
@@ -748,8 +748,8 @@ class ROS2Bridge:
     
     def to_ros_transcription(self, transcription: VoskTranscription) -> OpenDRTranscription:
         """
-        Converts an VoskTranscription to an OpenDRTranscription object.
-        :param transcription: A VoskTranscription object.
+        Converts a VoskTranscription to an OpenDRTranscription object.
+        :param transcription: A VoskTranscription object to be converted.
         :type transcription: VoskTranscription.
         :return: An OpenDRTranscription object containing the same text as the input Transcription object.
         :rtype: OpenDRTranscription.

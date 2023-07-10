@@ -14,7 +14,7 @@
 
 # This message represents a full OpenDR human pose 3D as a list of keypoints
 
-# std_msgs/Header header
+std_msgs/Header header
 
 # Incremental recognition results
 string incremental
