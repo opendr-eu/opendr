@@ -308,7 +308,8 @@ class VoskLearner(Learner):
         return data
 
     def save(self):
-        return
+        """This method is not used in this implementation."""
+        raise NotImplementedError
 
     def reset(self):
         """
@@ -327,7 +328,8 @@ class VoskLearner(Learner):
         self.rec.Reset()
 
     def fit(self):
-        return
+        """This method is not used in this implementation."""
+        raise NotImplementedError
 
     def eval(self, dataset: DatasetIterator, save_path_csv: Optional[str] = None) -> Dict:
         """
@@ -380,4 +382,5 @@ class VoskLearner(Learner):
         raise NotImplementedError
 
     def _save_onnx(self):
-        return
+        """This method is not used in this implementation."""
+        raise NotImplementedError
