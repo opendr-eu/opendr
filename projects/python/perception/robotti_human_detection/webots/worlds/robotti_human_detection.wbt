@@ -263,7 +263,17 @@ Robotti {
   translation -21.0925 6.93132 0.03
   rotation -0.8849144806843816 -0.3985595870443581 -0.2409909074013416 0.0028107951406763526
   controller "<extern>"
+  cameraResolution 1024 1024
   supervisor TRUE
+  synchronization FALSE
+  window "robotti_window"
+  implementSlot [
+    Display {
+      name "recognition display"
+      width 512
+      height 512
+    }
+  ]
 }
 DEF ROBERT Robot {
   translation 2.58568 14.9503 0.01
