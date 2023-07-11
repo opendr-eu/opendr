@@ -1,6 +1,6 @@
 import sys
 
-from humand_detection_env import Env
+from human_detection_env import Env
 
 env = Env(args = sys.argv)
 
