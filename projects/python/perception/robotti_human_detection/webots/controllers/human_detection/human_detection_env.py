@@ -20,9 +20,8 @@ class Env(gym.Env, ABC):
 
     def __init__(self, args):
         super(Env, self).__init__()
-        
-        if '--cuda' in args:
-          self.cudaEnabled = True
+
+        self.cudaEnabled = '--cuda' in args
 
         self.robot = Supervisor()
         self.timestep = int(self.robot.getBasicTimeStep())
@@ -34,9 +33,7 @@ class Env(gym.Env, ABC):
         self.recognizer, self.detector = None, None
         self.gps = self.robot.getDevice("Hemisphere_v500")
         self.gps.enable(self.timestep)
-        self.compass = self.robot.getDevice("compass")
-        self.compass.enable(self.timestep)
-        
+ 
         self.left_motor_front = self.robot.getDevice("left_front_wheel_joint_motor")
         self.left_motor_rear = self.robot.getDevice("left_rear_wheel_joint_motor")
         self.right_motor_front = self.robot.getDevice("right_front_wheel_joint_motor")
@@ -151,7 +148,7 @@ class Env(gym.Env, ABC):
         classes = bounding_boxes[:, 5].astype(np.int)
         for idx, pred_box in enumerate(boxes):
             pred_box_w, pred_box_h = pred_box[2] - pred_box[0], pred_box[3] - pred_box[1]
-            if pred_box_w > 200 or pred_box_h > 200:
+            if pred_box_w > 200 or pred_box_h > 200 or pred_box[0] < 300 or pred_box[3] > 800:
                 continue
             valid = pred_box_w > 15 or pred_box_h > 15
             if valid:
