@@ -16,12 +16,9 @@ To run this simulation, you need to install:
 
 Then, you need to compile some libraries needed by the simulation, by running the following commands in a terminal:
 ```sh
-cd $OPENDR_HOME/projects/python/simulation/robotti_human_detection
 export WEBOTS_HOME=/path/to/webots/installation
 make
 ```
-
-
 
 ### Run the simulation
 
@@ -36,7 +33,7 @@ $WEBOTS_HOME/webots webots/worlds/robotti_human_detection.wbt
 Execute this command in a different terminal to start the controller program of the Robotti:
 ```sh
 export WEBOTS_HOME=/path/to/webots/installation
-$WEBOTS_HOME/webots-controller $OPENDR_HOME/projects/python/simulation/robotti_human_detection/controllers/human_detection/human_detection.py
+$WEBOTS_HOME/webots-controller webots/controllers/human_detection/human_detection.py
 ```
 
 By default the YOLOV5x is run on CPU.
@@ -45,11 +42,4 @@ If you want to use CUDA device, you can simply run this command instead of the p
 $WEBOTS_HOME/webots-controller $OPENDR_HOME/projects/python/simulation/robotti_human_detection/controllers/human_detection/human_detection.py --cuda
 ```
 
-The Robotti should now start to move and the camera images should appear in the robot window.
-
-### Expected results
-
-The Robotti should be able to detect the walking human when it comes close to the robot and stop.
-Robotti will start moving again when the human move away.
-
-
+The Robotti should now start to move and the display image with annotation of detected person should appear in the robot window.
