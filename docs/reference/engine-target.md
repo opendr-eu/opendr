@@ -342,8 +342,7 @@ The [WhisperTranscription](/src/opendr/engine/target.py#1175) class has the foll
 #### WhisperTranscription(text, segments)
   Construct a new `WhisperTranscription` object to store results from Whisper outputs.
   - *text* is expected to by a string.
-  - *segments* is a list of dictionary, each element of the list is a segment of the whole transcription text with
-  additional information.
+  - *segments* is a list of dictionary, each element of the list is a segment of the whole transcription text with additional information.
 
 
 ### class engine.target.VoskTranscription
