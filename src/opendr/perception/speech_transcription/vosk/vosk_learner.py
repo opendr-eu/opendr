@@ -376,7 +376,8 @@ class VoskLearner(Learner):
         return {"wer": wer}
 
     def optimize(self):
-        return
+        """This method is not used in this implementation."""
+        raise NotImplementedError
 
     def _save_onnx(self):
         return
