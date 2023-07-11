@@ -140,12 +140,14 @@ jobs:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
     steps:
+    - name: Free Disk Space
+      uses: jlumbroso/free-disk-space@v1.2.0
     - uses: actions/checkout@v3
       with:
         submodules: true
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v5.1
+      uses: tj-actions/branch-names@v7
     - name: Build image
       run: |
         docker build --no-cache --tag opendr/opendr-toolkit:cpu_test --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --build-arg ros_distro=noetic --file Dockerfile .
@@ -215,12 +217,13 @@ jobs:
         path: artifact
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v5.1
+      uses: tj-actions/branch-names@v7
     - name: Test Wheel
       run: |
         export OPENDR_HOME=$PWD
         export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
+        export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
         export ROS_DISTRO=noetic
 
         sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev python3-dev
@@ -237,9 +240,11 @@ jobs:
           if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
           if [ "$package" != "opendr" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
           fi
         done < packages.txt
+
+        cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -302,7 +307,7 @@ jobs:
         path: artifact
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v5.1
+      uses: tj-actions/branch-names@v7
     - name: Test Wheel Separate
       run: |
         export OPENDR_HOME=$PWD
@@ -323,27 +328,31 @@ jobs:
         if [ ! -z ${package[1]} ]; then package=${package[1]}; fi
 
         # all packages require the engine
-        python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
+        python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-engine-*.tar.gz
 
         # install specific package
         if [ ${{ matrix.package }} == "utils" ]; then
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
+          python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-hyperparameter-tuner-*.tar.gz
+          python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-ambiguity-measure-*.tar.gz
         else
           # install required dependencies for derived tools, we do so manually to ensure the local one is used
           if [ ${{ matrix.package }} == "perception/fall_detection" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/object_tracking_3d" ]; then
-            python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-object-detection-3d-*.tar.gz
           fi
 
           # install the package itself
-          python3 -m pip install ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+          python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-$package-*.tar.gz
+        fi
+
+        if [[ ${{ matrix.package }} == "perception/object_detection_2d/retinaface" ]]; then
+          cd src/opendr/perception/object_detection_2d/retinaface; make; cd $OPENDR_HOME
         fi
 
         # run the test
@@ -391,9 +400,11 @@ jobs:
           - control/mobile_manipulation
           - control/single_demo_grasp
           - planning/end_to_end_planning
-          - control/multi_object_search
+          # - control/multi_object_search # needs CUDA Docker container
     runs-on: ubuntu-20.04
     steps:
+    - name: Free Disk Space
+      uses: jlumbroso/free-disk-space@v1.2.0
     - name: Download artifact
       uses: actions/download-artifact@v2
       with:
