@@ -1,5 +1,5 @@
 /*
- * Copyright 1996-2023 Cyberbotics Ltd.
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "vector3.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "vector3.h"
 
 double wbu_vector3_length(WbuVector3 v) {
   return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);

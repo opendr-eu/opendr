@@ -1,5 +1,5 @@
 /*
- * Copyright 1996-2023 Cyberbotics Ltd.
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
+#include <webots/camera.h>
 #include <webots/plugins/robot_window/robot_wwi.h>
 #include <webots/robot.h>
 #include <webots/supervisor.h>
-#include <webots/robot.h>
-#include <webots/camera.h>
 
 #include <ctype.h>
 #include <stdio.h>
@@ -58,8 +57,7 @@ void wb_robot_window_step(int time_step) {
       // Add new obstacle
       char class[64], def_name[64];
       float x, y;
-      const int found =
-          sscanf(message, "add obstacle %s %s %f %f", class, def_name, &x, &y);
+      const int found = sscanf(message, "add obstacle %s %s %f %f", class, def_name, &x, &y);
       if (found != 2 && found != 4) {
         fprintf(stderr, "Invalid instructions to add obstacle.\n");
         continue;
@@ -80,15 +78,12 @@ void wb_robot_window_step(int time_step) {
       if (strcmp(class, "horse") == 0)
         strcpy(optional_parameters, "colorBody 0.388 0.271 0.173 ");
       class[0] = toupper(class[0]);
-      sprintf(new_node_string,
-              "DEF %s %s { translation %f %f 0.05 rotation 0 0 1 %f %s}",
-              def_name, class, x, y, angle, optional_parameters);
+      sprintf(new_node_string, "DEF %s %s { translation %f %f 0.05 rotation 0 0 1 %f %s}", def_name, class, x, y, angle,
+              optional_parameters);
       printf("Import '%s'.\n", new_node_string);
-      wb_supervisor_field_import_mf_node_from_string(root_children_field, -1,
-                                                     new_node_string);
+      wb_supervisor_field_import_mf_node_from_string(root_children_field, -1, new_node_string);
       printf("Added '%s' at position (%f, %f).\n", def_name, x, y);
-    } else if (strncmp(message, "remove obstacle", strlen("remove obstacle")) ==
-               0) {
+    } else if (strncmp(message, "remove obstacle", strlen("remove obstacle")) == 0) {
       char def_name[64];
       const int found = sscanf(message, "remove obstacle %s", def_name);
       if (found != 1) {

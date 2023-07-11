@@ -1,5 +1,5 @@
 /*
- * Copyright 1996-2023 Cyberbotics Ltd.
+ * Copyright 2020-2023 OpenDR European Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,11 @@ static void print_usage(const char *command) {
 
 int main(int argc, char **argv) {
   wb_robot_init();
-  
+
   WbFieldRef rotation_field = wb_supervisor_node_get_field(wb_supervisor_node_get_self(), "rotation");
   WbFieldRef children_field = wb_supervisor_node_get_field(wb_supervisor_node_get_self(), "children");
-  WbFieldRef translation_field = wb_supervisor_node_get_field(wb_supervisor_field_get_mf_node(children_field, 0), "translation");
-  //WbFieldRef translation_field = wb_supervisor_node_get_field(wb_supervisor_node_get_self(), "translation");
+  WbFieldRef translation_field =
+    wb_supervisor_node_get_field(wb_supervisor_field_get_mf_node(children_field, 0), "translation");
 
   char *skin_device_name = NULL;
   char *motion_file_path = NULL;
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
   double initial_translation[3];
   const double *it = wb_supervisor_field_get_sf_vec3f(translation_field);
   for (i = 0; i < 3; ++i)
-      initial_translation[i] = it[i];
+    initial_translation[i] = it[i];
   if (root_bone_index >= 0) {
     const double *current_root_position = wbu_bvh_get_root_translation(bvh_motion);
     // Use initial Skin position as zero reference position
@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
         const double *translation = wb_supervisor_field_get_sf_vec3f(translation_field);
         for (i = 0; i < 3; ++i)
           initial_translation[i] = translation[i];
-     }
+      }
       wbu_bvh_goto_frame(bvh_motion, 1);  // skip initial pose
     } else {
       int f = 4;
@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
         --f;
       }
     }
-    
+
     if (current_step > 500) {
       const double *rotation = wb_supervisor_field_get_sf_rotation(rotation_field);
       double new_rotation[4];

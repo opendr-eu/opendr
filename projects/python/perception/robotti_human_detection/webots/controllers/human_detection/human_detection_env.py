@@ -1,19 +1,31 @@
-from controller import Supervisor, Robot, Motor, Camera, Lidar, LidarPoint, GPS, CameraRecognitionObject
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-#import sys
+
+from controller import Supervisor
+
 import base64
-from typing import List
 
 from abc import ABC
 import numpy as np
 import gym
 
 from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
-from opendr.perception.object_detection_2d import draw_bounding_boxes
-from opendr.engine.target import BoundingBoxList
 from opendr.perception.object_detection_2d.datasets.transforms import BoundingBoxListToNumpyArray
 
 MAX_SPEED = 6.28
+
 
 class Env(gym.Env, ABC):
     metadata = {'render.modes': ['human']}
@@ -33,7 +45,7 @@ class Env(gym.Env, ABC):
         self.recognizer, self.detector = None, None
         self.gps = self.robot.getDevice("Hemisphere_v500")
         self.gps.enable(self.timestep)
- 
+
         self.left_motor_front = self.robot.getDevice("left_front_wheel_joint_motor")
         self.left_motor_rear = self.robot.getDevice("left_rear_wheel_joint_motor")
         self.right_motor_front = self.robot.getDevice("right_front_wheel_joint_motor")
@@ -42,7 +54,7 @@ class Env(gym.Env, ABC):
         self.left_motor_rear.setPosition(float('inf'))
         self.right_motor_front.setPosition(float('inf'))
         self.right_motor_rear.setPosition(float('inf'))
-        
+
         self.left_motors = [self.left_motor_front, self.left_motor_rear]
         self.right_motors = [self.right_motor_front, self.right_motor_rear]
         self.motors = self.left_motors + self.right_motors
@@ -78,7 +90,7 @@ class Env(gym.Env, ABC):
             reward = self.get_reward(action)
 
         obs = self.detect(obs)
-        
+
         if not self.isStopped:
             if self.move_action == 'forwards':
                 if self.gps.getValues()[0] > 2.5:
@@ -105,7 +117,7 @@ class Env(gym.Env, ABC):
                     elif self.compass.getValues()[1] < -0.999:
                         self.move_last_action = self.move_action
                         self.move_action = "forwards"
-                        self.forwards(0.2) 
+                        self.forwards(0.2)
                 elif self.move_action == 'turnRight':
                     if self.move_last_action != 'forwardsRight' and self.compass.getValues()[0] > 0.999:
                         self.move_last_action = self.move_action
@@ -133,7 +145,7 @@ class Env(gym.Env, ABC):
     def detect(self, img):
         if self.steps_from_detection < 10:
             self.steps_from_detection += 1
-            
+
         # clear previous annotations on display
         self.display.setAlpha(0)
         self.display.fillRectangle(0, 0, self.displaySize[0], self.displaySize[1])
@@ -173,7 +185,6 @@ class Env(gym.Env, ABC):
         elif not self.isStopped and self.steps_from_detection < 5:
             self.stop()
 
-
     def turn(self, direction):
         self.robot.wwiSendText('log:Turn ' + direction + '.')
         left_speed = -0.1 if direction == 'left' else 0.1
@@ -195,7 +206,7 @@ class Env(gym.Env, ABC):
         for motor in self.motors:
             self.previousVelocities.append(motor.getVelocity())
             motor.setVelocity(0)
-    
+
     def go(self):
         self.robot.wwiSendText('log:Go.')
         self.isStopped = False
@@ -203,7 +214,7 @@ class Env(gym.Env, ABC):
         for motor in self.motors:
             motor.setVelocity(self.previousVelocities[i])
             i += 1
-            
+
     def sendImage(self):
         self.display.imageSave(None, 'display.jpg')
         with open('display.jpg', 'rb') as f:
