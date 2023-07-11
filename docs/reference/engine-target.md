@@ -325,7 +325,7 @@ Bases: `engine.target.Target`
 
 This target is used for speech transcription problems. It contains the transcribed text.
 
-The [BaseTranscription](/src/opendr/engine/target.py#1132) class has the following public methods
+The [BaseTranscription](/src/opendr/engine/target.py#1132) class has the following public methods:
 
 #### BaseTranscription(text)
   Construct a new *BaseTranscription* object based on the given *text*.
