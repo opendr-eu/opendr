@@ -81,6 +81,8 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          - perception/speech_transcription/vosk
+          - perception/speech_transcription/whisper
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
@@ -193,6 +195,8 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          - perception/speech_transcription/vosk
+          - perception/speech_transcription/whisper
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
@@ -280,6 +284,8 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          - perception/speech_transcription/vosk
+          - perception/speech_transcription/whisper
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
@@ -385,6 +391,8 @@ jobs:
           - perception/object_detection_2d/yolov5
           - perception/object_detection_2d/retinaface
           - perception/object_detection_2d/nms
+          - perception/speech_transcription/vosk
+          - perception/speech_transcription/whisper
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
