@@ -14,7 +14,7 @@ The [WhisperLearner](/src/opendr/perception/speech_transcription/whisper/whisper
 #### `WhisperLearner` constructor
 
 ```python
-WhisperLearner(self, verbose, temperature, compression_ratio_threshold,logprob_threshold, 
+WhisperLearner(self, verbose, temperature, compression_ratio_threshold, logprob_threshold, 
                no_speech_threshold, condition_on_previous_tex, word_timestamps, prepend_punctuations,
                append_punctuations, language, sample_len, best_of, beam_size, patience, length_penalty,
                prompt, prefix, suppress_tokens, suppress_blank, without_timestamps, max_initial_timestamp, fp16, device)
