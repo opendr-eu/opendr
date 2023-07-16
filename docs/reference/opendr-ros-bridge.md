@@ -449,11 +449,11 @@ Parameters:
 ROSBridge.from_ros_transcription(self, ros_transcription)
 ```
 
-Converts an `OpenDRTranscription` object to a `VoskTranscription` object.
+Converts an `LiveSpeech` object to a `VoskTranscription` object.
 
 Parameters:
 
-- **ros_transcription**: *opendr_bridge.msg.OpenDRTranscription*\
+- **ros_transcription**: *hri_msgs.msg.LiveSpeech*\
  A ROS transcription message to be converted.
 
 
@@ -463,7 +463,7 @@ Parameters:
 ROSBridge.to_ros_transcription(self, transcription)
 ```
 
-Converts a `VoskTranscription` object to an `OpenDRTranscription` object.
+Converts a `VoskTranscription` object to an `LiveSpeech` object.
 
 Parameters:
 
@@ -481,7 +481,7 @@ Parameters:
 6. `vision_msgs.msg.Detection3DArray`  is used as an equivalent to `engine.target.BoundingBox3DList`.
 7. `sensor_msgs.msg.PointCloud`  is used as an equivalent to `engine.data.PointCloud`.
 8. `sensor_msgs.msg.PointCloud2`  is used as an equivalent to `engine.data.PointCloud`.
-9. `opendr_bridge.msg.OpenDRTranscription` is used as an equivalent to `engine.target.VoskTranscription`.
+9. `hri_msgs.msg.LiveSpeech` is used as an equivalent to `engine.target.VoskTranscription`.
 
 ## ROS services
 The following ROS services are implemented (`srv` folder):

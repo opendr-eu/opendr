@@ -31,7 +31,7 @@ import torch
 import rospy
 from std_msgs.msg import Float32
 from audio_common_msgs.msg import AudioData
-from opendr_bridge.msg import OpenDRTranscription
+from hri_msgs.msg import LiveSpeech
 
 from opendr.perception.speech_transcription import (
     WhisperLearner,
@@ -173,7 +173,7 @@ class SpeechTranscriptionNode:
 
         self.subscriber = rospy.Subscriber(input_audio_topic, AudioData, self.callback)
         self.publisher = rospy.Publisher(
-            output_transcription_topic, OpenDRTranscription, queue_size=10
+            output_transcription_topic, LiveSpeech, queue_size=10
         )
         if performance_topic is not None:
             self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)

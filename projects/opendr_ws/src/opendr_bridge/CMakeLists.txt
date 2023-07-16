@@ -19,7 +19,6 @@ add_message_files(
     FILES
     OpenDRPose2DKeypoint.msg
     OpenDRPose2D.msg
-    OpenDRTranscription.msg
 )
 
  add_service_files(

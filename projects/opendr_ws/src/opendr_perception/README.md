@@ -931,7 +931,15 @@ The node makes use of the toolkit's speech transcription tools:
 
 #### Instruction for basic usage:
 
-1. Start the node responsible for publishing audio. Remember to modify the input topics using the arguments in step 2, if needed.
+1. Start the node responsible for publishing audio, must be in wave format.  For example
+    
+    ```shell
+    roslaunch audio_capture capture_wave.launch
+    ```
+   Remember to modify the input topics using the arguments in step 2, if needed:
+    ```shell
+    roslaunch audio_play play.launch -t /audio/audio
+    ```
 
 2. You are then ready to start the speech transcription node
 
