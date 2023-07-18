@@ -61,7 +61,7 @@ class SpeechTranscriptionNode:
         model_path: Optional[str] = None,
         language: Optional[str] = None,
         download_dir: Optional[str] = None,
-        temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+        temperature: Union[float, Tuple[float, ...]] =(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
         logprob_threshold: Optional[float] = -0.8,
         no_speech_threshold: float = 0.6,
         phrase_timeout: float = 2,
@@ -79,7 +79,7 @@ class SpeechTranscriptionNode:
         :param backbone: Backbone to use for audio processing. Options: whisper, vosk.
         :type backbone: str
 
-        :param model_name: Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper, 
+        :param model_name: Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper,
         vosk-model-small-en-us-0.15 for Vosk.
         :type model_name: str
 
@@ -272,11 +272,11 @@ class SpeechTranscriptionNode:
                 pass
         else:
             if self.cut_audio:
-                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2):]
                 self.cut_audio = False
                 self.n_sample = None
             elif self.vad:
-                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2):]
                 self.vad = False
                 self.n_sample = None
 
@@ -293,12 +293,9 @@ class SpeechTranscriptionNode:
         """
         if audio_array.shape[0] > self.phrase_timeout * self.sample_rate:
             t = self.audio_model.infer(
-                audio_array[-int(self.phrase_timeout * self.sample_rate) :]
+                audio_array[-int(self.phrase_timeout * self.sample_rate):]
             )
-            if (
-                t.text == ""
-                or t.segments[-1]["no_speech_prob"] > self.no_speech_threshold
-            ):
+            if t.text == "" or t.segments[-1]["no_speech_prob"] > self.no_speech_threshold:
                 return True
 
         return False
@@ -411,7 +408,11 @@ def main():
     parser.add_argument(
         "--language",
         default="en-us",
-        help="Whisper uses the language parameter to avoid language detection, Vosk uses the language paramter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk.",
+        help=(
+            "Whisper uses the language parameter to avoid language detection, "
+            "Vosk uses the language parameter to select a specific model. "
+            "Example: 'en' for Whisper, 'en-us' for Vosk."
+        ),
     )
     parser.add_argument(
         "--temperature", type=float, default=0, help="Temperature to use for whisper decoding."

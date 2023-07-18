@@ -743,9 +743,9 @@ class ROS2Bridge:
         """
         accept_waveform = ros_transcripton.final != ""
         transcription = VoskTranscription(text=ros_transcripton.text, accept_waveform=accept_waveform)
-    
+
         return transcription
-    
+
     def to_ros_transcription(self, transcription: VoskTranscription) -> OpenDRTranscription:
         """
         Converts a VoskTranscription to an OpenDRTranscription object.

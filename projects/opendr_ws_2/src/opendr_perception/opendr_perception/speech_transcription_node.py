@@ -59,21 +59,21 @@ class SpeechTranscriptionNode(Node):
     def __init__(
         self,
         backbone: str,
-        model_name: Optional[str] = None,
-        model_path: Optional[str] = None,
-        language: Optional[str] = None,
-        download_dir: Optional[str] = None,
-        temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
-        logprob_threshold: Optional[float] = -0.8,
-        no_speech_threshold: float = 0.6,
-        phrase_timeout: float = 2,
-        input_audio_topic: str = "/audio/audio",
-        output_transcription_topic: str = "/opendr/speech_transcription",
-        performance_topic: Optional[str] = None,
-        verbose: bool = False,
-        device: str = "cuda",
-        sample_width: int = 2,
-        sample_rate: int = 16000,
+        model_name: Optional[str]=None,
+        model_path: Optional[str]=None,
+        language: Optional[str]=None,
+        download_dir: Optional[str]=None,
+        temperature: Union[float, Tuple[float, ...]]=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+        logprob_threshold: Optional[float]=-0.8,
+        no_speech_threshold: float=0.6,
+        phrase_timeout: float=2,
+        input_audio_topic: str="/audio/audio",
+        output_transcription_topic: str="/opendr/speech_transcription",
+        performance_topic: Optional[str]=None,
+        verbose: bool=False,
+        device: str="cuda",
+        sample_width: int=2,
+        sample_rate: int=16000,
     ):
         """
         Creates a ROS2 Node for speech transcription using Whisper or Vosk.
@@ -81,7 +81,7 @@ class SpeechTranscriptionNode(Node):
         :param backbone: Backbone to use for audio processing. Options: whisper, vosk.
         :type backbone: str
 
-        :param model_name: Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper, 
+        :param model_name: Model to use for audio processing. Options: tiny, tiny.en, base, base.en for Whisper,
         vosk-model-small-en-us-0.15 for Vosk.
         :type model_name: str
 
@@ -182,7 +182,6 @@ class SpeechTranscriptionNode(Node):
         else:
             self.performance_publisher = None
 
-
         self.bridge = ROS2Bridge()
 
         self.temp_file = NamedTemporaryFile().name
@@ -276,11 +275,11 @@ class SpeechTranscriptionNode(Node):
                 pass
         else:
             if self.cut_audio:
-                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2):]
                 self.cut_audio = False
                 self.n_sample = None
             elif self.vad:
-                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2) :]
+                self.last_sample = self.last_sample[((self.n_sample - 1600) * 2):]
                 self.vad = False
                 self.n_sample = None
 
@@ -297,12 +296,9 @@ class SpeechTranscriptionNode(Node):
         """
         if audio_array.shape[0] > self.phrase_timeout * self.sample_rate:
             t = self.audio_model.infer(
-                audio_array[-int(self.phrase_timeout * self.sample_rate) :]
+                audio_array[-int(self.phrase_timeout * self.sample_rate):]
             )
-            if (
-                t.text == ""
-                or t.segments[-1]["no_speech_prob"] > self.no_speech_threshold
-            ):
+            if t.text == "" or t.segments[-1]["no_speech_prob"] > self.no_speech_threshold
                 return True
 
         return False
@@ -414,7 +410,11 @@ def main(args=None):
     parser.add_argument(
         "--language",
         default="en-us",
-        help="Whisper uses the language parameter to avoid language detection, Vosk uses the language paramter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk.",
+        help=(
+            "Whisper uses the language parameter to avoid language detection, "
+            "Vosk uses the language parameter to select a specific model. "
+            "Example: 'en' for Whisper, 'en-us' for Vosk."
+        ),
     )
     parser.add_argument(
         "--temperature", type=float, default=0, help="Temperature to use for whisper decoding."
@@ -535,7 +535,7 @@ def main(args=None):
         sample_width=args.sample_width,
         sample_rate=sample_rate,
     )
-        
+
     rclpy.spin(transcription_node)
 
     transcription_node.destroy_node()

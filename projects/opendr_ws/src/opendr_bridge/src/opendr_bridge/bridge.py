@@ -770,9 +770,9 @@ class ROSBridge:
         """
         accept_waveform = ros_transcripton.final != ""
         transcription = VoskTranscription(text=ros_transcripton.text, accept_waveform=accept_waveform)
-    
+
         return transcription
-    
+
     def to_ros_transcription(self, transcription: VoskTranscription) -> LiveSpeech:
         """
         Converts a VoskTranscription object to an LiveSpeech object.
