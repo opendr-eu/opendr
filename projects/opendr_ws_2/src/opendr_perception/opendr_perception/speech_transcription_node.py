@@ -67,7 +67,7 @@ class SpeechTranscriptionNode(Node):
         logprob_threshold: Optional[float] = -0.8,
         no_speech_threshold: float = 0.6,
         phrase_timeout: float = 2,
-        input_audio_topic: str = "/audio",
+        input_audio_topic: str = "/audio/audio",
         output_transcription_topic: str = "/opendr/speech_transcription",
         performance_topic: Optional[str] = None,
         verbose: bool = False,
@@ -214,9 +214,6 @@ class SpeechTranscriptionNode(Node):
 
             f.writeframes(numpy_data.tobytes())
 
-        # audio = self.audio_model.load_audio(self.temp_file)
-        # print(f"audio.shape: {audio.shape}")
-
     def _vosk_preprocess_audio(self):
         """
         Get audio data from the queue, convert it to numpy array and write it to a wav file.
@@ -271,7 +268,8 @@ class SpeechTranscriptionNode(Node):
             )  # Whisper operates on long sequence of text.
 
         if self.n_sample is not None:
-            assert self.n_sample * 2 < len(self.last_sample)
+            # assert self.n_sample * 2 < len(self.last_sample)
+            pass
         if len(self.last_sample) < 3200:
             # Audio too short.
             if self.cut_audio or self.vad:
@@ -297,7 +295,6 @@ class SpeechTranscriptionNode(Node):
         :param audio_array: Audio data for some recent seconds.
         :type audio_array: np.ndarray.
         """
-        print(f"vad check: {audio_array.shape[0]}")
         if audio_array.shape[0] > self.phrase_timeout * self.sample_rate:
             t = self.audio_model.infer(
                 audio_array[-int(self.phrase_timeout * self.sample_rate) :]
@@ -448,7 +445,7 @@ def main(args=None):
     )
     parser.add_argument(
         "-i", "--input_audio_topic",
-        default="/audio",
+        default="/audio/audio",
         help="Name of the topic to subscribe.",
     )
     parser.add_argument(

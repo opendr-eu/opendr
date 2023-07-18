@@ -21,9 +21,9 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
     
     For basic usage and testing, the toolkit's ROS2 nodes that use audio as input are set up to expect input from a basic audio device using the default package `audio_common`  which is installed with OpenDR. You can run the audio node in a new terminal:
     ```shell
-    ros2 run audio_capture audio_capture_node
+    ros2 launch audio_capture capture_wave.launch.xml
     ```
-    By default, the audio capture node publishes audio data on `/audio` and the audio input nodes subscribe to this topic if not provided with an input topic argument. 
+    By default, the audio capture node publishes audio data on `/audio/audio` and the audio input nodes subscribe to this topic if not provided with an input topic argument. 
     As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing audio, **make sure to change the input topic accordingly.**
 
 ---
@@ -943,7 +943,10 @@ The node makes use of the toolkit's speech transcription tools:
 
 #### Instruction for basic usage:
 
-1. Start the node responsible for publishing audio. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
+1. Start the node responsible for publishing audio. The ROS2 node only work with audio data in WAVE format. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
+    ```shell
+    ros2 launch audio_capture capture_wave.launch.xml
+    ```
 
 2. You are then ready to start the speech transcription node
 
@@ -952,7 +955,7 @@ The node makes use of the toolkit's speech transcription tools:
     ```
     The following optional arguments are available (More in the source code):
    - `-h or --help`: show a help message and exit
-   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio`)
+   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
    - `-o or --output_speech_transcription_topic OUTPUT_TRANSCRIPTION_TOPIC`: topic name for speech transcription output (default=`/opendr/speech_transcription`)
    - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--backbone {vosk,whisper}`: Backbone model for speech transcription
