@@ -194,9 +194,7 @@ class VoskLearner(Learner):
         result_model = [
             model["name"]
             for model in response.json()
-            if model["lang"] == lang
-            and model["type"] == "small"
-            and model["obsolete"] == "false"
+            if model["lang"] == lang and model["type"] == "small" and model["obsolete"] == "false"
         ]
         if result_model == []:
             logger.info(f"lang {lang} does not exist")
@@ -259,7 +257,7 @@ class VoskLearner(Learner):
         Run inference on an audio sample. Please call the load() method before calling this method.
 
         Args:
-            audio (Union[Timeseries, np.ndarray, torch.Tensor, bytes]): The audio sample as a Timeseries, torch.Tensor, or 
+            audio (Union[Timeseries, np.ndarray, torch.Tensor, bytes]): The audio sample as a Timeseries, torch.Tensor, or
             np.ndarray or bytes.
 
         Returns:
@@ -346,7 +344,10 @@ class VoskLearner(Learner):
             AssertionError: If the model is not loaded.
         """
 
-        assert self.model is not None and self.rec is not None, "Model and KaldiRecognizer is not loaded. Please load a model before evaluating."
+        assert self.model is not None and self.rec is not None, (
+            "Model and KaldiRecognizer is not loaded. "
+            "Please load a model before evaluating."
+        )
 
         loader = DataLoader(
             dataset,

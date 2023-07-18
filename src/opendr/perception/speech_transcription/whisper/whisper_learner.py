@@ -81,7 +81,7 @@ class WhisperLearner(Learner):
             compression_ratio_threshold: Optional[float]
                 If the gzip compression ratio is above this value, treat as failed.
 
-            logprob_threshold: Optional[float] 
+            logprob_threshold: Optional[float]
                 If the average log probability over sampled tokens is below this value, treat as failed
 
             no_speech_threshold: Optional[float]
@@ -262,7 +262,7 @@ class WhisperLearner(Learner):
         Adapted from Whisper load_model method: https://github.com/openai/whisper/blob/main/whisper/__init__.py#L97
 
         Args:
-            name (str): name of model. 
+            name (str): name of model.
             download_dir (str, optional): directory to save the downloaded model. Defaults to "./".
         """
 
@@ -292,7 +292,7 @@ class WhisperLearner(Learner):
         Run inference on an audio sample. Please call the load() method before calling this method.
 
         Args:
-            audio (Union[Timeseries, np.ndarray, torch.Tensor, str]): The audio sample as a Timeseries, torch.Tensor, or 
+            audio (Union[Timeseries, np.ndarray, torch.Tensor, str]): The audio sample as a Timeseries, torch.Tensor, or
             np.ndarray or a string of file path.
 
         Returns:

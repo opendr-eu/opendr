@@ -1174,7 +1174,7 @@ class BaseTranscription(Target):
 
 class WhisperTranscription(BaseTranscription):
     """
-    This target stores transcription from Whisper outputs, transcription text and other side information such as segment, 
+    This target stores transcription from Whisper outputs, transcription text and other side information such as segment,
     timestamp, no speech probability, etc.
     """
 
@@ -1203,7 +1203,7 @@ class WhisperTranscription(BaseTranscription):
 
 class VoskTranscription(BaseTranscription):
     """
-    This target stores transcription from Vosk outputs, including, transcription text and information if a phrase was 
+    This target stores transcription from Vosk outputs, including, transcription text and information if a phrase was
     finised or not.
     """
 
@@ -1232,4 +1232,3 @@ class VoskTranscription(BaseTranscription):
             self._accept_waveform = accept_waveform
         else:
             raise ValueError("accept_waveform should be a boolean value.")
-
