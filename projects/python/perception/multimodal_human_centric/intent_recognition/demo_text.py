@@ -27,7 +27,7 @@ LABELS = [
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model_dir", help="Path to the directory where pretrained models are saved",\
+    parser.add_argument("--model_dir", help="Path to the directory where pretrained models are saved",
                         type=str, default="./pretrained_models")
     parser.add_argument("--text_backbone",
                         help="Text backbone: ['bert-base-uncased' | 'albert-base-v2' | \
