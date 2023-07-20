@@ -87,9 +87,9 @@ class IntentRecognitionNode(Node):
         # Initialize the learner
         self.learner = IntentRecognitionLearner(text_backbone=backbone, mode='language',
                                                 device=device, cache_path=cache_path)
-        if not os.path.exists('pretrained_models/{}.pth'.format(text_backbone)):
-            self.learner.download('pretrained_models/')
-        self.learner.load('pretrained_models/{}.pth'.format(text_backbone))
+        if not os.path.exists('{}/{}.pth'.format(cache_path, text_backbone)):
+            self.learner.download('{}/{}.pth'.format(cache_path, text_backbone))
+        self.learner.load('{}/{}.pth'.format(cache_path, text_backbone))
 
         self.last_phrase = ""
 
