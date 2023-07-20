@@ -23,7 +23,7 @@ from vision_msgs.msg import ObjectHypothesis
 from opendr_bridge import ROSBridge
 
 from opendr.perception.multimodal_human_centric import IntentRecognitionLearner
-from opendr_bridge.msg import OpenDRTranscription
+from hri_msgs.msg import LiveSpeech
 
 LABELS = [
             'Complain', 'Praise', 'Apologise', 'Thank', 'Criticize',
@@ -76,9 +76,9 @@ class IntentRecognitionNode:
         # Initialize the learner
         self.learner = IntentRecognitionLearner(text_backbone=backbone, mode='language',
                                                 device=device, cache_path=cache_path)
-        if not os.path.exists('pretrained_models/{}.pth'.format(text_backbone)):
-            self.learner.download('pretrained_models/')
-        self.learner.load('pretrained_models/{}.pth'.format(text_backbone))
+        if not os.path.exists('{}/{}.pth'.format(cache_path, text_backbone)):
+            self.learner.download('{}/{}.pth'.format(cache_path, text_backbone)
+        self.learner.load('pretrained_models/{}.pth'.format(cache_path, text_backbone))
         self.last_phrase = ""
 
     def listen(self):
@@ -86,7 +86,7 @@ class IntentRecognitionNode:
         Start the node and begin processing input data.
         """
         rospy.init_node('opendr_intent_recognition_nanodet_node', anonymous=True)
-        rospy.Subscriber(self.input_transcription_topic, OpenDRTranscription, self.callback, queue_size=1)
+        rospy.Subscriber(self.input_transcription_topic, LiveSpeech, self.callback, queue_size=1)
         rospy.loginfo("Intent recognition node started.")
         rospy.spin()
 
@@ -94,7 +94,7 @@ class IntentRecognitionNode:
         """
         Callback that processes the input data and publishes to the corresponding topics.
         :param data: input message
-        :type data: OpenDRTranscription
+        :type data: LiveSpeech
         """
         if self.performance_publisher:
             start_time = perf_counter()
@@ -122,7 +122,7 @@ class IntentRecognitionNode:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input_transcription_topic", help="Topic name for input OpenDRTranscription",
+    parser.add_argument("-i", "--input_transcription_topic", help="Topic name for input LiveSpeech",
                         type=str, default="/opendr/speech_transcription")
     parser.add_argument("-o", "--output_intent_topic", help="Topic name for output intents",
                         type=lambda value: value if value.lower() != "none" else None,
@@ -131,7 +131,7 @@ def main():
                         type=str, default=None)
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
 
-    parser.add_argument("--cache_path", help="Text backbone that will be used", type=str, default="./cache/")
+    parser.add_argument("--cache_path", help="Path for storing cache", type=str, default="./cache/")
 
     parser.add_argument("--text_backbone", help="Text backbone that will be used", type=str, default="bert-base-uncased",
                         choices=["bert-base-uncased", "albert-base-v2", "bert-small", "bert-mini", "bert-tiny"])

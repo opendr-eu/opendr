@@ -25,7 +25,7 @@ from vision_msgs.msg import ObjectHypothesis
 import os
 from opendr_bridge import ROS2Bridge
 from opendr.perception.multimodal_human_centric import IntentRecognitionLearner
-from opendr_bridge.msg import OpenDRTranscription
+from opendr_interface.msg import OpenDRTranscription
 
 LABELS = [
             'Complain', 'Praise', 'Apologise', 'Thank', 'Criticize',
@@ -162,7 +162,7 @@ def main():
 
     parser.add_argument(
         "--cache_path",
-        help="Text backbone that will be used",
+        help="Path for storing cache",
         type=str,
         default="./cache/")
     args = parser.parse_args()
