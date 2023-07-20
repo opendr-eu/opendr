@@ -89,7 +89,7 @@ def wait_for_start_command(learner, sample_rate):
         time.sleep(1)
 
 
-def get_intent_learner(text_backbone, device, cache_path):
+def get_intent_learner(text_backbone, device, cache_path, download_dir):
     if args.text_backbone == 'bert-small':
         text_backbone = 'prajjwal1/bert-small'
     elif args.text_backbone == 'bert-mini':
@@ -98,12 +98,16 @@ def get_intent_learner(text_backbone, device, cache_path):
         text_backbone = 'prajjwal1/bert-tiny'
     else:
         text_backbone = args.text_backbone
+
+    if not os.path.exists(download_dir):
+        os.makedirs(download_dir)
+
     learner = IntentRecognitionLearner(text_backbone=text_backbone, mode='language',
                                        device=device, log_path='logs', results_path='results',
                                        output_path='outputs', cache_path=cache_path)
-    if not os.path.exists('pretrained_models/{}.pth'.format(args.text_backbone)):
-        learner.download('pretrained_models/')
-    learner.load('pretrained_models/{}.pth'.format(args.text_backbone))
+    if not os.path.exists('{}/{}.pth'.format(download_dir, args.text_backbone)):
+        learner.download('{}/{}.pth'.format(download_dir, args.text_backbone))
+    learner.load('{}/{}.pth'.format(download_dir, args.text_backbone))
 
     return learner
 
@@ -128,7 +132,7 @@ def main(backbone, text_backbone, duration, interval, model_path, model_name, la
     else:
         raise ValueError("invalid backbone")
 
-    intent_learner = get_intent_learner(text_backbone, device, cache_path)
+    intent_learner = get_intent_learner(text_backbone, device, cache_path, download_dir)
 
     # Wait for the user to say "hi whisper" before starting the loop
     sample_rate = 16000
@@ -220,7 +224,7 @@ if __name__ == "__main__":
         text_backbone=args.text_backbone,
         duration=args.duration,
         interval=args.interval,
-        model_path=args.download_dir,
+        model_path=args.model_path,
         model_name=args.model_name,
         language=args.language,
         download_dir=args.download_dir,

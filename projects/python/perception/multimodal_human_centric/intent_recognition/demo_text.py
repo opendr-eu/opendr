@@ -27,12 +27,16 @@ LABELS = [
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model_dir", help="Path to the directory where pretrained models are saved", type=str, default="./pretrained_models")
     parser.add_argument("--text_backbone",
                         help="Text backbone: ['bert-base-uncased' | 'albert-base-v2' | \
                             'bert-small' | 'bert-mini' | 'bert-tiny']",
                         type=str, default="bert-base-uncased")
     parser.add_argument("--cache_path", help="Cache path for tokenizer files", type=str, default="cache")
     args = parser.parse_args()
+
+    if not os.path.exists(args.model_dir):
+        os.makedirs(args.model_dir)
 
     if args.text_backbone == 'bert-small':
         text_backbone = 'prajjwal1/bert-small'
@@ -49,9 +53,9 @@ if __name__ == '__main__':
                                        device=args.device, log_path='logs',
                                        cache_path=args.cache_path, results_path='result',
                                        output_path='outputs')
-    if not os.path.exists('pretrained_models/{}.pth'.format(args.text_backbone)):
-        learner.download('pretrained_models/')
-    learner.load('pretrained_models/{}.pth'.format(args.text_backbone))
+    if not os.path.exists('{}/{}.pth'.format(args.model_dir, args.text_backbone)):
+        learner.download('{}/{}.pth'.format(args.model_dir, args.text_backbone))
+    learner.load('{}/{}.pth'.format(args.model_dir, args.text_backbone))
 
     while True:
         raw_text = input('Enter text: ')
