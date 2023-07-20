@@ -746,6 +746,31 @@ The node makes use of the toolkit's video human activity recognition tools which
 
 You can find the corresponding IDs regarding activity recognition [here](https://github.com/opendr-eu/opendr/blob/master/src/opendr/perception/activity_recognition/datasets/kinetics400_classes.csv).
 
+### RGB Gesture Recognition ROS Node
+
+For gesture recognition, the ROS [node](./scripts/gesture_recognition_node.py) is based on the gesture recognition learner defined [here](../../../../src/opendr/perception/gesture_recognition/gesture_recognition_learner.py), and the documentation of the learner can be found [here](../../../../docs/reference/gesture-recognition-learner.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. Start the gesture recognition node:
+   ```shell
+   rosrun opendr_perception gesture_recognition_node.py
+   ```
+   The following arguments are available:
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_gesture_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/gestures`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--threshold THRESHOLD`: Confidence threshold for predictions (default=0.5)
+   - `--model MODEL`: Config file name of the model that will be used (default=`plus_m_1.5x_416)`
+
+3. Default output topics:
+   - Output images: `/opendr/image_gesture_annotated`
+   - Detection messages: `/opendr/gestures`
+
 ## RGB + Infrared input
 
 ### 2D Object Detection GEM ROS Node
