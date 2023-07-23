@@ -298,7 +298,7 @@ class SpeechTranscriptionNode(Node):
             t = self.audio_model.infer(
                 audio_array[-int(self.phrase_timeout * self.sample_rate):]
             )
-            if t.text == "" or t.segments[-1]["no_speech_prob"] > self.no_speech_threshold
+            if t.text == "" or t.segments[-1]["no_speech_prob"] > self.no_speech_threshold:
                 return True
 
         return False
@@ -454,8 +454,8 @@ def main(args=None):
         help="Name of the topic to publish.",
     )
     parser.add_argument(
-        "--performance_topic", 
-        type=str, 
+        "--performance_topic",
+        type=str,
         default=None,
         help="Topic name for performance messages, disabled (None) by default",
     )

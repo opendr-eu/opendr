@@ -16,7 +16,6 @@
 from typing import Callable
 import argparse
 import time
-from logging import getLogger
 
 import numpy as np
 import sounddevice as sd
@@ -25,8 +24,6 @@ from opendr.perception.speech_transcription import (
     WhisperLearner,
     VoskLearner,
 )
-
-logger = getLogger(__name__)
 
 
 def str2bool(v):
@@ -57,7 +54,7 @@ def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable):
     output = transcribe_function(audio_data)
     output = output.text
 
-    logger.info("Transcription: ", output)
+    print("Transcription: ", output)
 
     return output
 
@@ -66,10 +63,10 @@ def wait_for_start_command(learner, sample_rate):
     while True:
         audio_data = record_audio(1, sample_rate)
         transcription = learner.infer(audio_data).text.lower()
-        logger.info(f"User said: {transcription}")
+        print(f"User said: {transcription}")
 
         if "start" in transcription:
-            logger.info("Start command received. Starting transcribe.")
+            print("Start command received. Starting transcribe.")
             break
 
 
@@ -90,7 +87,7 @@ def main(
     else:
         raise ValueError("invalid backbone")
 
-    # Wait for the user to say "hi whisper" before starting the loop
+    # Wait for the user to say "start" before starting the loop
     sample_rate = 16000
     wait_for_start_command(learner, sample_rate)
 
@@ -98,17 +95,17 @@ def main(
         # Record the audio
         audio_data = record_audio(duration, sample_rate)
 
-        # Transcribe the recorded audio and check for the "bye whisper" command
+        # Transcribe the recorded audio and check for the "stop" command
         transcription = transcribe_audio(audio_data, learner.infer).lower()
 
         if "stop" in transcription:
-            logger.info("Stop command received. Exiting the program.")
+            print("Stop command received. Exiting the program.")
             break
 
         # Wait for `interval` seconds before starting the next recording
         time.sleep(interval)
 
-    logger.info("Finished transcribe.")
+    print("Finished transcribe.")
 
 
 if __name__ == "__main__":
@@ -142,16 +139,17 @@ if __name__ == "__main__":
         choices=["whisper", "vosk"],
     )
     parser.add_argument(
-        "--model-path",
+        "--model_path",
         type=str,
         help="path to the model files, if not given, the pretrained model will be downloaded",
         default=None,
     )
     parser.add_argument(
-        "--model-name",
+        "--model_name",
         type=str,
         help="Specific name for Whisper model",
-        choices=f"Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
+        choices="Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small',"
+        "'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
         default=None,
     )
     parser.add_argument(
@@ -160,7 +158,7 @@ if __name__ == "__main__":
         help="Language for the model",
     )
     parser.add_argument(
-        "--download-dir",
+        "--download_dir",
         type=str,
         help="Path to the directory where the model will be downloaded",
     )
@@ -170,7 +168,7 @@ if __name__ == "__main__":
         backbone=args.backbone,
         duration=args.duration,
         interval=args.interval,
-        model_path=args.download_dir,
+        model_path=args.model_path,
         model_name=args.model_name,
         language=args.language,
         download_dir=args.download_dir,

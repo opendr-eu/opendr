@@ -46,8 +46,8 @@ logger = getLogger(__name__)
 class VoskLearner(Learner):
     def __init__(
         self,
-        device: str = "cpu",
-        sample_rate: int = 16000,
+        device: str="cpu",
+        sample_rate: int=16000,
     ):
         """
         The VoskLearner class extends the base Learner class and incorporates the

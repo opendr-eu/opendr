@@ -57,21 +57,21 @@ class SpeechTranscriptionNode:
     def __init__(
         self,
         backbone: str,
-        model_name: Optional[str] = None,
-        model_path: Optional[str] = None,
-        language: Optional[str] = None,
-        download_dir: Optional[str] = None,
-        temperature: Union[float, Tuple[float, ...]] =(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
-        logprob_threshold: Optional[float] = -0.8,
-        no_speech_threshold: float = 0.6,
-        phrase_timeout: float = 2,
-        input_audio_topic: str = "/audio/audio",
-        output_transcription_topic: str = "/opendr/speech_transcription",
-        performance_topic: Optional[str] = None,
-        verbose: bool = False,
-        device: str = "cuda",
-        sample_width: int = 2,
-        sample_rate: int = 16000,
+        model_name: Optional[str]=None,
+        model_path: Optional[str]=None,
+        language: Optional[str]=None,
+        download_dir: Optional[str]=None,
+        temperature: Union[float, Tuple[float, ...]]=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+        logprob_threshold: Optional[float]=-0.8,
+        no_speech_threshold: float=0.6,
+        phrase_timeout: float=2,
+        input_audio_topic: str="/audio/audio",
+        output_transcription_topic: str="/opendr/speech_transcription",
+        performance_topic: Optional[str]=None,
+        verbose: bool=False,
+        device: str="cuda",
+        sample_width: int=2,
+        sample_rate: int=16000,
     ):
         """
         Creates a ROS Node for speech transcription using Whisper or Vosk.
@@ -452,8 +452,8 @@ def main():
         help="Name of the topic to publish.",
     )
     parser.add_argument(
-        "--performance_topic", 
-        type=str, 
+        "--performance_topic",
+        type=str,
         default=None,
         help="Topic name for performance messages, disabled (None) by default",
     )
@@ -536,7 +536,7 @@ def main():
         )
         transcription_node.spin()
     except rospy.ROSInterruptException:
-        pass 
+        pass
 
 
 if __name__ == "__main__":
