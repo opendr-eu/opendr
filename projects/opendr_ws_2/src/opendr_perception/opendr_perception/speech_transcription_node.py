@@ -267,12 +267,12 @@ class SpeechTranscriptionNode(Node):
             )  # Whisper operates on long sequence of text.
 
         if self.n_sample is not None:
-            # assert self.n_sample * 2 < len(self.last_sample)
-            pass
+            # The timestamp is not appropriate, longer than the audio.
+            if self.n_sample * 2 > len(self.last_sample):
+                pass
         if len(self.last_sample) < 3200:
             # Audio too short.
-            if self.cut_audio or self.vad:
-                pass
+            pass
         else:
             if self.cut_audio:
                 self.last_sample = self.last_sample[((self.n_sample - 1600) * 2):]

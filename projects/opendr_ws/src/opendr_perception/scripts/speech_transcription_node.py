@@ -207,8 +207,6 @@ class SpeechTranscriptionNode:
             f.setnchannels(1)
             f.setsampwidth(self.sample_width)
             f.setframerate(self.sample_rate)
-            # Convert audio data to numpy array
-
             f.writeframes(numpy_data.tobytes())
 
     def _vosk_preprocess_audio(self):
@@ -265,11 +263,12 @@ class SpeechTranscriptionNode:
             )  # Whisper operates on long sequence of text.
 
         if self.n_sample is not None:
-            assert self.n_sample * 2 < len(self.last_sample)
+            # The timestamp is not appropriate, longer than the audio.
+            if self.n_sample * 2 > len(self.last_sample):
+                pass
         if len(self.last_sample) < 3200:
             # Audio too short.
-            if self.cut_audio or self.vad:
-                pass
+            pass
         else:
             if self.cut_audio:
                 self.last_sample = self.last_sample[((self.n_sample - 1600) * 2):]

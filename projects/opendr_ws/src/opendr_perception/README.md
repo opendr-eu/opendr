@@ -944,7 +944,10 @@ The node makes use of the toolkit's speech transcription tools:
 2. You are then ready to start the speech transcription node
 
     ```shell
-    rosrun opendr_perception speech_transcription_node.py
+    rosrun opendr_perception speech_transcription_node.py --verbose True
+    ```
+    ```shell
+    rosrun opendr_perception speech_transcription_node.py --backbone whisper --model_name tiny.en --verbose True
     ```
     The following optional arguments are available (More in the source code):
    - `-h or --help`: show a help message and exit

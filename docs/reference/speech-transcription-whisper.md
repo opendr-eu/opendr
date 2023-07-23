@@ -6,7 +6,18 @@ The *whisper* module contains the *WhisperLearner* class, which inherits from th
 
 Bases: `engine.learners.Learner`
 
-The *WhisperLearner* class is a wrapper of Whisper libary [[1]](#openai/whisper-github) implementation. It is integrated for the speech transcription task.
+The *WhisperLearner* class is a wrapper of Whisper libary [[1]](#openai/whisper-github) implementation. The integration focus on the speech transcription task. Below are the names of available models and their approximate memory requirements and relative speed [[1]](openai/whisper-github).
+
+|  Size  | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
+|:------:|:----------:|:------------------:|:------------------:|:-------------:|:--------------:|
+|  tiny  |    39 M    |     `tiny.en`      |       `tiny`       |     ~1 GB     |      ~32x      |
+|  base  |    74 M    |     `base.en`      |       `base`       |     ~1 GB     |      ~16x      |
+| small  |   244 M    |     `small.en`     |      `small`       |     ~2 GB     |      ~6x       |
+| medium |   769 M    |    `medium.en`     |      `medium`      |     ~5 GB     |      ~2x       |
+| large  |   1550 M   |        N/A         |      `large`       |    ~10 GB     |       1x       |
+
+The `.en` models for English-only applications tend to perform better, especially for the `tiny.en` and `base.en` models. We observed that the difference becomes less significant for the `small.en` and `medium.en` models.
+
 
 
 The [WhisperLearner](/src/opendr/perception/speech_transcription/whisper/whisper_learner.py) class has the following public methods:
@@ -69,6 +80,9 @@ Constructor parameters:
   Whether to perform inference in fp16. fp16 is not available on CPU.
 - **device**: *str, default="cuda"*\
   Device to use for PyTorch inference, either "cpu" or "cuda".
+
+See [tokenizer.py](https://github.com/openai/whisper/blob/main/whisper/tokenizer.py) in [[1]](#openai/whisper-github) for all available languages. If the model name already includes `.en`, then the language will be `English`.
+
 
 #### `WhisperLearner.eval`
 
@@ -161,8 +175,8 @@ from opendr.perception.speech_transcription import WhisperLearner
 learner = WhisperLearner(language="en")
 learner.load(name="tiny.en")
 
-# Assuming you have recorded your own voice sample in video.wav in the current directory
-signal, sampling_rate = librosa.load("video.wav", sr=learner.sample_rate)
+# Assuming you have recorded your own voice sample in audio.wav in the current directory
+signal, sampling_rate = librosa.load("audio.wav", sr=learner.sample_rate)
 signal = np.expand_dims(signal, axis=0)
 timeseries = Timeseries(signal)
 result = learner.infer(timeseries)
