@@ -8,6 +8,6 @@ This folder contains an implementation of the FSeq2-NMS algorithm, for neural No
 
 
 TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
-| **Method ** |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Pre-processing IoU Threshold** | **AP@0.5 on validation set** | **AP@0.5 on test set** |
+| **Method**  |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Pre-processing IoU Threshold** | **AP@0.5 on validation set** | **AP@0.5 on test set** |
 |:-----------:|:----------------------:|:-----------:|:------------:|:-------------------------------:|:--------------------------------:|:----------------------------:|:----------------------:|
-|: Fseq2-NMS :|      fseq2_pets        |     PETS    |      SSD     |              PETS               |               0.8               |             XX.X%            |          XX.X%         |
+|  Fseq2-NMS  |      fseq2_pets        |     PETS    |      SSD     |              PETS               |               0.8               |             XX.X%            |          XX.X%         |
