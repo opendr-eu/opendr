@@ -111,6 +111,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/continual_slam/algorithm',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/algorithm',
             'src/opendr/perception/facial_expression_recognition/image_based_facial_emotion_estimation/algorithm',
+            'src/opendr/perception/gesture_recognition/algorithm',
             'projects/python/perception/facial_expression_recognition/image_based_facial_emotion_estimation',
             'projects/opendr_ws_2/src/opendr_perception/test',
             'projects/opendr_ws_2/src/opendr_ros2_bridge/test',

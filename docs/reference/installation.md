@@ -35,7 +35,7 @@ First, install the required dependencies:
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
-pip install wheel
+pip install wheel==0.38.4
 ```
 Then, you  install the Python API of the toolkit using pip:
 ```bash
@@ -57,8 +57,8 @@ For example, if you stick with the default PyTorch version (1.8) and use CUDA11.
 sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
 python3 -m venv venv
 source venv/bin/activate
-pip install wheel
-pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install wheel==0.38.4
+pip install torch==1.13.1+cu116 torchvision==0.14.1 torchaudio==0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install 'git+https://github.com/facebookresearch/detectron2.git'
 pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
@@ -106,14 +106,14 @@ Note that `opendr-toolkit` is actually just a metapackage that includes all the 
 ## CPU docker
 After installing [docker](https://docs.docker.com/engine/install/ubuntu/), you can directly run the OpenDR image as:
 ```bash
-sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v2.0.0
+sudo docker run -p 8888:8888 opendr/opendr-toolkit:cpu_v2.1.0
 ```
 The docker automatically runs a Jupyter notebook server that listens at port 8888.
 When launched, you can access the Jupyter notebook by following the link provided in the console, it should be similar to [http://127.0.0.1:8888/?token=TOKEN](http://127.0.0.1:8888/?token=TOKEN). In order to stop the container, please quit the Jupyter notebook.
 
 If you do not wish to use Jupyter, you can also experiment by starting an interactive session by running:
 ```bash
-sudo docker run -it opendr/opendr-toolkit:cpu_v2.0.0 /bin/bash
+sudo docker run -it opendr/opendr-toolkit:cpu_v2.1.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
@@ -122,18 +122,18 @@ source bin/activate.sh
 If you want to display GTK-based applications from the Docker container (e.g., visualize results using OpenCV `imshow()`), then you should mount the X server socket inside the container, e.g.,
 ```bash
 xhost +local:root
-sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v2.0.0 /bin/bash
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY opendr/opendr-toolkit:cpu_v2.1.0 /bin/bash
 ```
 
 ## GPU docker
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v2.0.0
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v2.1.0
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v2.0.0 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v2.1.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash

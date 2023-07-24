@@ -36,6 +36,7 @@ setup(
             'panoptic_segmentation_efficient_lps = opendr_perception.panoptic_segmentation_efficient_lps_node:main',
             'face_recognition = opendr_perception.face_recognition_node:main',
             'fall_detection = opendr_perception.fall_detection_node:main',
+            'wave_detection = opendr_perception.wave_detection_node:main',
             'point_cloud_dataset = opendr_perception.point_cloud_dataset_node:main',
             'point_cloud_2_publisher = opendr_perception.point_cloud_2_publisher_node:main',
             'image_dataset = opendr_perception.image_dataset_node:main',
@@ -58,6 +59,8 @@ setup(
             'continual_slam_dataset = opendr_perception.continual_slam_dataset_node:main',
             'continual_slam_predictor = opendr_perception.continual_slam_predictor_node:main',
             'continual_slam_learner = opendr_perception.continual_slam_learner_node:main',
+            'gesture_recognition = opendr_perception.gesture_recognition_node:main',
+            'performance = opendr_perception.performance_node:main',
         ],
     },
 )

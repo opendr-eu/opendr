@@ -16,10 +16,11 @@
 import argparse
 import torch
 import numpy as np
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROS2Bridge
@@ -35,7 +36,7 @@ class LandmarkFacialExpressionRecognitionNode(Node):
     def __init__(self, input_rgb_image_topic="image_raw",
                  output_category_topic="/opendr/landmark_expression_recognition",
                  output_category_description_topic="/opendr/landmark_expression_recognition_description",
-                 device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
+                 performance_topic=None, device="cpu", model='pstbln_afew', shape_predictor='./predictor_path'):
         """
         Creates a ROS2 Node for landmark-based facial expression recognition.
         :param input_rgb_image_topic: Topic from which we are reading the input image
@@ -69,6 +70,11 @@ class LandmarkFacialExpressionRecognitionNode(Node):
         else:
             self.string_publisher = None
 
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         self.bridge = ROS2Bridge()
 
         # Initialize the landmark-based facial expression recognition
@@ -98,7 +104,8 @@ class LandmarkFacialExpressionRecognitionNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8')
         landmarks = landmark_extractor(image, './landmarks.npy', self.shape_predictor)
@@ -111,6 +118,13 @@ class LandmarkFacialExpressionRecognitionNode(Node):
 
         # Run expression recognition
         category = self.expression_classifier.infer(muscle_data)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))
@@ -142,6 +156,8 @@ def main(args=None):
     parser.add_argument("-d", "--output_category_description_topic", help="Topic name for category description",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/landmark_expression_recognition_description")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model to use, either 'pstbln_ck+', 'pstbln_casia', 'pstbln_afew'",
@@ -168,6 +184,7 @@ def main(args=None):
             input_rgb_image_topic=args.input_rgb_image_topic,
             output_category_topic=args.output_category_topic,
             output_category_description_topic=args.output_category_description_topic,
+            performance_topic=args.performance_topic,
             device=device, model=args.model,
             shape_predictor=args.shape_predictor)
 
