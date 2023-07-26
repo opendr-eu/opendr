@@ -135,48 +135,6 @@ class DatasetProcessor(DataProcessor):
         return examples
 
 
-'''
-def convert_rawtext_to_features(text, max_seq_length, tokenizer):
-    words = text.split(' ')
-    print('words: ', words)
-    examples = []
-    while len(words) > max_seq_length - 2:
-        examples.append(' '.join([words[:max_seq_length-2]]))
-        words = words[max_seq_length-2:]
-        print('words it: ', words)
-    examples.append(' '.join(words))
-    print(examples)
-
-    features = []
-    for (ex_index, example) in enumerate(examples):
-        tokens_a = tokenizer.tokenize(example)
-        tokens = ["[CLS]"] + tokens_a + ["[SEP]"]
-        segment_ids = [0] * len(tokens)
-        segment_ids = [0] * len(tokens)
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
-        # The mask has 1 for real tokens and 0 for padding tokens. Only real
-        # tokens are attended to.
-        input_mask = [1] * len(input_ids)
-
-        # Zero-pad up to the sequence length.
-        padding = [0] * (max_seq_length - len(input_ids))
-        input_ids += padding
-        input_mask += padding
-        segment_ids += padding
-        print('tokens: ', tokens, 'input ids: ', input_ids)
-        assert len(input_ids) == max_seq_length
-        assert len(input_mask) == max_seq_length
-        assert len(segment_ids) == max_seq_length
-
-        features.append(
-            InputFeatures(input_ids=input_ids,
-                          input_mask=input_mask,
-                          segment_ids=segment_ids)
-                        )
-    return features
-'''
-
-
 def convert_rawtext_to_features(text, max_seq_length, tokenizer):
     features = []
     tokens_a = tokenizer.tokenize(text)
