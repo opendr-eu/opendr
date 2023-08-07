@@ -8,7 +8,7 @@ This folder contains an implementation of the FSeq2-NMS algorithm, for neural No
 
 
 TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
-| **Method**  |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Parameters** | **Pre-processing IoU Threshold** | **AP<sub>0.5</sub> val. set** | **AP<sub>0.5</sub><<sup>0.95</sup> val set** |**AP<sub>0.5</sub> test. set** | **AP<sub>0.5</sub><<sup>0.95</sup> test set** |
+| **Method**  |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Parameters** | **Pre-processing IoU Threshold** | **AP<sub>0.5</sub> val. set** | **AP<sub>0.5</sub><sup>0.95</sup> val set** |**AP<sub>0.5</sub> test. set** | **AP<sub>0.5</sub><sup>0.95</sup> test set** |
 |:-----------:|:----------------------:|:-----------:|:------------:|:-------------------------------:|:--------------:|:--------------------------------:|:------------------------------:|:--------------------------------------------:|:-----------------------------:|:---------------------------------------------:|
 |  Soft-NMS<sub>L</sub>  |   seq2seq_pets_ssd   |     PETS    |      SSD     |              PETS               |     nms_thres: 0.55     |               0.8               |             85.5%            |          XX.X%         |
 |  Seq2Seq-NMS  |   seq2seq_pets_ssd   |     PETS    |      SSD     |              PETS               |          ----           |               0.8               |             XX.X%            |          XX.X%         |
