@@ -47,7 +47,7 @@ class ClusterNMS(NMSCustom):
         self.post_k = post_k
         self.cross_class = cross_class
 
-    def set_nms_thresself, nms_thres=0.45):
+    def set_nms_thres(self, nms_thres=0.45):
         self.nms_thres = nms_thres
 
     def top_k(self, top_k=400):
