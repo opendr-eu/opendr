@@ -7,8 +7,11 @@ This folder contains an implementation of the FSeq2-NMS algorithm, for neural No
 - C. Symeonidis, I. Mademlis, I. Pitas and N. Nikolaidis, "[Neural Attention-Driven Non-Maximum Suppression for Person Detection](https://ieeexplore.ieee.org/abstract/document/10107719)" in IEEE Transactions on Image Processing, vol. 32, pp. 2454-2467, 2023, doi: 10.1109/TIP.2023.3268561.
 
 TABLE-1: Parameters of the performed benchmarking  
-|  **Dataset**   |   PETS  |
+
 |:-----------:|:----------------------:|
+|  **Dataset**   |   PETS  |
+
+
 TABLE-2: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
 | **Method**  |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Parameters** | **Pre-processing IoU Threshold** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
 |:-----------:|:----------------------:|:-----------:|:------------:|:-------------------------------:|:--------------:|:--------------------------------:|:------------------------------:|:--------------------------------------------:|:-----------------------------:|:---------------------------------------------:|
