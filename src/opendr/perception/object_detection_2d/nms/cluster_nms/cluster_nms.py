@@ -50,10 +50,10 @@ class ClusterNMS(NMSCustom):
     def set_nms_thres(self, nms_thres=0.45):
         self.nms_thres = nms_thres
 
-    def top_k(self, top_k=400):
+    def set_top_k(self, top_k=400):
         self.top_k = top_k
 
-    def post_k(self, post_k=100):
+    def set_post_k(self, post_k=100):
         self.post_k = post_k
 
     def set_type(self, nms_type=None):
