@@ -6,8 +6,10 @@ This folder contains an implementation of the FSeq2-NMS algorithm, for neural No
 - C. Symeonidis, I. Mademlis, I. Pitas and N. Nikolaidis, "[Efficient Feature Extraction for Non-Maximum Suppression in Visual Person Detection](https://ieeexplore.ieee.org/document/10095074)" in Proceedings of the IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2023, pp. 1-5, doi: 10.1109/ICASSP49357.2023.10095074.
 - C. Symeonidis, I. Mademlis, I. Pitas and N. Nikolaidis, "[Neural Attention-Driven Non-Maximum Suppression for Person Detection](https://ieeexplore.ieee.org/abstract/document/10107719)" in IEEE Transactions on Image Processing, vol. 32, pp. 2454-2467, 2023, doi: 10.1109/TIP.2023.3268561.
 
+TABLE-1: Parameters of the performed benchmarking  
+|  **Dataset**   |   PETS  |
 
-TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
+TABLE-2: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
 | **Method**  |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Parameters** | **Pre-processing IoU Threshold** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
 |:-----------:|:----------------------:|:-----------:|:------------:|:-------------------------------:|:--------------:|:--------------------------------:|:------------------------------:|:--------------------------------------------:|:-----------------------------:|:---------------------------------------------:|
 |         Fast-NMS           |         ----         |     PETS    |      SSD     |              PETS               |     nms_thres: 0.70     |           0.8           |             81.9%            |          34.9%         |             87.4%            |          37.0%         |
