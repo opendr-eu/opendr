@@ -10,7 +10,7 @@ TABLE-1: Average Precision (AP) achieved by pretrained models on the person dete
 |:----------------------:|:-----------:|:------------:|:-------------------------------:|:-------------------------------------:|:--------------------------------:|:----------------------------:|:----------------------:|
 |   seq2seq_pets_jpd_pets_fmod   |     PETS    |      JPD     |            PETS           |                  FMoD                 |                0.8               |             80.2%            |          84.3%         |
 |  seq2seq_pets_ssd_default_fmod |     PETS    |      SSD     |        WiderPerson        |                  FMoD                 |                0.8               |             77.4%            |          79.1%         |
-|  seq2seq_pets_ssd_default_fmod |     PETS    |      SSD     |            PETS           |                  FMoD                 |                0.8               |             87.8%            |          91.5%         |
+|  seq2seq_pets_ssd_pets_fmod    |     PETS    |      SSD     |            PETS           |                  FMoD                 |                0.8               |             87.8%            |          91.5%         |
 |  seq2seq_coco_frcn_coco_fmod   |     COCO    |     FRCN     |            COCO           |                  FMoD                 |                 -                |             68.1% \*         |        67.5% \*\*      |
 | seq2seq_coco_ssd_default_fmod  |     COCO    |      SSD     |        WiderPerson        |                  FMoD                 |                 -                |             41.8% \*         |        42.4% **        |
 
