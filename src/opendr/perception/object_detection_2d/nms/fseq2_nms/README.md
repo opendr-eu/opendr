@@ -15,15 +15,15 @@ TABLE-1: Parameters of the performed benchmarking
 | **Pre-processing IoU Threshold** | 0.8 |
 
 TABLE-2: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
-| **Method**  |  **model_name / nms_threshold**  | **Parameters** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
-|:-----------:|:----------------------:|:--------------:|:--------------------------------------:|:-----------------------------------------------------:|:----------------------------------:|:--------------------------------------------------:|
-|         Fast-NMS           |         ----         |     nms_thres: 0.70     |             81.9%            |          34.9%         |             87.4%            |          37.0%         |
-|    Soft-NMS<sub>L</sub>    |          ----        |     nms_thres: 0.55     |             85.5%            |          37.1%         |             90.4%            |          39.2%         |
-|    Soft-NMS<sub>G</sub>    |          ----        |     nms_thres: 0.90     |             84.2%            |          37.3%         |             90.0%            |          39.6%         |
-|        Cluster-NMS         |          ----        |     nms_thres: 0.60     |             84.6%            |          36.0%         |             90.2%            |          38.2%         |
-|  Cluster-NMS<sub>S</sub>   |          ----        |     nms_thres: 0.35     |             85.1%            |          37.1%         |             90.3%            |          39.0%         |
-|  Cluster-NMS<sub>D</sub>   |          ----        |     nms_thres: 0.55     |             84.8%            |          35.7%         |             90.5%            |          38.1%         |
-| Cluster-NMS<sub>S+D</sub>  |          ----        |     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
-| Cluster-NMS<sub>S+D+W</sub>|          ----        |     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
-|        Seq2Seq-NMS         |   seq2seq_pets_ssd   |          ----           |             87.8%            |          38.4%         |             91.2%            |          39.5%         |
-|        Fseq2-NMS           |    fseq2_pets_ssd    |          ----           |             87.8%            |          38.6%         |             91.5%            |          39.4%         |
+| **Method**  |  **model_name / nms_threshold**  | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
+|:-----------:|:--------------------------------:|:--------------------------------------:|:-----------------------------------------------------:|:----------------------------------:|:--------------------------------------------------:|
+|         Fast-NMS           |     nms_thres: 0.70     |             81.9%            |          34.9%         |             87.4%            |          37.0%         |
+|    Soft-NMS<sub>L</sub>    |     nms_thres: 0.55     |             85.5%            |          37.1%         |             90.4%            |          39.2%         |
+|    Soft-NMS<sub>G</sub>    |     nms_thres: 0.90     |             84.2%            |          37.3%         |             90.0%            |          39.6%         |
+|        Cluster-NMS         |     nms_thres: 0.60     |             84.6%            |          36.0%         |             90.2%            |          38.2%         |
+|  Cluster-NMS<sub>S</sub>   |     nms_thres: 0.35     |             85.1%            |          37.1%         |             90.3%            |          39.0%         |
+|  Cluster-NMS<sub>D</sub>   |     nms_thres: 0.55     |             84.8%            |          35.7%         |             90.5%            |          38.1%         |
+| Cluster-NMS<sub>S+D</sub>  |     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
+| Cluster-NMS<sub>S+D+W</sub>|     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
+|        Seq2Seq-NMS         | name: seq2seq_pets_ssd  |             87.8%            |          38.4%         |             91.2%            |          39.5%         |
+|        Fseq2-NMS           |  name: fseq2_pets_ssd   |             87.8%            |          38.6%         |             91.5%            |          39.4%         |
