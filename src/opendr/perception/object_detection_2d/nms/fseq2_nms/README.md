@@ -15,7 +15,7 @@ TABLE-1: Parameters of the performed benchmarking
 | **Pre-processing IoU Threshold** | 0.8 |
 
 TABLE-2: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
-| **Method**  |  **Pretrained Model**  | **Parameters** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
+| **Method**  |  **model / nms_thres**  | **Parameters** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
 |:-----------:|:----------------------:|:--------------:|:--------------------------------------:|:-----------------------------------------------------:|:----------------------------------:|:--------------------------------------------------:|
 |         Fast-NMS           |         ----         |     nms_thres: 0.70     |             81.9%            |          34.9%         |             87.4%            |          37.0%         |
 |    Soft-NMS<sub>L</sub>    |          ----        |     nms_thres: 0.55     |             85.5%            |          37.1%         |             90.4%            |          39.2%         |
