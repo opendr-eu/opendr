@@ -7,7 +7,7 @@ This folder contains an implementation of the Seq2Seq-NMS algorithm, for neural 
 
 TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task on the validation sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
 |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Type of Appearance-based Features** | **Pre-processing IoU Threshold** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub> on test set** |
-|:----------------------:|:-----------:|:------------:|:-------------------------------:|:-------------------------------------:|:--------------------------------:|:----------------------------:|:----------------------:|
+|:----------------------:|:-----------:|:------------:|:-------------------------------:|:-------------------------------------:|:--------------------------------:|:----------------------------:|:---------------------------:|
 |   seq2seq_pets_jpd_pets_fmod   |     PETS    |      JPD     |            PETS           |                  FMoD                 |                0.8               |             80.2%            |          84.3%         |
 |  seq2seq_pets_ssd_default_fmod |     PETS    |      SSD     |        WiderPerson        |                  FMoD                 |                0.8               |             77.4%            |          79.1%         |
 |  seq2seq_pets_ssd_pets_fmod    |     PETS    |      SSD     |            PETS           |                  FMoD                 |                0.8               |             87.8%            |          91.5%         |
