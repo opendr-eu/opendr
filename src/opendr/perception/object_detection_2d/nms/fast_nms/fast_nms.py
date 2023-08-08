@@ -35,15 +35,15 @@ import numpy as np
 
 
 class FastNMS(NMSCustom):
-    def __init__(self, cross_class=False, device='cuda', iou_thres=0.45, top_k=400, post_k=100):
+    def __init__(self, cross_class=False, device='cuda', nms_thres=0.45, top_k=400, post_k=100):
         self.device = device
-        self.iou_thres = iou_thres
+        self.nms_thres = nms_thres
         self.top_k = top_k
         self.post_k = post_k
         self.cross_class = cross_class
 
-    def set_iou_thres(self, iou_thres=0.45):
-        self.iou_thres = iou_thres
+    def set_nms_thres(self, nms_thres=0.45):
+        self.nms_thres = nms_thres
 
     def top_k(self, top_k=400):
         self.top_k = top_k
@@ -74,10 +74,10 @@ class FastNMS(NMSCustom):
 
         scores = torch.transpose(scores, dim0=1, dim1=0)
         if self.cross_class:
-            [boxes, classes, scores] = cc_fast_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+            [boxes, classes, scores] = cc_fast_nms(boxes=boxes, scores=scores, nms_thres=self.nms_thres,
                                                    top_k=self.top_k, post_k=self.post_k)
         else:
-            [boxes, classes, scores] = fast_nms(boxes=boxes, scores=scores, iou_thres=self.iou_thres,
+            [boxes, classes, scores] = fast_nms(boxes=boxes, scores=scores, nms_thres=self.nms_thres,
                                                 top_k=self.top_k, post_k=self.post_k)
 
         keep_ids = torch.where(scores > threshold)
@@ -96,7 +96,7 @@ class FastNMS(NMSCustom):
         return bounding_boxes, [boxes, classes, scores]
 
 
-def fast_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
+def fast_nms(boxes=None, scores=None, nms_thres=0.45, top_k=400, post_k=200):
     scores, idx = scores.sort(1, descending=True)
     boxes = boxes[idx, :]
 
@@ -110,7 +110,7 @@ def fast_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
     iou = jaccard(boxes, boxes).triu_(diagonal=1)
     iou_max, _ = iou.max(dim=1)
 
-    keep = (iou_max <= iou_thres)
+    keep = (iou_max <= nms_thres)
     keep *= (scores > 0.01)
     classes = torch.arange(num_classes, device=boxes.device)[:, None].expand_as(keep)
     classes = classes[keep]
@@ -127,7 +127,7 @@ def fast_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
     return boxes, classes, scores
 
 
-def cc_fast_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
+def cc_fast_nms(boxes=None, scores=None, nms_thres=0.45, top_k=400, post_k=200):
     scores, classes = scores.max(dim=0)
     _, idx = scores.sort(0, descending=True)
     idx = idx[:top_k]
@@ -137,7 +137,7 @@ def cc_fast_nms(boxes=None, scores=None, iou_thres=0.45, top_k=400, post_k=200):
     iou = jaccard(boxes, boxes).triu_(diagonal=1)
     maxA, _ = torch.max(iou, dim=0)
 
-    idx_out = torch.where(maxA > iou_thres)
+    idx_out = torch.where(maxA > nms_thres)
     scores[idx_out] = 0
     scores, idx = scores.sort(0, descending=True)
     idx = idx[:post_k]
