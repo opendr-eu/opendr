@@ -8,7 +8,6 @@ This folder contains an implementation of the FSeq2-NMS algorithm, for neural No
 
 TABLE-1: Parameters of the performed benchmarking  
 
-|  **Dataset**   |   PETS  |
 |:-----------:|:----------------------:|
 |  **Dataset**   |   PETS  |
 
