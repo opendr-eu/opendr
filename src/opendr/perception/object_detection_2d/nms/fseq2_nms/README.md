@@ -10,8 +10,9 @@ TABLE-1: Parameters of the performed benchmarking
 |||
 |:-----------:|:----------------------:|
 |  **Dataset**   |   PETS  |
-
-
+|  **Detector**  |   SSD   |
+| **Detector's training dataset** | PETS |
+| **Pre-processing IoU Threshold** | 0.8 |
 
 TABLE-2: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and test sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
 | **Method**  |  **Pretrained Model**  | **Dataset** | **Detector** | **Detector's training dataset** | **Parameters** | **Pre-processing IoU Threshold** | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
