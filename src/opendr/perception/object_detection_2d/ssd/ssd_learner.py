@@ -200,9 +200,9 @@ class SingleShotDetectorLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained":
-            path = os.path.join(path, "ssd_default_person")
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path_def = os.path.join(path, "ssd_default_person")
+            if not os.path.exists(path_def):
+                os.makedirs(path_def)
 
             if verbose:
                 print("Downloading pretrained model...")
@@ -212,7 +212,7 @@ class SingleShotDetectorLearner(Learner):
                                     "ssd_512_vgg16_atrous_wider_person.json")
             if verbose:
                 print("Downloading metadata...")
-            file_path = os.path.join(path, "ssd_default_person.json")
+            file_path = os.path.join(path_def, "ssd_default_person.json")
             if not os.path.exists(file_path):
                 urlretrieve(file_url, file_path)
 
@@ -221,7 +221,32 @@ class SingleShotDetectorLearner(Learner):
             file_url = os.path.join(url, "pretrained", "ssd_512_vgg16_atrous_wider_person",
                                     "ssd_512_vgg16_atrous_wider_person.params")
 
-            file_path = os.path.join(path, "ssd_512_vgg16_atrous_wider_person.params")
+            file_path = os.path.join(path_def, "ssd_512_vgg16_atrous_wider_person.params")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
+
+            path_pets = os.path.join(path, "ssd_512_vgg16_atrous_pets")
+            if not os.path.exists(path_pets):
+                os.makedirs(path_pets)
+
+            if verbose:
+                print("Downloading pretrained model...")
+
+            file_url = os.path.join(url, "pretrained",
+                                    "ssd_512_vgg16_atrous_pets",
+                                    "ssd_512_vgg16_atrous_pets.json")
+            if verbose:
+                print("Downloading metadata...")
+            file_path = os.path.join(path_pets, "ssd_512_vgg16_atrous_pets.json")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
+
+            if verbose:
+                print("Downloading params...")
+            file_url = os.path.join(url, "pretrained", "ssd_512_vgg16_atrous_pets",
+                                    "ssd_512_vgg16_atrous_pets.params")
+
+            file_path = os.path.join(path_pets, "ssd_512_vgg16_atrous_pets.params")
             if not os.path.exists(file_path):
                 urlretrieve(file_url, file_path)
 
