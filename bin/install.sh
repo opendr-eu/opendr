@@ -4,7 +4,7 @@ export PYTHONPATH=$OPENDR_HOME/src:$PYTHONPATH
 export PYTHON=python3
 export DISABLE_BCOLZ_AVX2=true
 
-pip3 install bcolz
+pip3 install bcolz-zipline
 exit 0
 if [[ -z "${OPENDR_DEVICE}" ]]; then
   echo "[INFO] Set available device to CPU. You can manually change this by running 'export OPENDR_DEVICE=gpu'."
