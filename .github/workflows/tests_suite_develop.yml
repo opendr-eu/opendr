@@ -43,7 +43,6 @@ jobs:
       run: |
         ${{ matrix.DEPENDENCIES_INSTALLATION }}
         export OPENDR_HOME=$PWD
-        export DISABLE_BCOLZ_AVX2=true
         export OPENDR_DEVICE=cpu
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
