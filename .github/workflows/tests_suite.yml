@@ -98,7 +98,6 @@ jobs:
         python-version: 3.8
     - name: Test Tools
       run: |
-        export DISABLE_BCOLZ_AVX2=true
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
         ./bin/install.sh
