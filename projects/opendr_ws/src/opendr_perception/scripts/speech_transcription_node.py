@@ -53,6 +53,8 @@ def optional_float(string):
     return None if string == "None" else float(string)
 
 
+
+
 class SpeechTranscriptionNode:
     def __init__(
         self,
@@ -140,7 +142,7 @@ class SpeechTranscriptionNode:
         self.sample_width = sample_width
         self.sample_rate = sample_rate
 
-        # Whisper parameters
+        # Whisper parameters.
         self.temperature = temperature
         self.logprob_threshold = logprob_threshold
         self.no_speech_threshold = no_speech_threshold
@@ -171,6 +173,11 @@ class SpeechTranscriptionNode:
                 download_dir=self.download_dir,
             )
 
+        # ROS topics parameters.
+        self.input_audio_topic = input_audio_topic
+        self.output_transcription_topic = output_transcription_topic
+        self.performance_topic = performance_topic
+
         self.subscriber = rospy.Subscriber(input_audio_topic, AudioData, self.callback)
         self.publisher = rospy.Publisher(
             output_transcription_topic, LiveSpeech, queue_size=10
@@ -182,15 +189,37 @@ class SpeechTranscriptionNode:
 
         self.bridge = ROSBridge()
 
+        # Parameters for processing audio.
         self.temp_file = NamedTemporaryFile().name
         self.last_sample = b""
         self.cut_audio = False
         self.n_sample = None
         self.vad = None
 
+        self.log_ros_info()
+
         # Start processing thread
         self.processing_thread = Thread(target=self.process_audio)
         self.processing_thread.start()
+
+    def log_ros_info(self):
+        """
+        Logs ROS node information.
+        """
+        rospy.loginfo("-------------------- ROS Node Information --------------------")
+        rospy.loginfo(f"ROS Node: opendr_transcription_node")
+        rospy.loginfo(f"Backbone Model: {self.backbone}")
+        rospy.loginfo(f"Model Name: {self.model_name}")
+        rospy.loginfo(f"Model Path: {self.model_path}")
+        rospy.loginfo(f"Language: {self.language}")
+        rospy.loginfo(f"Download Directory: {self.download_dir}")
+        rospy.loginfo(f"Device: {self.device}")
+        rospy.loginfo(f"Sample Width: {self.sample_width}")
+        rospy.loginfo(f"Sample Rate: {self.sample_rate}")
+        rospy.loginfo(f"Input Audio Topic: {self.input_audio_topic}")
+        rospy.loginfo(f"Output Transcription Topic: {self.output_transcription_topic}")
+        rospy.loginfo(f"Performance Topic: {self.performance_topic}")
+        rospy.loginfo("-------------------------------------------------------------\n")
 
     def callback(self, data):
         """
@@ -505,6 +534,14 @@ def main():
                     f"{args.model_name} is an English-only model but receipted language is '{args.language}';"
                     "using English instead."
                 )
+            args.language = "en"
+
+        if args.language == "en-us":
+            warnings.warn(
+                "The default language code is 'en-us' which is inteneded to use by Vosk. "
+                "The ROS node will automatically change it to 'en' when the backbone is Whisper. "
+                "Make sure you are using the appropriate language code for different backbones."
+            )
             args.language = "en"
 
     temperature = args.temperature

@@ -173,6 +173,11 @@ class SpeechTranscriptionNode(Node):
                 download_dir=self.download_dir,
             )
 
+        # ROS topics parameters.
+        self.input_audio_topic = input_audio_topic
+        self.output_transcription_topic = output_transcription_topic
+        self.performance_topic = performance_topic
+
         self.create_subscription(AudioData, input_audio_topic, self.callback, 1)
         self.publisher = self.create_publisher(
              OpenDRTranscription, output_transcription_topic, 1
@@ -184,15 +189,37 @@ class SpeechTranscriptionNode(Node):
 
         self.bridge = ROS2Bridge()
 
+        # Parameters for processing audio.
         self.temp_file = NamedTemporaryFile().name
         self.last_sample = b""
         self.cut_audio = False
         self.n_sample = None
         self.vad = None
 
+        self.log_ros2_info()
+
         # Start processing thread
         self.processing_thread = Thread(target=self.process_audio)
         self.processing_thread.start()
+        
+    def log_ros2_info(self):
+        """
+        Logs ROS2 node information.
+        """
+        self.get_logger().info("-------------------- ROS Node Information --------------------")
+        self.get_logger().info(f"ROS Node: opendr_transcription_node")
+        self.get_logger().info(f"Backbone Model: {self.backbone}")
+        self.get_logger().info(f"Model Name: {self.model_name}")
+        self.get_logger().info(f"Model Path: {self.model_path}")
+        self.get_logger().info(f"Language: {self.language}")
+        self.get_logger().info(f"Download Directory: {self.download_dir}")
+        self.get_logger().info(f"Device: {self.device}")
+        self.get_logger().info(f"Sample Width: {self.sample_width}")
+        self.get_logger().info(f"Sample Rate: {self.sample_rate}")
+        self.get_logger().info(f"Input Audio Topic: {self.input_audio_topic}")
+        self.get_logger().info(f"Output Transcription Topic: {self.output_transcription_topic}")
+        self.get_logger().info(f"Performance Topic: {self.performance_topic}")
+        self.get_logger().info("-------------------------------------------------------------\n")
 
     def callback(self, data):
         """
@@ -508,6 +535,14 @@ def main(args=None):
                     f"{args.model_name} is an English-only model but receipted language is '{args.language}';"
                     "using English instead."
                 )
+            args.language = "en"
+
+        if args.language == "en-us":
+            warnings.warn(
+                "The default language code is 'en-us' which is inteneded to use by Vosk. "
+                "The ROS2 node will automatically change it to 'en' when the backbone is Whisper. "
+                "Make sure you are using the appropriate language code for different backbones."
+            )
             args.language = "en"
 
     temperature = args.temperature
