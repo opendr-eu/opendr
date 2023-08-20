@@ -65,10 +65,10 @@ class FSeq2NMSLearner(Learner, NMSCustom):
 
     def fit(self, dataset, logging_path='', logging_flush_secs=30, silent=True,
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
-            use_ssd=True, lr_step=True):
+            use_ssd=True, ssd_model=None, lr_step=True):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split='train', use_ssd=use_ssd,
-                                  device=self.device, use_maps=True)
+                                  ssd_model=ssd_model, device=self.device, use_maps=True)
         if self.classes is None:
             self.classes = dataset_nms.classes
             self.class_ids = dataset_nms.class_ids
@@ -225,10 +225,10 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         return training_dict
 
     def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400, threshold=0.0,
-             datasets_folder='./datasets', use_ssd=True):
+             datasets_folder='./datasets', use_ssd=True, ssd_model=None):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd,
-                                  device=self.device, use_maps=True)
+                                  device=self.device, use_maps=True, ssd_model=ssd_model)
 
         if self.classes is None:
             self.classes = dataset_nms.classes
@@ -378,12 +378,6 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         except FileNotFoundError as e:
             e.strerror = "File " + pth_path + "not found."
             raise e
-        checkpoint['state_dict']['conv_1.weight'] = checkpoint['state_dict']['conv1_ssd.weight']
-        checkpoint['state_dict']['conv_1.bias'] = checkpoint['state_dict']['conv1_ssd.bias']
-        checkpoint['state_dict']['conv_2.weight'] = checkpoint['state_dict']['conv2_ssd.weight']
-        checkpoint['state_dict']['conv_2.bias'] = checkpoint['state_dict']['conv2_ssd.bias']
-        checkpoint['state_dict']['linear.weight'] = checkpoint['state_dict']['linear_ssd.weight']
-        checkpoint['state_dict']['linear.bias'] = checkpoint['state_dict']['linear_ssd.bias']
         self.assign_params(metadata=metadata, verbose=verbose)
         self.load_state(checkpoint)
         if verbose:
