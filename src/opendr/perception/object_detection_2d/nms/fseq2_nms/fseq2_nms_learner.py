@@ -441,10 +441,10 @@ class FSeq2NMSLearner(Learner, NMSCustom):
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
-    def download(self, path=None, model_name='fseq2seq_pets_ssd', verbose=False,
+    def download(self, path=None, model_name='fseq2seq_pets_ssd_pets', verbose=False,
                  url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
 
-        supported_pretrained_models = ["fseq2seq_pets_ssd", "fseq2seq_crowdhuman_ssd"]
+        supported_pretrained_models = ["fseq2seq_pets_ssd_pets", "fseq2seq_crowdhuman_ssd"]
 
         if model_name not in supported_pretrained_models:
             str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
