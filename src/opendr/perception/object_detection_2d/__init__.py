@@ -21,5 +21,5 @@ from opendr.perception.object_detection_2d.nms.fseq2_nms.fseq2_nms_learner impor
 
 __all__ = ['CenterNetDetectorLearner', 'DetrLearner', 'GemLearner', 'RetinaFaceLearner', 'SingleShotDetectorLearner',
            'YOLOv3DetectorLearner', 'NanodetLearner', 'WiderPersonDataset', 'WiderFaceDataset', 'transforms',
-           'draw_bounding_boxes', 'ClusterNMS', 'FastNMS', 'SoftNMS', 'Seq2SeqNMSLearner', 'FSeq2NMSLearner', 
+           'draw_bounding_boxes', 'ClusterNMS', 'FastNMS', 'SoftNMS', 'Seq2SeqNMSLearner', 'FSeq2NMSLearner',
            'YOLOv5DetectorLearner']
