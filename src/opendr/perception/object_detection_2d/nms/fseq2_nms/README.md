@@ -26,5 +26,5 @@ TABLE-2: Average Precision (AP) achieved by pretrained models on the person dete
 |  Cluster-NMS<sub>D</sub>   |     nms_thres: 0.55     |             84.8%            |          35.7%         |             90.5%            |          38.1%         |
 | Cluster-NMS<sub>S+D</sub>  |     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
 | Cluster-NMS<sub>S+D+W</sub>|     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
-|        Seq2Seq-NMS         | name: seq2seq_pets_ssd  |             87.8%            |          38.4%         |             91.2%            |          39.5%         |
-|        Fseq2-NMS           |  name: fseq2_pets_ssd   |             87.8%            |          38.6%         |             91.5%            |          39.4%         |
+|        Seq2Seq-NMS         | name: seq2seq_pets_ssd  |             87.8%            |          38.6%         |             91.2%            |          39.5%         |
+|        Fseq2-NMS           |  name: fseq2_pets_ssd   |             87.8%            |          38.4%         |             91.5%            |          39.4%         |
