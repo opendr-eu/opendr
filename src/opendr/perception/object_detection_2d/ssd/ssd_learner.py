@@ -623,6 +623,8 @@ class SingleShotDetectorLearner(Learner):
 
         if custom_nms:
             self._model.set_nms(nms_thresh=0.85, nms_topk=5000, post_nms=1000)
+            if custom_nms.__class__.__name__ == 'FSeq2NMSLearner':
+                extract_maps = True
         else:
             self._model.set_nms(nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms)
         if not isinstance(img, Image):
@@ -661,8 +663,14 @@ class SingleShotDetectorLearner(Learner):
         boxes[:, [0, 2]] *= width
         boxes[:, [1, 3]] *= height
 
+        maps_save = None
+        if extract_maps:
+            maps = self._model.features(x)
+            maps_save = maps[0][0].swapaxes(dim1=0, dim2=1).swapaxes(dim1=1, dim2=2).asnumpy().astype(dtype=np.float16)
+
         if custom_nms is not None:
-            bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=_img)
+                bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=_img,
+                                                       map=maps_save)
         else:
             bounding_boxes = BoundingBoxList([])
             for idx, box in enumerate(boxes):
@@ -673,8 +681,6 @@ class SingleShotDetectorLearner(Learner):
                                    score=scores[idx, :])
                 bounding_boxes.data.append(bbox)
         if extract_maps:
-            maps = self._model.features(x)
-            maps_save = maps[0][0].swapaxes(dim1=0, dim2=1).swapaxes(dim1=1, dim2=2).asnumpy().astype(dtype=np.float16)
             return bounding_boxes, maps_save
         return bounding_boxes
 
