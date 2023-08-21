@@ -31,7 +31,8 @@ import gc
 
 
 class Dataset_NMS(Dataset):
-    def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, ssd_model=None, device='cuda', use_maps=False):
+    def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, ssd_model=None, device='cuda',
+                 use_maps=False):
         super().__init__()
         available_dataset = ['COCO', 'PETS', 'TEST_MODULE']
         self.dataset_sets = {'train': None,
@@ -240,10 +241,11 @@ class Dataset_NMS(Dataset):
                         if use_maps:
                             filename_dir = os.path.dirname(filename_gt)
                             filename_f = os.path.splitext(os.path.basename(filename_gt))[0] + '.pkl'
-                            self.src_data[-1]['ssd_maps'] = os.path.join('maps', filename_dir, filename_f)
-                            if not os.path.exists(os.path.join(self.path, 'maps', filename_dir)):
-                                os.makedirs(os.path.join(self.path, 'maps', filename_dir))
-                            with open(os.path.join(self.path, 'maps', filename_dir, filename_f), 'wb') as handle:
+                            self.src_data[-1]['ssd_maps'] = os.path.join('maps_' + ssd_model, filename_dir, filename_f)
+                            if not os.path.exists(os.path.join(self.path, 'maps_' + ssd_model, filename_dir)):
+                                os.makedirs(os.path.join(self.path, 'maps_' + ssd_model, filename_dir))
+                            with open(os.path.join(self.path, 'maps_' + ssd_model, filename_dir, filename_f),
+                                      'wb') as handle:
                                 pickle.dump(maps, handle, protocol=pickle.DEFAULT_PROTOCOL)
                         current_id = current_id + 1
                         pbar.update(1)
@@ -371,7 +373,14 @@ class Dataset_NMS(Dataset):
                         'dt_boxes': [np.asarray([]), dt_boxes]
                     })
                     if use_maps:
-                        self.src_data[-1]['ssd_maps'] = os.path.join('maps', imgs_split, img_info["file_name"])
+                        self.src_data[-1]['ssd_maps'] = os.path.join('maps_' + ssd_model, imgs_split,
+                                                                     img_info["file_name"])
+                        if not os.path.exists(os.path.join(self.path, 'maps_' + ssd_model, imgs_split,
+                                                           img_info["file_name"])):
+                            os.makedirs(os.path.join(self.path, 'maps_' + ssd_model, imgs_split, img_info["file_name"]))
+                        with open(os.path.join(self.path, 'maps_' + ssd_model, imgs_split, img_info["file_name"]),
+                                  'wb') as handle:
+                            pickle.dump(maps, handle, protocol=pickle.DEFAULT_PROTOCOL)
                     pbar.update(1)
                 pbar.close()
                 if self.detector == 'SSD':
@@ -394,8 +403,8 @@ class Dataset_NMS(Dataset):
             pkl_filename = os.path.join(self.path, 'test_module.pkl')
             if not os.path.exists(pkl_filename):
                 data_url = OPENDR_SERVER_URL + '/perception/object_detection_2d/nms/datasets/test_module.zip'
-                self.download(data_url, download_path=os.path.join(self.path).replace("TEST_MODULE", ""), file_format="zip",
-                              create_dir=True)
+                self.download(data_url, download_path=os.path.join(self.path).replace("TEST_MODULE", ""),
+                              file_format="zip", create_dir=True)
             with open(pkl_filename, 'rb') as fp_pkl:
                 self.src_data = pickle.load(fp_pkl)
             self.classes = ['background', 'person']
