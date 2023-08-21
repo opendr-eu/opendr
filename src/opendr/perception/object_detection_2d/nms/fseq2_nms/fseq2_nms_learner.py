@@ -123,7 +123,10 @@ class FSeq2NMSLearner(Learner, NMSCustom):
                 pbar = tqdm(desc=pbarDesc, total=len(train_ids))
             np.random.shuffle(train_ids)
             for sample_id in train_ids:
-
+                maps_fln = dataset_nms.src_data[sample_id]['ssd_maps']
+                with open(os.path.join(datasets_folder, dataset, maps_fln), 'rb') as f:
+                    map = pickle.load(f)
+                map = torch.tensor(map).to(self.device)
                 if self.log_after != 0 and num_iter > 0 and num_iter % self.log_after == 0:
                     if logging:
                         file_writer.add_scalar(tag="cross_entropy_loss",
@@ -176,7 +179,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
                 q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
                                                                             resolution=img_res)
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
-                                   maps=map)
+                                   maps=map, img_res=img_res, boxes=dt_boxes)
                 preds = torch.clamp(preds, 0.001, 1 - 0.001)
 
                 labels = det_matching(scores=preds, dt_boxes=dt_boxes, gt_boxes=gt_boxes,
@@ -465,7 +468,8 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         except:
             raise UserWarning('Pretrained model not found on server.')
 
-    def infer(self, boxes=None, scores=None, boxes_sorted=False, max_dt_boxes=400, img_res=None, threshold=0.1):
+    def infer(self, map=None, boxes=None, scores=None, boxes_sorted=False, max_dt_boxes=400, img_res=None,
+              threshold=0.1):
         bounding_boxes = BoundingBoxList([])
         if scores.shape[0] == 0:
             return bounding_boxes
@@ -495,7 +499,6 @@ class FSeq2NMSLearner(Learner, NMSCustom):
 
         boxes = boxes[:max_dt_boxes]
         scores = scores[:max_dt_boxes]
-        app_feats = None
 
         msk = self.compute_mask(boxes, iou_thres=0.2, extra=0.1)
         q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=boxes, scores=scores,
@@ -503,7 +506,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
 
         with torch.no_grad():
             preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
-                               app_feats=app_feats)
+                               maps=map, img_res=img_res, boxes=boxes)
 
         mask = torch.where(preds > threshold)[0]
         if mask.size == 0:
@@ -584,7 +587,8 @@ class FSeq2NMSLearner(Learner, NMSCustom):
 
         ious = 5 * (bb_intersection_over_union(boxes.unsqueeze(1).repeat(1, boxes.shape[0], 1),
                                                boxes.clone().unsqueeze(0).repeat(boxes.shape[0], 1, 1))).unsqueeze(-1)
-        enc_vers_all = torch.cat((dx, dy, dxy, sx_1, sx_2, sy_1, sy_2, ious, scl_1, scl_2, scr_1, scr_2, sr_1, sr_2),
+        enc_vers_all = torch.cat((dx, dy, dxy, sx_1, sx_2, sy_1, sy_2, ious, scl_1, scl_2, scr_1, scr_2, sr_1,
+                                  sr_2),
                                  dim=2)
         enc_vers = enc_vers_all.diagonal(dim1=0, dim2=1).transpose(0, 1).unsqueeze(1)
         return enc_vers, enc_vers_all
