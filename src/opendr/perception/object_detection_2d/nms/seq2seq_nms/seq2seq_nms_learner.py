@@ -103,10 +103,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
     def fit(self, dataset, logging_path='', logging_flush_secs=30, silent=True,
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
-            use_ssd=False, lr_step=True):
+            use_ssd=False, ssd_model=None, lr_step=True):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split='train', use_ssd=use_ssd,
-                                  device=self.device)
+                                  ssd_model=ssd_model, device=self.device)
         if self.classes is None:
             self.classes = dataset_nms.classes
             self.class_ids = dataset_nms.class_ids
@@ -147,7 +147,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if lr_step and self.epochs > 1:
             drop_after_epoch = [int(self.epochs * 0.5)]
             if self.epochs > 3:
-                drop_after_epoch.append(int(self.epochs * 0.7))
+                drop_after_epoch.append(int(self.epochs * 0.9))
 
         train_ids = np.arange(len(dataset_nms.src_data))
         total_loss_iter = 0
@@ -173,12 +173,12 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 if self.log_after != 0 and num_iter > 0 and num_iter % self.log_after == 0:
                     if logging:
                         file_writer.add_scalar(tag="cross_entropy_loss",
-                                               scalar_value=total_loss_iter/self.log_after,
+                                               scalar_value=total_loss_iter / self.log_after,
                                                global_step=num_iter)
                     if verbose:
                         print(''.join(['\nEpoch: {}',
                                        ' Iter: {}, cross_entropy_loss: {}']).format(epoch, num_iter,
-                                                                                    total_loss_iter/self.log_after))
+                                                                                    total_loss_iter / self.log_after))
                     total_loss_iter = 0
 
                 image_fln = dataset_nms.src_data[sample_id]['filename']
@@ -271,8 +271,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             if verbose:
                 print(''.join(['\nEpoch: {}',
                                ' cross_entropy_loss: {}\n']).format(epoch,
-                                                                    total_loss_epoch/len(train_ids)))
-            training_dict['cross_entropy_loss'].append(total_loss_epoch/len(train_ids))
+                                                                    total_loss_epoch / len(train_ids)))
+            training_dict['cross_entropy_loss'].append(total_loss_epoch / len(train_ids))
             if self.checkpoint_after_iter != 0 and epoch % self.checkpoint_after_iter == self.checkpoint_after_iter - 1:
                 snapshot_name = '{}/checkpoint_epoch_{}'.format(checkpoints_folder, epoch)
                 self.save(path=snapshot_name, optimizer=optimizer, scheduler=scheduler,
@@ -288,10 +288,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         return training_dict
 
     def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400, threshold=0.0,
-             datasets_folder='./datasets', use_ssd=False):
+             datasets_folder='./datasets', use_ssd=False, ssd_model=None):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd,
-                                  device=self.device)
+                                  ssd_model=ssd_model, device=self.device)
 
         if self.classes is None:
             self.classes = dataset_nms.classes
@@ -579,8 +579,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
     def download(self, path=None, model_name='seq2seq_pets_jpd_fmod', verbose=False,
                  url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
 
-        supported_pretrained_models = ["seq2seq_pets_jpd_fmod", "seq2seq_pets_ssd_fmod",
-                                       "seq2seq_coco_frcn_fmod", "seq2seq_coco_ssd_fmod"]
+        supported_pretrained_models = ['seq2seq_pets_jpd_pets_fmod', 'seq2seq_pets_ssd_wider_person_fmod',
+                                       'seq2seq_pets_ssd_pets_fmod', 'seq2seq_coco_frcn_coco_fmod',
+                                       'seq2seq_coco_ssd_coco_wider_person_fmod']
 
         if model_name not in supported_pretrained_models:
             str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
@@ -680,7 +681,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2):
+    def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2, map=None):
 
         if self.app_feats == 'fmod':
             if not isinstance(img, Image):
