@@ -23,27 +23,34 @@ parser.add_argument("--app_feats", help="Type of appearance-based features", typ
 parser.add_argument("--fmod_type", help="Type of fmod maps", type=str, default="EDGEMAP",
                     choices=["EDGEMAP", "FAST", "AKAZE", "BRISK", "ORB"])
 parser.add_argument("--iou_filtering", help="Pre-processing IoU threshold", type=float, default=1.0)
-parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str, default='seq2seq_pets_jpd_fmod',
+parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
+                    choices=["cuda", "cpu"])
+parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str,
+                    default='seq2seq_pets_jpd_fmod',
                     choices=['seq2seq_pets_jpd'])
 parser.add_argument("--split", help="The split of the corresponding dataset", type=str, default='test',
                     choices=["test", "val", "train"])
-parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to Seq2Seq-NMS", type=int, default=600)
-parser.add_argument("--dataset", help="Dataset to train on", type=str, default="PETS", choices=["PETS", "COCO",
-                                                                                                "TEST_MODULE"])
+parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to Seq2Seq-NMS",
+                    type=int, default=600)
+parser.add_argument("--dataset", help="Dataset to train on", type=str,
+                    default="PETS", choices=["PETS", "COCO", "TEST_MODULE"])
+parser.add_argument("--ssd_model", help="SSD model used for feeding RoIS to the NMS procedure", type=str,
+                    default='ssd_512_vgg16_atrous_pets', choices=['ssd_512_vgg16_atrous_pets', 'ssd_default_person'])
 parser.add_argument("--data_root", help="Dataset root folder", type=str,
                     default=os.path.join(OPENDR_HOME,
                                          'projects/python/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
 parser.add_argument("--use_ssd", help="Train using SSD as detector", type=bool, default=False)
-parser.add_argument("--post_thres", help="Confidence threshold, used for RoI selection after seq2seq-nms rescoring",
+parser.add_argument("--post_thres",
+                    help="Confidence threshold, used for RoI selection after seq2seq-nms rescoring",
                     type=float, default=0.0)
-
+parser.add_argument("--tmp_path", help="Temporary path for saving output data", type=str,
+                    default=os.path.join(OPENDR_HOME,
+                                         'projects/python/perception/object_detection_2d/nms/seq2seq2_nms/tmp'))
 args = parser.parse_args()
-tmp_path = os.path.join(OPENDR_HOME, 'projects/python/perception/object_detection_2d/nms/seq2seq-nms/tmp')
 seq2SeqNMSLearner = Seq2SeqNMSLearner(device=args.device, app_feats=args.app_feats, fmod_map_type=args.fmod_type,
                                       iou_filtering=args.iou_filtering,
-                                      temp_path=tmp_path)
-seq2SeqNMSLearner.download(model_name=args.pretrained_model, path=tmp_path)
-seq2SeqNMSLearner.load(os.path.join(tmp_path, args.pretrained_model), verbose=True)
-seq2SeqNMSLearner.eval(dataset=args.dataset, use_ssd=args.use_ssd, split=args.split, max_dt_boxes=args.max_dt_boxes,
-                       datasets_folder=args.data_root, threshold=args.post_thres)
+                                      temp_path=args.tmp_path)
+seq2SeqNMSLearner.download(model_name=args.pretrained_model, path=args.tmp_path)
+seq2SeqNMSLearner.load(os.path.join(args.tmp_path, args.pretrained_model), verbose=True)
+seq2SeqNMSLearner.eval(dataset=args.dataset, use_ssd=args.use_ssd, ssd_model=args.ssd_model, split=args.split,
+                       max_dt_boxes=args.max_dt_boxes, datasets_folder=args.data_root, threshold=args.post_thres)
