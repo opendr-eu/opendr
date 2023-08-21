@@ -340,10 +340,9 @@ class FSeq2NMSLearner(Learner, NMSCustom):
 
         metadata = {"model_paths": [fname + '.pth'], "framework": "pytorch", "has_data": False,
                     "inference_params": {}, "optimized": False, "optimizer_info": {}, "backbone": {},
-                    "format": "pth", "classes": self.classes, "app_feats": self.app_feats,
-                    "lq_dim": self.lq_dim, "sq_dim": self.sq_dim, "num_JPUs": self.num_JPUs,
-                    "geom_input_dim": self.geom_input_dim, "app_input_dim": self.app_input_dim,
-                    "max_dt_boxes": max_dt_boxes}
+                    "format": "pth", "classes": self.classes, "lq_dim": self.lq_dim, "sq_dim": self.sq_dim,
+                    "num_JPUs": self.num_JPUs, "geom_input_dim": self.geom_input_dim,
+                    "app_input_dim": self.app_input_dim, "max_dt_boxes": max_dt_boxes}
 
         with open(path + '.json', 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
