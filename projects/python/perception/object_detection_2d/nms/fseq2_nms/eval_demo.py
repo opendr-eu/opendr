@@ -24,17 +24,17 @@ parser.add_argument("--pretrained_model", help="Name of pretrained model", type=
                     default='fseq2_pets_ssd_pets', choices=['fseq2_pets_ssd'])
 parser.add_argument("--split", help="The split of the corresponding dataset", type=str, default='test',
                     choices=["test", "val", "train"])
-parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to FSeq2-NMS", type=int, 
+parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to FSeq2-NMS", type=int,
                     default=800)
-parser.add_argument("--dataset", help="Dataset to train on", type=str, default="PETS", 
+parser.add_argument("--dataset", help="Dataset to train on", type=str, default="PETS",
                     choices=["PETS", "TEST_MODULE"])
 parser.add_argument("--ssd_model", help="SSD model used for feeding RoIS to the NMS procedure", type=str,
                     default='ssd_512_vgg16_atrous_pets', choices=['ssd_512_vgg16_atrous_pets', 'ssd_default_person'])
 parser.add_argument("--data_root", help="Dataset root folder", type=str,
                     default=os.path.join(OPENDR_HOME,
                                          'projects/python/perception/object_detection_2d/nms/datasets'))
-parser.add_argument("--post_thres", 
-                    help="Confidence threshold, used for RoI selection after FSeq2-NMS rescoring", 
+parser.add_argument("--post_thres",
+                    help="Confidence threshold, used for RoI selection after FSeq2-NMS rescoring",
                     type=float, default=0.0)
 parser.add_argument("--tmp_path", help="Temporary path for saving output data", type=str,
                     default=os.path.join(OPENDR_HOME,
