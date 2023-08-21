@@ -530,7 +530,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2):
+    def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2, map=None):
         if isinstance(boxes, np.ndarray):
             boxes = torch.tensor(boxes, device=self.device)
         elif torch.is_tensor(boxes):
@@ -542,8 +542,13 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         elif torch.is_tensor(scores):
             if "cuda" in self.device:
                 scores = scores.to(self.device)
+        if isinstance(map, np.ndarray):
+            map = torch.tensor(map, device=self.device)
+        elif torch.is_tensor(map):
+            if "cuda" in self.device:
+                map = map.to(self.device)
         boxes = self.infer(boxes=boxes, scores=scores, boxes_sorted=boxes_sorted, max_dt_boxes=top_k,
-                           img_res=img.opencv().shape[::-1][1:])
+                           img_res=img.shape[:-1], map=map)
         return boxes
 
     def compute_mask(self, boxes=None, iou_thres=0.2, extra=0.1):
