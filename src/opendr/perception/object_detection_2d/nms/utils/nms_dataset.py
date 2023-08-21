@@ -103,7 +103,7 @@ class Dataset_NMS(Dataset):
                               create_dir=True)
             pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' + self.dataset_sets[self.split] +
                                         '_pets.pkl')
-            if self.detector =='SSD':
+            if self.detector == 'SSD':
                 pkl_filename = os.path.join(self.path, 'data_' + ssd_model + '_' +
                                             self.dataset_sets[self.split] + '_pets.pkl')
             create_pkl = False
@@ -292,7 +292,7 @@ class Dataset_NMS(Dataset):
                               create_dir=True)
             pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' +
                                         self.dataset_sets[self.split] + '_coco.pkl')
-            if self.detector =='SSD':
+            if self.detector == 'SSD':
                 pkl_filename = os.path.join(self.path, 'data_' + ssd_model + '_' + self.dataset_sets[self.split] +
                                             '_coco.pkl')
             create_pkl = False
