@@ -38,7 +38,7 @@ parser.add_argument("--ssd_model", help="SSD model used for feeding RoIS to the 
                     default='ssd_512_vgg16_atrous_pets', choices=['ssd_512_vgg16_atrous_pets', 'ssd_default_person'])
 parser.add_argument("--data_root", help="Dataset root folder", type=str,
                     default=os.path.join(OPENDR_HOME,
-                                         'projects/python/perception/object_detection_2d/nms/seq2seq-nms/datasets'))
+                                         'projects/python/perception/object_detection_2d/nms/datasets'))
 parser.add_argument("--use_ssd", help="Train using SSD as detector", type=bool, default=False)
 parser.add_argument("--post_thres",
                     help="Confidence threshold, used for RoI selection after seq2seq-nms rescoring",
@@ -54,4 +54,3 @@ seq2SeqNMSLearner.download(model_name=args.pretrained_model, path=args.tmp_path)
 seq2SeqNMSLearner.load(os.path.join(args.tmp_path, args.pretrained_model), verbose=True)
 seq2SeqNMSLearner.eval(dataset=args.dataset, use_ssd=args.use_ssd, ssd_model=args.ssd_model, split=args.split,
                        max_dt_boxes=args.max_dt_boxes, datasets_folder=args.data_root, threshold=args.post_thres)
-
