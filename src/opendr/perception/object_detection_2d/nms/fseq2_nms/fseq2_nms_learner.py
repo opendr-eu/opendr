@@ -548,7 +548,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
             if "cuda" in self.device:
                 map = map.to(self.device)
         boxes = self.infer(boxes=boxes, scores=scores, boxes_sorted=boxes_sorted, max_dt_boxes=top_k,
-                           img_res=img.shape[:-1], map=map)
+                           img_res=img.opencv().shape[::-1][1:], map=map)
         return boxes
 
     def compute_mask(self, boxes=None, iou_thres=0.2, extra=0.1):
