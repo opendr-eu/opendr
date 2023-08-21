@@ -669,7 +669,7 @@ class SingleShotDetectorLearner(Learner):
             maps_save = maps[0][0].swapaxes(dim1=0, dim2=1).swapaxes(dim1=1, dim2=2).asnumpy().astype(dtype=np.float16)
 
         if custom_nms is not None:
-                bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=_img,
+                bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=img,
                                                        map=maps_save)
         else:
             bounding_boxes = BoundingBoxList([])
