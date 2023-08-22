@@ -248,48 +248,63 @@ Parameters:
   
   OPENDR_HOME = os.environ['OPENDR_HOME']
   temp_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/tmp'
+  ssd_model = 'ssd_512_vgg16_atrous_pets'
 
-  fseq2NMSLearner = FSeq2NMSLearner(iou_filtering = 0.8, app_feats='fmod', device='cpu', temp_path=temp_path)
-  fseq2NMSLearner.download(model_name='seq2seq_pets_jpd_fmod', path=temp_path)
-  fseq2NMSLearner.load(os.path.join(temp_path, seq2seq_pets_jpd_fmod), verbose=True)
+  fseq2NMSLearner = FSeq2NMSLearner(iou_filtering = 0.8, device='cpu', temp_path=temp_path)
+  fseq2NMSLearner.download(model_name='fseq2_pets_ssd_pets', path=temp_path)
+  fseq2NMSLearner.load(os.path.join(temp_path, 'fseq2_pets_ssd_pets'), verbose=True)
   ssd = SingleShotDetectorLearner(device='cuda')
   ssd.download(".", mode="pretrained")
-  ssd.load("./ssd_default_person", verbose=True)
+  ssd.load(ssd_model, verbose=True)
   img = Image.open(OPENDR_HOME + '/projects/python/perception/object_detection_2d/nms/img_temp/frame_0000.jpg')
   if not isinstance(img, Image):
     img = Image(img)
-  boxes = ssd.infer(img=img, threshold=0.25, custom_nms=fseq2NMSLearner)
+  boxes, _ = ssd.infer(img=img, threshold=0.23, custom_nms=fseqNMSLearner)
   draw_bounding_boxes(img=img.opencv(), bounding_boxes=boxes, class_names=ssd.classes, show=True)
   ```
   
 * **Evaluation of pretrained model on PETS dataset.**
 
   ```python
-  from opendr.perception.object_detection_2d import Seq2SeqNMSLearner
+  from opendr.perception.object_detection_2d import FSeq2NMSLearner
   import os
   OPENDR_HOME = os.environ['OPENDR_HOME']
   
-  datasets_folder = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/datasets'
-  temp_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/tmp'
-  
-  seq2SeqNMSLearner = Seq2SeqNMSLearner(iou_filtering=0.8, app_feats='fmod',
-                                        temp_path=temp_path, device='cuda')
-  seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd_fmod', path=temp_path)
-  seq2SeqNMSLearner.load(os.path.join(temp_path, seq2seq_pets_jpd_fmod), verbose=True)
-  seq2SeqNMSLearner.eval(dataset='PETS', split='test', max_dt_boxes=800,
-                       datasets_folder=datasets_folder, use_ssd=False, threshold=0.0)
+  datasets_folder = OPENDR_HOME + '/projects/python/perception/object_detection_2d/nms/datasets'
+  temp_path = OPENDR_HOME + '/projects/python/perception/object_detection_2d/nms/tmp'
+  ssd_model = 'ssd_512_vgg16_atrous_pets'
+  fSeq2NMSLearner = FSeq2NMSLearner(iou_filtering=0.8, temp_path=temp_path, device='cuda')
+  fSeq2NMSLearner.download(model_name='fseq2_pets_ssd_pets', path=temp_path)
+  fSeq2NMSLearner.load(os.path.join(temp_path, 'fseq2_pets_ssd_pets'), verbose=True)
+  fSeq2NMSLearner.eval(dataset='PETS', split='test', max_dt_boxes=800,
+                       datasets_folder=datasets_folder, ssd_model=ssd_model, threshold=0.0)
   ```
   
 #### Performance Evaluation
 
-TABLE-1: Average Precision (AP) achieved by pretrained models on the person detection task on test and validation sets. The maximum number or RoIs, employed for the performance evaluation was set to 800.
-|  **Pretrained Model**  |  **Dataset**  | **Detector** | **Pre-processing IoU Threshold** | **AP@0.5 on validation set** | **AP@0.5 on test set** |
-|:----------------------:|:-------------:|:------------:|:--------------------------------:|:----------------------------:|:----------------------:|
-|      fseq2seq_pets     |     PETS      |      SSD     |                0.8               |             XX.X%            |          XX.X%         |
-|   fseq2seq_crowdhuman  |   CROWDHUMAN  |      SSD     |                0.8               |             XX.X%            |            -           |
+TABLE-1: Parameters of the performed evaluation.  
+|||
+|:-----------:|:----------------------:|
+|  **Dataset**   |   PETS  |
+|  **Detector**  |   SSD   |
+| **Detector's training dataset** | PETS |
+| **Pre-processing IoU Threshold** | 0.8 |
+| **Maximum number of outputted RoIs** | 800 |
 
-\* The minival set was used as validation set.<br>
-\*\* The minitest set was used as test set.
+TABLE-2: Average Precision (AP) achieved by pretrained models on the person detection task on the validation and testing sets.
+| **Method**  |  **model_name / nms_threshold**  | **AP<sub>0.5</sub> on validation set** | **AP<sub>0.5</sub><sup>0.95</sup> on validation set** |**AP<sub>0.5</sub> on testing set** | **AP<sub>0.5</sub><sup>0.95</sup> on testing set** |
+|:-----------:|:--------------------------------:|:--------------------------------------:|:-----------------------------------------------------:|:----------------------------------:|:--------------------------------------------------:|
+|         Fast-NMS           |     nms_thres: 0.70     |             81.9%            |          34.9%         |             87.4%            |          37.0%         |
+|    Soft-NMS<sub>L</sub>    |     nms_thres: 0.55     |             85.5%            |          37.1%         |             90.4%            |          39.2%         |
+|    Soft-NMS<sub>G</sub>    |     nms_thres: 0.90     |             84.2%            |          37.3%         |             90.0%            |          39.6%         |
+|        Cluster-NMS         |     nms_thres: 0.60     |             84.6%            |          36.0%         |             90.2%            |          38.2%         |
+|  Cluster-NMS<sub>S</sub>   |     nms_thres: 0.35     |             85.1%            |          37.1%         |             90.3%            |          39.0%         |
+|  Cluster-NMS<sub>D</sub>   |     nms_thres: 0.55     |             84.8%            |          35.7%         |             90.5%            |          38.1%         |
+| Cluster-NMS<sub>S+D</sub>  |     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
+| Cluster-NMS<sub>S+D+W</sub>|     nms_thres: 0.45     |             86.0%            |          37.2%         |             90.9%            |          39.2%         |
+|        Seq2Seq-NMS         | name: seq2seq_pets_ssd  |             87.8%            |          38.4%         |             91.2%            |          39.5%         |
+|        Fseq2-NMS           |  name: fseq2_pets_ssd   |             87.8%            |          38.6%         |             91.5%            |          39.4%         |
+
 
 
 #### References
