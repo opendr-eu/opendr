@@ -76,13 +76,10 @@ class TestSeq2SeqNMS(unittest.TestCase):
         print('Starting training test for Seq2Seq-NMS...')
 
         m = list(cls.seq2SeqNMSLearner.model.parameters())[0].clone()
-        cls.seq2SeqNMSLearner.fit(dataset='TEST_MODULE', use_ssd=False,
-                                   datasets_folder=cls.temp_dir + '/datasets',
-                                   logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50,
-                                   max_dt_boxes=200)
+        cls.seq2SeqNMSLearner.fit(dataset='TEST_MODULE', use_ssd=False, datasets_folder=cls.temp_dir + '/datasets',
+                                  logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50, max_dt_boxes=200)
         n = list(cls.seq2SeqNMSLearner.model.parameters())[0].clone()
-        cls.assertFalse(np.array_equal(m, n),
-                         msg="Model parameters did not change after running fit.")
+        cls.assertFalse(np.array_equal(m, n), msg="Model parameters did not change after running fit.")
         del m, n
         gc.collect()
         print('Finished training test for Seq2Seq-NMS...')
@@ -91,11 +88,9 @@ class TestSeq2SeqNMS(unittest.TestCase):
         print('Starting evaluation test for Seq2Seq-NMS...')
         cls.seq2SeqNMSLearner.load(cls.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
         results_dict = cls.seq2SeqNMSLearner.eval(dataset='TEST_MODULE', split='test', max_dt_boxes=800,
-                                                   datasets_folder=cls.temp_dir + '/datasets',
-                                                   use_ssd=False)
+                                                  datasets_folder=cls.temp_dir + '/datasets', use_ssd=False)
         if results_dict is None:
-            cls.assertIsNotNone(results_dict,
-                                 msg="Eval results dictionary not returned.")
+            cls.assertIsNotNone(results_dict, msg="Eval results dictionary not returned.")
         else:
             cls.assertGreater(results_dict[0][0][1][0], 0.4)
         del results_dict
@@ -113,8 +108,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
         bounding_box_list = cls.seq2SeqNMSLearner.run_nms(boxes=boxes, scores=scores, img=img, threshold=0.5)
 
-        cls.assertIsNotNone(bounding_box_list,
-                             msg="Returned empty BoundingBoxList.")
+        cls.assertIsNotNone(bounding_box_list, msg="Returned empty BoundingBoxList.")
         del img
         del bounding_box_list
         del boxes
