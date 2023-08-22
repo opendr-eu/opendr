@@ -54,7 +54,7 @@ Constructor parameters:
 
 #### `Seq2SeqNMSLearner.fit`
 ```python
-Seq2SeqNMSLearner.fit(self, dataset, logging_path, logging_flush_secs, silent, verbose, nms_gt_iou, max_dt_boxes, datasets_folder, use_ssd)
+Seq2SeqNMSLearner.fit(self, dataset, logging_path, logging_flush_secs, silent, verbose, nms_gt_iou, max_dt_boxes, datasets_folder, use_ssd, ssd_model, lr_step)
 ```
 
 This method is used to train the algorithm on a `Dataset_NMS` dataset.
@@ -111,7 +111,7 @@ Parameters:
 - **use_ssd**: *bool, default=False*\
   If set to True, RoIs from SSD are fed to the seq2Seq-nms model.
   Otherwise, RoIs from the default detector of the specified dataset are used as input.
-  - **ssd_model**: *{'ssd_512_vgg16_atrous_pets', 'ssd_default_person'} , default=None*\
+- **ssd_model**: *{'ssd_512_vgg16_atrous_pets', 'ssd_default_person'} , default=None*\
   The name of SSD's pretrained model. Used only if `use_ssd` is set True.
 
 #### `Seq2SeqNMSLearner.infer`
@@ -222,7 +222,7 @@ Parameters:
   Specifies the folder where data will be downloaded.
   If *None*, the *self.temp_path* directory is used instead.
 - **model_name**: *{'seq2seq_pets_jpd_pets_fmod', 'seq2seq_pets_ssd_wider_person_fmod', 'seq2seq_pets_ssd_pets_fmod', 'seq2seq_coco_frcn_coco_fmod', 'seq2seq_coco_ssd_wider_person_fmod'}, default='seq2seq_pets_jpd_pets_fmod'*\
-  Downloads the given pretrained seq2seq-nms model.
+  Downloads the specified pretrained seq2seq-nms model.
 - **verbose**: *bool default=True*\
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
