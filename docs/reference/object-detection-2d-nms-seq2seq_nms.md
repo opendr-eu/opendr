@@ -82,8 +82,8 @@ Parameters:
 - **use_ssd**: *bool, default=False*\
   If set to True, RoIs from SSD are fed to the seq2Seq-nms model.
   Otherwise, RoIs from the default detector of the specified dataset are used as input.
-- **ssd_model**: *str, default=None*\
-  The name of SSD's pretrained model. Currently, 'ssd_512_vgg16_atrous_pets' and 'ssd_default_person' are supported.
+- **ssd_model**: *{'ssd_512_vgg16_atrous_pets', 'ssd_default_person'} , default=None*\
+  The name of SSD's pretrained model.
 - **lr_step**: *bool, default=True*\
   If True, decays the learning rate at pre-specified epochs by 0.1.
   
