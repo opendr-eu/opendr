@@ -75,8 +75,7 @@ class TestFSeq2NMS(unittest.TestCase):
         cls.fSeq2NMSLearner.fit(dataset='TEST_MODULE', datasets_folder=cls.temp_dir + '/datasets', logging_path=None,
                                 silent=False, verbose=True, nms_gt_iou=0.50, max_dt_boxes=200, ssd_model=cls.ssd_model)
         n = list(cls.fSeq2NMSLearner.model.parameters())[0].clone()
-        cls.assertFalse(np.array_equal(m, n),
-                         msg="Model parameters did not change after running fit.")
+        cls.assertFalse(np.array_equal(m, n), msg="Model parameters did not change after running fit.")
         del m, n
         gc.collect()
         print('Finished training test for FSeq2-NMS...')
@@ -85,11 +84,9 @@ class TestFSeq2NMS(unittest.TestCase):
         print('Starting evaluation test for FSeq2-NMS...')
         cls.fSeq2NMSLearner.load(os.path.join(cls.temp_dir, cls.fseq2_nms_model), verbose=True)
         results_dict = cls.fSeq2NMSLearner.eval(dataset='TEST_MODULE', split='test', max_dt_boxes=800,
-                                                   datasets_folder=cls.temp_dir + '/datasets',
-                                                   ssd_model=cls.ssd_model)
+                                                datasets_folder=cls.temp_dir + '/datasets', ssd_model=cls.ssd_model)
         if results_dict is None:
-            cls.assertIsNotNone(results_dict,
-                                 msg="Eval results dictionary not returned.")
+            cls.assertIsNotNone(results_dict, msg="Eval results dictionary not returned.")
         else:
             cls.assertGreater(results_dict[0][0][1][0], 0.4)
         del results_dict
