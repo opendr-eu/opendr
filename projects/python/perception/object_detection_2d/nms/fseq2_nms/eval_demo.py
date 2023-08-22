@@ -21,7 +21,7 @@ parser.add_argument("--iou_filtering", help="Pre-processing IoU threshold", type
 parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda",
                     choices=["cuda", "cpu"])
 parser.add_argument("--pretrained_model", help="Name of pretrained model", type=str,
-                    default='fseq2_pets_ssd_pets', choices=['fseq2_pets_ssd'])
+                    default='fseq2_pets_ssd_pets', choices=['fseq2_pets_ssd_pets'])
 parser.add_argument("--split", help="The split of the corresponding dataset", type=str, default='test',
                     choices=["test", "val", "train"])
 parser.add_argument("--max_dt_boxes", help="Maximum number of input RoIs fed to FSeq2-NMS", type=int,
