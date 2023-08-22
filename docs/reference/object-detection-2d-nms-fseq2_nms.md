@@ -247,7 +247,7 @@ Parameters:
   import os
   
   OPENDR_HOME = os.environ['OPENDR_HOME']
-  temp_path = OPENDR_HOME + '/src/opendr/perception/object_detection_2d/nms/tmp'
+  temp_path = OPENDR_HOME + '/projects/python/perception/object_detection_2d/nms/tmp'
   ssd_model = 'ssd_512_vgg16_atrous_pets'
 
   fseq2NMSLearner = FSeq2NMSLearner(iou_filtering = 0.8, device='cpu', temp_path=temp_path)
