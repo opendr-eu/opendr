@@ -119,7 +119,7 @@ class Dataset_NMS(Dataset):
                 if use_ssd:
                     from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                     ssd = SingleShotDetectorLearner(device=device)
-                    ssd.download(".", mode="pretrained")
+                    ssd.download(path=path, mode="pretrained")
                     ssd.load(os.path.join(path, ssd_model), verbose=True)
                 if not os.path.exists(
                         os.path.join(self.path, 'detections',
@@ -266,8 +266,6 @@ class Dataset_NMS(Dataset):
             self.classes = ['background', 'human']
             self.class_ids = [-1, 1]
             self.annotation_file = 'pets_' + self.dataset_sets[self.split] + '.json'
-            if os.path.exists(os.path.join(path, ssd_model)):
-                os.rmdir(os.path.join(path, ssd_model))
         elif self.dataset_name == "COCO":
             self.dataset_sets['train'] = 'train'
             self.dataset_sets['val'] = 'minival'
@@ -286,7 +284,7 @@ class Dataset_NMS(Dataset):
                 self.detector_type = 'custom'
                 from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                 ssd = SingleShotDetectorLearner(device=device)
-                ssd.download(".", mode="pretrained")
+                ssd.download(path=path, mode="pretrained")
                 ssd.load(os.path.join(path, ssd_model), verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
                 self.download('http://images.cocodataset.org/zips/' + imgs_split + '.zip',
@@ -396,8 +394,6 @@ class Dataset_NMS(Dataset):
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
             self.annotation_file = 'instances_' + self.dataset_sets[self.split] + '2014.json'
-            if os.path.exists(os.path.join(path, ssd_model)):
-                os.rmdir(os.path.join(path, ssd_model))
         elif self.dataset_name == "TEST_MODULE":
             self.dataset_sets['train'] = 'test'
             self.dataset_sets['val'] = 'test'
@@ -452,18 +448,18 @@ class Dataset_NMS(Dataset):
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
             self.annotation_file = 'test_module_anns.json'
-            if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json')):
-                os.remove(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json'))
-            if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params')):
-                os.remove(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params'))
-            if os.path.exists(os.path.join(path, 'ssd_default_person')):
-                os.rmdir(os.path.join(path, 'ssd_default_person'))
-            if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json')):
-                os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json'))
-            if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params')):
-                os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params'))
-            if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets')):
-                os.rmdir(os.path.join(path, 'ssd_512_vgg16_atrous_pets'))
+        if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json')):
+            os.remove(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json'))
+        if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params')):
+            os.remove(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params'))
+        if os.path.exists(os.path.join(path, 'ssd_default_person')):
+            os.rmdir(os.path.join(path, 'ssd_default_person'))
+        if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json')):
+            os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json'))
+        if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params')):
+            os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params'))
+        if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets')):
+            os.rmdir(os.path.join(path, 'ssd_512_vgg16_atrous_pets'))
 
     @staticmethod
     def download(
