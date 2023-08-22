@@ -1,6 +1,6 @@
 ## Seq2Seq-NMS module
 
-The *seq2seq-nms* module contains the *Seq2SeqNMSLearner* class, which inherits from the abstract class *Learner* and the abstract class *NMSCustom.
+The *seq2seq-nms* module contains the *Seq2SeqNMSLearner* class, which inherits from the abstract class *Learner* and the abstract class *NMSCustom*.
 
 ### Class Seq2SeqNMSLearner
 Bases: `engine.learners.Learner` and `perception.object_detection_2d.nms.utils.NMSCustom`
