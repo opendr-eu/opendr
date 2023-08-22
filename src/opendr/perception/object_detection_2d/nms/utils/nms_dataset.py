@@ -120,7 +120,7 @@ class Dataset_NMS(Dataset):
                     from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                     ssd = SingleShotDetectorLearner(device=device)
                     ssd.download(".", mode="pretrained")
-                    ssd.load("./" + ssd_model, verbose=True)
+                    ssd.load(os.path.join(path, ssd_model), verbose=True)
                 if not os.path.exists(
                         os.path.join(self.path, 'detections',
                                      'PETS-' + self.dataset_sets[self.split] + '_siyudpm_dets.idl')):
@@ -266,6 +266,8 @@ class Dataset_NMS(Dataset):
             self.classes = ['background', 'human']
             self.class_ids = [-1, 1]
             self.annotation_file = 'pets_' + self.dataset_sets[self.split] + '.json'
+            if os.path.exists(os.path.join(path, ssd_model)):
+                os.rmdir(os.path.join(path, ssd_model))
         elif self.dataset_name == "COCO":
             self.dataset_sets['train'] = 'train'
             self.dataset_sets['val'] = 'minival'
@@ -285,7 +287,7 @@ class Dataset_NMS(Dataset):
                 from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                 ssd = SingleShotDetectorLearner(device=device)
                 ssd.download(".", mode="pretrained")
-                ssd.load("./" + ssd_model, verbose=True)
+                ssd.load(os.path.join(path, ssd_model), verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
                 self.download('http://images.cocodataset.org/zips/' + imgs_split + '.zip',
                               download_path=os.path.join(self.path), file_format="zip",
@@ -394,6 +396,8 @@ class Dataset_NMS(Dataset):
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
             self.annotation_file = 'instances_' + self.dataset_sets[self.split] + '2014.json'
+            if os.path.exists(os.path.join(path, ssd_model)):
+                os.rmdir(os.path.join(path, ssd_model))
         elif self.dataset_name == "TEST_MODULE":
             self.dataset_sets['train'] = 'test'
             self.dataset_sets['val'] = 'test'
@@ -405,11 +409,61 @@ class Dataset_NMS(Dataset):
                 data_url = OPENDR_SERVER_URL + '/perception/object_detection_2d/nms/datasets/test_module.zip'
                 self.download(data_url, download_path=os.path.join(self.path).replace("TEST_MODULE", ""),
                               file_format="zip", create_dir=True)
+
             with open(pkl_filename, 'rb') as fp_pkl:
                 self.src_data = pickle.load(fp_pkl)
+            if use_ssd:
+                self.detector = 'SSD'
+                self.detector_type = 'custom'
+                from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
+                ssd = SingleShotDetectorLearner(device=device)
+                ssd.download(path, mode="pretrained")
+                ssd.load(os.path.join(path, ssd_model), verbose=True)
+                img = Image.open(os.path.join(self.path, self.src_data[0]['filename']))
+                if use_maps:
+                    bboxes_list, maps = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                                  nms_topk=6000, post_nms=6000, extract_maps=True)
+                else:
+                    bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                            nms_topk=6000, post_nms=6000)
+                bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
+                bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
+                bboxes_list[:, 0][bboxes_list[:, 0] < 0] = 0
+                bboxes_list[:, 1][bboxes_list[:, 1] < 0] = 0
+                bboxes_list[:, 2][bboxes_list[:, 2] >= img.data.shape[2]] = img.data.shape[2] - 1
+                bboxes_list[:, 3][bboxes_list[:, 3] >= img.data.shape[1]] = img.data.shape[1] - 1
+                val_ids = np.logical_and((bboxes_list[:, 2] - bboxes_list[:, 0]) > 4,
+                                         (bboxes_list[:, 3] - bboxes_list[:, 1]) > 4)
+                bboxes_list = bboxes_list[val_ids, :]
+
+                bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
+                bboxes_list = bboxes_list[:5000, :]
+                dt_boxes = []
+                for b in range(len(bboxes_list)):
+                    dt_boxes.append(np.array([float(bboxes_list[b, 0]), float(bboxes_list[b, 1]),
+                                              float(bboxes_list[b, 2]), float(bboxes_list[b, 3]),
+                                              bboxes_list[b, 4][0]]))
+                self.src_data[0]['dt_boxes'] = [np.asarray([]), np.asarray(dt_boxes)]
+                if use_maps:
+                    self.src_data[0]['ssd_maps'] = self.src_data[0]['filename'].split('.')[0] + '_map.pkl'
+                    with open(os.path.join(self.path, self.src_data[0]['ssd_maps']),
+                              'wb') as handle:
+                        pickle.dump(maps, handle, protocol=pickle.DEFAULT_PROTOCOL)
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
             self.annotation_file = 'test_module_anns.json'
+            if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json')):
+                os.remove(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json'))
+            if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params')):
+                os.remove(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params'))
+            if os.path.exists(os.path.join(path, 'ssd_default_person')):
+                os.rmdir(os.path.join(path, 'ssd_default_person'))
+            if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json')):
+                os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json'))
+            if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params')):
+                os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params'))
+            if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets')):
+                os.rmdir(os.path.join(path, 'ssd_512_vgg16_atrous_pets'))
 
     @staticmethod
     def download(
