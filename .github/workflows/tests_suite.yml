@@ -105,7 +105,9 @@ jobs:
         pip -V
         source bin/activate.sh
         pip -V
+        pip list
         python3 -m pip install -r tests/requirements.txt
+        
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
