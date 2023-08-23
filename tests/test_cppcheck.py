@@ -74,8 +74,7 @@ class TestCppCheck(unittest.TestCase):
                                     break
                             if not shouldSkip:
                                 command += ' \"' + line + '\"'
-            for source in skippedfiles:
-                command += ' --suppress=\"*:' + source + '\"'
+            command += '\"'.join([' --suppress=\"*:' + source for source in skippedfiles])
         else:
             for source in skippedfiles:
                 command += ' --suppress=\"*:' + source + '\"'
