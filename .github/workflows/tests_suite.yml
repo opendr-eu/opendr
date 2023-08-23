@@ -101,8 +101,11 @@ jobs:
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
         ./bin/install.sh
+        pwd
+        pip -V
         source bin/activate.sh
-        python3 -m pip install -r tests/sources/requirements.txt
+        pip -V
+        python3 -m pip install -r tests/requirements.txt
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
