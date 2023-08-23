@@ -137,8 +137,12 @@ class TestClangFormat(unittest.TestCase):
             diff = ''
             with open(source, encoding='utf8') as file:
                 try:
-                    diff += "\n".join(difflib.context_diff(self._runClangFormat(source).decode('utf-8').splitlines(),
-                                                     file.read().splitlines()))
+                    diff += "\n".join(
+                        difflib.context_diff(
+                            self._runClangFormat(source).decode("utf-8").splitlines(),
+                            file.read().splitlines(),
+                        )
+                    )
                 except UnicodeDecodeError:
                     self.assertTrue(False, msg='utf-8 decode problem in %s' % source)
                 self.assertTrue(
