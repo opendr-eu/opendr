@@ -101,12 +101,12 @@ jobs:
         python-version: 3.8
     - name: Test Tools
       run: |
+        echo develop_tests_suite
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
         ./bin/install.sh
         source bin/activate.sh
         python3 -m pip install -r tests/requirements.txt
-        echo develop test suite
         
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
