@@ -61,11 +61,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Cache Python dependencies
+    - name: Cache Python dependencies and virtual environment
       id: cache-python-deps
       uses: actions/cache@v3
       with:
-        path: ~/.cache/pip
+        path: |
+          ~/.cache/pip
+          venv
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
@@ -78,7 +80,7 @@ jobs:
         ./bin/install.sh
         source bin/activate.sh
         python3 -m pip install -r tests/requirements.txt
-          
+
   test-tools:
     needs: install-toolkit
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
@@ -132,10 +134,12 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Restore Python dependencies cache
+    - name: Restore Python dependencies and virtual environment cache
       uses: actions/cache@v3
       with:
-        path: ~/.cache/pip
+        path: |
+          ~/.cache/pip
+          venv
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
     - name: Run toolkit tests
       run: |
