@@ -45,8 +45,28 @@ jobs:
         export OPENDR_DEVICE=cpu
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
+
+  install-toolkit:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install Toolkit and Dependencies
+      run: |
+        export ROS_DISTRO=noetic
+        export OPENDR_HOME=$PWD
+        ./bin/install.sh
+        source bin/activate.sh
+        python3 -m pip install -r tests/requirements.txt
+
   test-tools:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    needs: install-toolkit
     strategy:
       fail-fast: false
       matrix:
@@ -96,15 +116,7 @@ jobs:
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
-    - name: Install Toolkit and Dependencies
-      run: |
-        export ROS_DISTRO=noetic
-        export OPENDR_HOME=$PWD
-        ./bin/install.sh
-        source bin/activate.sh
-        python3 -m pip install -r tests/requirements.txt
-        
+        python-version: 3.8        
     - name: Run Tests for Package
       run: |
         if [ ${{ matrix.package }} = "ctests" ]; then
