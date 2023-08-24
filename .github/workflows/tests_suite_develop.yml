@@ -101,7 +101,6 @@ jobs:
         python-version: 3.8
     - name: Test Tools
       run: |
-        echo develop_tests_suite
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
         ./bin/install.sh
