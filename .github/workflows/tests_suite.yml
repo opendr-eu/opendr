@@ -119,6 +119,7 @@ jobs:
         python-version: 3.8        
     - name: Run Tests for Package
       run: |
+        source install/bin/activate.sh  # Activate toolkit
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
