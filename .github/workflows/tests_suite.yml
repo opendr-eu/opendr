@@ -46,7 +46,41 @@ jobs:
         pip install -r tests/requirements.txt
         python -m unittest discover -s tests
 
+  install-toolkit:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Cache Python dependencies
+      id: cache-python-deps
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install toolkit and dependencies
+      if: steps.cache-python-deps.outputs.cache-hit != 'true'
+      run: |
+        export ROS_DISTRO=noetic
+        export OPENDR_HOME=$PWD
+        
+        ./bin/install.sh
+        source bin/activate.sh
+        python3 -m pip install -r tests/requirements.txt
+          
   test-tools:
+    needs: install-toolkit
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
     strategy:
       fail-fast: false
@@ -98,26 +132,17 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Cache Python dependencies
-      uses: actions/cache@v3
+    - name: Restore Python dependencies cache
+      uses: actions/cache@v2
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    - name: Install toolkit and dependencies
+    - name: Run toolkit tests
       run: |
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
-        
-        # Check if toolkit is already installed
-        if [ ! -d venv ]; then
-          ./bin/install.sh
-        fi
-        
         source bin/activate.sh
-        python3 -m pip install -r tests/requirements.txt
-
+        
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
@@ -151,6 +176,7 @@ jobs:
         name: wheel-artifact
         path:
           dist/*.tar.gz
+
   build-docker:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
     runs-on: ubuntu-20.04
@@ -173,6 +199,7 @@ jobs:
         name: docker-artifact
         path:
           cpu_test.zip
+
   test-wheel:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
@@ -263,6 +290,7 @@ jobs:
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+
   test-wheel-separate:
     needs: build-wheel
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
@@ -372,6 +400,7 @@ jobs:
 
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+
   test-docker:
     needs: build-docker
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
@@ -434,6 +463,7 @@ jobs:
         else
           docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         fi
+
   delete-docker-artifacts:
     needs: [build-docker, test-docker]
     if: ${{ always() }}
@@ -446,6 +476,7 @@ jobs:
       uses: geekyeggo/delete-artifact@v1
       with:
         name: docker-artifact
+
   delete-wheel-artifacts:
     needs: [build-wheel, test-wheel, test-wheel-separate]
     if: ${{ always() }}
