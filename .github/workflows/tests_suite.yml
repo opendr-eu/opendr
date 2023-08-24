@@ -96,8 +96,8 @@ jobs:
           # - perception/face_recognition
           # - perception/heart_anomaly_detection
           # - perception/multimodal_human_centric
-          # - perception/pose_estimation
-          # - perception/fall_detection
+          - perception/pose_estimation
+          - perception/fall_detection
           # - perception/gesture_recognition
           # - perception/speech_recognition
           # - perception/skeleton_based_action_recognition/costgcn
