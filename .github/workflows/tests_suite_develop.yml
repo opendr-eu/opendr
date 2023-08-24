@@ -106,6 +106,8 @@ jobs:
         ./bin/install.sh
         source bin/activate.sh
         python3 -m pip install -r tests/requirements.txt
+        echo develop test suite
+        
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
