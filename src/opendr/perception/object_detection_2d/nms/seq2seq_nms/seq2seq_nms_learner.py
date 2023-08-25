@@ -579,8 +579,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
     def download(self, path=None, model_name='seq2seq_pets_jpd_fmod', verbose=False,
                  url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
 
-        supported_pretrained_models = ["seq2seq_pets_jpd_fmod", "seq2seq_pets_ssd_fmod",
-                                       "seq2seq_coco_frcn_fmod", "seq2seq_coco_ssd_fmod"]
+        supported_pretrained_models = ['seq2seq_pets_jpd_pets_fmod', 'seq2seq_pets_ssd_wider_person_fmod',
+                                       'seq2seq_pets_ssd_pets_fmod', 'seq2seq_coco_frcn_coco_fmod',
+                                       'seq2seq_coco_ssd_coco_wider_person_fmod']
 
         if model_name not in supported_pretrained_models:
             str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
