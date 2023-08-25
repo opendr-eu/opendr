@@ -152,7 +152,7 @@ jobs:
         
         source bin/activate.sh
 
-        pip3 install Cython
+        python3 -m pip install Cython
         
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
