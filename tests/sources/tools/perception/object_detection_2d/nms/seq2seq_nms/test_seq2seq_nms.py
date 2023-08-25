@@ -49,7 +49,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
                                                   device='cpu',  checkpoint_after_iter=1, epochs=1)
 
         # Download all required files for testing
-        cls.seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd_fmod', path=cls.temp_dir)
+        cls.seq2SeqNMSLearner.download(model_name='seq2seq_pets_jpd_pets_fmod', path=cls.temp_dir)
 
     @classmethod
     def tearDownClass(cls):
@@ -61,10 +61,10 @@ class TestSeq2SeqNMS(unittest.TestCase):
         rmfile(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "annotations", "test_module_anns.json"))
         rmdir(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "val2014"))
         rmdir(os.path.join(cls.temp_dir, "datasets", "TEST_MODULE", "FMoD"))
-        rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_fmod", "fmod_normalization.pkl"))
-        rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_fmod", "last_weights.json"))
-        rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_fmod", "last_weights.pth"))
-        rmdir(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_fmod"))
+        rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_pets_fmod", "fmod_normalization.pkl"))
+        rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_pets_fmod", "last_weights.json"))
+        rmfile(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_pets_fmod", "last_weights.pth"))
+        rmdir(os.path.join(cls.temp_dir, "seq2seq_pets_jpd_pets_fmod"))
 
         rmdir(os.path.join(cls.temp_dir))
 
