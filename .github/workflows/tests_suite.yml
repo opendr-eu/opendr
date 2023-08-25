@@ -152,7 +152,9 @@ jobs:
         
         source bin/activate.sh
 
-        python3 -m pip install Cython
+        cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
+        make
+        cd $OPENDR_HOME
         
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
