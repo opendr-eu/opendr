@@ -151,6 +151,8 @@ jobs:
         sudo apt-get install --yes libopenblas-dev libsndfile1 libboost-dev
         
         source bin/activate.sh
+
+        pip3 install Cython
         
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
