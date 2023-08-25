@@ -145,6 +145,11 @@ jobs:
       run: |
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
+
+        # Reinstall some system dependencies
+        # sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv 
+        sudo apt-get install --yes libopenblas-dev libsndfile1 libboost-dev
+        
         source bin/activate.sh
         
         if [ ${{ matrix.package }} = "ctests" ]; then
