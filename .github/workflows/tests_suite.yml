@@ -192,6 +192,9 @@ jobs:
               rosdep install -i --from-path src/audio_common --rosdistro $ROS_DISTRO -y
               cd $OPENDR_HOME
             fi
+
+            make libopendr
+            
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           fi
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
