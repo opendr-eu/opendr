@@ -71,6 +71,10 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+        # Configure retry options
+        continue-on-error: true  # Continue to the next step even if cache restoration fails, reinstalling the toolkit
+        retry-max: 3
+        retry-interval: 10  # Seconds between retries
     - name: Install toolkit and dependencies
       if: steps.cache-python-deps.outputs.cache-hit != 'true'
       run: |
@@ -141,6 +145,10 @@ jobs:
           ~/.cache/pip
           venv
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        # Configure retry options
+        continue-on-error: false
+        retry-max: 3
+        retry-interval: 10  # Seconds between retries
     - name: Run toolkit tests
       run: |
         export ROS_DISTRO=noetic
