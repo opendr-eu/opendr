@@ -74,8 +74,7 @@ class TestCppCheck(unittest.TestCase):
                                     break
                             if not shouldSkip:
                                 command += ' \"' + line + '\"'
-            for source in skippedfiles:
-                command += ' --suppress=\"*:' + source + '\"'
+            command += '\"'.join([' --suppress=\"*:' + source for source in skippedfiles])
         else:
             for source in skippedfiles:
                 command += ' --suppress=\"*:' + source + '\"'
@@ -101,8 +100,7 @@ class TestCppCheck(unittest.TestCase):
         command += ' --suppress=noCopyConstructor --suppress=noOperatorEq --suppress=strdupCalled'
         # command += ' --xml '  # Uncomment this line to get more information on the errors
         command += ' --output-file=\"' + self.reportFilename + '\"'
-        for include in includeDirs:
-            command += ' -I\"' + include + '\"'
+        command += '\"'.join([' -I\"' + include for include in includeDirs])
         sources = self.add_source_files(sourceDirs, skippedDirs)
         if not sources:
             return
