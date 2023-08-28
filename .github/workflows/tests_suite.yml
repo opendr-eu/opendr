@@ -192,6 +192,8 @@ jobs:
             cd src/opendr/control/mobile_manipulation/
             make
             echo "Running mobile manipulation #####################################################"
+            pwd
+            ls
             source run_ros.sh
             # fi
           fi
