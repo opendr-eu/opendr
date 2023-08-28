@@ -145,10 +145,6 @@ jobs:
           ~/.cache/pip
           venv
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        # Configure retry options
-        continue-on-error: false
-        retry-max: 3
-        retry-interval: 10  # Seconds between retries
     - name: Run toolkit tests
       run: |
         export ROS_DISTRO=noetic
