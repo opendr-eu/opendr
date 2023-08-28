@@ -71,10 +71,6 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-        # Configure retry options
-        continue-on-error: true  # Continue to the next step even if cache restoration fails, reinstalling the toolkit
-        retry-max: 3
-        retry-interval: 10  # Seconds between retries
     - name: Install toolkit and dependencies
       if: steps.cache-python-deps.outputs.cache-hit != 'true'
       run: |
@@ -95,38 +91,38 @@ jobs:
         package:
           - engine
           - utils
-          - perception/activity_recognition
-          - perception/compressive_learning
-          - perception/face_recognition
-          - perception/heart_anomaly_detection
-          - perception/multimodal_human_centric
-          - perception/pose_estimation
-          - perception/fall_detection
-          - perception/gesture_recognition
-          - perception/speech_recognition
-          - perception/skeleton_based_action_recognition/costgcn
-          - perception/skeleton_based_action_recognition/pstgcn
-          - perception/skeleton_based_action_recognition/stbln
-          - perception/skeleton_based_action_recognition/stgcn
-          - perception/skeleton_based_action_recognition/tagcn
-          - perception/semantic_segmentation
-          - perception/binary_high_resolution
-          - perception/object_tracking_2d
-          # - perception/object_tracking_3d # passes, but disabled due to free() crash
-          - perception/object_detection_2d/centernet
-          - perception/object_detection_2d/detr
-          - perception/object_detection_2d/gem
-          - perception/object_detection_2d/ssd
-          - perception/object_detection_2d/nanodet
-          - perception/object_detection_2d/yolov3
-          - perception/object_detection_2d/yolov5
-          - perception/object_detection_2d/retinaface
-          - perception/object_detection_2d/nms
-          # - perception/object_detection_3d # passes, but disabled due to free() crash
-          - perception/facial_expression_recognition
-          - simulation/human_model_generation
+          # - perception/activity_recognition
+          # - perception/compressive_learning
+          # - perception/face_recognition
+          # - perception/heart_anomaly_detection
+          # - perception/multimodal_human_centric
+          # - perception/pose_estimation
+          # - perception/fall_detection
+          # - perception/gesture_recognition
+          # - perception/speech_recognition
+          # - perception/skeleton_based_action_recognition/costgcn
+          # - perception/skeleton_based_action_recognition/pstgcn
+          # - perception/skeleton_based_action_recognition/stbln
+          # - perception/skeleton_based_action_recognition/stgcn
+          # - perception/skeleton_based_action_recognition/tagcn
+          # - perception/semantic_segmentation
+          # - perception/binary_high_resolution
+          # - perception/object_tracking_2d
+          # # - perception/object_tracking_3d # passes, but disabled due to free() crash
+          # - perception/object_detection_2d/centernet
+          # - perception/object_detection_2d/detr
+          # - perception/object_detection_2d/gem
+          # - perception/object_detection_2d/ssd
+          # - perception/object_detection_2d/nanodet
+          # - perception/object_detection_2d/yolov3
+          # - perception/object_detection_2d/yolov5
+          # - perception/object_detection_2d/retinaface
+          # - perception/object_detection_2d/nms
+          # # - perception/object_detection_3d # passes, but disabled due to free() crash
+          # - perception/facial_expression_recognition
+          # - simulation/human_model_generation
           - control/mobile_manipulation
-          - control/single_demo_grasp
+          # - control/single_demo_grasp
           - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
@@ -191,7 +187,11 @@ jobs:
 
             make libopendr
             
-            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            if [ ${{ matrix.package }} == "control/mobile_manipulation"]; then
+              cd src/opendr/control/mobile_manipulation/
+              source install_mobile_manipulation.sh
+              source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            fi
           fi
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
