@@ -188,10 +188,11 @@ jobs:
             # make libopendr
             
             # if [ ${{ matrix.package }} == "control/mobile_manipulation"]; then
-            echo "Installing mobile manipulation ################################################33"
+            echo "Installing mobile manipulation ####################################################"
             cd src/opendr/control/mobile_manipulation/
             make
-            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+            echo "Running mobile manipulation #####################################################"
+            source run_ros.sh
             # fi
           fi
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
