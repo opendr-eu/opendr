@@ -185,7 +185,7 @@ jobs:
               cd $OPENDR_HOME
             fi
 
-            make libopendr
+            # make libopendr
             
             if [ ${{ matrix.package }} == "control/mobile_manipulation"]; then
               echo "Installing mobile manipulation"
