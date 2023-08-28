@@ -89,7 +89,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
     def test_eval(self):
         print('Starting evaluation test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd_fmod/', verbose=True)
+        self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
         results_dict = self.seq2SeqNMSLearner.eval(dataset='TEST_MODULE', split='test', max_dt_boxes=800,
                                                    datasets_folder=self.temp_dir + '/datasets',
                                                    use_ssd=False)
@@ -104,7 +104,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
 
     def test_infer(self):
         print('Starting inference test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd_fmod/', verbose=True)
+        self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
         dataset_nms = Dataset_NMS(path=self.temp_dir + '/datasets', dataset_name='TEST_MODULE', split='train', use_ssd=False)
         image_fln = dataset_nms.src_data[0]['filename']
         img = Image.open(os.path.join(self.temp_dir, 'datasets', 'TEST_MODULE', image_fln))
