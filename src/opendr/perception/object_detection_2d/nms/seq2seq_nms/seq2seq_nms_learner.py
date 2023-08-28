@@ -576,7 +576,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
 
-    def download(self, path=None, model_name='seq2seq_pets_jpd_fmod', verbose=False,
+    def download(self, path=None, model_name='seq2seq_pets_jpd_pets_fmod', verbose=False,
                  url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
 
         supported_pretrained_models = ['seq2seq_pets_jpd_pets_fmod', 'seq2seq_pets_ssd_wider_person_fmod',
