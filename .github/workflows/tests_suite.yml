@@ -194,7 +194,10 @@ jobs:
             echo "Running mobile manipulation #####################################################"
             pwd
             ls
-            source run_ros.sh
+            cd ../../../..
+            pwd
+            ls
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
             # fi
           fi
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
