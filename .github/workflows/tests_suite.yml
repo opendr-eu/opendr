@@ -102,7 +102,8 @@ jobs:
         export OPENDR_HOME=$PWD
         ./bin/install.sh
         source bin/activate.sh
-        python3 -m pip install -r tests/sources/requirements.txt
+        python3 -m pip install -r tests/requirements.txt
+        
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
