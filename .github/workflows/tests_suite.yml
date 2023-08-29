@@ -75,7 +75,6 @@ jobs:
       if: steps.cache-python-deps.outputs.cache-hit != 'true'
       run: |
         export ROS_DISTRO=noetic
-        export OPENDR_HOME=$PWD
         
         ./bin/install.sh
         source bin/activate.sh
@@ -121,9 +120,9 @@ jobs:
           # # - perception/object_detection_3d # passes, but disabled due to free() crash
           # - perception/facial_expression_recognition
           # - simulation/human_model_generation
-          # - control/mobile_manipulation
-          # - control/single_demo_grasp
-          # - planning/end_to_end_planning
+          - control/mobile_manipulation
+          - control/single_demo_grasp
+          - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
@@ -145,6 +144,7 @@ jobs:
       run: |
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
+        export OPENDR_DEVICE=cpu
 
         # Reinstall some system dependencies
         sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv 
@@ -185,8 +185,9 @@ jobs:
               cd $OPENDR_HOME
             fi
 
-            make libopendr
-            if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
+            # make libopendr
+            
+            if [[ ${{ matrix.package }} == "control/mobile_manipulation" ]]; then
               echo "Installing mobile manipulation"
               cd src/opendr/control/mobile_manipulation/
               make
