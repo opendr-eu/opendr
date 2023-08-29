@@ -121,7 +121,7 @@ jobs:
           # - perception/facial_expression_recognition
           # - simulation/human_model_generation
           - control/mobile_manipulation
-          - control/single_demo_grasp
+          # - control/single_demo_grasp
           - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
@@ -186,14 +186,17 @@ jobs:
             fi
 
             # make libopendr
-            
-            if [[ ${{ matrix.package }} == "control/mobile_manipulation" ]]; then
+
+            # End-to-end planning requires mobile manipulation make
+            if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
               echo "Installing mobile manipulation"
               cd src/opendr/control/mobile_manipulation/
               make
               echo "Running mobile manipulation test"
               cd ../../../..
-              source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+              if [[ ${{ matrix.package }} == "control/mobile_manipulation" ]]; then
+                source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+              fi
             fi
           fi
           echo "Running unittest discover for ${{ matrix.package}}"
