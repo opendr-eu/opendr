@@ -207,7 +207,7 @@ class SpeechTranscriptionNode(Node):
         Logs ROS2 node information.
         """
         self.get_logger().info("-------------------- ROS Node Information --------------------")
-        self.get_logger().info(f"ROS Node: opendr_transcription_node")
+        self.get_logger().info("ROS Node: opendr_transcription_node")
         self.get_logger().info(f"Backbone Model: {self.backbone}")
         self.get_logger().info(f"Model Name: {self.model_name}")
         self.get_logger().info(f"Model Path: {self.model_path}")

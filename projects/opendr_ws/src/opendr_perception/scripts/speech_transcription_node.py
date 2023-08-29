@@ -205,7 +205,7 @@ class SpeechTranscriptionNode:
         Logs ROS node information.
         """
         rospy.loginfo("-------------------- ROS Node Information --------------------")
-        rospy.loginfo(f"ROS Node: opendr_transcription_node")
+        rospy.loginfo("ROS Node: opendr_transcription_node")
         rospy.loginfo(f"Backbone Model: {self.backbone}")
         rospy.loginfo(f"Model Name: {self.model_name}")
         rospy.loginfo(f"Model Path: {self.model_path}")
