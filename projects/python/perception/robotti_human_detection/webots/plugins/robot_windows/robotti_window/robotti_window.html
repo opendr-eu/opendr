@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='UTF-8'>
+  <link rel='stylesheet' type='text/css' href='robotti_window.css'>
+  <link rel="icon" type="image/png" href="https://cyberbotics.com/assets/images/webots.png">
+</head>
+
+<body>
+  <div id="content">
+    <h1>Robotti Window</h1>
+    <fieldset class="group-box">
+      <legend class="group-box-legend">Robot Camera</legend>
+      <span>
+        <img id='robot-camera' alt="Image not available." height=480>
+        <button id="picture-button" class="environment-button" type="button" onclick="takePicture(this)"><span>Save picture</span></button>
+      </span>
+    </fieldset>
+    <p/>
+    <fieldset class="group-box">
+      <legend class="group-box-legend">Environment Manager</legend>
+      <p>
+        Spawn or remove obstacles from the simulation environment.
+      </p>
+      <div>
+        <button id="add-button" class="environment-button" type="button" onclick="addObstacle(this)"><span>Add obstacle</span></button>
+        <span margin-left="5px">DEF name:</span>
+        <input type="text" id="add-def-name" name="add-def-nam" class="text-field" placeholder="<obstacle name>">
+        <span>class:</span>
+        <select id="add-class" name="add-class" class="combo-box">
+          <option value="Cat">Cat</option>
+          <option value="Deer">Deer</option>
+          <option value="Fox">Fox</option>
+          <option value="Horse">Horse</option>
+        </select>
+        <span>x:</span>
+        <input type="number" id="add-position-x" name="add-position-x" class="number-field" placeholder="random">
+        y:
+        <input type="number" id="add-position-y" name="add-position-y" class="number-field" placeholder="random">
+      </div>
+      <p/>
+      <div>
+        <button id="remove-button" class="environment-button" type="button" onclick="removeObstacle(this)"><span>Remove obstacle</span></button>
+        <span argin-left="5px">DEF name:</span>
+        <input type="text" id="remove-def-name" name="remove-def-name" class="text-field" placeholder="<DEF name>">
+      </div>
+    </fieldset>
+    <p/>
+    <fieldset class="group-box">
+      <legend class="group-box-legend">Log</legend>
+      <ul id="console"></ul>
+    </fieldset>
+  </div>
+  <script type="module" src="robotti_window.js"></script>
+</body>
+
+</html>
