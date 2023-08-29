@@ -167,8 +167,14 @@ class ROS2Bridge:
             ros_box.bbox = BoundingBox2D()
             ros_box.results.append(ObjectHypothesisWithPose())
             ros_box.bbox.center = Pose2D()
-            ros_box.bbox.center.x = box.left + box.width / 2.
-            ros_box.bbox.center.y = box.top + box.height / 2.
+            try:
+                ros_box.bbox.center.x = box.left + box.width / 2.
+            except:
+                ros_box.bbox.center.x = float(box.left + box.width / 2.)
+            try:
+                ros_box.bbox.center.y = box.top + box.height / 2.
+            except:
+                ros_box.bbox.center.y = float(box.top + box.height / 2.)
             ros_box.bbox.size_x = float(box.width)
             ros_box.bbox.size_y = float(box.height)
             ros_box.results[0].id = str(box.name)

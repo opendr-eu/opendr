@@ -198,8 +198,8 @@ class ObjectDetectionGemNode(Node):
         self.gem_learner.download(path=".", verbose=True)
 
         # Subscribers
-        msg_rgb = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, 1)
-        msg_ir = message_filters.Subscriber(self, ROS_Image, input_infra_image_topic, 1)
+        msg_rgb = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic)
+        msg_ir = message_filters.Subscriber(self, ROS_Image, input_infra_image_topic)
 
         sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
         sync.registerCallback(self.callback)
