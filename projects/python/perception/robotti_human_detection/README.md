@@ -14,7 +14,7 @@ To run this simulation, you need to install:
     sudo apt install libopenblas0
     ```
 
-Then, you need to compile some libraries needed by the simulation, by running the opening a terminal, navigating 
+Then, you need to compile some libraries needed by the simulation, by opening a terminal, navigating 
 to this folder, i.e. `/opendr/projects/python/perception/robotti_human_detection`, and running:
 ```sh
 export WEBOTS_HOME=/path/to/webots/installation
