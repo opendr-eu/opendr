@@ -201,7 +201,7 @@ class SpeechTranscriptionNode(Node):
         # Start processing thread
         self.processing_thread = Thread(target=self.process_audio)
         self.processing_thread.start()
-        
+
     def log_ros2_info(self):
         """
         Logs ROS2 node information.

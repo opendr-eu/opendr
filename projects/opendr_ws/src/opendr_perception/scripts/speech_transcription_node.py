@@ -53,8 +53,6 @@ def optional_float(string):
     return None if string == "None" else float(string)
 
 
-
-
 class SpeechTranscriptionNode:
     def __init__(
         self,
