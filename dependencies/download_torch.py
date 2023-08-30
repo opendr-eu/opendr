@@ -72,27 +72,42 @@ if __name__ == '__main__':
     # Find Device
     if args.opendr_device == "gpu":
         try:
-            if args.cuda_path is None:
-                CUDA_PATH = get_cuda_path()
-            else:
-                CUDA_PATH = args.cuda_path
-            version_file_type = glob.glob(f"{CUDA_PATH}/version*")
-            if version_file_type[0].endswith('.txt'):
-                version_file = open(f"{CUDA_PATH}/version.txt", mode='r')
-                version_line = version_file.readlines()
-                version_line = version_line[0].replace(".", "")
-                CUDA_VERSION = version_line[13:16]
-                version_file.close()
-            elif version_file_type[0].endswith('.json'):
-                version_file = open(f"{CUDA_PATH}/version.json", mode='r')
-                version_dict = json.load(version_file)
-                CUDA_VERSION = version_dict["cuda"]["version"]
-                CUDA_VERSION = CUDA_VERSION.replace(".", "")
-                CUDA_VERSION = CUDA_VERSION[:3]
-                version_file.close()
-            else:
-                warnings.warn("\033[93m No CUDA version file found.")
+            try:
+                if args.cuda_path is None:
+                    CUDA_PATH = get_cuda_path()
+                else:
+                    CUDA_PATH = args.cuda_path
+                version_file_type = glob.glob(f"{CUDA_PATH}/version*")
+                if version_file_type[0].endswith('.txt'):
+                    version_file = open(f"{CUDA_PATH}/version.txt", mode='r')
+                    version_line = version_file.readlines()
+                    version_line = version_line[0].replace(".", "")
+                    CUDA_VERSION = version_line[13:16]
+                    version_file.close()
+                elif version_file_type[0].endswith('.json'):
+                    version_file = open(f"{CUDA_PATH}/version.json", mode='r')
+                    version_dict = json.load(version_file)
+                    CUDA_VERSION = version_dict["cuda"]["version"]
+                    CUDA_VERSION = CUDA_VERSION.replace(".", "")
+                    CUDA_VERSION = CUDA_VERSION[:3]
+                    version_file.close()
+                else:
+                    warnings.warn("\033[93m No CUDA version file found.")
+
+            except:
+                # In case CUDA installation do not have a version file
+                import subprocess
+
+                result = subprocess.run(['nvcc', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output = result.stdout.decode('utf-8')
+                cuda_version_index = output.find('release ') + len('release ')
+                cuda_version = output[cuda_version_index: cuda_version_index + 5]
+                CUDA_VERSION = cuda_version.replace('.', '').replace(',', '').replace(' ', '')
+
+            if CUDA_VERSION == "112":
+                CUDA_VERSION = "111"
             DEVICE = f"cu{CUDA_VERSION}"
+
         except:
             warnings.warn("\033[93m No CUDA installation found.\n"
                           "Please install CUDA or specify CUDA path with export CUDA_PATH=/path/to/your/cuda.")
@@ -124,4 +139,3 @@ if __name__ == '__main__':
         warnings.warn("\033[93m No torchvision found for your specific torch version.\n"
                       "Please refer to https://github.com/pytorch/vision for more information.")
         exit()
-
