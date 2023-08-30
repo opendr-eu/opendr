@@ -201,6 +201,11 @@ jobs:
               fi
             fi
           fi
+
+          apt list --installed | grep libegl1
+
+          ldconfig -p | grep EGL
+          
           echo "Running unittest discover for ${{ matrix.package}}"
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
