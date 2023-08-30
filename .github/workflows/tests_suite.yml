@@ -68,7 +68,7 @@ jobs:
         path: |
           ~/.cache/pip
           venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dependencies.ini') }}
         restore-keys: |
           ${{ runner.os }}-pip-
     - name: Install toolkit and dependencies
@@ -141,7 +141,7 @@ jobs:
         path: |
           ~/.cache/pip
           venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dependencies.ini') }}
     - name: Run toolkit tests
       run: |
         export ROS_DISTRO=noetic
@@ -149,7 +149,7 @@ jobs:
         export OPENDR_DEVICE=cpu
 
         # Reinstall some system dependencies
-        sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv 
+        sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv ffmpeg
         sudo apt-get install --yes libopenblas-dev libsndfile1 libboost-dev
         
         source bin/activate.sh
@@ -173,7 +173,7 @@ jobs:
             # ROS package dependencies
             if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
               echo "Installing ROS dependencies"
-              sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros
+              sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-hri-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros
             fi
             
             # ROS2 package dependencies
