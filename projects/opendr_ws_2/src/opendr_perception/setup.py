@@ -4,7 +4,7 @@ package_name = 'opendr_perception'
 
 setup(
     name=package_name,
-    version='2.1.0',
+    version='2.2.0',
     packages=[package_name],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -58,6 +58,7 @@ setup(
             opendr_perception.continual_skeleton_based_action_recognition_node:main',
             'gesture_recognition = opendr_perception.gesture_recognition_node:main',
             'performance = opendr_perception.performance_node:main',
+            'speech_transcription = opendr_perception.speech_transcription_node:main',
         ],
     },
 )

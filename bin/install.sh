@@ -19,7 +19,7 @@ else
 fi
 
 # Install base ubuntu deps
-sudo apt-get install --yes libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
+sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
 
 # Get all submodules
 git submodule init
@@ -42,7 +42,7 @@ make install_runtime_dependencies
 # ROS package dependencies
 if [[ ${ROS_DISTRO} == "noetic" || ${ROS_DISTRO} == "melodic" ]]; then
   echo "Installing ROS dependencies"
-  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros
+  sudo apt-get -y install ros-$ROS_DISTRO-vision-msgs ros-$ROS_DISTRO-geometry-msgs ros-$ROS_DISTRO-sensor-msgs ros-$ROS_DISTRO-audio-common-msgs ros-$ROS_DISTRO-hri-msgs ros-$ROS_DISTRO-usb-cam ros-$ROS_DISTRO-webots-ros
 fi
 
 # ROS2 package dependencies

@@ -17,7 +17,8 @@ import numpy as np
 from opendr.engine.data import Image, PointCloud, Timeseries
 from opendr.engine.target import (
     Pose, BoundingBox, BoundingBoxList, Category,
-    BoundingBox3D, BoundingBox3DList, TrackingAnnotation
+    BoundingBox3D, BoundingBox3DList, TrackingAnnotation,
+    VoskTranscription
 )
 from cv_bridge import CvBridge
 from std_msgs.msg import String, ColorRGBA, Header
@@ -36,7 +37,7 @@ from geometry_msgs.msg import (
     Quaternion as QuaternionMsg, Pose as Pose3D,
     Point
 )
-from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint
+from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint, OpenDRTranscription
 from sensor_msgs_py import point_cloud2 as pc2
 
 
@@ -731,3 +732,34 @@ class ROS2Bridge:
         if source_data is not None:
             classification.source_img = source_data
         return classification
+
+    def from_ros_transcription(self, ros_transcripton: OpenDRTranscription) -> VoskTranscription:
+        """
+        Converts an OpenDRTranscription object to a VoskTranscription object.
+        :param ros_transcripton: A ROS transcription message to be converted.
+        :type ros_transcripton: OpenDRTranscription.
+        :return: A Transcription object containing the same text as the input ROS object.
+        :rtype: VoskTranscription.
+        """
+        accept_waveform = ros_transcripton.final != ""
+        transcription = VoskTranscription(text=ros_transcripton.text, accept_waveform=accept_waveform)
+
+        return transcription
+
+    def to_ros_transcription(self, transcription: VoskTranscription) -> OpenDRTranscription:
+        """
+        Converts a VoskTranscription to an OpenDRTranscription object.
+        :param transcription: A VoskTranscription object to be converted.
+        :type transcription: VoskTranscription.
+        :return: An OpenDRTranscription object containing the same text as the input Transcription object.
+        :rtype: OpenDRTranscription.
+        """
+        ros_transcripton = OpenDRTranscription()
+        if transcription.accept_waveform:
+            ros_transcripton.final = transcription.text
+        else:
+            ros_transcripton.final = ""
+
+        ros_transcripton.incremental = transcription.text
+
+        return ros_transcripton
