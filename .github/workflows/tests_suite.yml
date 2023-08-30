@@ -187,10 +187,13 @@ jobs:
               cd $OPENDR_HOME
             fi
 
-            # make libopendr
-            echo "Installing libegl1"
-            sudo apt install libegl1-mesa-dev
+            # Install libegl required by multi-object search
+            if [ ${{ matrix.package}} == "control/multi_object_search" ]; then
+              echo "Installing libegl1 for multi-object search"
+              sudo apt install libegl1-mesa-dev
+            fi
 
+            # Make and run mobile manipulation test
             # End-to-end planning requires mobile manipulation make
             if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
               echo "Installing mobile manipulation"
@@ -201,13 +204,13 @@ jobs:
                 echo "Running mobile manipulation test"
                 source tests/sources/tools/control/mobile_manipulation/run_ros.sh
               fi
+              # Attempting to source setup.bash of mobile manipulation to enable end-to-end-planning to run?
+              if [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
+                source ${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
+              fi
             fi
           fi
 
-          apt list --installed | grep libegl1
-
-          ldconfig -p | grep EGL
-          
           echo "Running unittest discover for ${{ matrix.package}}"
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
