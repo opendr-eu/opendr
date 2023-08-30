@@ -88,42 +88,42 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         package:
-          # - engine
-          # - utils
-          # - perception/activity_recognition
-          # - perception/compressive_learning
-          # - perception/face_recognition
-          # - perception/heart_anomaly_detection
-          # - perception/multimodal_human_centric
-          # - perception/pose_estimation
-          # - perception/fall_detection
-          # - perception/gesture_recognition
-          # - perception/speech_recognition
-          # - perception/skeleton_based_action_recognition/costgcn
-          # - perception/skeleton_based_action_recognition/pstgcn
-          # - perception/skeleton_based_action_recognition/stbln
-          # - perception/skeleton_based_action_recognition/stgcn
-          # - perception/skeleton_based_action_recognition/tagcn
-          # - perception/semantic_segmentation
-          # - perception/binary_high_resolution
-          # - perception/object_tracking_2d
-          # # - perception/object_tracking_3d # passes, but disabled due to free() crash
-          # - perception/object_detection_2d/centernet
-          # - perception/object_detection_2d/detr
-          # - perception/object_detection_2d/gem
-          # - perception/object_detection_2d/ssd
-          # - perception/object_detection_2d/nanodet
-          # - perception/object_detection_2d/yolov3
-          # - perception/object_detection_2d/yolov5
-          # - perception/object_detection_2d/retinaface
-          # - perception/object_detection_2d/nms
-          # - perception/speech_transcription/vosk
-          # - perception/speech_transcription/whisper
-          # # - perception/object_detection_3d # passes, but disabled due to free() crash
-          # - perception/facial_expression_recognition
-          # - simulation/human_model_generation
+          - engine
+          - utils
+          - perception/activity_recognition
+          - perception/compressive_learning
+          - perception/face_recognition
+          - perception/heart_anomaly_detection
+          - perception/multimodal_human_centric
+          - perception/pose_estimation
+          - perception/fall_detection
+          - perception/gesture_recognition
+          - perception/speech_recognition
+          - perception/skeleton_based_action_recognition/costgcn
+          - perception/skeleton_based_action_recognition/pstgcn
+          - perception/skeleton_based_action_recognition/stbln
+          - perception/skeleton_based_action_recognition/stgcn
+          - perception/skeleton_based_action_recognition/tagcn
+          - perception/semantic_segmentation
+          - perception/binary_high_resolution
+          - perception/object_tracking_2d
+          # - perception/object_tracking_3d # passes, but disabled due to free() crash
+          - perception/object_detection_2d/centernet
+          - perception/object_detection_2d/detr
+          - perception/object_detection_2d/gem
+          - perception/object_detection_2d/ssd
+          - perception/object_detection_2d/nanodet
+          - perception/object_detection_2d/yolov3
+          - perception/object_detection_2d/yolov5
+          - perception/object_detection_2d/retinaface
+          - perception/object_detection_2d/nms
+          - perception/speech_transcription/vosk
+          - perception/speech_transcription/whisper
+          # - perception/object_detection_3d # passes, but disabled due to free() crash
+          - perception/facial_expression_recognition
+          - simulation/human_model_generation
           - control/mobile_manipulation
-          # - control/single_demo_grasp
+          - control/single_demo_grasp
           - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
@@ -194,20 +194,15 @@ jobs:
             fi
 
             # Make and run mobile manipulation test
-            # End-to-end planning requires mobile manipulation make
+            # End-to-end planning requires mobile manipulation to run
             if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
               echo "Installing mobile manipulation"
               cd src/opendr/control/mobile_manipulation/
               make
               cd ../../../..
-              if [ ${{ matrix.package }} == "control/mobile_manipulation" ]; then
-                echo "Running mobile manipulation test"
-                source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-              fi
-              # Attempting to source setup.bash of mobile manipulation to enable end-to-end-planning to run?
-              if [ ${{ matrix.package }} == "planning/end_to_end_planning" ]; then
-                source ${OPENDR_HOME}/projects/python/control/mobile_manipulation/mobile_manipulation_ws/devel/setup.bash
-              fi
+
+              echo "Running mobile manipulation test"
+              source tests/sources/tools/control/mobile_manipulation/run_ros.sh
             fi
           fi
 
