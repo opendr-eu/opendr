@@ -44,6 +44,9 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
             - [quadraticselfonn Module](quadratic-selfonn.md)
+        - speech transcription
+            - [whisper Module](speech-transcription-whisper.md)
+            - [vosk Module](speech-transcription-vosk.md)
         - object detection 2d:
             - [nanodet Module](object-detection-2d-nanodet.md)
             - [detr Module](detr.md)
