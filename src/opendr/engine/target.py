@@ -14,7 +14,7 @@
 
 from abc import ABC
 import numpy as np
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Any, List
 
 
 class BaseTarget(ABC):
@@ -1127,3 +1127,108 @@ class Heatmap(Target):
         :rtype: str
         """
         return str(self.data)
+
+
+class BaseTranscription(Target):
+    """
+    This target is used for speech transcription problems. It contains the transcribed text.
+    """
+
+    def __init__(self, text: str):
+        """
+        Construct a new BaseTranscription object based on the given text.
+
+        Args:
+            text (str): Transcribed text
+        """
+        super().__init__()
+        self._text = text
+
+    @property
+    def text(self):
+        """
+        Getter of text.
+
+        :return: the actual transcription held by the object
+        :rtype: str
+        """
+        if self._text is None:
+            raise ValueError("Transcription text is empty")
+
+        return self._text
+
+    @text.setter
+    def text(self, text: str):
+        """
+        Setter for text. Transcription expects data of str type.
+        :param: data to be used for creating a Transcription object
+        """
+        if isinstance(text, str):
+            self._text = text
+        else:
+            raise ValueError("Transcription expects strings as data")
+
+    def __str__(self):
+        return self._text
+
+
+class WhisperTranscription(BaseTranscription):
+    """
+    This target stores transcription from Whisper outputs, transcription text and other side information such as segment,
+    timestamp, no speech probability, etc.
+    """
+
+    def __init__(self, text, segments: List[Dict]):
+        super().__init__(text)
+
+        self._segments = segments
+
+    @property
+    def segments(self):
+        """
+        Getter of segments field.
+        """
+        return self._segments
+
+    @segments.setter
+    def segments(self, segments):
+        """
+        Setter for segments.
+        """
+        if isinstance(segments, List):
+            self._segments = segments
+        else:
+            raise ValueError("WhisperTranscription expects segments as list.")
+
+
+class VoskTranscription(BaseTranscription):
+    """
+    This target stores transcription from Vosk outputs, including, transcription text and information if a phrase was
+    finised or not.
+    """
+
+    def __init__(self, text, accept_waveform: bool):
+        super().__init__(text=text)
+
+        self._accept_waveform = accept_waveform
+
+    @property
+    def accept_waveform(self):
+        """
+        Getter of accept_waveform field.
+        This returns the accept_waveform field of the corresponding class.
+        :return: the accept_waveform field of the corresponding class
+        :rtype: str
+        """
+        return self._accept_waveform
+
+    @accept_waveform.setter
+    def accept_waveform(self, accept_waveform):
+        """
+        Setter for description.
+        :param: description to be assigned for the winning class
+        """
+        if isinstance(accept_waveform, bool):
+            self._accept_waveform = accept_waveform
+        else:
+            raise ValueError("accept_waveform should be a boolean value.")

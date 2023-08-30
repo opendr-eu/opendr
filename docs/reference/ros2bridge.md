@@ -387,6 +387,34 @@ Parameters:
 - **frame**: *int, default=-1*\
   The frame index to assign to the tracking boxes.
 
+
+#### `ROSBridge.from_ros_transcription`
+
+```python
+ROSBridge.from_ros_transcription(self, ros_transcription)
+```
+
+Converts an `OpenDRTranscription` object to a `VoskTranscription` object.
+
+Parameters:
+
+- **ros_transcription**: *opendr_bridge.msg.OpenDRTranscription*\
+ A ROS transcription message to be converted.
+
+
+##### `ROSBridge.to_ros_transcription`
+
+```python
+ROSBridge.to_ros_transcription(self, transcription)
+```
+
+Converts a `VoskTranscription` object to an `OpenDRTranscription` object.
+
+Parameters:
+
+- **transcription**: *opendr.engine.target.VoskTranscription*\
+ A VoskTranscription object to be converted.
+
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivelant to `engine.data.Image`
 2. `ros_bridge.msg.Pose` is used as an equivelant to `engine.target.Pose`
@@ -395,3 +423,4 @@ Parameters:
 5. `geometry_msgs.msg.Pose`  is used as an equivelant to `engine.target.Pose` for 3D poses conversion only.
 6. `vision_msgs.msg.Detection3DArray`  is used as an equivelant to `engine.target.BoundingBox3DList`.
 7. `sensor_msgs.msg.PointCloud`  is used as an equivelant to `engine.data.PointCloud`.
+8. `opendr_interface.msg.OpenDRTranscription` is used as an equivalent to `engine.target.VoskTranscription`.
