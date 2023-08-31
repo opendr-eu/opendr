@@ -121,7 +121,7 @@ class TestSeq2SeqNMS(unittest.TestCase):
         print('Starting save/load test for Seq2Seq-NMS...')
         cls.seq2SeqNMSLearner.save(os.path.join(cls.temp_dir, "test_model", "last_weights"), current_epoch=0)
         cls.seq2SeqNMSLearner.model = None
-        cls.seq2SeqNMSLearner.init_model()
+        # cls.seq2SeqNMSLearner.init_model()
         cls.seq2SeqNMSLearner.load(os.path.join(cls.temp_dir, "test_model"))
         cls.assertIsNotNone(cls.seq2SeqNMSLearner.model, "model is None after loading model.")
         # Cleanup
