@@ -167,7 +167,7 @@ jobs:
             source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           fi
 
-          echo "Running unittest discover for ${{ matrix.package}}"
+          echo "Running unittest discover for ${{ matrix.package }}"
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
 
@@ -185,7 +185,7 @@ jobs:
         
         source bin/activate.sh
 
-        echo "OpenDR env activated, running retinaface make
+        echo "OpenDR env activated, running retinaface make"
         # This should probably run conditionally for tools that need it
         cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
         make
@@ -239,7 +239,7 @@ jobs:
             fi
           fi
 
-          echo "Running unittest discover for ${{ matrix.package}}"
+          echo "Running unittest discover for ${{ matrix.package }}"
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
 
