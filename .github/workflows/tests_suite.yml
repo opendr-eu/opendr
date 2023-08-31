@@ -14,6 +14,10 @@ defaults:
   run:
     shell: bash
 
+env:
+    # XXX: Workaround for https://github.com/actions/cache/issues/1141
+    SEGMENT_DOWNLOAD_TIMEOUT_MINS: 3
+
 jobs:
   test-sources:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
@@ -148,20 +152,24 @@ jobs:
       if: steps.cache-python-deps.outputs.cache-hit != 'true'
       run: |
         echo "Restore cache failed, running regular installation and testing..."
-        # export ROS_DISTRO=noetic
-        # export OPENDR_HOME=$PWD
-        # ./bin/install.sh
-        # source bin/activate.sh
-        # python3 -m pip install -r tests/requirements.txt
+        export ROS_DISTRO=noetic
+        export OPENDR_HOME=$PWD
         
-        # if [ ${{ matrix.package }} = "ctests" ]; then
-        #   make ctests
-        # else
-        #   if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
-        #     source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-        #   fi
-        #   python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
-        # fi
+        echo "Running full OpenDR installation"
+        ./bin/install.sh
+        source bin/activate.sh
+        python3 -m pip install -r tests/requirements.txt
+        
+        if [ ${{ matrix.package }} = "ctests" ]; then
+          make ctests
+        else
+          if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          fi
+
+          echo "Running unittest discover for ${{ matrix.package}}"
+          python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        fi
 
     - name: Run toolkit tests with cache
       if: steps.cache-python-deps.outputs.cache-hit == 'true'
@@ -171,11 +179,14 @@ jobs:
         export OPENDR_DEVICE=cpu
 
         # Reinstall some system dependencies
+        echo "Installing system dependencies"
         sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv ffmpeg
         sudo apt-get install --yes libopenblas-dev libsndfile1 libboost-dev
         
         source bin/activate.sh
 
+        echo "OpenDR env activated, running retinaface make
+        # This should probably run conditionally for tools that need it
         cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
         make
         cd $OPENDR_HOME
