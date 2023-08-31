@@ -136,10 +136,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
-                self.fmod_mean_std = self.__load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                                      fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                                      datasets_folder=datasets_folder,
-                                                                      verbose=verbose)
+                self.fmod_mean_std = self.__load_FMoD_init_from_dataset(dataset=dataset,
+                                                                        map_type=self.fmod_map_type,
+                                                                        fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                        datasets_folder=datasets_folder,
+                                                                        verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
@@ -236,8 +237,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     raise AttributeError("Custom appearance-based features are not yet supported.")
 
                 msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-                q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
-                                                                            resolution=img_res)
+                q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes,
+                                                                              scores=dt_scores,
+                                                                              resolution=img_res)
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
                 preds = torch.clamp(preds, 0.001, 1 - 0.001)
@@ -308,10 +310,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
-                self.fmod_mean_std = self.__load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                                      fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                                      datasets_folder=datasets_folder,
-                                                                      verbose=verbose)
+                self.fmod_mean_std = self.__load_FMoD_init_from_dataset(dataset=dataset,
+                                                                        map_type=self.fmod_map_type,
+                                                                        fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                        datasets_folder=datasets_folder,
+                                                                        verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         self.model = self.model.eval()
@@ -369,7 +372,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 raise AttributeError("Custom appearance-based features are not yet supported.")
             msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
             q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
-                                                                        resolution=img_res)
+                                                                          resolution=img_res)
             with torch.no_grad():
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
@@ -450,7 +453,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         msk = self.__compute_mask(boxes, iou_thres=0.2, extra=0.1)
         q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=boxes, scores=scores,
-                                                                    resolution=img_res)
+                                                                      resolution=img_res)
 
         with torch.no_grad():
             preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
@@ -771,8 +774,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         return enc_vers, enc_vers_all
 
     def __load_FMoD_init_from_dataset(self, dataset=None, map_type='edgemap', fmod_pyramid_lvl=3,
-                                    datasets_folder='./datasets',
-                                    map_bin=True, verbose=False):
+                                      datasets_folder='./datasets', map_bin=True, verbose=False):
         fmod_dir = os.path.join(datasets_folder, dataset, 'FMoD')
         if not os.path.exists(fmod_dir):
             os.makedirs(fmod_dir, exist_ok=True)
