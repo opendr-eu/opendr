@@ -59,7 +59,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         self.classes = None
         self.class_ids = None
 
-        self.__init_model()
+        self.init_model()
         if "cuda" in self.device:
             self.model = self.model.to(self.device)
 
@@ -484,7 +484,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         except:
             raise UserWarning('Pretrained model not found on server.')
 
-    def __init_model(self):
+    def init_model(self):
         if self.model is None:
             self.model = FSeq2Net(dropout=self.dropout, app_input_dim=self.app_input_dim,
                                   geom_input_dim=self.geom_input_dim, lq_dim=self.lq_dim, sq_dim=self.sq_dim,
