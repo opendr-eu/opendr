@@ -59,7 +59,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         self.classes = None
         self.class_ids = None
 
-        self.init_model()
+        self.__init_model()
         if "cuda" in self.device:
             self.model = self.model.to(self.device)
 
@@ -85,7 +85,7 @@ class FSeq2NMSLearner(Learner, NMSCustom):
             os.makedirs(checkpoints_folder)
 
         if not silent and verbose:
-            print("Model trainable parameters:", self.count_parameters())
+            print("Model trainable parameters:", self.__count_parameters())
 
         self.model.train()
         if "cuda" in self.device:
@@ -175,8 +175,8 @@ class FSeq2NMSLearner(Learner, NMSCustom):
 
                 dt_boxes = dt_boxes[:max_dt_boxes]
                 dt_scores = dt_scores[:max_dt_boxes]
-                msk = self.compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-                q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
+                msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
+                q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
                                                                             resolution=img_res)
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    maps=map, img_res=img_res, boxes=dt_boxes)
@@ -287,8 +287,8 @@ class FSeq2NMSLearner(Learner, NMSCustom):
             dt_boxes = dt_boxes[:max_dt_boxes]
             dt_scores = dt_scores[:max_dt_boxes]
 
-            msk = self.compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-            q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
+            msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
+            q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
                                                                         resolution=img_res)
             with torch.no_grad():
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
@@ -326,147 +326,6 @@ class FSeq2NMSLearner(Learner, NMSCustom):
                 print('\n')
         return eval_result
 
-    def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
-        fname = path.split('/')[-1]
-        dir_name = path.replace('/' + fname, '')
-        if not os.path.isdir(dir_name):
-            os.makedirs(dir_name)
-        custom_dict = {'state_dict': self.model.state_dict(), 'current_epoch': current_epoch}
-        if optimizer is not None:
-            custom_dict['optimizer'] = optimizer.state_dict()
-        if scheduler is not None:
-            custom_dict['scheduler'] = scheduler.state_dict()
-        torch.save(custom_dict, path + '.pth')
-
-        metadata = {"model_paths": [fname + '.pth'], "framework": "pytorch", "has_data": False,
-                    "inference_params": {}, "optimized": False, "optimizer_info": {}, "backbone": {},
-                    "format": "pth", "classes": self.classes, "lq_dim": self.lq_dim, "sq_dim": self.sq_dim,
-                    "num_JPUs": self.num_JPUs, "geom_input_dim": self.geom_input_dim,
-                    "app_input_dim": self.app_input_dim, "max_dt_boxes": max_dt_boxes}
-
-        with open(path + '.json', 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, ensure_ascii=False, indent=4)
-        if verbose:
-            print("Saved Pytorch model.")
-
-    def init_model(self):
-        if self.model is None:
-            self.model = FSeq2Net(dropout=self.dropout, app_input_dim=self.app_input_dim,
-                                  geom_input_dim=self.geom_input_dim, lq_dim=self.lq_dim, sq_dim=self.sq_dim,
-                                  num_JPUs=self.num_JPUs, device=self.device)
-            for p in self.model.parameters():
-                if p.dim() > 1:
-                    nn.init.xavier_uniform_(p)
-        else:
-            raise UserWarning("Tried to initialize model while model is already initialized.")
-
-    def load(self, path, verbose=False):
-        if os.path.isdir(path):
-            model_name = 'last_weights'
-            dir_path = path
-        else:
-            model_name = os.path.basename(os.path.normpath(path)).split('.')[0]
-            dir_path = os.path.dirname(os.path.normpath(path))
-
-        if verbose:
-            print("Model name:", model_name, "-->", os.path.join(dir_path, model_name + ".json"))
-        with open(os.path.join(dir_path, model_name + ".json"), encoding='utf-8-sig') as f:
-            metadata = json.load(f)
-        pth_path = os.path.join(dir_path, metadata["model_paths"][0])
-        if verbose:
-            print("Loading checkpoint:", pth_path)
-        try:
-            checkpoint = torch.load(pth_path, map_location=torch.device(self.device))
-        except FileNotFoundError as e:
-            e.strerror = "File " + pth_path + "not found."
-            raise e
-        self.assign_params(metadata=metadata, verbose=verbose)
-        self.load_state(checkpoint)
-        if verbose:
-            print("Loaded parameters and metadata.")
-        return True
-
-    def assign_params(self, metadata, verbose):
-        if verbose and self.geom_input_dim is not None and self.geom_input_dim != metadata["geom_input_dim"]:
-            print("Incompatible value for the attribute \"geom_input_dim\". It is now set to: " +
-                  str(metadata["geom_input_dim"]))
-        self.geom_input_dim = metadata["geom_input_dim"]
-        if verbose and self.app_input_dim is not None and self.app_input_dim != metadata["app_input_dim"]:
-            print("Incompatible value for the attribute \"app_input_dim\". It is now set to: " +
-                  str(metadata["app_input_dim"]))
-        self.app_input_dim = metadata["app_input_dim"]
-        if verbose and self.lq_dim is not None and \
-                self.lq_dim != metadata["lq_dim"]:
-            print("Incompatible value for the attribute \"lq_dim\". It is now set to: " +
-                  str(metadata["lq_dim"]))
-        self.lq_dim = metadata["lq_dim"]
-        if verbose and self.sq_dim is not None and self.sq_dim != metadata["sq_dim"]:
-            print("Incompatible value for the attribute \"sq_dim\". It is now set to: " +
-                  str(metadata["sq_dim"]))
-        self.sq_dim = metadata["sq_dim"]
-        if verbose and self.num_JPUs is not None and self.num_JPUs != metadata["num_JPUs"]:
-            print("Incompatible value for the attribute \"num_JPUs\". It is now set to: " +
-                  str(metadata["num_JPUs"]))
-        self.num_JPUs = metadata["num_JPUs"]
-        if verbose and 'max_dt_boxes' in metadata:
-            print('Model is trained with ' + str(metadata['max_dt_boxes']) + ' as the maximum number of detections.')
-
-    def load_state(self, checkpoint=None):
-        if checkpoint is None:
-            for p in self.model.parameters():
-                if p.dim() > 1:
-                    nn.init.xavier_uniform_(p)
-        else:
-            try:
-                source_state = checkpoint['state_dict']
-            except KeyError:
-                source_state = checkpoint
-            target_state = self.model.state_dict()
-            new_target_state = collections.OrderedDict()
-            for target_key, target_value in target_state.items():
-                if target_key in source_state and source_state[target_key].size() == target_state[target_key].size():
-                    new_target_state[target_key] = source_state[target_key]
-                else:
-                    new_target_state[target_key] = target_state[target_key]
-
-            self.model.load_state_dict(new_target_state)
-
-    def count_parameters(self):
-
-        if self.model is None:
-            raise UserWarning("Model is not initialized, can't count trainable parameters.")
-        return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-
-    def download(self, path=None, model_name='fseq2_pets_ssd_pets', verbose=False,
-                 url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
-
-        supported_pretrained_models = ["fseq2_pets_ssd_pets"]
-
-        if model_name not in supported_pretrained_models:
-            str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
-            for i in range(len(supported_pretrained_models)):
-                str_error = str_error + supported_pretrained_models[i] + ", "
-            str_error = str_error[:-2] + '.'
-            raise ValueError(str_error)
-
-        if path is None:
-            path = self.temp_path
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if verbose:
-            print("Downloading pretrained model...")
-
-        file_url = os.path.join(url, "pretrained", model_name + '.zip')
-        try:
-            urlretrieve(file_url, os.path.join(path, model_name + '.zip'))
-            with zipfile.ZipFile(os.path.join(path, model_name + '.zip'), 'r') as zip_ref:
-                zip_ref.extractall(path)
-            os.remove(os.path.join(path, model_name + '.zip'))
-        except:
-            raise UserWarning('Pretrained model not found on server.')
-
     def infer(self, map=None, boxes=None, scores=None, boxes_sorted=False, max_dt_boxes=400, img_res=None,
               threshold=0.1):
         bounding_boxes = BoundingBoxList([])
@@ -499,8 +358,8 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         boxes = boxes[:max_dt_boxes]
         scores = scores[:max_dt_boxes]
 
-        msk = self.compute_mask(boxes, iou_thres=0.2, extra=0.1)
-        q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=boxes, scores=scores,
+        msk = self.__compute_mask(boxes, iou_thres=0.2, extra=0.1)
+        q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=boxes, scores=scores,
                                                                     resolution=img_res)
 
         with torch.no_grad():
@@ -521,14 +380,6 @@ class FSeq2NMSLearner(Learner, NMSCustom):
                                score=preds[idx])
             bounding_boxes.data.append(bbox)
         return bounding_boxes, [boxes, np.zeros(scores.shape[0]), preds]
-
-    def optimize(self, **kwargs):
-        """This method is not used in this implementation."""
-        raise NotImplementedError
-
-    def reset(self):
-        """This method is not used in this implementation."""
-        return NotImplementedError
 
     def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2, map=None):
         if isinstance(boxes, np.ndarray):
@@ -551,14 +402,163 @@ class FSeq2NMSLearner(Learner, NMSCustom):
                            img_res=img.opencv().shape[::-1][1:], map=map)
         return boxes
 
-    def compute_mask(self, boxes=None, iou_thres=0.2, extra=0.1):
+    def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
+        fname = path.split('/')[-1]
+        dir_name = path.replace('/' + fname, '')
+        if not os.path.isdir(dir_name):
+            os.makedirs(dir_name)
+        custom_dict = {'state_dict': self.model.state_dict(), 'current_epoch': current_epoch}
+        if optimizer is not None:
+            custom_dict['optimizer'] = optimizer.state_dict()
+        if scheduler is not None:
+            custom_dict['scheduler'] = scheduler.state_dict()
+        torch.save(custom_dict, path + '.pth')
+
+        metadata = {"model_paths": [fname + '.pth'], "framework": "pytorch", "has_data": False,
+                    "inference_params": {}, "optimized": False, "optimizer_info": {}, "backbone": {},
+                    "format": "pth", "classes": self.classes, "lq_dim": self.lq_dim, "sq_dim": self.sq_dim,
+                    "num_JPUs": self.num_JPUs, "geom_input_dim": self.geom_input_dim,
+                    "app_input_dim": self.app_input_dim, "max_dt_boxes": max_dt_boxes}
+
+        with open(path + '.json', 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+        if verbose:
+            print("Saved Pytorch model.")
+
+    def load(self, path, verbose=False):
+        if os.path.isdir(path):
+            model_name = 'last_weights'
+            dir_path = path
+        else:
+            model_name = os.path.basename(os.path.normpath(path)).split('.')[0]
+            dir_path = os.path.dirname(os.path.normpath(path))
+
+        if verbose:
+            print("Model name:", model_name, "-->", os.path.join(dir_path, model_name + ".json"))
+        with open(os.path.join(dir_path, model_name + ".json"), encoding='utf-8-sig') as f:
+            metadata = json.load(f)
+        pth_path = os.path.join(dir_path, metadata["model_paths"][0])
+        if verbose:
+            print("Loading checkpoint:", pth_path)
+        try:
+            checkpoint = torch.load(pth_path, map_location=torch.device(self.device))
+        except FileNotFoundError as e:
+            e.strerror = "File " + pth_path + "not found."
+            raise e
+        self.__assign_params(metadata=metadata, verbose=verbose)
+        self.__load_state(checkpoint)
+        if verbose:
+            print("Loaded parameters and metadata.")
+        return True
+
+    def download(self, path=None, model_name='fseq2_pets_ssd_pets', verbose=False,
+                 url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
+
+        supported_pretrained_models = ["fseq2_pets_ssd_pets"]
+
+        if model_name not in supported_pretrained_models:
+            str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
+            for i in range(len(supported_pretrained_models)):
+                str_error = str_error + supported_pretrained_models[i] + ", "
+            str_error = str_error[:-2] + '.'
+            raise ValueError(str_error)
+
+        if path is None:
+            path = self.temp_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if verbose:
+            print("Downloading pretrained model...")
+
+        file_url = os.path.join(url, "pretrained", model_name + '.zip')
+        try:
+            urlretrieve(file_url, os.path.join(path, model_name + '.zip'))
+            with zipfile.ZipFile(os.path.join(path, model_name + '.zip'), 'r') as zip_ref:
+                zip_ref.extractall(path)
+            os.remove(os.path.join(path, model_name + '.zip'))
+        except:
+            raise UserWarning('Pretrained model not found on server.')
+
+    def __init_model(self):
+        if self.model is None:
+            self.model = FSeq2Net(dropout=self.dropout, app_input_dim=self.app_input_dim,
+                                  geom_input_dim=self.geom_input_dim, lq_dim=self.lq_dim, sq_dim=self.sq_dim,
+                                  num_JPUs=self.num_JPUs, device=self.device)
+            for p in self.model.parameters():
+                if p.dim() > 1:
+                    nn.init.xavier_uniform_(p)
+        else:
+            raise UserWarning("Tried to initialize model while model is already initialized.")
+
+    def __assign_params(self, metadata, verbose):
+        if verbose and self.geom_input_dim is not None and self.geom_input_dim != metadata["geom_input_dim"]:
+            print("Incompatible value for the attribute \"geom_input_dim\". It is now set to: " +
+                  str(metadata["geom_input_dim"]))
+        self.geom_input_dim = metadata["geom_input_dim"]
+        if verbose and self.app_input_dim is not None and self.app_input_dim != metadata["app_input_dim"]:
+            print("Incompatible value for the attribute \"app_input_dim\". It is now set to: " +
+                  str(metadata["app_input_dim"]))
+        self.app_input_dim = metadata["app_input_dim"]
+        if verbose and self.lq_dim is not None and \
+                self.lq_dim != metadata["lq_dim"]:
+            print("Incompatible value for the attribute \"lq_dim\". It is now set to: " +
+                  str(metadata["lq_dim"]))
+        self.lq_dim = metadata["lq_dim"]
+        if verbose and self.sq_dim is not None and self.sq_dim != metadata["sq_dim"]:
+            print("Incompatible value for the attribute \"sq_dim\". It is now set to: " +
+                  str(metadata["sq_dim"]))
+        self.sq_dim = metadata["sq_dim"]
+        if verbose and self.num_JPUs is not None and self.num_JPUs != metadata["num_JPUs"]:
+            print("Incompatible value for the attribute \"num_JPUs\". It is now set to: " +
+                  str(metadata["num_JPUs"]))
+        self.num_JPUs = metadata["num_JPUs"]
+        if verbose and 'max_dt_boxes' in metadata:
+            print('Model is trained with ' + str(metadata['max_dt_boxes']) + ' as the maximum number of detections.')
+
+    def __load_state(self, checkpoint=None):
+        if checkpoint is None:
+            for p in self.model.parameters():
+                if p.dim() > 1:
+                    nn.init.xavier_uniform_(p)
+        else:
+            try:
+                source_state = checkpoint['state_dict']
+            except KeyError:
+                source_state = checkpoint
+            target_state = self.model.state_dict()
+            new_target_state = collections.OrderedDict()
+            for target_key, target_value in target_state.items():
+                if target_key in source_state and source_state[target_key].size() == target_state[target_key].size():
+                    new_target_state[target_key] = source_state[target_key]
+                else:
+                    new_target_state[target_key] = target_state[target_key]
+
+            self.model.load_state_dict(new_target_state)
+
+    def __count_parameters(self):
+
+        if self.model is None:
+            raise UserWarning("Model is not initialized, can't count trainable parameters.")
+        return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+    def optimize(self, **kwargs):
+        """This method is not used in this implementation."""
+        raise NotImplementedError
+
+    def reset(self):
+        """This method is not used in this implementation."""
+        return NotImplementedError
+
+    def __compute_mask(self, boxes=None, iou_thres=0.2, extra=0.1):
         relations = filter_iou_boxes(boxes, iou_thres=iou_thres)
         mask1 = torch.tril(relations).float()
         mask2 = extra * torch.triu(relations, diagonal=1).float()
         mask = mask1 + mask2
         return mask
 
-    def compute_geometrical_feats(self, boxes, scores, resolution):
+    def __compute_geometrical_feats(self, boxes, scores, resolution):
         boxBs = boxes.clone().unsqueeze(0).repeat(boxes.shape[0], 1, 1)
         boxAs = boxes.unsqueeze(1).repeat(1, boxes.shape[0], 1)
         scoresBs = scores.unsqueeze(0).unsqueeze(-1).repeat(scores.shape[0], 1, 1)
