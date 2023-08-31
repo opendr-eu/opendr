@@ -117,7 +117,7 @@ class TestFSeq2NMS(unittest.TestCase):
         print('Starting save/load test for FSeq2-NMS...')
         self.fSeq2NMSLearner.save(os.path.join(self.temp_dir, "test_model", "last_weights"), current_epoch=0)
         self.fSeq2NMSLearner.model = None
-        # self.fSeq2NMSLearner.init_model()
+        self.fSeq2NMSLearner.__init_model()
         self.fSeq2NMSLearner.load(os.path.join(self.temp_dir, "test_model"))
         self.assertIsNotNone(self.fSeq2NMSLearner.model, "model is None after loading model.")
         # Cleanup
