@@ -176,8 +176,9 @@ class FSeq2NMSLearner(Learner, NMSCustom):
                 dt_boxes = dt_boxes[:max_dt_boxes]
                 dt_scores = dt_scores[:max_dt_boxes]
                 msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-                q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
-                                                                            resolution=img_res)
+                q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes,
+                                                                              scores=dt_scores,
+                                                                              resolution=img_res)
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    maps=map, img_res=img_res, boxes=dt_boxes)
                 preds = torch.clamp(preds, 0.001, 1 - 0.001)
@@ -288,8 +289,9 @@ class FSeq2NMSLearner(Learner, NMSCustom):
             dt_scores = dt_scores[:max_dt_boxes]
 
             msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-            q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
-                                                                        resolution=img_res)
+            q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes,
+                                                                          scores=dt_scores,
+                                                                          resolution=img_res)
             with torch.no_grad():
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    maps=map, img_res=img_res, boxes=dt_boxes)
@@ -359,8 +361,9 @@ class FSeq2NMSLearner(Learner, NMSCustom):
         scores = scores[:max_dt_boxes]
 
         msk = self.__compute_mask(boxes, iou_thres=0.2, extra=0.1)
-        q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=boxes, scores=scores,
-                                                                    resolution=img_res)
+        q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=boxes,
+                                                                      scores=scores,
+                                                                      resolution=img_res)
 
         with torch.no_grad():
             preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
