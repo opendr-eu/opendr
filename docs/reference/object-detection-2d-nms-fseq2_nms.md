@@ -55,18 +55,18 @@ Parameters:
 
 - **dataset**: *{'PETS', 'CROWDHUMAN'}*\
   Specifies the name of the dataset among those available from training.
-- **logging_path**: *str, default=None*\
+- **logging_path**: *str, default=''*\
   Path to save log files.
   If set to None, only the console will be used for logging.
 - **logging_flush_secs**: *int, default=30*\
   How often, in seconds, to flush the TensorBoard data to disk.
-- **silent**: *bool, default=False*\
+- **silent**: *bool, default=True*\
   If set to True, disables all printing of training progress reports and other information to STDOUT.
 - **verbose**: *bool, default=True*\
   If True, enables maximum verbosity.
 - **nms_gt_iou**: *float, default=0.5*\
   Specifies the threshold used to determine whether a detection RoI must be suppressed or not based on its IoU with the image's ground-truth RoIs.
-- **max_dt_boxes**: *int, default=500*\
+- **max_dt_boxes**: *int, default=400*\
   Specifies the maximum number of RoIs provided to fseq2-nms model as input.
 - **datasets_folder**: *str, default='./datasets'*\
   Specifies the path to the folder where the datasets are stored.
@@ -80,14 +80,14 @@ Parameters:
 
 #### `FSeq2NMSLearner.eval`
 ```python
-FSeq2NMSLearner.eval(self, dataset, split, verbose, max_dt_boxes, datasets_folder)
+FSeq2NMSLearner.eval(self, dataset, split, verbose, max_dt_boxes, threshold, datasets_folder, use_ssd, ssd_model)
 ```
 
 Performs evaluation on a set of dataset.
 
 Parameters:
 
-- **dataset**: *{'PETS', 'TEST_MODULE}*\
+- **dataset**: *{'PETS', 'TEST_MODULE'}*\
   Specifies the name of the dataset among those available from training.
 - **split**: *{'train', 'val', 'test'} default='test'*\
   Specifies the set of the corresponding dataset where the evaluation will be performed.
@@ -99,7 +99,7 @@ Parameters:
   Specifies the confidence threshold, used for RoI selection after fseq2-nms rescoring.
 - **datasets_folder**: *str, default='./datasets'*\
   Specifies the path to the folder where the datasets are stored.
-- **use_ssd**: *bool, default=False*\
+- **use_ssd**: *bool, default=True*\
   If set to True, RoIs from SSD are fed to the seq2Seq-nms model.
   Otherwise, RoIs from the default detector of the specified dataset are used as input.
 - **ssd_model**: *{'ssd_512_vgg16_atrous_pets', 'ssd_default_person'} , default=None*\
@@ -134,7 +134,7 @@ Parameters:
 
 #### `FSeq2NMSLearner.run_nms`
 ```python
-FSeq2NMSLearner.run_nms(self, boxes, scores, img, threshold, boxes_sorted, top_k, maps)
+FSeq2NMSLearner.run_nms(self, boxes, scores, boxes_sorted, top_k, img, threshold, map)
 ```
 
 Performs non-maximum suppression, using fseq2-nms.
@@ -152,9 +152,9 @@ Parameters:
   Specifies whether *boxes* and *scores* are sorted based on *scores* in descending order.
 - **top_k**: *int, default=400*\
   Specifies the maximum number of detection RoIs that are fed as input to fseq2-nms model.
-- **img**: *object*\
+- **img**: *object, default=None*\
   Object of type engine.data.Image.
-- **threshold**: *float, default=0.1*\
+- **threshold**: *float, default=0.2*\
   Specifies the score threshold that will determine which RoIs will be kept after fseq2-nms rescoring. 
 - **map**: *numpy.ndarray, default=None*\
   Feature maps extracted by the detector, used as input in Fseq2-NMS.
@@ -214,7 +214,7 @@ Parameters:
   If *None*, the *self.temp_path* directory is used instead.
 - **model_name**: *{fseq2_pets_ssd_pets'}, default='fseq2_pets_ssd_pets'*\
   Downloads the specified pretrained fseq2-nms model.
-- **verbose**: *bool default=True*\
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.

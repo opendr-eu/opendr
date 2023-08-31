@@ -141,7 +141,7 @@ Parameters:
   
 #### `Seq2SeqNMSLearner.run_nms`
 ```python
-Seq2SeqNMSLearner.run_nms(self, boxes, scores, img, threshold, boxes_sorted, top_k, map=None)
+Seq2SeqNMSLearner.run_nms(self, boxes, scores, img, threshold, boxes_sorted, top_k, map)
 ```
 
 Performs non-maximum suppression, using seq2seq-nms.
