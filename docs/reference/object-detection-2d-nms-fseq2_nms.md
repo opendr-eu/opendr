@@ -32,7 +32,7 @@ Constructor parameters:
 - **checkpoint_load_iter**: *int, default=0*\
   Specifies the epoch to load a saved checkpoint from.
   If set to 0 no checkpoint will be loaded.
-- **log_after**: *int, default=500*\
+- **log_after**: *int, default=10000*\
   Specifies interval (in iterations/batches) between information logging on *stdout*.
 - **iou_filtering**: *float, default=0.8*\
   Specifies the IoU threshold used for filtering RoIs before provided by the fseq2-nms model.
