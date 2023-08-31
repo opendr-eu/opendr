@@ -69,8 +69,8 @@ jobs:
           ~/.cache/pip
           venv
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dependencies.ini') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+        # restore-keys: |
+        #   ${{ runner.os }}-pip-
     - name: Install toolkit and dependencies
       if: steps.cache-python-deps.outputs.cache-hit != 'true'
       run: |
@@ -142,7 +142,28 @@ jobs:
           ~/.cache/pip
           venv
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dependencies.ini') }}
-    - name: Run toolkit tests
+
+    - name: Run toolkit tests without cache
+      if: steps.cache-python-deps.outputs.cache-hit != 'true'
+      run: |
+        echo "Restore cache failed, running regular installation and testing..."
+        export ROS_DISTRO=noetic
+        export OPENDR_HOME=$PWD
+        ./bin/install.sh
+        source bin/activate.sh
+        python3 -m pip install -r tests/requirements.txt
+        
+        if [ ${{ matrix.package }} = "ctests" ]; then
+          make ctests
+        else
+          if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
+            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          fi
+          python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+        fi
+
+    - name: Run toolkit tests with cache
+      if: steps.cache-python-deps.outputs.cache-hit == 'true'
       run: |
         export ROS_DISTRO=noetic
         export OPENDR_HOME=$PWD
