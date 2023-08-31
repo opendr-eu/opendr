@@ -97,7 +97,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fMoD = FMoD(roi_pooling_dim=self.fmod_roi_pooling_dim, pyramid_depth=self.fmod_pyramid_lvl,
                              resize_dim=self.fmod_map_res_dim,
                              map_type=self.fmod_map_type, map_bin=self.fmod_map_bin, device=self.device)
-        self.__init_model()
+        self.init_model()
         if "cuda" in self.device:
             self.model = self.model.to(self.device)
 
@@ -599,7 +599,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         except:
             raise UserWarning('Pretrained model not found on server.')
 
-    def __init_model(self):
+    def init_model(self):
         if self.model is None:
             self.model = Seq2SeqNet(dropout=self.dropout, use_app_feats=self.use_app_feats,
                                     app_input_dim=self.app_input_dim,
