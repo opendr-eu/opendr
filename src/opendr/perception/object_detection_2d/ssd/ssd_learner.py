@@ -160,7 +160,7 @@ class SingleShotDetectorLearner(Learner):
         model_name = os.path.basename(os.path.normpath(path))
         if verbose:
             print("Model name:", model_name, "-->", os.path.join(path, model_name + ".json"))
-        with open(os.path.join(path, model_name + ".json")) as f:
+        with open(os.path.join(path, model_name + ".json"), encoding='utf-8-sig') as f:
             metadata = json.load(f)
 
         self.backbone = metadata["backbone"]
@@ -200,9 +200,9 @@ class SingleShotDetectorLearner(Learner):
             os.makedirs(path)
 
         if mode == "pretrained":
-            path = os.path.join(path, "ssd_default_person")
-            if not os.path.exists(path):
-                os.makedirs(path)
+            path_def = os.path.join(path, "ssd_default_person")
+            if not os.path.exists(path_def):
+                os.makedirs(path_def)
 
             if verbose:
                 print("Downloading pretrained model...")
@@ -212,7 +212,7 @@ class SingleShotDetectorLearner(Learner):
                                     "ssd_512_vgg16_atrous_wider_person.json")
             if verbose:
                 print("Downloading metadata...")
-            file_path = os.path.join(path, "ssd_default_person.json")
+            file_path = os.path.join(path_def, "ssd_default_person.json")
             if not os.path.exists(file_path):
                 urlretrieve(file_url, file_path)
 
@@ -221,7 +221,32 @@ class SingleShotDetectorLearner(Learner):
             file_url = os.path.join(url, "pretrained", "ssd_512_vgg16_atrous_wider_person",
                                     "ssd_512_vgg16_atrous_wider_person.params")
 
-            file_path = os.path.join(path, "ssd_512_vgg16_atrous_wider_person.params")
+            file_path = os.path.join(path_def, "ssd_512_vgg16_atrous_wider_person.params")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
+
+            path_pets = os.path.join(path, "ssd_512_vgg16_atrous_pets")
+            if not os.path.exists(path_pets):
+                os.makedirs(path_pets)
+
+            if verbose:
+                print("Downloading pretrained model...")
+
+            file_url = os.path.join(url, "pretrained",
+                                    "ssd_512_vgg16_atrous_pets",
+                                    "ssd_512_vgg16_atrous_pets.json")
+            if verbose:
+                print("Downloading metadata...")
+            file_path = os.path.join(path_pets, "ssd_512_vgg16_atrous_pets.json")
+            if not os.path.exists(file_path):
+                urlretrieve(file_url, file_path)
+
+            if verbose:
+                print("Downloading params...")
+            file_url = os.path.join(url, "pretrained", "ssd_512_vgg16_atrous_pets",
+                                    "ssd_512_vgg16_atrous_pets.params")
+
+            file_path = os.path.join(path_pets, "ssd_512_vgg16_atrous_pets.params")
             if not os.path.exists(file_path):
                 urlretrieve(file_url, file_path)
 
@@ -571,7 +596,7 @@ class SingleShotDetectorLearner(Learner):
         return eval_dict
 
     def infer(self, img, threshold=0.2, keep_size=False, custom_nms: NMSCustom=None,
-              nms_thresh=0.45, nms_topk=400, post_nms=100):
+              nms_thresh=0.45, nms_topk=400, post_nms=100, extract_maps=False):
         """
         Performs inference on a single image and returns the resulting bounding boxes.
         :param img: image to perform inference on
@@ -598,6 +623,8 @@ class SingleShotDetectorLearner(Learner):
 
         if custom_nms:
             self._model.set_nms(nms_thresh=0.85, nms_topk=5000, post_nms=1000)
+            if custom_nms.__class__.__name__ == 'FSeq2NMSLearner':
+                extract_maps = True
         else:
             self._model.set_nms(nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms)
         if not isinstance(img, Image):
@@ -636,8 +663,14 @@ class SingleShotDetectorLearner(Learner):
         boxes[:, [0, 2]] *= width
         boxes[:, [1, 3]] *= height
 
+        maps_save = None
+        if extract_maps:
+            maps = self._model.features(x)
+            maps_save = maps[0][0].swapaxes(dim1=0, dim2=1).swapaxes(dim1=1, dim2=2).asnumpy().astype(dtype=np.float16)
+
         if custom_nms is not None:
-            bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=_img)
+                bounding_boxes, _ = custom_nms.run_nms(boxes=boxes, scores=scores, threshold=threshold, img=img,
+                                                       map=maps_save)
         else:
             bounding_boxes = BoundingBoxList([])
             for idx, box in enumerate(boxes):
@@ -647,7 +680,8 @@ class SingleShotDetectorLearner(Learner):
                                    name=class_IDs[idx, :],
                                    score=scores[idx, :])
                 bounding_boxes.data.append(bbox)
-
+        if extract_maps:
+            return bounding_boxes, maps_save
         return bounding_boxes
 
     @staticmethod

@@ -62,7 +62,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             self.fmod_roi_pooling_dim = 160
             self.fmod_map_res_dim = 600
             self.fmod_pyramid_lvl = 3
-            self.sef_fmod_architecture()
+            self.__sef_fmod_architecture()
             self.fmod_feats_dim = 0
             for i in range(0, self.fmod_pyramid_lvl):
                 self.fmod_feats_dim = self.fmod_feats_dim + 15 * (pow(4, i))
@@ -81,7 +81,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         self.geom_input_dim = 14
         self.num_JPUs = 4
         self.geom_input_dim = 14
-        self.set_architecture()
+        self.__set_architecture()
         self.dropout = dropout
         self.temp_path = temp_path
         if not os.path.isdir(self.temp_path):
@@ -103,10 +103,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
     def fit(self, dataset, logging_path='', logging_flush_secs=30, silent=True,
             verbose=True, nms_gt_iou=0.5, max_dt_boxes=400, datasets_folder='./datasets',
-            use_ssd=False, lr_step=True):
+            use_ssd=False, ssd_model=None, lr_step=True):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split='train', use_ssd=use_ssd,
-                                  device=self.device)
+                                  ssd_model=ssd_model, device=self.device)
         if self.classes is None:
             self.classes = dataset_nms.classes
             self.class_ids = dataset_nms.class_ids
@@ -123,7 +123,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             os.makedirs(checkpoints_folder)
 
         if not silent and verbose:
-            print("Model trainable parameters:", self.count_parameters())
+            print("Model trainable parameters:", self.__count_parameters())
 
         self.model.train()
         if "cuda" in self.device:
@@ -136,10 +136,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
-                self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                                      fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                                      datasets_folder=datasets_folder,
-                                                                      verbose=verbose)
+                self.fmod_mean_std = self.__load_FMoD_init_from_dataset(dataset=dataset,
+                                                                        map_type=self.fmod_map_type,
+                                                                        fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                        datasets_folder=datasets_folder,
+                                                                        verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         start_epoch = 0
@@ -147,7 +148,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if lr_step and self.epochs > 1:
             drop_after_epoch = [int(self.epochs * 0.5)]
             if self.epochs > 3:
-                drop_after_epoch.append(int(self.epochs * 0.7))
+                drop_after_epoch.append(int(self.epochs * 0.9))
 
         train_ids = np.arange(len(dataset_nms.src_data))
         total_loss_iter = 0
@@ -173,12 +174,12 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 if self.log_after != 0 and num_iter > 0 and num_iter % self.log_after == 0:
                     if logging:
                         file_writer.add_scalar(tag="cross_entropy_loss",
-                                               scalar_value=total_loss_iter/self.log_after,
+                                               scalar_value=total_loss_iter / self.log_after,
                                                global_step=num_iter)
                     if verbose:
                         print(''.join(['\nEpoch: {}',
                                        ' Iter: {}, cross_entropy_loss: {}']).format(epoch, num_iter,
-                                                                                    total_loss_iter/self.log_after))
+                                                                                    total_loss_iter / self.log_after))
                     total_loss_iter = 0
 
                 image_fln = dataset_nms.src_data[sample_id]['filename']
@@ -235,9 +236,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 elif self.app_feats == 'custom':
                     raise AttributeError("Custom appearance-based features are not yet supported.")
 
-                msk = self.compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-                q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
-                                                                            resolution=img_res)
+                msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
+                q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes,
+                                                                              scores=dt_scores,
+                                                                              resolution=img_res)
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
                 preds = torch.clamp(preds, 0.001, 1 - 0.001)
@@ -271,8 +273,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             if verbose:
                 print(''.join(['\nEpoch: {}',
                                ' cross_entropy_loss: {}\n']).format(epoch,
-                                                                    total_loss_epoch/len(train_ids)))
-            training_dict['cross_entropy_loss'].append(total_loss_epoch/len(train_ids))
+                                                                    total_loss_epoch / len(train_ids)))
+            training_dict['cross_entropy_loss'].append(total_loss_epoch / len(train_ids))
             if self.checkpoint_after_iter != 0 and epoch % self.checkpoint_after_iter == self.checkpoint_after_iter - 1:
                 snapshot_name = '{}/checkpoint_epoch_{}'.format(checkpoints_folder, epoch)
                 self.save(path=snapshot_name, optimizer=optimizer, scheduler=scheduler,
@@ -288,10 +290,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         return training_dict
 
     def eval(self, dataset, split='test', verbose=True, max_dt_boxes=400, threshold=0.0,
-             datasets_folder='./datasets', use_ssd=False):
+             datasets_folder='./datasets', use_ssd=False, ssd_model=None):
 
         dataset_nms = Dataset_NMS(path=datasets_folder, dataset_name=dataset, split=split, use_ssd=use_ssd,
-                                  device=self.device)
+                                  ssd_model=ssd_model, device=self.device)
 
         if self.classes is None:
             self.classes = dataset_nms.classes
@@ -308,10 +310,11 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
         if self.app_feats == 'fmod':
             if self.fmod_mean_std is None:
-                self.fmod_mean_std = self.load_FMoD_init_from_dataset(dataset=dataset, map_type=self.fmod_map_type,
-                                                                      fmod_pyramid_lvl=self.fmod_pyramid_lvl,
-                                                                      datasets_folder=datasets_folder,
-                                                                      verbose=verbose)
+                self.fmod_mean_std = self.__load_FMoD_init_from_dataset(dataset=dataset,
+                                                                        map_type=self.fmod_map_type,
+                                                                        fmod_pyramid_lvl=self.fmod_pyramid_lvl,
+                                                                        datasets_folder=datasets_folder,
+                                                                        verbose=verbose)
             self.fMoD.set_mean_std(mean_values=self.fmod_mean_std['mean'], std_values=self.fmod_mean_std['std'])
 
         self.model = self.model.eval()
@@ -367,9 +370,9 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                     app_feats = app_feats.to(self.device)
             elif self.app_feats == 'custom':
                 raise AttributeError("Custom appearance-based features are not yet supported.")
-            msk = self.compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
-            q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
-                                                                        resolution=img_res)
+            msk = self.__compute_mask(dt_boxes, iou_thres=0.2, extra=0.1)
+            q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=dt_boxes, scores=dt_scores,
+                                                                          resolution=img_res)
             with torch.no_grad():
                 preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
                                    app_feats=app_feats)
@@ -406,6 +409,94 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 print('\n')
         return eval_result
 
+    def infer(self, boxes=None, scores=None, boxes_sorted=False, max_dt_boxes=400, img_res=None, threshold=0.1):
+        bounding_boxes = BoundingBoxList([])
+        if scores.shape[0] == 0:
+            return bounding_boxes
+        if scores.shape[1] > 1:
+            raise ValueError('Multi-class NMS is not supported in Seq2Seq-NMS yet.')
+        if boxes.shape[0] != scores.shape[0]:
+            raise ValueError('Scores and boxes must have the same size in dim 0.')
+        if "cuda" in self.device:
+            boxes = boxes.to(self.device)
+            scores = scores.to(self.device)
+
+        scores = scores.squeeze(-1)
+        keep_ids = torch.where(scores > 0.05)[0]
+        scores = scores[keep_ids]
+        boxes = boxes[keep_ids, :]
+        if not boxes_sorted:
+            scores, scores_ids = torch.sort(scores, dim=0, descending=True)
+            boxes = boxes[scores_ids]
+
+        val_ids = torch.logical_and((boxes[:, 2] - boxes[:, 0]) > 4,
+                                    (boxes[:, 3] - boxes[:, 1]) > 4)
+        boxes = boxes[val_ids, :]
+        scores = scores[val_ids]
+
+        if self.iou_filtering is not None and 1.0 > self.iou_filtering > 0:
+            boxes, scores = apply_torchNMS(boxes=boxes, scores=scores, iou_thres=self.iou_filtering)
+
+        boxes = boxes[:max_dt_boxes]
+        scores = scores[:max_dt_boxes]
+        app_feats = None
+
+        if self.app_feats == 'fmod':
+            app_feats = self.fMoD.extract_FMoD_feats(boxes)
+            app_feats = torch.unsqueeze(app_feats, dim=1)
+        elif self.app_feats == 'zeros':
+            app_feats = torch.zeros([boxes.shape[0], 1, self.app_input_dim])
+            if "cuda" in self.device:
+                app_feats = app_feats.to(self.device)
+        elif self.app_feats == 'custom':
+            raise AttributeError("Custom appearance-based features are not yet supported.")
+
+        msk = self.__compute_mask(boxes, iou_thres=0.2, extra=0.1)
+        q_geom_feats, k_geom_feats = self.__compute_geometrical_feats(boxes=boxes, scores=scores,
+                                                                      resolution=img_res)
+
+        with torch.no_grad():
+            preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
+                               app_feats=app_feats)
+
+        mask = torch.where(preds > threshold)[0]
+        if mask.size == 0:
+            return BoundingBoxList([])
+        preds = preds[mask].cpu().detach().numpy()
+        boxes = boxes[mask, :].cpu().numpy()
+
+        for idx, box in enumerate(boxes):
+            bbox = BoundingBox(left=box[0], top=box[1],
+                               width=box[2] - box[0],
+                               height=box[3] - box[1],
+                               name=0,
+                               score=preds[idx])
+            bounding_boxes.data.append(bbox)
+        return bounding_boxes, [boxes, np.zeros(scores.shape[0]), preds]
+
+    def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2, map=None):
+
+        if self.app_feats == 'fmod':
+            if not isinstance(img, Image):
+                img = Image(img)
+            _img = img.convert("channels_last", "rgb")
+            self.fMoD.extract_maps(img=_img, augm=False)
+
+        if isinstance(boxes, np.ndarray):
+            boxes = torch.tensor(boxes, device=self.device)
+        elif torch.is_tensor(boxes):
+            if "cuda" in self.device:
+                boxes = boxes.to(self.device)
+
+        if isinstance(scores, np.ndarray):
+            scores = torch.tensor(scores, device=self.device)
+        elif torch.is_tensor(scores):
+            if "cuda" in self.device:
+                scores = scores.to(self.device)
+        boxes = self.infer(boxes=boxes, scores=scores, boxes_sorted=boxes_sorted, max_dt_boxes=top_k,
+                           img_res=img.opencv().shape[::-1][1:])
+        return boxes
+
     def save(self, path, verbose=False, optimizer=None, scheduler=None, current_epoch=None, max_dt_boxes=400):
         fname = path.split('/')[-1]
         dir_name = path.replace('/' + fname, '')
@@ -437,18 +528,6 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
             json.dump(metadata, f, ensure_ascii=False, indent=4)
         if verbose:
             print("Saved Pytorch model.")
-
-    def init_model(self):
-        if self.model is None:
-            self.model = Seq2SeqNet(dropout=self.dropout, use_app_feats=self.use_app_feats,
-                                    app_input_dim=self.app_input_dim,
-                                    geom_input_dim=self.geom_input_dim, lq_dim=self.lq_dim, sq_dim=self.sq_dim,
-                                    num_JPUs=self.num_JPUs, device=self.device)
-            for p in self.model.parameters():
-                if p.dim() > 1:
-                    nn.init.xavier_uniform_(p)
-        else:
-            raise UserWarning("Tried to initialize model while model is already initialized.")
 
     def load(self, path, verbose=False):
         if os.path.isdir(path):
@@ -482,13 +561,57 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 e.strerror = "File " + pkl_fmod + "not found."
                 raise e
 
-        self.assign_params(metadata=metadata, verbose=verbose)
-        self.load_state(checkpoint)
+        self.__assign_params(metadata=metadata, verbose=verbose)
+        self.__load_state(checkpoint)
         if verbose:
             print("Loaded parameters and metadata.")
         return True
 
-    def assign_params(self, metadata, verbose):
+    def download(self, path=None, model_name='seq2seq_pets_jpd_pets_fmod', verbose=False,
+                 url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
+
+        supported_pretrained_models = ['seq2seq_pets_jpd_pets_fmod', 'seq2seq_pets_ssd_wider_person_fmod',
+                                       'seq2seq_pets_ssd_pets_fmod', 'seq2seq_coco_frcn_coco_fmod',
+                                       'seq2seq_coco_ssd_coco_wider_person_fmod']
+
+        if model_name not in supported_pretrained_models:
+            str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
+            for i in range(len(supported_pretrained_models)):
+                str_error = str_error + supported_pretrained_models[i] + ", "
+            str_error = str_error[:-2] + '.'
+            raise ValueError(str_error)
+
+        if path is None:
+            path = self.temp_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if verbose:
+            print("Downloading pretrained model...")
+
+        file_url = os.path.join(url, "pretrained", model_name + '.zip')
+        try:
+            urlretrieve(file_url, os.path.join(path, model_name + '.zip'))
+            with zipfile.ZipFile(os.path.join(path, model_name + '.zip'), 'r') as zip_ref:
+                zip_ref.extractall(path)
+            os.remove(os.path.join(path, model_name + '.zip'))
+        except:
+            raise UserWarning('Pretrained model not found on server.')
+
+    def init_model(self):
+        if self.model is None:
+            self.model = Seq2SeqNet(dropout=self.dropout, use_app_feats=self.use_app_feats,
+                                    app_input_dim=self.app_input_dim,
+                                    geom_input_dim=self.geom_input_dim, lq_dim=self.lq_dim, sq_dim=self.sq_dim,
+                                    num_JPUs=self.num_JPUs, device=self.device)
+            for p in self.model.parameters():
+                if p.dim() > 1:
+                    nn.init.xavier_uniform_(p)
+        else:
+            raise UserWarning("Tried to initialize model while model is already initialized.")
+
+    def __assign_params(self, metadata, verbose):
 
         if verbose and self.variant is not None and self.variant != metadata["variant"]:
             print("Incompatible value for the attribute \"variant\". It is now set to: " +
@@ -550,7 +673,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if verbose and 'max_dt_boxes' in metadata:
             print('Model is trained with ' + str(metadata['max_dt_boxes']) + ' as the maximum number of detections.')
 
-    def load_state(self, checkpoint=None):
+    def __load_state(self, checkpoint=None):
         if checkpoint is None:
             for p in self.model.parameters():
                 if p.dim() > 1:
@@ -570,140 +693,20 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
 
             self.model.load_state_dict(new_target_state)
 
-    def count_parameters(self):
-
+    def __count_parameters(self):
         if self.model is None:
             raise UserWarning("Model is not initialized, can't count trainable parameters.")
         return sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-
-    def download(self, path=None, model_name='seq2seq_pets_jpd_fmod', verbose=False,
-                 url=OPENDR_SERVER_URL + "perception/object_detection_2d/nms/"):
-
-        supported_pretrained_models = ["seq2seq_pets_jpd_fmod", "seq2seq_pets_ssd_fmod",
-                                       "seq2seq_coco_frcn_fmod", "seq2seq_coco_ssd_fmod"]
-
-        if model_name not in supported_pretrained_models:
-            str_error = model_name + " pretrained model is not supported. The available pretrained models are: "
-            for i in range(len(supported_pretrained_models)):
-                str_error = str_error + supported_pretrained_models[i] + ", "
-            str_error = str_error[:-2] + '.'
-            raise ValueError(str_error)
-
-        if path is None:
-            path = self.temp_path
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if verbose:
-            print("Downloading pretrained model...")
-
-        file_url = os.path.join(url, "pretrained", model_name + '.zip')
-        try:
-            urlretrieve(file_url, os.path.join(path, model_name + '.zip'))
-            with zipfile.ZipFile(os.path.join(path, model_name + '.zip'), 'r') as zip_ref:
-                zip_ref.extractall(path)
-            os.remove(os.path.join(path, model_name + '.zip'))
-        except:
-            raise UserWarning('Pretrained model not found on server.')
-
-    def infer(self, boxes=None, scores=None, boxes_sorted=False, max_dt_boxes=400, img_res=None, threshold=0.1):
-        bounding_boxes = BoundingBoxList([])
-        if scores.shape[0] == 0:
-            return bounding_boxes
-        if scores.shape[1] > 1:
-            raise ValueError('Multi-class NMS is not supported in Seq2Seq-NMS yet.')
-        if boxes.shape[0] != scores.shape[0]:
-            raise ValueError('Scores and boxes must have the same size in dim 0.')
-        if "cuda" in self.device:
-            boxes = boxes.to(self.device)
-            scores = scores.to(self.device)
-
-        scores = scores.squeeze(-1)
-        keep_ids = torch.where(scores > 0.05)[0]
-        scores = scores[keep_ids]
-        boxes = boxes[keep_ids, :]
-        if not boxes_sorted:
-            scores, scores_ids = torch.sort(scores, dim=0, descending=True)
-            boxes = boxes[scores_ids]
-
-        val_ids = torch.logical_and((boxes[:, 2] - boxes[:, 0]) > 4,
-                                    (boxes[:, 3] - boxes[:, 1]) > 4)
-        boxes = boxes[val_ids, :]
-        scores = scores[val_ids]
-
-        if self.iou_filtering is not None and 1.0 > self.iou_filtering > 0:
-            boxes, scores = apply_torchNMS(boxes=boxes, scores=scores, iou_thres=self.iou_filtering)
-
-        boxes = boxes[:max_dt_boxes]
-        scores = scores[:max_dt_boxes]
-        app_feats = None
-
-        if self.app_feats == 'fmod':
-            app_feats = self.fMoD.extract_FMoD_feats(boxes)
-            app_feats = torch.unsqueeze(app_feats, dim=1)
-        elif self.app_feats == 'zeros':
-            app_feats = torch.zeros([boxes.shape[0], 1, self.app_input_dim])
-            if "cuda" in self.device:
-                app_feats = app_feats.to(self.device)
-        elif self.app_feats == 'custom':
-            raise AttributeError("Custom appearance-based features are not yet supported.")
-
-        msk = self.compute_mask(boxes, iou_thres=0.2, extra=0.1)
-        q_geom_feats, k_geom_feats = self.compute_geometrical_feats(boxes=boxes, scores=scores,
-                                                                    resolution=img_res)
-
-        with torch.no_grad():
-            preds = self.model(q_geom_feats=q_geom_feats, k_geom_feats=k_geom_feats, msk=msk,
-                               app_feats=app_feats)
-
-        mask = torch.where(preds > threshold)[0]
-        if mask.size == 0:
-            return BoundingBoxList([])
-        preds = preds[mask].cpu().detach().numpy()
-        boxes = boxes[mask, :].cpu().numpy()
-
-        for idx, box in enumerate(boxes):
-            bbox = BoundingBox(left=box[0], top=box[1],
-                               width=box[2] - box[0],
-                               height=box[3] - box[1],
-                               name=0,
-                               score=preds[idx])
-            bounding_boxes.data.append(bbox)
-        return bounding_boxes, [boxes, np.zeros(scores.shape[0]), preds]
-
-    def optimize(self, **kwargs):
-        """This method is not used in this implementation."""
-        raise NotImplementedError
 
     def reset(self):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def run_nms(self, boxes=None, scores=None, boxes_sorted=False, top_k=400, img=None, threshold=0.2):
+    def optimize(self, **kwargs):
+        """This method is not used in this implementation."""
+        raise NotImplementedError
 
-        if self.app_feats == 'fmod':
-            if not isinstance(img, Image):
-                img = Image(img)
-            _img = img.convert("channels_last", "rgb")
-            self.fMoD.extract_maps(img=_img, augm=False)
-
-        if isinstance(boxes, np.ndarray):
-            boxes = torch.tensor(boxes, device=self.device)
-        elif torch.is_tensor(boxes):
-            if "cuda" in self.device:
-                boxes = boxes.to(self.device)
-
-        if isinstance(scores, np.ndarray):
-            scores = torch.tensor(scores, device=self.device)
-        elif torch.is_tensor(scores):
-            if "cuda" in self.device:
-                scores = scores.to(self.device)
-        boxes = self.infer(boxes=boxes, scores=scores, boxes_sorted=boxes_sorted, max_dt_boxes=top_k,
-                           img_res=img.opencv().shape[::-1][1:])
-        return boxes
-
-    def set_architecture(self):
+    def __set_architecture(self):
         if self.variant == 'light':
             self.lq_dim = 160
         elif self.variant == 'full':
@@ -715,7 +718,7 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if self.variant == 'light':
             self.num_JPUs = 2
 
-    def sef_fmod_architecture(self):
+    def __sef_fmod_architecture(self):
         if self.variant == 'light':
             self.fmod_roi_pooling_dim = 120
         if self.variant == 'light':
@@ -725,14 +728,14 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         if self.variant == 'light':
             self.fmod_pyramid_lvl = 2
 
-    def compute_mask(self, boxes=None, iou_thres=0.2, extra=0.1):
+    def __compute_mask(self, boxes=None, iou_thres=0.2, extra=0.1):
         relations = filter_iou_boxes(boxes, iou_thres=iou_thres)
         mask1 = torch.tril(relations).float()
         mask2 = extra * torch.triu(relations, diagonal=1).float()
         mask = mask1 + mask2
         return mask
 
-    def compute_geometrical_feats(self, boxes, scores, resolution):
+    def __compute_geometrical_feats(self, boxes, scores, resolution):
         boxBs = boxes.clone().unsqueeze(0).repeat(boxes.shape[0], 1, 1)
         boxAs = boxes.unsqueeze(1).repeat(1, boxes.shape[0], 1)
         scoresBs = scores.unsqueeze(0).unsqueeze(-1).repeat(scores.shape[0], 1, 1)
@@ -770,9 +773,8 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
         enc_vers = enc_vers_all.diagonal(dim1=0, dim2=1).transpose(0, 1).unsqueeze(1)
         return enc_vers, enc_vers_all
 
-    def load_FMoD_init_from_dataset(self, dataset=None, map_type='edgemap', fmod_pyramid_lvl=3,
-                                    datasets_folder='./datasets',
-                                    map_bin=True, verbose=False):
+    def __load_FMoD_init_from_dataset(self, dataset=None, map_type='edgemap', fmod_pyramid_lvl=3,
+                                      datasets_folder='./datasets', map_bin=True, verbose=False):
         fmod_dir = os.path.join(datasets_folder, dataset, 'FMoD')
         if not os.path.exists(fmod_dir):
             os.makedirs(fmod_dir, exist_ok=True)
@@ -797,10 +799,10 @@ class Seq2SeqNMSLearner(Learner, NMSCustom):
                 self.fmod_init_file = None
                 return {'mean': np.zeros(fmod_feats_dim), 'std': np.ones(fmod_feats_dim)}
         self.fmod_init_file = os.path.join(fmod_dir, fmod_filename)
-        fmod_stats = self.load_FMoD_init(self.fmod_init_file)
+        fmod_stats = self.__load_FMoD_init(self.fmod_init_file)
         return fmod_stats
 
-    def load_FMoD_init(self, path=None):
+    def __load_FMoD_init(self, path=None):
         try:
             with open(path, 'rb') as fp:
                 fmod_stats = pickle.load(fp)

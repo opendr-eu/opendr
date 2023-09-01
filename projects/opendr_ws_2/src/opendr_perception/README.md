@@ -21,9 +21,9 @@ Before you can run any of the toolkit's ROS2 nodes, some prerequisites need to b
     
     For basic usage and testing, the toolkit's ROS2 nodes that use audio as input are set up to expect input from a basic audio device using the default package `audio_common`  which is installed with OpenDR. You can run the audio node in a new terminal:
     ```shell
-    ros2 run audio_capture audio_capture_node
+    ros2 launch audio_capture capture_wave.launch.xml
     ```
-    By default, the audio capture node publishes audio data on `/audio` and the audio input nodes subscribe to this topic if not provided with an input topic argument. 
+    By default, the audio capture node publishes audio data on `/audio/audio` and the audio input nodes subscribe to this topic if not provided with an input topic argument. 
     As explained for each node below, you can modify the topics via arguments, so if you use any other node responsible for publishing audio, **make sure to change the input topic accordingly.**
 
 ---
@@ -930,6 +930,47 @@ whose documentation can be found here:
 
 EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
 
+### Speech Transcription ROS2 Node
+
+A ROS2 node for speech transcription from an audio stream using Whisper or Vosk.
+
+You can find the speech transcription ROS node python script [here](./opendr_perception/speech_transcription_node.py) to inspect the code and modify it as you wish to fit your needs.
+
+The node makes use of the toolkit's speech transcription tools:
+[Whipser tool](../../../../src/opendr/perception/speech_transcription/whisper/whisper_learner.py), [Vosk tool](../../../../src/opendr/perception/speech_transcription/vosk/vosk_learner.py) whose documentation can be found here:
+[Whisper docs](../../../../docs/reference/speech-transcription-whisper.md), [Vosk docs](../../../../docs/reference/speech-transcription-vosk.md).
+
+
+#### Instruction for basic usage:
+
+1. Start the node responsible for publishing audio. The ROS2 node only work with audio data in WAVE format. If you have an audio capture device, then you can use the `audio_capture_node` as explained in the [prerequisites above](#prerequisites).
+    ```shell
+    ros2 launch audio_capture capture_wave.launch.xml
+    ```
+
+2. You are then ready to start the speech transcription node
+
+    ```shell
+    ros2 run opendr_perception speech_transcription --verbose True
+    ```
+    ```shell
+    ros2 run opendr_perception speech_transcription --backbone whisper --model_name tiny.en --verbose True
+    ```
+    The following optional arguments are available (More in the source code):
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-o or --output_speech_transcription_topic OUTPUT_TRANSCRIPTION_TOPIC`: topic name for speech transcription output (default=`/opendr/speech_transcription`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--backbone {vosk,whisper}`: Backbone model for speech transcription
+   - `--model_name MODEL_NAME`: Specific model name for each backbone. Example: 'tiny', 'tiny.en', 'base', 'base.en' for Whisper, 'vosk-model-small-en-us-0.15' for Vosk (default=`None`) 
+   - `--model_path MODEL_PATH`: Path to downloaded model files (default=`None`) 
+   - `--language LANGUAGE`: Whisper uses the language parameter to avoid language dectection. Vosk uses the langauge paremeter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk (default=`en-us`). Check the available language codes for Whisper at [Whipser repository](https://github.com/openai/whisper/blob/e8622f9afc4eba139bf796c210f5c01081000472/whisper/tokenizer.py#L10). Check the available language code for Vosk from the Vosk model name at [Vosk website](https://alphacephei.com/vosk/models).
+   - `--verbose VERBOSE`: Display transcription (default=`False`) 
+
+3. Default output topics:
+   - Speech transcription: `/opendr/speech_transcription`
+
+   For viewing the output, refer to the [notes above.](#notes)
 
 ----
 ## Text input
@@ -962,7 +1003,6 @@ The node makes use of the toolkit's intent recognition [learner](../../../../src
 
 3. Default output topics:
    - Predicted intents and confidence: `/opendr/intent`
-
 
 ----
 ## Point cloud input
