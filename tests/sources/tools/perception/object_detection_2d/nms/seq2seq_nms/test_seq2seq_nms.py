@@ -72,49 +72,43 @@ class TestSeq2SeqNMS(unittest.TestCase):
         gc.collect()
         print('Finished cleaning for Seq2Seq-NMS...')
 
-    def test_fit(self):
+    def test_fit(cls):
         print('Starting training test for Seq2Seq-NMS...')
 
-        m = list(self.seq2SeqNMSLearner.model.parameters())[0].clone()
-        self.seq2SeqNMSLearner.fit(dataset='TEST_MODULE', use_ssd=False,
-                                   datasets_folder=self.temp_dir + '/datasets',
-                                   logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50,
-                                   max_dt_boxes=200)
-        n = list(self.seq2SeqNMSLearner.model.parameters())[0].clone()
-        self.assertFalse(np.array_equal(m, n),
-                         msg="Model parameters did not change after running fit.")
+        m = list(cls.seq2SeqNMSLearner.model.parameters())[0].clone()
+        cls.seq2SeqNMSLearner.fit(dataset='TEST_MODULE', use_ssd=False, datasets_folder=cls.temp_dir + '/datasets',
+                                  logging_path=None, silent=False, verbose=True, nms_gt_iou=0.50, max_dt_boxes=200)
+        n = list(cls.seq2SeqNMSLearner.model.parameters())[0].clone()
+        cls.assertFalse(np.array_equal(m, n), msg="Model parameters did not change after running fit.")
         del m, n
         gc.collect()
         print('Finished training test for Seq2Seq-NMS...')
 
-    def test_eval(self):
+    def test_eval(cls):
         print('Starting evaluation test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
-        results_dict = self.seq2SeqNMSLearner.eval(dataset='TEST_MODULE', split='test', max_dt_boxes=800,
-                                                   datasets_folder=self.temp_dir + '/datasets',
-                                                   use_ssd=False)
+        cls.seq2SeqNMSLearner.load(cls.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
+        results_dict = cls.seq2SeqNMSLearner.eval(dataset='TEST_MODULE', split='test', max_dt_boxes=800,
+                                                  datasets_folder=cls.temp_dir + '/datasets', use_ssd=False)
         if results_dict is None:
-            self.assertIsNotNone(results_dict,
-                                 msg="Eval results dictionary not returned.")
+            cls.assertIsNotNone(results_dict, msg="Eval results dictionary not returned.")
         else:
-            self.assertGreater(results_dict[0][0][1][0], 0.4)
+            cls.assertGreater(results_dict[0][0][1][0], 0.4)
         del results_dict
         gc.collect()
         print('Finished evaluation test for Seq2Seq-NMS...')
 
-    def test_infer(self):
+    def test_infer(cls):
         print('Starting inference test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.load(self.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
-        dataset_nms = Dataset_NMS(path=self.temp_dir + '/datasets', dataset_name='TEST_MODULE', split='train', use_ssd=False)
+        cls.seq2SeqNMSLearner.load(cls.temp_dir + '/seq2seq_pets_jpd_pets_fmod/', verbose=True)
+        dataset_nms = Dataset_NMS(path=cls.temp_dir + '/datasets', dataset_name='TEST_MODULE', split='train', use_ssd=False)
         image_fln = dataset_nms.src_data[0]['filename']
-        img = Image.open(os.path.join(self.temp_dir, 'datasets', 'TEST_MODULE', image_fln))
+        img = Image.open(os.path.join(cls.temp_dir, 'datasets', 'TEST_MODULE', image_fln))
         boxes = dataset_nms.src_data[0]['dt_boxes'][1][:, 0:4]
         scores = np.expand_dims(dataset_nms.src_data[0]['dt_boxes'][1][:, 4], axis=-1)
 
-        bounding_box_list = self.seq2SeqNMSLearner.run_nms(boxes=boxes, scores=scores, img=img, threshold=0.5)
+        bounding_box_list = cls.seq2SeqNMSLearner.run_nms(boxes=boxes, scores=scores, img=img, threshold=0.5)
 
-        self.assertIsNotNone(bounding_box_list,
-                             msg="Returned empty BoundingBoxList.")
+        cls.assertIsNotNone(bounding_box_list, msg="Returned empty BoundingBoxList.")
         del img
         del bounding_box_list
         del boxes
@@ -123,15 +117,15 @@ class TestSeq2SeqNMS(unittest.TestCase):
         gc.collect()
         print('Finished inference test for Seq2Seq-NMS...')
 
-    def test_save_load(self):
+    def test_save_load(cls):
         print('Starting save/load test for Seq2Seq-NMS...')
-        self.seq2SeqNMSLearner.save(os.path.join(self.temp_dir, "test_model", "last_weights"), current_epoch=0)
-        self.seq2SeqNMSLearner.model = None
-        self.seq2SeqNMSLearner.init_model()
-        self.seq2SeqNMSLearner.load(os.path.join(self.temp_dir, "test_model"))
-        self.assertIsNotNone(self.seq2SeqNMSLearner.model, "model is None after loading model.")
+        cls.seq2SeqNMSLearner.save(os.path.join(cls.temp_dir, "test_model", "last_weights"), current_epoch=0)
+        cls.seq2SeqNMSLearner.model = None
+        cls.seq2SeqNMSLearner.init_model()
+        cls.seq2SeqNMSLearner.load(os.path.join(cls.temp_dir, "test_model"))
+        cls.assertIsNotNone(cls.seq2SeqNMSLearner.model, "model is None after loading model.")
         # Cleanup
-        rmdir(os.path.join(self.temp_dir, "test_model"))
+        rmdir(os.path.join(cls.temp_dir, "test_model"))
         print('Finished save/load test for Seq2Seq-NMS...')
 
 

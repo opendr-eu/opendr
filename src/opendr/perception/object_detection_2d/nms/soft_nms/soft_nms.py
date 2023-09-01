@@ -58,7 +58,7 @@ class SoftNMS(NMSCustom):
         self.top_k = top_k
         self.post_k = post_k
 
-    def nms_thres(self, nms_thres=0.45):
+    def set_nms_thres(self, nms_thres=0.45):
         self.nms_thres = nms_thres
 
     def set_top_k(self, top_k=400):
