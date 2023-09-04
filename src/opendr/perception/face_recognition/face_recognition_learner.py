@@ -50,6 +50,7 @@ import os
 import json
 import shutil
 from urllib.request import urlretrieve
+from collections import defaultdict
 
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
@@ -128,6 +129,7 @@ class FaceRecognitionLearner(Learner):
         self.ort_backbone_session = None  # ONNX runtime inference session for backbone
         self.ort_head_session = None  # ONNX runtime inference session for head
         self.temp_path = temp_path
+        self.database_path = temp_path
 
     def __create_model(self, num_class=0):
         # Create the backbone architecture
@@ -400,13 +402,14 @@ class FaceRecognitionLearner(Learner):
         """
         if self._model is None and self.ort_backbone_session is None:
             raise UserWarning('A model should be loaded first')
+        self.database_path = path
         if os.path.exists(os.path.join(save_path, 'reference.pkl')) and not create_new:
             print('Loading Reference')
             self.database = pickle.load(open(os.path.join(save_path, 'reference.pkl'), "rb"))
         else:
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
-            database = {}
+            database = defaultdict(list)
             transform = transforms.Compose([
                 transforms.Resize([int(128 * self.input_size[0] / 112), int(128 * self.input_size[0] / 112)]),
                 transforms.CenterCrop([self.input_size[0], self.input_size[1]]),
@@ -414,10 +417,11 @@ class FaceRecognitionLearner(Learner):
                 transforms.Normalize(mean=self.rgb_mean, std=self.rgb_std)]
             )
             with torch.no_grad():
-                class_key = 0
                 for subdir, dirs, files in os.walk(path):
                     if subdir == path:
                         continue
+                    subdir1 = subdir.split('/')
+                    subdir1 = subdir1[-1]
                     total = 0
                     features_sum = torch.zeros(1, self.embedding_size).to(self.device)
                     for file in files:
@@ -439,8 +443,7 @@ class FaceRecognitionLearner(Learner):
                     avg_features = features_sum / total
                     subdir = subdir.split('/')
                     subdir = subdir[-1]
-                    database[class_key] = [subdir, avg_features]
-                    class_key += 1
+                    database[subdir1] = features
             f = open(os.path.join(save_path, "reference.pkl"), "wb")
             pickle.dump(database, f)
             f.close()
@@ -489,19 +492,20 @@ class FaceRecognitionLearner(Learner):
             if self.database is None:
                 raise UserWarning('A reference for comparison should be created first. Try calling fit_reference()')
             for key in self.database:
-                diff = np.subtract(features.cpu().numpy(), self.database[key][1].cpu().numpy())
-                dist = np.sum(np.square(diff), axis=1)
-                if np.isnan(dist):
-                    dist = 10
-                if dist < distance:
-                    distance = dist
-                    person = key
+                for item in self.database[key]:
+                    diff = np.subtract(features.cpu().numpy(), item.cpu().numpy())
+                    dist = np.sum(np.square(diff), axis=1)
+                    if np.isnan(dist):
+                        dist = 10
+                    if dist < distance:
+                        distance = dist
+                        person = key
             if type(distance) != float:
                 confidence = 1 - (distance.item() / self.threshold)
             else:
                 confidence = 1 - (distance / self.threshold)
             if person is not None:
-                person = Category(person, self.database[person][0], confidence)
+                person = Category(0, person, confidence)
                 return person
             else:
                 person = Category(-1, 'Not found', 0.0)
@@ -531,6 +535,67 @@ class FaceRecognitionLearner(Learner):
                     _, predicted = torch.max(outs.data, 1)
                     person = Category(self.classes[predicted.item()])
                     return person
+        else:
+            raise UserWarning('Infer should be called either with backbone_only mode or with a classifier head')
+
+    def feature_extraction(self, img):
+        """
+        This method is used to perform face recognition on an image.
+
+        :param img: image to run inference on
+        :rtype img: engine.data.Image class object
+        :return: Returns an engine.target.Category object, which holds an ID and the distance between
+                 the embedding of the input image and the closest embedding existing in the reference database.
+        :rtype: engine.target.Category object
+        """
+        closest_id = None
+        if not isinstance(img, Image):
+            img = Image(img)
+        img = img.convert("channels_last", "bgr")
+        if self._model is None and self.ort_backbone_session is None:
+            raise UserWarning('A model should be loaded first')
+        transform = transforms.Compose([
+            transforms.Resize([int(128 * self.input_size[0] / 112), int(128 * self.input_size[0] / 112)]),
+            transforms.CenterCrop([self.input_size[0], self.input_size[1]]),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=self.rgb_mean, std=self.rgb_std)]
+        )
+        if self.mode == 'backbone_only':
+            distance = 100.0
+            if distance == 0:
+                distance = 10.0
+            person = None
+            self.backbone_model.eval()
+            with torch.no_grad():
+                img = PILImage.fromarray(
+                    cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+                img = transform(img)
+                img = img.unsqueeze(0)
+                img = img.to(self.device)
+                if self.ort_backbone_session is not None:
+                    features = self.ort_backbone_session.run(None, {'data': np.array(img.cpu())})
+                    features = torch.tensor(features[0])
+                else:
+                    self.backbone_model.eval()
+                    features = self.backbone_model(img)
+                features = l2_norm(features)
+            if self.database is None:
+                raise UserWarning('A reference for comparison should be created first. Try calling fit_reference()')
+            for key in self.database:
+                for item in self.database[key]:
+                    diff = np.subtract(features.cpu().numpy(), item.cpu().numpy())
+                    dist = np.sum(np.square(diff), axis=1)
+                    if np.isnan(dist):
+                        dist = 10
+                    if dist < distance:
+                        distance = dist
+                        closest_id = key
+            if type(distance) != float:
+                confidence = distance.item()
+            else:
+                confidence = distance
+            return features, closest_id, confidence
+
         else:
             raise UserWarning('Infer should be called either with backbone_only mode or with a classifier head')
 
