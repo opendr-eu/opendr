@@ -61,6 +61,7 @@ setup(
             'continual_slam_learner = opendr_perception.continual_slam_learner_node:main',
             'gesture_recognition = opendr_perception.gesture_recognition_node:main',
             'performance = opendr_perception.performance_node:main',
+            'speech_transcription = opendr_perception.speech_transcription_node:main',
         ],
     },
 )

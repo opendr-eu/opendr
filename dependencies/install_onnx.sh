@@ -3,7 +3,7 @@
 if [ ! -f /usr/local/lib/libonnxruntime.so ]; then
 
   
-  VERSION="1.6.0"
+  VERSION="1.8.0"
   if [[ "$OPENDR_DEVICE" == "gpu" ]]
   then
       echo "Downloading and installing onnxruntime (gpu support) ..."

@@ -89,6 +89,7 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 
 ## Audio input
 1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros2-node)
+2. [Speech Transcription](src/opendr_perception/README.md#speech-transcription-ros2-node)
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros2-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros2-node)

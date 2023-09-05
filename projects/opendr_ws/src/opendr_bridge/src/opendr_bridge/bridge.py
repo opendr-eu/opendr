@@ -15,7 +15,8 @@
 from opendr.engine.data import Image, Timeseries, PointCloud
 from opendr.engine.target import (
     Pose, BoundingBox, BoundingBoxList, Category, BoundingBox3D,
-    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList
+    BoundingBox3DList, TrackingAnnotation, TrackingAnnotationList,
+    VoskTranscription
 )
 
 import numpy as np
@@ -39,6 +40,7 @@ from geometry_msgs.msg import (
 )
 from visualization_msgs.msg import Marker as MarkerMsg, MarkerArray as MarkerArrayMsg
 from sensor_msgs import point_cloud2 as pc2
+from hri_msgs.msg import LiveSpeech
 from opendr_bridge.msg import OpenDRPose2D, OpenDRPose2DKeypoint
 import tf.transformations as tr
 
@@ -937,3 +939,35 @@ class ROSBridge:
         t.transform.rotation.z = q[2]
         t.transform.rotation.w = q[3]
         return t
+
+    def from_ros_transcription(self, ros_transcripton: LiveSpeech) -> VoskTranscription:
+        """
+        Converts an LiveSpeech object to a VoskTranscription object.
+        :param ros_transcripton: A ROS transcription message to be converted.
+        :type ros_transcripton: LiveSpeech
+        :return: A Transcription object containing the same text as the input ROS object
+        :rtype: VoskTranscription.
+        """
+        accept_waveform = ros_transcripton.final != ""
+        transcription = VoskTranscription(text=ros_transcripton.text, accept_waveform=accept_waveform)
+
+        return transcription
+
+    def to_ros_transcription(self, transcription: VoskTranscription) -> LiveSpeech:
+        """
+        Converts a VoskTranscription object to an LiveSpeech object.
+        :param transcription: A VoskTranscription object to be converted.
+        :type transcription: VoskTranscription.
+        :return: An LiveSpeech object containing the same text as the input Transcription object.
+        :rtype: LiveSpeech.
+        """
+        ros_transcripton = LiveSpeech()
+        if transcription.accept_waveform:
+            ros_transcripton.final = transcription.text
+        else:
+            ros_transcripton.final = ""
+
+        ros_transcripton.incremental = transcription.text
+
+        return ros_transcripton
+
