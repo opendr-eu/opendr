@@ -970,4 +970,3 @@ class ROSBridge:
         ros_transcripton.incremental = transcription.text
 
         return ros_transcripton
-
