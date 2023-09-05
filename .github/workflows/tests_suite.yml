@@ -72,7 +72,7 @@ jobs:
         path: |
           ~/.cache/pip
           venv
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dependencies.ini') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('**/dependencies.ini') }}-${{ hashFiles('**/install.sh') }}
         # restore-keys: |
         #   ${{ runner.os }}-pip-
     - name: Install toolkit and dependencies
