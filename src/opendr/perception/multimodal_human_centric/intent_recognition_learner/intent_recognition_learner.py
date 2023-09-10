@@ -132,7 +132,7 @@ class IntentRecognitionLearner(Learner):
         :parameter verbose: Enables verbosity.
         :type verbose: bool
         """
-        self._update_verbosity(silent, verbose)
+        self.__update_verbosity(silent, verbose)
         self.logger.debug("=" * 30 + " Params " + "=" * 30)
         for k in self.train_config.keys():
             self.logger.debug(f"{k}: {self.train_config[k]}")
