@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-sys.path.insert(0,'/home/chumache/opendr2/opendr/src')
 import unittest
 import torch
 import tempfile
