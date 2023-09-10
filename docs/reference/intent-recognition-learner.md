@@ -1,6 +1,6 @@
 ## intent_recognition module
 
-The *intent_recognition* module contains the *IntentRecognitionModule* class and can be used to recognize 20 intents of a person based on text.
+The *intent_recognition* module contains the *IntentRecognitionLearner* class and can be used to recognize 20 intents of a person based on text.
 It is recommended to use *IntentRecognitionModule* together with *SpeechTranscriptionModule* to enable intent recognition based on transcribed speech.
 The module supports multimodal training on face (vision), speech (audio), and text data to facilitate improved unimodal inference on text modality.
 
