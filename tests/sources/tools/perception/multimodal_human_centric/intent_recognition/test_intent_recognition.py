@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-sys.path.insert(0, '/home/chumache/opendr2/opendr/src')
 import unittest
 import torch
 import tempfile
@@ -59,19 +57,15 @@ class TestIntentRecognitionLearner(unittest.TestCase):
         return
 
     def test_fit(self):
-        print('testing fit')
         tmp_direc = tempfile.TemporaryDirectory()
         tmp_dir = tmp_direc.name
         learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='language', device=DEVICE,
                                            log_path=tmp_dir, cache_path=tmp_dir, results_path=tmp_dir,
                                            output_path=tmp_dir)
-        print('dataset 1')
         train_set = DummyDataset(learner.train_config)
         val_set = DummyDataset(learner.train_config)
         learner.method.args.num_train_epochs = 1
-        print('old weights')
         old_weight = list(learner.model.model.parameters())[0].clone()
-        print('fit')
         learner.fit(train_set, val_set, silent=True, verbose=False)
         new_weight = list(learner.model.model.parameters())[0].clone()
 
@@ -80,28 +74,20 @@ class TestIntentRecognitionLearner(unittest.TestCase):
         tmp_direc.cleanup()
 
     def test_eval_trim(self):
-        print('testing eval')
         tmp_direc = tempfile.TemporaryDirectory()
         tmp_dir = tmp_direc.name
         learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='joint', device=DEVICE,
                                            log_path=tmp_dir, cache_path=tmp_dir, results_path=tmp_dir,
                                            output_path=tmp_dir)
-        print('learner created')
         dataset = DummyDataset(learner.train_config)
-        print('dataste created')
         performance = learner.eval(dataset, modality='language', silent=True, verbose=False, restore_best_model=False)
         self.assertTrue('acc' in performance.keys())
-        print('evaluated, started trim')
         learner.trim('language')
-        print('evaluating trimmed')
         performance_trimmed = learner.eval(dataset, modality='language', silent=True, verbose=False, restore_best_model=False)
         self.assertTrue(performance['loss'] == performance_trimmed['loss'])
-        print('starting cleanup')
         tmp_direc.cleanup()
-        print('cleanedup')
 
     def test_infer(self):
-        print('testing infer')
         test_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt \
                      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco \
                      laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in \
@@ -124,7 +110,6 @@ class TestIntentRecognitionLearner(unittest.TestCase):
         tmp_direc.cleanup()
 
     def test_save_load(self):
-        print('testing save load')
         test_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt \
                      ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco \
                      laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in \
