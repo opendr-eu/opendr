@@ -234,10 +234,10 @@ class IntentRecognitionLearner(Learner):
     def reset(self):
         return NotImplementedError
 
-    def _process_raw_text(self, raw_text):
-        '''
+    def __process_raw_text(self, raw_text):
+        """
         Tokenizes raw text.
-        '''
+        """
         if self.tokenizer is None:
             self.tokenizer = tokenizer_factory(self.train_config.text_backbone, self.train_config.cache_path)
         features = convert_rawtext_to_features(raw_text, self.train_config.max_seq_length_text, self.tokenizer)
