@@ -156,7 +156,7 @@ class IntentRecognitionLearner(Learner):
         self.logger.info("Finished training")
 
     def eval(self, dataset, modality, silent=False, verbose=False, restore_best_model=False):
-        '''
+        """
         Performs evaluation on the test set
         :parameter dataset: dataset used for testing
         :type dataset: OpenDR Dataset
@@ -173,7 +173,7 @@ class IntentRecognitionLearner(Learner):
         :type restore_best_model: bool
         :return: Performance metrics on test set, predicted labels.
         :rtype: dict
-        '''
+        """
         assert modality in ['audio', 'video', 'language', 'joint'], 'Unknown modality: {}'.format(modality)
         assert (
             modality == self.train_config.mode or self.train_config.mode == 'joint'), \
