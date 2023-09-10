@@ -259,10 +259,10 @@ class IntentRecognitionLearner(Learner):
         for handler in self.logger.handlers:
             handler.setLevel(level)
 
-    def _set_logger(self):
-        '''
+    def __set_logger(self):
+        """
         Sets up global logger for training.
-        '''
+        """
         if not os.path.exists(self.train_config.log_path):
             os.makedirs(self.train_config.log_path)
         time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
