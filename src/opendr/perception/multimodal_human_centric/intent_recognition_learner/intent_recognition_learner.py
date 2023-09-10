@@ -35,7 +35,7 @@ import datetime
 import nltk.data
 import os
 import nltk
-nltk.download("punkt")
+nltk.download("punkt", download_dir='./')
 
 
 _TEXT_BACKBONES = ['bert-base-uncased', 'albert-base-v2', 'prajjwal1/bert-tiny', 'prajjwal1/bert-mini', 'prajjwal1/bert-small']
@@ -79,47 +79,6 @@ class IntentRecognitionLearner(Learner):
 
         self.tokenizer = None  # placeholder for inference tokenizer
         self.sentence_tokenizer = None
-
-    def trim(self, modality='language'):
-        """ Converts multimodal model to unimodal for inference
-        :parameter modality: Specifies which modality to trim the model to: language (recommended) | audio | video
-        :type modality: str
-        """
-        self.logger.info("Converting model to unimodal...")
-        if modality == self.train_config.mode:
-            return
-
-        curr_weights = self.model.model.state_dict()
-        self.train_config.mode = modality
-        self.model = ModelManager(self.train_config)
-        self.method = MULT(self.train_config, self.model)
-        self.model.model.load_state_dict(curr_weights, strict=False)
-        self.logger.info("Finished converting model to unimodal...")
-
-    def save(self, path):
-        """ Saves current state of the model to the given path
-
-        :parameter path: Path where to save the model
-        :type path: str
-        """
-        self.logger.info("Saving model...")
-        state_dict = {
-            'state_dict': self.model.model.state_dict(),
-            'config': self.train_config
-        }
-        torch.save(state_dict, path)
-        self.logger.info("Save model.")
-
-    def load(self, path):
-        """ Loads model chekpoint from specified path
-
-        :parameter path: Path to the checkpoint
-        :type path: str
-        """
-        self.logger.info("Loading model from {}...".format(path))
-        checkpoint = torch.load(path, map_location=self.train_config.device)
-        self.model.model.load_state_dict(checkpoint['state_dict'])
-        self.logger.info("Successfully loaded model.")
 
     def fit(self, dataset, val_dataset=None, silent=False, verbose=False):
         """ Performs training on the provided dataset
@@ -187,6 +146,7 @@ class IntentRecognitionLearner(Learner):
 
         self.logger.info("Started testing...")
         outputs = self.method.test(dataloader, modality, restore_best_model)
+
         save_results(self.train_config, outputs, suff=modality, results_file_name=modality + '_results.csv')
 
         self.logger.info("Finished testing...")
@@ -215,6 +175,31 @@ class IntentRecognitionLearner(Learner):
             out.append(Category(int(pred[0]), confidence=pred[1]))
         return out
 
+    def save(self, path):
+        """ Saves current state of the model to the given path
+
+        :parameter path: Path where to save the model
+        :type path: str
+        """
+        self.logger.info("Saving model...")
+        state_dict = {
+            'state_dict': self.model.model.state_dict(),
+            'config': self.train_config
+        }
+        torch.save(state_dict, path)
+        self.logger.info("Save model.")
+
+    def load(self, path):
+        """ Loads model chekpoint from specified path
+
+        :parameter path: Path to the checkpoint
+        :type path: str
+        """
+        self.logger.info("Loading model from {}...".format(path))
+        checkpoint = torch.load(path, map_location=self.train_config.device)
+        self.model.model.load_state_dict(checkpoint['state_dict'])
+        self.logger.info("Successfully loaded model.")
+
     def download(self, path):
         server_url = os.path.join(OPENDR_SERVER_URL,
                                   'perception',
@@ -227,6 +212,22 @@ class IntentRecognitionLearner(Learner):
             model_name = self.train_config.text_backbone
         weights_url = os.path.join(server_url, '{}.pth'.format(model_name))
         urlretrieve(weights_url, path)
+
+    def trim(self, modality='language'):
+        """ Converts multimodal model to unimodal for inference
+        :parameter modality: Specifies which modality to trim the model to: language (recommended) | audio | video
+        :type modality: str
+        """
+        self.logger.info("Converting model to unimodal...")
+        if modality == self.train_config.mode:
+            return
+
+        curr_weights = self.model.model.state_dict()
+        self.train_config.mode = modality
+        self.model = ModelManager(self.train_config)
+        self.method = MULT(self.train_config, self.model)
+        self.model.model.load_state_dict(curr_weights, strict=False)
+        self.logger.info("Finished converting model to unimodal...")
 
     def optimize(self):
         return NotImplementedError

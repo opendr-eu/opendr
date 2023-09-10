@@ -5,6 +5,7 @@ It is recommended to use *IntentRecognitionModule* together with *SpeechTranscri
 The module supports multimodal training on face (vision), speech (audio), and text data to facilitate improved unimodal inference on text modality.
 
 We provide data processing scripts and pre-trained model for [MIntRec dataset](https://github.com/thuiar/MIntRec).
+The class labels correspond to the following intent categories: 0 - Complain, 1 - Praise, 2 - Apologise, 3 - Thank, 4 - Criticize, 5 - Agree, 6 - Taunt, 7 - Flaunt, 8 - Joke, 9 - Oppose, 10 - Comfort, 11 - Care, 12 - Inform, 13 - Advise, 14 - Arrange, 15 - Introduce, 16 - Leave, 17 - Prevent, 18 - Greet, 19 - Ask for help.
 
 ### Class IntentRecognitionLearner
 
