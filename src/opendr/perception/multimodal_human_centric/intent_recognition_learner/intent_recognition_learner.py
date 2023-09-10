@@ -210,7 +210,7 @@ class IntentRecognitionLearner(Learner):
 
         out = []
         for sentence in self.sentence_tokenizer.tokenize(batch['text']):
-            text_feats = self._process_raw_text(sentence)
+            text_feats = self.__process_raw_text(sentence)
             pred = self.method.infer(text_feats, modality=modality)
             out.append(Category(int(pred[0]), confidence=pred[1]))
         return out
