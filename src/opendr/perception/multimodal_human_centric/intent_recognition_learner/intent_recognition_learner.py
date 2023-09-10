@@ -193,7 +193,7 @@ class IntentRecognitionLearner(Learner):
         return outputs
 
     def infer(self, batch, modality='language'):
-        '''
+        """
         Splits the input text into sentences, process each sentence independently.
         If a sentence is > max_sequence_length, process in sliding window manner.
         :parameter batch: Input data
@@ -202,7 +202,7 @@ class IntentRecognitionLearner(Learner):
         :type modality: str
         :return: Predicted class label with confidence score for each sentence in the input
         :rtype: list of opendr.data.Category
-        '''
+        """
         assert modality in ['language'], 'Unsupported modality {}'.format(modality)
         if self.sentence_tokenizer is None:
             self.sentence_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
