@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+sys.path.insert(0, '/home/chumache/opendr2/opendr/src')
 import unittest
 import torch
 import tempfile
@@ -60,7 +62,7 @@ class TestIntentRecognitionLearner(unittest.TestCase):
         print('testing fit')
         tmp_direc = tempfile.TemporaryDirectory()
         tmp_dir = tmp_direc.name
-        learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='joint', device=DEVICE,
+        learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='language', device=DEVICE,
                                            log_path=tmp_dir, cache_path=tmp_dir, results_path=tmp_dir,
                                            output_path=tmp_dir)
         print('dataset 1')
@@ -131,7 +133,7 @@ class TestIntentRecognitionLearner(unittest.TestCase):
         temp_dir = 'tmp_'+str(time.time())
         tmp_direc = tempfile.TemporaryDirectory()
         tmp_dir2 = tmp_direc.name
-        learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='joint', device=DEVICE,
+        learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='language', device=DEVICE,
                                            log_path=tmp_dir2, cache_path=tmp_dir2, results_path=tmp_dir2,
                                            output_path=tmp_dir2)
         train_set = DummyDataset(learner.train_config)
@@ -140,7 +142,7 @@ class TestIntentRecognitionLearner(unittest.TestCase):
 
         learner.save(temp_dir)
 
-        new_learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='joint', device=DEVICE,
+        new_learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='language', device=DEVICE,
                                                log_path=tmp_dir2, cache_path=tmp_dir2, results_path=tmp_dir2,
                                                output_path=tmp_dir2)
 
