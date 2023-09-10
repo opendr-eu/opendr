@@ -71,7 +71,7 @@ class IntentRecognitionLearner(Learner):
 
         self.train_config = ParamManager(train_config).args
         self.log_path = log_path
-        self.logger = self._set_logger()
+        self.logger = self.__set_logger()
         self.train_config.pred_output_path, self.train_config.model_output_path = set_output_path(self.train_config)
         set_torch_seed(self.train_config.seed)
         self.model = ModelManager(self.train_config)
