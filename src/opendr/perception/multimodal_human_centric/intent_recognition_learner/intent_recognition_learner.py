@@ -179,7 +179,7 @@ class IntentRecognitionLearner(Learner):
             'Inference on modality {} not supported with mode {}'.format(
             modality, self.train_config.mode)
 
-        self._update_verbosity(silent, verbose)
+        self.__update_verbosity(silent, verbose)
 
         dataloader = DataLoader(dataset, batch_size=self.train_config.test_batch_size,
                                 num_workers=self.train_config.num_workers, pin_memory=True)
