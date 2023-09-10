@@ -52,6 +52,7 @@ class IntentRecognitionLearner(Learner):
             output_path='outputs',
             device='cuda',
             benchmark='MIntRec'):
+        super(IntentRecognitionLearner, self).__init__(device=device)
         assert text_backbone in _TEXT_BACKBONES, 'Unsupported text backbone: {}'.format(text_backbone)
         assert mode in ['language', 'joint'], 'Unsupported mode: {}'.format(mode)
 
