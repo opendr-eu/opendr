@@ -245,10 +245,10 @@ class IntentRecognitionLearner(Learner):
         text_feats = text_feats.to(self.train_config.device)
         return text_feats
 
-    def _update_verbosity(self, silent, verbose):
-        '''
+    def __update_verbosity(self, silent, verbose):
+        """
         Updates verbosity level of the logger.
-        '''
+        """
         if silent:
             level = logging.CRITICAL
         elif verbose:
