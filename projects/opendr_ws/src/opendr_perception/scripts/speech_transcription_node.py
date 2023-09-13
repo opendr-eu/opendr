@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from typing import Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional
 import wave
 import argparse
 import warnings
@@ -64,6 +64,7 @@ class SpeechTranscriptionNode:
         temperature: Union[float, Tuple[float, ...]]=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
         logprob_threshold: Optional[float]=-0.8,
         no_speech_threshold: float=0.6,
+        initial_prompt: Optional[str] = None,
         phrase_timeout: float=2,
         input_audio_topic: str="/audio/audio",
         output_transcription_topic: str="/opendr/speech_transcription",
@@ -144,6 +145,7 @@ class SpeechTranscriptionNode:
         self.temperature = temperature
         self.logprob_threshold = logprob_threshold
         self.no_speech_threshold = no_speech_threshold
+        self.initial_prompt = initial_prompt
         self.phrase_timeout = phrase_timeout
 
         # Initialize model
@@ -373,7 +375,7 @@ class SpeechTranscriptionNode:
         """
         audio_array = WhisperLearner.load_audio(self.temp_file)
         self.vad = self._whisper_vad(audio_array)
-        transcription_whisper = self.audio_model.infer(audio_array)
+        transcription_whisper = self.audio_model.infer(audio_array, initial_prompt=self.initial_prompt)
 
         vosk_transcription = self._postprocess_whisper(
             audio_array, transcription_whisper
@@ -501,6 +503,12 @@ def main():
         "--sample_rate", type=int, default=16000, help="Sampling rate for audio data."
         "Check your audio source for correct value."
     )
+    parser.add_argument(
+        "--initial_prompt",
+        default="",
+        type=str,
+        help="Prompt to provide some context or instruction for the transcription, only for Whisper",
+    )
     args = parser.parse_args()
 
     try:
@@ -560,6 +568,7 @@ def main():
             temperature=temperature,
             logprob_threshold=args.logprob_threshold,
             no_speech_threshold=args.no_speech_threshold,
+            initial_prompt = args.initial_prompt,
             input_audio_topic=args.input_audio_topic,
             output_transcription_topic=args.output_transcription_topic,
             performance_topic=args.performance_topic,
