@@ -142,7 +142,6 @@ if (useRobotti):
                         f.write(
                             '"{}" {} {} {} {}\n'.format(object.getModel(), position[0], position[1], size[0], size[1]))
 
-                        # print(object.getModel()),
 
         if (number % 5 == 0):
 
