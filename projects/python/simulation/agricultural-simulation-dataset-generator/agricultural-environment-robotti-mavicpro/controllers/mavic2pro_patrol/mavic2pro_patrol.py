@@ -301,7 +301,6 @@ class Mavic(Robot):
             self.save_device_measurements(str(data_index), str(second), objects,
                                           static_objects)
 
-            # print('mavic 357')
             data_index += 1
             index += 1
             if (index % 100 == 0):
