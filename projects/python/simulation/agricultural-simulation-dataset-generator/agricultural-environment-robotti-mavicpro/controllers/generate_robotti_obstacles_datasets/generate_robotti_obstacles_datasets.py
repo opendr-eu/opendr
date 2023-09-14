@@ -337,7 +337,7 @@ if (useRobotti):
         device.recognitionEnable(timestep)
         device.enableRecognitionSegmentation()
 
-    # initialize LDIAR
+    # initialize LIDAR
     lidar = Lidar("velodyne")
     lidar.enable(timestep)
     lidar.enablePointCloud()
