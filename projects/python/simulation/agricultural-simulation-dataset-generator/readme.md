@@ -13,7 +13,7 @@ This folder contains source for:
 </p>
 
 # How to use
-To use and generate the datasets open the environment file ./agricultural-environment-robotti-mavicpro/worlds/agricultural-environment-robotti-mavicpro.wbt using Webots version from this link: https://github.com/cyberbotics/webots/releases/tag/CameraRecognition
+To use and generate the datasets open the Webots world file ./agricultural-environment-robotti-mavicpro/worlds/agricultural-environment-robotti-mavicpro.wbt using Webots version from this link: https://github.com/cyberbotics/webots/releases/tag/CameraRecognition
 
 # Dataset structure
 Each dataset comprises of simultaneous data gatherd from a UGV and a UAV.
