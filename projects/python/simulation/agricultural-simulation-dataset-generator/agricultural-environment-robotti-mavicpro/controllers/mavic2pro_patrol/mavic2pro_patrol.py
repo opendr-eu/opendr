@@ -270,12 +270,6 @@ class Mavic(Robot):
                     yaw_disturbance, pitch_disturbance = self.move_to_target(
                         waypoints)
                     t1 = self.getTime()
-                    # print('moving to target')
-                    # print('altitude: {}, target altitude: {}'.format(altitude, self.target_altitude))
-                    # print('x_pos: {}, y_pos: {}, altitude: {}'.format(x_pos, y_pos, altitude))
-
-            # else:
-            # print('altitude: {}, target altitude: {}'.format(altitude, self.target_altitude))
 
             roll_input = self.K_ROLL_P * clamp(roll, -1, 1) + roll_acceleration + roll_disturbance
             pitch_input = self.K_PITCH_P * clamp(pitch, -1, 1) + pitch_acceleration + pitch_disturbance
