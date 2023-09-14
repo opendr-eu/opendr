@@ -33,7 +33,6 @@ STOP_ON = 193
 useMavic = True
 
 
-# useMavic=False
 
 class Mavic(Robot):
     # Constants, empirically found.
