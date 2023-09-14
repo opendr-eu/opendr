@@ -40,7 +40,6 @@ rightMotorRear = robot.getDevice("right_rear_wheel_joint_motor")
 # enable all the devices
 cameraTop.enable(4 * timestep)
 cameraBottom.enable(10 * timestep)
-# cameraBottom.recognitionEnable(10 * timestep)
 cameraRear.enable(10 * timestep)
 robot.step(2 * timestep)
 cameraDownwards1.enable(10 * timestep)
