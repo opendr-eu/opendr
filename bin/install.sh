@@ -19,7 +19,7 @@ else
 fi
 
 # Install base ubuntu deps
-sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
+sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv qt5-default
 
 # Get all submodules
 git submodule init
@@ -63,9 +63,9 @@ if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   echo "[INFO] Replacing  mxnet-cu112==1.8.0post0 to enable CUDA acceleration."
   python3 -m pip install mxnet-cu112==1.8.0post0
   echo "[INFO] Replacing torch==1.13.1+cu116 to enable CUDA acceleration."
-  python3 -m pip install torch==1.13.1+cu116 torchvision==0.14.1 torchaudio==0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
+  python3 -m pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
   echo "[INFO] Reinstalling detectronv2."
-  python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
+  python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
 fi
 
 make libopendr
