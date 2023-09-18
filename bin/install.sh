@@ -25,6 +25,11 @@ sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip cu
 git submodule init
 git submodule update
 
+# Temporary fix
+echo "[WARNING] Removing Panoptic Segmentation tool and Continual SLAM."
+rm -rf ./src/opendr/perception/panoptic_segmentation
+rm -rf ./src/opendr/perception/continual_slam
+
 # Create a virtual environment and update
 python3 -m venv venv
 source venv/bin/activate
