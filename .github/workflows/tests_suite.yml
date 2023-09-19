@@ -180,7 +180,8 @@ jobs:
 
         # Reinstall some system dependencies
         echo "Installing system dependencies"
-        sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv
+        sudo apt-get update
+        sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv ffmpeg
         sudo apt-get install --yes libopenblas-dev libsndfile1 libboost-dev
         
         source bin/activate.sh
