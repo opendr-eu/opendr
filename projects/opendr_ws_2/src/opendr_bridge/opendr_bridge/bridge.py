@@ -35,7 +35,13 @@ from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import (
     Pose2D, Point32 as Point32Msg,
     Quaternion as QuaternionMsg, Pose as Pose3D,
-    Point
+    Vector3Stamped as Vector3StampedMsg,
+    Point,
+    TransformStamped as TransformStampedMsg,
+)
+from visualization_msgs.msg import (
+    Marker as MarkerMsg,
+    MarkerArray as MarkerArrayMsg,
 )
 from opendr_interface.msg import OpenDRPose2D, OpenDRPose2DKeypoint, OpenDRPose3D, OpenDRPose3DKeypoint, OpenDRTranscription
 from sensor_msgs_py import point_cloud2 as pc2
@@ -53,18 +59,31 @@ class ROS2Bridge:
     def __init__(self):
         self._cv_bridge = CvBridge()
 
-    def to_ros_image(self, image: Image, encoding: str='passthrough') -> ImageMsg:
+    def to_ros_image(self,
+                     image: Image,
+                     encoding: str='passthrough',
+                     frame_id: str = None,
+                     time: str = None) -> ImageMsg:
         """
         Converts an OpenDR image into a ROS2 image message
         :param image: OpenDR image to be converted
         :type image: engine.data.Image
         :param encoding: encoding to be used for the conversion (inherited from CvBridge)
         :type encoding: str
+        :param frame_id: frame id of the image
+        :type frame_id: str
+        :param time: time of the image
+        :type time: str
         :return: ROS2 image
         :rtype: sensor_msgs.msg.Image
         """
+        header = Header()
+        if frame_id is not None:
+            header.frame_id = frame_id
+        if time is not None:
+            header.stamp = time
         # Convert from the OpenDR standard (CHW/RGB) to OpenCV standard (HWC/BGR)
-        message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding)
+        message = self._cv_bridge.cv2_to_imgmsg(image.opencv(), encoding=encoding, header=header)
         return message
 
     def from_ros_image(self, message: ImageMsg, encoding: str='passthrough') -> Image:
@@ -410,7 +429,7 @@ class ROS2Bridge:
 
         return result
 
-    def to_ros_point_cloud2(self, point_cloud: PointCloud, timestamp: str, channels: str=None):
+    def to_ros_point_cloud2(self, point_cloud: PointCloud, timestamp: str, channels: str=None, frame_id="base_link"):
 
         """
         Converts an OpenDR PointCloud message into a ROS PointCloud2
@@ -424,7 +443,7 @@ class ROS2Bridge:
 
         header = Header()
         header.stamp = timestamp
-        header.frame_id = "base_link"
+        header.frame_id = frame_id
 
         channel_count = point_cloud.data.shape[-1] - 3
 
@@ -732,6 +751,195 @@ class ROS2Bridge:
         if source_data is not None:
             classification.source_img = source_data
         return classification
+
+    def to_ros_marker(self,
+                      frame_id: str,
+                      position: list,
+                      id: int,
+                      timestamp: str,
+                      rgba: tuple = None) -> MarkerMsg:
+        """
+        Creates ROS Marker message given positions x,y,z and frame_id.
+        :param frame_id: The frame_id of the marker.
+        :type frame_id: str
+        :param position: The position of the marker.
+        :type position: list
+        :param id: The id of the marker.
+        :type id: int
+        :param timestamp: The timestamp of the marker.
+        :type timestamp: str
+        :param rgba: The color of the marker.
+        :type rgba: tuple
+        :return: ROS Marker message.
+        :rtype: visualization_msgs.msg.Marker
+        """
+        marker = MarkerMsg()
+        marker.header.frame_id = frame_id
+        marker.header.stamp = timestamp
+        marker.type = marker.SPHERE
+        marker.id = id
+        marker.action = marker.ADD
+        marker.pose.position.x = float(position[0])
+        marker.pose.position.y = float(position[1])
+        marker.pose.position.z = float(position[2])
+        marker.pose.orientation.x = 0.0
+        marker.pose.orientation.y = 0.0
+        marker.pose.orientation.z = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 1.0
+        marker.scale.y = 1.0
+        marker.scale.z = 1.0
+        if rgba is not None:
+            marker.color.a = 1.0
+            marker.color.r = float(rgba[0]/255)
+            marker.color.g = float(rgba[1]/255)
+            marker.color.b = float(rgba[2]/255)
+        else:
+            marker.color.a = 1.0
+            marker.color.r = 1.0
+            marker.color.g = 0.0
+            marker.color.b = 0.0
+        return marker
+
+    def to_ros_marker_array(self,
+                            position_list: list,
+                            frame_id_list: list,
+                            stamp: str,
+                            rgba: tuple = None) -> MarkerArrayMsg:
+        """
+        Creates ROS MarkerArray message given positions x,y,z and frame_id.
+        :param position_list: The list of positions of the markers.
+        :type position_list: list
+        :param frame_id_list: The list of frame_ids of the markers.
+        :type frame_id_list: list
+        :param stamp: The timestamp of the marker.
+        :type stamp: str
+        :param rgba: The color of the marker.
+        :type rgba: tuple
+        """
+        marker_array = MarkerArrayMsg()
+        for i in range(len(position_list)):
+            marker_array.markers.append(self.to_ros_marker(frame_id_list[i],
+                                                           position_list[i],
+                                                           i,
+                                                           stamp,
+                                                           rgba))
+        return marker_array
+
+    def to_ros_vector3_stamped(self,
+                               x: float,
+                               y: float,
+                               z: float,
+                               frame_id: str,
+                               time: str) -> Vector3StampedMsg:
+        """
+        Creates a Vector3Stamped message given x,y,z coordinates and frame_id and time
+        :param x: The x coordinate of the vector.
+        :type x: float
+        :param y: The y coordinate of the vector.
+        :type y: float
+        :param z: The z coordinate of the vector.
+        :type z: float
+        :param frame_id: The frame_id of the vector.
+        :type frame_id: str
+        :param time: The time of the vector.
+        :type time: str
+        :return: ROS message with the vector.
+        :rtype: geometry_msgs.msg.Vector3Stamped
+        """
+
+        message = Vector3StampedMsg()
+        message.header.frame_id = frame_id
+        message.header.stamp = time
+        message.vector.x = x
+        message.vector.y = y
+        message.vector.z = z
+
+        return message
+
+    def from_ros_vector3_stamped(self, message: Vector3StampedMsg):
+        """
+        Creates a Vector3Stamped message given x,y,z coordinates and frame_id and time
+        :param message: The ROS message to be converted.
+        :type message: geometry_msgs.msg.Vector3Stamped
+        :return: The frame_id and the vector.
+        :rtype: tuple
+        """
+
+        x = message.vector.x
+        y = message.vector.y
+        z = message.vector.z
+
+        frame_id = message.header.frame_id
+
+        return frame_id, [x, y, z]
+
+    def to_ros_string(self, data: str) -> String:
+        """
+        Creates a String message given data.
+        :param data: The data to be converted.
+        :type data: str
+        :return: ROS message with the data.
+        :rtype: std_msgs.msg.String
+        """
+
+        message = String()
+        message.data = data
+
+        return message
+
+    def from_ros_string(self, message: String):
+        """
+        Creates a String message given data.
+        :param message: The ROS message to be converted.
+        :type message: std_msgs.msg.String
+        :return: The data.
+        :rtype: str
+        """
+
+        return message.data
+
+    def to_ros_transformstamped(self, stamp, frame_id, child_frame_id, odometry):
+        """
+        Creates a TransformStamped message given frame_id, child_frame_id and odometry.
+        """
+        t = TransformStampedMsg()
+        t.header.stamp = stamp
+        t.header.frame_id = frame_id
+        t.child_frame_id = child_frame_id
+        t.transform.translation.x = -odometry[0, 3]
+        t.transform.translation.y = 0.0
+        t.transform.translation.z = -odometry[2, 3]
+
+        def quaternion_from_matrix(matrix):
+            q = np.empty((4, ), dtype=np.float64)
+            M = np.array(matrix, dtype=np.float64, copy=False)[:4, :4]
+            t = np.trace(M)
+            if t > M[3, 3]:
+                q[3] = t
+                q[2] = M[1, 0] - M[0, 1]
+                q[1] = M[0, 2] - M[2, 0]
+                q[0] = M[2, 1] - M[1, 2]
+            else:
+                i, j, k = 0, 1, 2
+                if M[1, 1] > M[0, 0]:
+                    i, j, k = 1, 2, 0
+                if M[2, 2] > M[i, i]:
+                    i, j, k = 2, 0, 1
+                t = M[i, i] - (M[j, j] + M[k, k]) + M[3, 3]
+                q[i] = t
+                q[j] = M[i, j] + M[j, i]
+                q[k] = M[k, i] + M[i, k]
+                q[3] = M[k, j] - M[j, k]
+            q *= 0.5 / np.sqrt(t * M[3, 3])
+            return q
+
+        q = quaternion_from_matrix(odometry)
+        t.transform.rotation.x = q[0]
+        t.transform.rotation.y = q[1]
+        t.transform.rotation.z = q[2]
+        t.transform.rotation.w = q[3]
+        return t
 
     def from_ros_transcription(self, ros_transcripton: OpenDRTranscription) -> VoskTranscription:
         """
