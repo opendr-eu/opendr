@@ -154,7 +154,7 @@ def main():
                         type=str, default="VGG_720p", choices=["VGG_720p", "VGG_1080p"])
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

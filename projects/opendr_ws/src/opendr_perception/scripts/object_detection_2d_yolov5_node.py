@@ -133,7 +133,7 @@ def main():
     parser.add_argument("--model_name", help="Network architecture, defaults to \"yolov5s\"",
                         type=str, default="yolov5s", choices=['yolov5s', 'yolov5n', 'yolov5m', 'yolov5l', 'yolov5x',
                                                               'yolov5n6', 'yolov5s6', 'yolov5m6', 'yolov5l6', 'custom'])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

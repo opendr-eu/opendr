@@ -134,7 +134,7 @@ def main():
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--backbone", help="Backbone network, defaults to \"darknet53\"",
                         type=str, default="darknet53", choices=["darknet53"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and mx.context.num_gpus() > 0:

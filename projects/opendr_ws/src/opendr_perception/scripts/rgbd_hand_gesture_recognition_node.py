@@ -165,7 +165,7 @@ if __name__ == '__main__':
     parser.add_argument("--delay", help="The delay (in seconds) with which RGB message and"
                                         "depth message can be synchronized", type=float, default=0.1)
 
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
