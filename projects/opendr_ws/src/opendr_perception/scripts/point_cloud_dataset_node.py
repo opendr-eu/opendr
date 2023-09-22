@@ -69,7 +69,7 @@ def main():
                         type=str, default="/opendr/dataset_point_cloud")
     parser.add_argument("-f", "--fps", help="Data FPS",
                         type=float, default=10)
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     dataset_path = args.dataset_path
     kitti_subsets_path = args.kitti_subsets_path
