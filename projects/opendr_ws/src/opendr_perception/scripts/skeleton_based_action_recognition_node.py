@@ -232,7 +232,7 @@ if __name__ == '__main__':
     parser.add_argument("--model", help="Model to use, either \"stgcn\" or \"pstgcn\"",
                         type=str, default="stgcn", choices=["stgcn", "pstgcn"])
 
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

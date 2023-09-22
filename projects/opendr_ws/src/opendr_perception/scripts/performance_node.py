@@ -65,7 +65,7 @@ def main():
                         type=str, default="/opendr/performance")
     parser.add_argument("-w", "--window", help="The window to use in frames to calculate running average FPS",
                         type=int, default=20)
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     performance_node = PerformanceNode(input_performance_topic=args.input_performance_topic,
                                        window_length=args.window)

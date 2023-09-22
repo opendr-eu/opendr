@@ -269,7 +269,7 @@ def main():
                         action='store_false',
                         default=True,
                         help='Whether to save memory or not. Add it to the command if you want to write to disk')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     node = ContinualSlamLearner(args.config_path,
                                 args.input_image_topic,

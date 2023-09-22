@@ -180,7 +180,7 @@ def main():
                         help="Path of the directory where the images of the faces to be recognized are stored, "
                              "defaults to \"./database\"",
                         type=str, default="./database")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

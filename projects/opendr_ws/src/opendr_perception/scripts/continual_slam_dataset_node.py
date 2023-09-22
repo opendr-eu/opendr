@@ -136,7 +136,7 @@ def main():
                         help="ROS topic to publish distances")
     parser.add_argument("--dataset_fps", type=float, default=3,
                         help="Dataset frame rate")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     node = ContinualSlamDatasetNode(args.dataset_path,
                                     args.config_file_path,
