@@ -501,7 +501,7 @@ def main():
         "--sample_rate", type=int, default=16000, help="Sampling rate for audio data."
         "Check your audio source for correct value."
     )
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

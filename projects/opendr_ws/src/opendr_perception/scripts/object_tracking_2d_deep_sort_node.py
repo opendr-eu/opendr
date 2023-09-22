@@ -221,7 +221,7 @@ def main():
                         type=str, default="deep_sort", choices=["deep_sort"])
     parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

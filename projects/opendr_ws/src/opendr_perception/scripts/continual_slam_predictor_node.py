@@ -328,7 +328,7 @@ def main():
                         type=str,
                         default='/cl_slam/update',
                         help='Update topic, listened from Continual SLAM Dataset Node')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     node = ContinualSlamPredictor(args.config_path,
                                   args.input_image_topic,
