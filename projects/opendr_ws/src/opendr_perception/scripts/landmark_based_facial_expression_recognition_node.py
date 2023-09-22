@@ -168,7 +168,7 @@ if __name__ == '__main__':
                         type=str, default="pstbln_afew", choices=['pstbln_ck+', 'pstbln_casia', 'pstbln_afew'])
     parser.add_argument("-s", "--shape_predictor", help="Shape predictor (landmark_extractor) to use",
                         type=str, default='./predictor_path')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

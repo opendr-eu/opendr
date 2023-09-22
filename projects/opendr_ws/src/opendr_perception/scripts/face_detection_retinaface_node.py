@@ -138,7 +138,7 @@ def main():
                         help="Retinaface backbone, options are either 'mnet' or 'resnet', where 'mnet' detects "
                              "masked faces as well",
                         type=str, default="resnet", choices=["resnet", "mnet"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and mx.context.num_gpus() > 0:
