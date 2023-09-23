@@ -186,7 +186,14 @@ def main():
         input_transcription_topic=args.input_transcription_topic,
         output_intent_topic=args.output_intent_topic,
         performance_topic=args.performance_topic, cache_path=args.cache_path)
-    intent_node.listen()
+
+    rclpy.spin(intent_node)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    intent_node.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
