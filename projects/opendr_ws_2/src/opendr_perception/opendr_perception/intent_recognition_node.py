@@ -67,7 +67,7 @@ class IntentRecognitionNode(Node):
 
         if output_intent_topic is not None:
             self.intent_publisher = self.create_publisher(
-                ObjectHypothesis, output_intent_topic, ObjectHypothesis, 1)
+                ObjectHypothesis, output_intent_topic, 1)
         else:
             self.intent_publisher = None
 
