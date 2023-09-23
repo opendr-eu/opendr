@@ -197,7 +197,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model-name",
         type=str,
-        help="Specific name for Whisper model",
+        help="Specific name for Whisper model, available models are: ['tiny.en', 'tiny', 'base.en', 'base', \
+                 'small.en', 'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
         choices=['tiny.en', 'tiny', 'base.en', 'base', 'small.en',
                  'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large'],
         default=None,
