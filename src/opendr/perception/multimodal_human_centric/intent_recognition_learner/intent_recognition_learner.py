@@ -197,7 +197,7 @@ class IntentRecognitionLearner(Learner):
         """
         self.logger.info("Loading model from {}...".format(path))
         checkpoint = torch.load(path, map_location=self.train_config.device)
-        self.model.model.load_state_dict(checkpoint['state_dict'])
+        self.model.model.load_state_dict(checkpoint['state_dict'], strict=False)
         self.logger.info("Successfully loaded model.")
 
     def download(self, path):
