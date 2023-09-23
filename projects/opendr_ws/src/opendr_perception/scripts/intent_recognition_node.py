@@ -50,7 +50,7 @@ class IntentRecognitionNode:
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param text_backbone: the name of the text backbone to use
-        :type model: str
+        :type text_backbone: str
         :param cache_path: cache path
         :type cache_path: str
         """
