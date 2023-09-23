@@ -133,7 +133,7 @@ def main():
         "--input_transcription_topic",
         help="Topic name for input transcription",
         type=str,
-        default="/opendr/transcription")
+        default="/opendr/speech_transcription")
     parser.add_argument(
         "-o",
         "--output_intent_topic",
