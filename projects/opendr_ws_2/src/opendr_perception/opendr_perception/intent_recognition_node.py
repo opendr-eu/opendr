@@ -125,8 +125,8 @@ class IntentRecognitionNode(Node):
                     self.bridge.to_ros_category(prediction))
 
 
-def main():
-    rclpy.init(args=None)
+def main(args=None):
+    rclpy.init(args=args)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-i",
