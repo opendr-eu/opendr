@@ -210,6 +210,7 @@ if __name__ == "__main__":
         "--download-dir",
         type=str,
         help="Path to the directory where the model will be downloaded",
+        default="./pretrained_models"
     )
     parser.add_argument("--text_backbone", help="Text backbone: ['bert-base-uncased' | \
                         'albert-base-v2' | 'bert-small' | 'bert-mini' | 'bert-tiny']",
