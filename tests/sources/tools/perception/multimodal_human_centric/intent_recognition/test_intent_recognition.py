@@ -16,6 +16,7 @@ import torch
 import tempfile
 import os
 import time
+import shutil
 # OpenDR imports
 from opendr.engine.target import Category
 from opendr.perception.multimodal_human_centric import IntentRecognitionLearner
@@ -54,6 +55,8 @@ class TestIntentRecognitionLearner(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        if os.path.exists('tokenizers'):
+            shutil.rmtree('tokenizers')
         return
 
     def test_fit(self):
@@ -98,7 +101,8 @@ class TestIntentRecognitionLearner(unittest.TestCase):
         learner = IntentRecognitionLearner(text_backbone='prajjwal1/bert-tiny', mode='joint', device=DEVICE,
                                            log_path=tmp_dir, cache_path=tmp_dir, results_path=tmp_dir,
                                            output_path=tmp_dir)
-
+        learner.download(f'{tmp_dir}/bert-tiny.pth')
+        learner.load(f'{tmp_dir}/bert-tiny.pth')
         # make inference
         pred = learner.infer({'text': test_text}, modality='language')
         self.assertTrue(isinstance(pred, list))
