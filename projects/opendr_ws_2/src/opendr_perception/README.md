@@ -1058,6 +1058,17 @@ The node makes use of the toolkit's intent recognition [learner](../../../../src
 
 3. Default output topics:
    - Predicted intents and confidence: `/opendr/intent`
+   
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+On the table below you can find the detectable classes and their corresponding IDs:
+
+| Class  | Complain | Praise | Apologise | Thank | Criticize | Agree | Taunt | Flaunt | Joke | Oppose | Comfort | Care | Inform | Advise | Arrange | Introduce | Leave | Prevent | Greet | Ask for help |
+|--------|----------|--------|-----------|-------|-----------|-------|-------|--------|------|--------|---------|------|--------|--------|---------|-----------|-------|---------|-------|--------------|
+| **ID** | 0        | 1      | 2         | 3     | 4         | 5     | 6     | 7      | 8    | 9      | 10      | 11   | 12     | 13     | 14      | 15        | 16    | 17      | 18    | 19           |
+
 
 ----
 ## Point cloud input
