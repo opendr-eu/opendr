@@ -35,7 +35,7 @@ LABELS = [
 
 class IntentRecognitionNode:
 
-    def __init__(self, input_transcription_topic="/opendr/transcription",
+    def __init__(self, input_transcription_topic="/opendr/speech_transcription",
                  output_intent_topic="/opendr/intent",
                  performance_topic=None, device="cuda", text_backbone="bert-base-uncased", cache_path='cache'):
         """
