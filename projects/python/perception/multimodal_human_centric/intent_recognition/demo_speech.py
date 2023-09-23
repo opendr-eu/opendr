@@ -90,14 +90,12 @@ def wait_for_start_command(learner, sample_rate):
 
 
 def get_intent_learner(text_backbone, device, cache_path, download_dir):
-    if args.text_backbone == 'bert-small':
+    if text_backbone == 'bert-small':
         text_backbone = 'prajjwal1/bert-small'
-    elif args.text_backbone == 'bert-mini':
+    elif text_backbone == 'bert-mini':
         text_backbone = 'prajjwal1/bert-mini'
-    elif args.text_backbone == 'bert-tiny':
+    elif text_backbone == 'bert-tiny':
         text_backbone = 'prajjwal1/bert-tiny'
-    else:
-        text_backbone = args.text_backbone
 
     if not os.path.exists(download_dir):
         os.makedirs(download_dir)
