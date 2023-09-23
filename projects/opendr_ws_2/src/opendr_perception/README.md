@@ -1046,7 +1046,7 @@ The node makes use of the toolkit's intent recognition [learner](../../../../src
 2. Start the intent recognition node
 
     ```shell
-    ros2 run opendr_perception intent_recognition_node
+    ros2 run opendr_perception intent_recognition
     ```
     The following arguments are available:
    - `-i or --input_transcription_topic INPUT_TRANSCRIPTION_TOPIC`: topic name for input transcription of type OpenDRTranscription (default=`/opendr/speech_transcription`)
