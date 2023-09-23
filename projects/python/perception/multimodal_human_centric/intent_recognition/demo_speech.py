@@ -199,7 +199,7 @@ if __name__ == "__main__":
                  'small.en', 'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large']",
         choices=['tiny.en', 'tiny', 'base.en', 'base', 'small.en',
                  'small', 'medium.en', 'medium', 'large-v1', 'large-v2', 'large'],
-        default=None,
+        default="base.en",
     )
     parser.add_argument(
         "--language",
