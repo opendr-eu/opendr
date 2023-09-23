@@ -39,7 +39,7 @@ class IntentRecognitionNode(Node):
 
     def __init__(
             self,
-            input_transcription_topic="/opendr/transcription",
+            input_transcription_topic="/opendr/speech_transcription",
             output_intent_topic="/opendr/intent",
             performance_topic=None,
             device="cuda",
