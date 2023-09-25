@@ -176,7 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
                         type=str, default=None)
 
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     efficient_lps_node = EfficientLpsNode(args.input_point_cloud_2_topic,
                                           args.checkpoint,

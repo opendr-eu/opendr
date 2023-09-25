@@ -148,7 +148,7 @@ def main():
     )
     parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     input_point_cloud_topic = args.input_point_cloud_topic
     detector_model_name = args.detector_model_name

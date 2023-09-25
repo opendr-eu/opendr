@@ -92,7 +92,7 @@ if __name__ == "__main__":
                         help='topic for the output point cloud')
     parser.add_argument('-t', '--test_data', action='store_true',
                         help='Use uploaded test data on the FTP server')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     if args.test_data:
         args.dataset_path = EfficientLpsLearner.download(args.dataset_path, mode="test_data", prepare_data=True)

@@ -243,7 +243,7 @@ def main():
     parser.add_argument("--model", help="Architecture to use for human activity recognition.",
                         type=str, default="cox3d-m",
                         choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

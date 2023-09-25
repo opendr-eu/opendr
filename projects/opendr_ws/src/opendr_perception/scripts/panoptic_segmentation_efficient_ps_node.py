@@ -193,7 +193,7 @@ if __name__ == '__main__':
                               panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
     parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
                                         args.checkpoint,
