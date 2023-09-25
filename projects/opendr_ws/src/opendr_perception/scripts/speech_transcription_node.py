@@ -509,7 +509,7 @@ def main():
         type=str,
         help="Prompt to provide some context or instruction for the transcription, only for Whisper",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
