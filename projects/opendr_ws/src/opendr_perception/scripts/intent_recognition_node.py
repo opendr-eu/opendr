@@ -135,7 +135,7 @@ def main():
 
     parser.add_argument("--text_backbone", help="Text backbone that will be used", type=str, default="bert-base-uncased",
                         choices=["bert-base-uncased", "albert-base-v2", "bert-small", "bert-mini", "bert-tiny"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
