@@ -46,7 +46,7 @@ class VideoReader(object):
 
 
 if __name__ == '__main__':
-    print(torch.__version__)
+    torch.__version__  # Dummy usage of torch to avoid imported but not used pyflakes error
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cpu", "cuda"])
     parser.add_argument("--model", help="Model to use", type=str, default="yolov5s",
