@@ -16,6 +16,8 @@ import argparse
 
 import cv2
 import time
+# Importing torch to avoid "RuntimeError: cuDNN error: CUDNN_STATUS_NOT_INITIALIZED" error
+import torch  # NOQA
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
