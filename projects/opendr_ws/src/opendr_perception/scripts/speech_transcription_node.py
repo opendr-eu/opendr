@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from typing import List, Tuple, Union, Optional
+from typing import Tuple, Union, Optional
 import wave
 import argparse
 import warnings
@@ -64,7 +64,7 @@ class SpeechTranscriptionNode:
         temperature: Union[float, Tuple[float, ...]]=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
         logprob_threshold: Optional[float]=-0.8,
         no_speech_threshold: float=0.6,
-        initial_prompt: Optional[str] = None,
+        initial_prompt: Optional[str]=None,
         phrase_timeout: float=2,
         input_audio_topic: str="/audio/audio",
         output_transcription_topic: str="/opendr/speech_transcription",
@@ -101,6 +101,11 @@ class SpeechTranscriptionNode:
 
         :param no_speech_threshold: Threshold for detecting long silence in Whisper.
         :type no_speech_threshold: float.
+
+        :param initial_prompt: Optional text to provide as a prompt for the first window. This can be used to
+        provide, or "prompt-engineer" a context for transcription, e.g. custom vocabularies or proper nouns to
+        make it more likely to predict those word correctly.
+        :type initial_prompt: Optional[str].
 
         :param phrase_timeout: The most recent seconds used for detecting long silence in Whisper.
         :type phrase_timeout: float.
@@ -568,7 +573,7 @@ def main():
             temperature=temperature,
             logprob_threshold=args.logprob_threshold,
             no_speech_threshold=args.no_speech_threshold,
-            initial_prompt = args.initial_prompt,
+            initial_prompt=args.initial_prompt,
             input_audio_topic=args.input_audio_topic,
             output_transcription_topic=args.output_transcription_topic,
             performance_topic=args.performance_topic,
