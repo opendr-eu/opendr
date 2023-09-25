@@ -104,10 +104,10 @@ Parameters:
 #### `WhisperLearner.infer`
 
 ```python
-WhisperLearner.infer(self, audio)
+WhisperLearner.infer(self, audio, initial_prompt)
 ```
 
-This method runs inference on an audio sample. Please call the load() method before calling this method.
+This method runs inference on an audio sample. Please call the load() method before calling this method. `initial_prompt` can is a string that suggest the context of the transcription text. For example: people name that will appear in the transcription.
 
 Return transcription as `WhisperTranscription` that contains transcription text
 and other side information.
@@ -115,6 +115,10 @@ and other side information.
 Parameters:
 - **audio**: *Union[Timeseries, np.ndarray, torch.Tensor, str]*\
   The audio sample as a `Timeseries`, `torch.Tensor`, or `np.ndarray` or a file path as `str`.
+- **initial_prompt**: *Optional[str]*\
+  Optional text to provide as a prompt for the first window. This can be used to provide, or "prompt-engineer" a context for transcription, e.g. custom vocabularies or proper nouns to
+  make it more likely to predict those word correctly.
+
 
 
 #### `WhisperLearner.load`

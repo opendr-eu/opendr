@@ -11,7 +11,7 @@ The *VoskLearner* class is a wrapper of libary [[1]](#alphacep/vosk-api/python-g
 
 The [VoskLearner](/src/opendr/perception/speech_transcription/vosk/vosk_learner.py) class has the following public methods:
 
-#### `WhisperLearner` constructor
+#### `VoskLearner` constructor
 
 ```python
 VoskLearner(self, device, sample_rate)
