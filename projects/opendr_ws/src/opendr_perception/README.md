@@ -974,7 +974,6 @@ whose documentation can be found here:
 
 EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
 
-
 ### Speech Transcription ROS Node
 
 A ROS node for speech transcription from an audio stream using Whisper or Vosk.
@@ -1019,6 +1018,49 @@ The node makes use of the toolkit's speech transcription tools:
    - Speech transcription: `/opendr/speech_transcription`
 
    For viewing the output, refer to the [notes above.](#notes)
+
+----
+## Text input
+
+### Intent Recognition ROS Node
+
+A ROS node for recognizing intents from language.
+This node should be used together with the speech transcription node that would transcribe the speech into text and infer intent from it.
+The provided intent recognition node subscribes to the speech transcription output topic.
+
+You can find the intent recognition ROS node python script [here](./scripts/intent_recognition_node.py) to inspect the code and modify if you wish for your needs.
+The node makes use of the toolkit's intent recognition [learner](../../../../src/opendr/perception/multimodal_human_centric/intent_recognition_learner/intent_recognition_learner.py), and the documentation can be found [here](../../../../docs/reference/intent-recognition-learner.md).
+
+#### Instructions for basic usage:
+
+1. Follow the instructions of the speech transcription node and start it.
+
+2. Start the intent recognition node
+
+    ```shell
+    rosrun opendr_perception intent_recognition_node.py
+    ```
+    The following arguments are available:
+   - `-i or --input_transcription_topic INPUT_TRANSCRIPTION_TOPIC`: topic name for input transcription of type OpenDRTranscription (default=`/opendr/speech_transcription`)
+   - `-o or --output_intent_topic OUTPUT_INTENT_TOPIC`: topic name for predicted intent (default=`/opendr/intent`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to be used for inference (default=`cuda`)
+   - `--text_backbone TEXT_BACKBONE`: text backbone tobe used, choices are `bert-base-uncased`, `albert-base-v2`, `bert-small`, `bert-mini`, `bert-tiny` (default=`bert-base-uncased`)
+   - `--cache_path CACHE_PATH`: cache path for tokenizer files (default=`./cache/`)
+
+3. Default output topics:
+   - Predicted intents and confidence: `/opendr/intent`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+On the table below you can find the detectable classes and their corresponding IDs:
+
+| Class  | Complain | Praise | Apologise | Thank | Criticize | Agree | Taunt | Flaunt | Joke | Oppose | Comfort | Care | Inform | Advise | Arrange | Introduce | Leave | Prevent | Greet | Ask for help |
+|--------|----------|--------|-----------|-------|-----------|-------|-------|--------|------|--------|---------|------|--------|--------|---------|-----------|-------|---------|-------|--------------|
+| **ID** | 0        | 1      | 2         | 3     | 4         | 5     | 6     | 7      | 8    | 9      | 10      | 11   | 12     | 13     | 14      | 15        | 16    | 17      | 18    | 19           |
+
 
 ----
 ## Point cloud input
