@@ -62,6 +62,7 @@ setup(
             'gesture_recognition = opendr_perception.gesture_recognition_node:main',
             'performance = opendr_perception.performance_node:main',
             'speech_transcription = opendr_perception.speech_transcription_node:main',
+            'intent_recognition = opendr_perception.intent_recognition_node:main',
         ],
     },
 )

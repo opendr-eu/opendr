@@ -81,15 +81,17 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#2d-object-detection-gem-ros2-node)
 ## RGBD input
 1. [RGBD Hand Gesture Recognition](src/opendr_perception/README.md#rgbd-hand-gesture-recognition-ros2-node)
-## RGB + Audio input
-1. [Audiovisual Emotion Recognition](src/opendr_perception/README.md#audiovisual-emotion-recognition-ros2-node)
-
 ## RGB + IMU input
 1. [Continual SLAM](src/opendr_perception//README.md#continual-slam-ros2-nodes)
+## RGB + Audio input
+1. [Audiovisual Emotion Recognition](src/opendr_perception/README.md#audiovisual-emotion-recognition-ros2-node)
 
 ## Audio input
 1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros2-node)
 2. [Speech Transcription](src/opendr_perception/README.md#speech-transcription-ros2-node)
+## Text input
+1. [Intent Recognition](src/opendr_perception/README.md#intent-recognition-ros2-node)
+
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros2-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros2-node)
