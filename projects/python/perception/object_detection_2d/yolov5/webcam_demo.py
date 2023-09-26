@@ -16,6 +16,8 @@ import argparse
 
 import cv2
 import time
+# Importing torch to avoid "RuntimeError: cuDNN error: CUDNN_STATUS_NOT_INITIALIZED" error
+import torch
 
 from opendr.engine.data import Image
 from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
@@ -44,6 +46,7 @@ class VideoReader(object):
 
 
 if __name__ == '__main__':
+    torch.__version__  # Dummy usage of torch to avoid imported but not used pyflakes error
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cpu", "cuda"])
     parser.add_argument("--model", help="Model to use", type=str, default="yolov5s",
