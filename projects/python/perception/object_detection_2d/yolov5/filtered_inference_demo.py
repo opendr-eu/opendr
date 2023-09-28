@@ -32,13 +32,13 @@ if __name__ == '__main__':
 
     yolo = YOLOv5DetectorLearner(model_name='yolov5s', device=args.device)
 
-    # By default, only objects of the 'person' class are of interest
-    filtered_yolo = FilteredLearnerWrapper(yolo, allowed_classes=args.classes)
-
     for f in 'zidane.jpg', 'bus.jpg':
         torch.hub.download_url_to_file('https://ultralytics.com/images/' + f, f)  # download 2 images
     im1 = Image.open('zidane.jpg')  # OpenDR image
     im2 = cv2.imread('bus.jpg')  # OpenCV image (BGR to RGB)
+
+    # By default, only objects of the 'person' class are of interest
+    filtered_yolo = FilteredLearnerWrapper(yolo, allowed_classes=args.classes)
 
     # detection before filtering
     results = yolo.infer(im1)
