@@ -9,9 +9,10 @@ from opendr.perception.object_detection_2d.nanodet.nanodet_learner import Nanode
 
 
 class FilteredLearnerWrapper:
-    def __init__(self, learner, allowed_classes=[]):
+    def __init__(self, learner, allowed_classes=None):
         self.learner = learner
-        self.allowed_classes = allowed_classes
+        self.allowed_classes = allowed_classes if allowed_classes is not None else []
+
         if isinstance(self.learner,
                       (CenterNetDetectorLearner, YOLOv3DetectorLearner, YOLOv5DetectorLearner, NanodetLearner,
                        RetinaFaceLearner, SingleShotDetectorLearner)):
@@ -48,7 +49,7 @@ class FilteredLearnerWrapper:
 
         if img is None:
             raise ValueError(
-                f"An image input is required. Please provide a valid image.")
+                "An image input is required. Please provide a valid image.")
 
         if isinstance(self.learner, CenterNetDetectorLearner):
             if threshold is None:
@@ -107,6 +108,10 @@ class FilteredLearnerWrapper:
                 extract_maps = False
             boxes = self.learner.infer(img, threshold, keep_size, custom_nms,
                                        nms_thresh, nms_topk, post_nms, extract_maps)
+        else:
+            raise ValueError(
+                "Filtering has not been implemented for the specified detector class."
+            )
 
         if not self.allowed_classes:
             return boxes
