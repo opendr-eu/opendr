@@ -1,7 +1,6 @@
 from opendr.engine.target import BoundingBoxList
 from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
 from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
 from opendr.perception.object_detection_2d.retinaface.retinaface_learner import RetinaFaceLearner
 from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
@@ -13,29 +12,26 @@ class FilteredLearnerWrapper:
     def __init__(self, learner, allowed_classes=[]):
         self.learner = learner
         self.allowed_classes = allowed_classes
-
         if isinstance(self.learner,
                       (CenterNetDetectorLearner, YOLOv3DetectorLearner, YOLOv5DetectorLearner, NanodetLearner,
                        RetinaFaceLearner, SingleShotDetectorLearner)):
             self.classes = self.learner.classes
-        if isinstance(self.learner, (DetrLearner, GemLearner)):
-            # added None class for align purposes
+        if isinstance(self.learner, DetrLearner):
             coco_classes = [
-                "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
-                "trafficlight", "firehydrant", "streetsign", "stopsign", "parkingmeter", "bench", "bird",
-                "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "hat",
-                "backpack", "umbrella", "shoe", "eyeglasses", "handbag", "tie", "suitcase", "frisbee",
-                "skis", "snowboard", "sportsball", "kite", "baseballbat", "baseballglove", "skateboard",
-                "surfboard", "tennisracket", "bottle", "plate", "wineglass", "cup", "fork", "knife",
-                "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hotdog",
-                "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed", "mirror", "diningtable",
-                "window", "desk", "toilet", "door", "tvmonitor", "laptop", "mouse", "remote", "keyboard",
-                "cellphone", "microwave", "oven", "toaster", "sink", "refrigerator", "blender", "book",
-                "clock", "vase", "scissors", "teddybear", "hairdrier", "toothbrush", "hairbrush"
+                "N/A", "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
+                "traffic light", "fire hydrant", "N/A", "stop sign", "parking meter", "bench", "bird", "cat", "dog",
+                "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "N/A", "backpack", "umbrella", "N/A",
+                "N/A", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite",
+                "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "N/A",
+                "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange",
+                "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed",
+                "N/A", "dining table", "N/A", "N/A", "toilet", "N/A", "tv", "laptop", "mouse", "remote", "keyboard",
+                "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "N/A", "book", "clock", "vase",
+                "scissors", "teddy bear", "hair drier", "toothbrush",
             ]
             self.classes = coco_classes
 
-        # Check if all allowed classes exist in the list of object detector's classes
+        # Verify that allowed classes are in the detector's class list
         invalid_classes = [cls for cls in self.allowed_classes if cls not in self.classes]
         if invalid_classes:
             raise ValueError(
@@ -114,15 +110,8 @@ class FilteredLearnerWrapper:
 
         if not self.allowed_classes:
             return boxes
-
-        # Adjust index to align with COCO label numbering
-        if isinstance(self.learner, DetrLearner):
-            filtered_boxes = BoundingBoxList(
-                [box for box in boxes if self.classes[int(box.name) - 1] in self.allowed_classes])
-        else:
-            filtered_boxes = BoundingBoxList(
-                [box for box in boxes if self.classes[int(box.name)] in self.allowed_classes])
-
+        filtered_boxes = BoundingBoxList(
+            [box for box in boxes if self.classes[int(box.name)] in self.allowed_classes])
         return filtered_boxes
 
     def __getattr__(self, attr):

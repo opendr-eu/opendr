@@ -27,10 +27,12 @@ from opendr.perception.object_detection_2d.utils.class_filter_wrapper import Fil
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--classes", help="Classes of interest to detect", type=str, nargs="+", default=[])
+    parser.add_argument("--classes", help="Classes of interest to detect", type=str, nargs="+", default=['person'])
     args = parser.parse_args()
 
     yolo = YOLOv5DetectorLearner(model_name='yolov5s', device=args.device)
+
+    # By default, only objects of the 'person' class are of interest
     filtered_yolo = FilteredLearnerWrapper(yolo, allowed_classes=args.classes)
 
     for f in 'zidane.jpg', 'bus.jpg':
@@ -38,14 +40,18 @@ if __name__ == '__main__':
     im1 = Image.open('zidane.jpg')  # OpenDR image
     im2 = cv2.imread('bus.jpg')  # OpenCV image (BGR to RGB)
 
+    # detection before filtering
     results = yolo.infer(im1)
     draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=True, line_thickness=3)
 
+    # detection after filtering
     filtered_results = filtered_yolo.infer(im1)
     draw_bounding_boxes(im1.opencv(), filtered_results, filtered_yolo.classes, show=True, line_thickness=3)
 
+    # detection before filtering
     results = yolo.infer(im2)
     draw_bounding_boxes(np.copy(im2), results, yolo.classes, show=True, line_thickness=3)
 
+    # detection after filtering
     filtered_results = filtered_yolo.infer(im2)
     draw_bounding_boxes(np.copy(im2), filtered_results, filtered_yolo.classes, show=True, line_thickness=3)
