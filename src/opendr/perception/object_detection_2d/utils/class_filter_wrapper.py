@@ -1,3 +1,18 @@
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from opendr.engine.target import BoundingBoxList
 from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
 from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
@@ -38,10 +53,9 @@ class FilteredLearnerWrapper:
             raise ValueError(
                 f"The following classes are not detected by this detector: {', '.join(invalid_classes)}")
 
-    def infer(self, img=None, threshold=None, keep_size=None, m1_image=None, m2_image=None, input=None,
-              conf_threshold=None, iou_threshold=None, nms_max_num=None, nms_threshold=None, scales=None,
-              mask_thresh=None, size=None, custom_nms=None, nms_thresh=None, nms_topk=None, post_nms=None,
-              extract_maps=None):
+    def infer(self, img=None, threshold=None, keep_size=None, input=None, conf_threshold=None, iou_threshold=None,
+              nms_max_num=None, nms_threshold=None, scales=None, mask_thresh=None, size=None, custom_nms=None,
+              nms_thresh=None, nms_topk=None, post_nms=None, extract_maps=None):
 
         # match variable names
         if isinstance(self.learner, NanodetLearner):
