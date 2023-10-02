@@ -46,6 +46,7 @@ if __name__ == '__main__':
     draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=True, line_thickness=3)
 
     # detection after filtering
+    print("With filtering...")
     filtered_results = filtered_yolo.infer(im1)
     draw_bounding_boxes(im1.opencv(), filtered_results, filtered_yolo.classes, show=True, line_thickness=3)
 
