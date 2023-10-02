@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os.path import join
 from logging import warning
+from os.path import join
 
 import numpy as np
 from ultralytics import YOLO
@@ -47,97 +47,90 @@ class YOLOv8SegLearner(Learner):
         self.results = None
 
     def infer(self, img, conf_thres=0.25, iou_thres=0.7, image_size=None, half_prec=False,
-              agnostic_nms=False, retina_masks=False, classes=None, no_mismatch=False):
+              agnostic_nms=False, classes=None, no_mismatch=False):
         """
-        TODO docstring
+        Runs inference using the loaded model.
 
-        source 	str 	'ultralytics/assets' 	source directory for images or videos
-        conf 	float 	0.25 	object confidence threshold for detection
-        iou 	float 	0.7 	intersection over union (IoU) threshold for NMS
-        imgsz 	int or tuple 	640 	image size as scalar or (h, w) list, i.e. (640, 480)
-        half 	bool 	False 	use half precision (FP16)
-        device 	None or str 	None 	device to run on, i.e. cuda device=0/1/2/3 or device=cpu
-        show 	bool 	False 	show results if possible
-        save 	bool 	False 	save images with results
-        save_txt 	bool 	False 	save results as .txt file
-        save_conf 	bool 	False 	save results with confidence scores
-        save_crop 	bool 	False 	save cropped images with results
-        hide_labels 	bool 	False 	hide labels
-        hide_conf 	bool 	False 	hide confidence scores
-        max_det 	int 	300 	maximum number of detections per image
-        vid_stride 	bool 	False 	video frame-rate stride
-        stream_buffer 	bool 	False 	buffer all streaming frames (True) or return the most recent frame (False)
-        line_width 	None or int 	None 	The line width of the bounding boxes. If None, it is scaled to the image size.
-        visualize 	bool 	False 	visualize model features
-        augment 	bool 	False 	apply image augmentation to prediction sources
-        agnostic_nms 	bool 	False 	class-agnostic NMS
-        retina_masks 	bool 	False 	use high-resolution segmentation masks
-        classes 	None or list 	None 	filter results by class, i.e. classes=0, or classes=[0,2,3]
-        boxes 	bool 	True 	Show boxes in segmentation predictions
+        :param img: The image to run inference on
+        :type img: opendr.engine.data.Image
+        :param conf_thres: Object confidence threshold for detection, defaults to '0.25'
+        :type conf_thres: float, optional
+        :param iou_thres: Intersection over union (IoU) threshold for NMS, defaults to '0.7'
+        :type iou_thres: float, optional
+        :param image_size: Image size as scalar or (h, w) list, i.e. (640, 480), defaults to 'None'
+        :type image_size: int or tuple, optional
+        :param half_prec: Use half precision (FP16), defaults to 'False'
+        :type half_prec: bool, optional
+        :param agnostic_nms: Class-agnostic NMS, defaults to 'False'
+        :type agnostic_nms: bool, optional
+        :param classes: Filter results by class, i.e. classes=["person", "chair"], defaults to 'None'
+        :type classes: list, optional
+        :param no_mismatch: Whether to check and warn for mismatch between input image
+                        size and output heatmap size, defaults to 'False'
+        :type no_mismatch: bool, optional
 
-        :param img:
-        :return:
+        :return: The detected semantic segmentation OpenDR heatmap
+        :rtype: opendr.engine.target.Heatmap
         """
         if image_size is None:
             image_size = (480, 640)
 
         if not isinstance(img, Image):
-            img = Image(img)
+            img = Image(img)  # NOQA
 
-        # TODO Check for classes filtering
-        # list out keys and values separately
-        key_list = list(self.model.names.keys())
-        val_list = list(self.model.names.values())
-
-        class_inds = []
-        for class_name in classes:
-            try:
-                class_inds.append(key_list[val_list.index(class_name)])
-            except ValueError:
-                raise ValueError(f"\"{class_name}\" is not in detectable classes. Check out the available classes with "
-                                 f"get_classes().")
+        # Class filtering
+        class_inds = None
+        if classes is not None:
+            # list out keys and values separately
+            key_list = list(self.model.names.keys())
+            val_list = list(self.model.names.values())
+            class_inds = []
+            for class_name in classes:
+                try:
+                    class_inds.append(key_list[val_list.index(class_name)])
+                except ValueError:
+                    raise ValueError(f"\"{class_name}\" is not in detectable classes. Check out the available classes with "
+                                     f"get_classes().")
 
         # https://docs.ultralytics.com/modes/predict/#inference-arguments
         self.results = self.model.predict(img.opencv(), save=False, verbose=False, device=self.device,
                                           imgsz=image_size, conf=conf_thres, iou=iou_thres, half=half_prec,
-                                          agnostic_nms=agnostic_nms, retina_masks=retina_masks, classes=class_inds)
+                                          agnostic_nms=agnostic_nms, classes=class_inds)
         heatmap = self.__get_opendr_heatmap(no_mismatch)
 
         return heatmap
 
-    def fit(self):
+    def fit(self, dataset, val_dataset=None, logging_path='', silent=True, verbose=True):
         """This method is not used in this implementation."""
-        # TODO investigate if we can wrap training
         raise NotImplementedError
 
-    def eval(self):
+    def eval(self, dataset):
         """This method is not used in this implementation."""
-        # TODO investigate if we can wrap eval
         raise NotImplementedError
 
     def optimize(self, target_device):
         """This method is not used in this implementation."""
-        # TODO investigate if we can wrap export to optimized models
         return NotImplementedError
 
     def reset(self):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def load(self):
+    def save(self, path):
         """This method is not used in this implementation."""
-        # TODO should this be used?
         return NotImplementedError
 
-    def save(self):
+    def load(self, path):
         """This method is not used in this implementation."""
-        # TODO should this be used?
         return NotImplementedError
 
     def get_bboxes(self):
         """
-        TODO
-        :return:
+        This method converts the latest infer results to OpenDR bounding boxes and returns them.
+        This serves as a helpful method to perform object detection along the semantic segmentation.
+
+        :return: The Opendr bounding box list
+        :rtype: opendr.engine.target.BoundingBoxList
         """
         if self.results is None:
             raise Warning("\"self.results\" is None, please run infer() first.")
@@ -164,7 +157,7 @@ class YOLOv8SegLearner(Learner):
         :type boxes: bool, optional
         :param masks: Whether to plot the masks, defaults to 'True'
         :type masks: bool, optional
-        :param conf: Whether to plot the detection confidence score.
+        :param conf: Whether to plot the detection confidence score
         :type conf: bool, optional
 
         :return: A numpy array of the annotated image.
@@ -176,7 +169,7 @@ class YOLOv8SegLearner(Learner):
         """
         Returns the available class names of the loaded model.
 
-        :return: Dictionary of the class names.
+        :return: Dictionary of the class names
         :rtype: dict
         """
         return self.model.names
@@ -185,9 +178,9 @@ class YOLOv8SegLearner(Learner):
         """
         Converts the YOLOv8 output (ultralytics.engine.results.Results) to opendr.engine.target.Heatmap and returns it.
 
-        :param no_mismatch: Whether to  check for heatmap.shape and image orig_shape mismatch.
+        :param no_mismatch: Whether to  check for heatmap.shape and image orig_shape mismatch
         :type no_mismatch: bool
-        :return: The OpenDR Heatmap.
+        :return: The OpenDR Heatmap
         :rtype: opendr.engine.target.Heatmap
         """
         try:
