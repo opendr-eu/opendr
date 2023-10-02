@@ -16,7 +16,6 @@
 from opendr.engine.target import BoundingBoxList
 from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
 from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
-from opendr.perception.object_detection_2d.retinaface.retinaface_learner import RetinaFaceLearner
 from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
 from opendr.perception.object_detection_2d.yolov3.yolov3_learner import YOLOv3DetectorLearner
 from opendr.perception.object_detection_2d.yolov5.yolov5_learner import YOLOv5DetectorLearner
@@ -30,7 +29,7 @@ class FilteredLearnerWrapper:
 
         if isinstance(self.learner,
                       (CenterNetDetectorLearner, YOLOv3DetectorLearner, YOLOv5DetectorLearner, NanodetLearner,
-                       RetinaFaceLearner, SingleShotDetectorLearner)):
+                       SingleShotDetectorLearner)):
             self.classes = self.learner.classes
         if isinstance(self.learner, DetrLearner):
             self.classes = [
@@ -53,8 +52,8 @@ class FilteredLearnerWrapper:
                 f"The following classes are not detected by this detector: {', '.join(invalid_classes)}")
 
     def infer(self, img=None, threshold=None, keep_size=None, input=None, conf_threshold=None, iou_threshold=None,
-              nms_max_num=None, nms_threshold=None, scales=None, mask_thresh=None, size=None, custom_nms=None,
-              nms_thresh=None, nms_topk=None, post_nms=None, extract_maps=None):
+              nms_max_num=None, size=None, custom_nms=None, nms_thresh=None, nms_topk=None, post_nms=None,
+              extract_maps=None):
 
         # match variable names
         if isinstance(self.learner, NanodetLearner) and input is not None:
@@ -94,17 +93,6 @@ class FilteredLearnerWrapper:
             if nms_max_num is None:
                 nms_max_num = 100
             boxes = self.learner.infer(img, conf_threshold, iou_threshold, nms_max_num)
-
-        elif isinstance(self.learner, RetinaFaceLearner):
-            if threshold is None:
-                threshold = 0.8
-            if nms_threshold is None:
-                nms_threshold = 0.4
-            if scales is None:
-                scales = [1024, 1980]
-            if mask_thresh is None:
-                mask_thresh = 0.8
-            boxes = self.learner.infer(img, threshold, nms_threshold, scales, mask_thresh)
 
         elif isinstance(self.learner, SingleShotDetectorLearner):
             if threshold is None:
