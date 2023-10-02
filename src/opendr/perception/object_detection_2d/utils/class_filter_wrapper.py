@@ -57,7 +57,7 @@ class FilteredLearnerWrapper:
               nms_thresh=None, nms_topk=None, post_nms=None, extract_maps=None):
 
         # match variable names
-        if isinstance(self.learner, NanodetLearner):
+        if isinstance(self.learner, NanodetLearner) and input is not None:
             img = input
 
         if img is None:
