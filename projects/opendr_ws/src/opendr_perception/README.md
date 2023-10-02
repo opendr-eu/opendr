@@ -1007,7 +1007,7 @@ The node makes use of the toolkit's speech transcription tools:
     ```
     ```shell
     # Suggest to Whisper that the speech will contain the name 'Felix'.
-    rosrun opendr_perception speech_transcription_node.py --backbone whisper --model_name tiny.en --inital_prompt "Felix" --verbose True
+    rosrun opendr_perception speech_transcription_node.py --backbone whisper --model_name tiny.en --initial_prompt "Felix" --verbose True
     ```
     The following optional arguments are available (More in the source code):
    - `-h or --help`: show a help message and exit
