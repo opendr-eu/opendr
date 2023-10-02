@@ -25,7 +25,7 @@ install_runtime_dependencies:
 
 install_compilation_dependencies:
 	@+echo "#"; echo "# * Install Compilation Dependencies for single demonstration grasping *"; echo "#"
-	@+python3 -m pip install 'git+https://github.com/facebookresearch/detectron2.git@5aeb252b194b93dc2879b4ac34bc51a31b5aee13'
+	@+python3 -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
 	@./install_single_demo_grasp.sh
 
 help:
