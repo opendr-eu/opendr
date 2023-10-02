@@ -41,6 +41,7 @@ if __name__ == '__main__':
     filtered_yolo = FilteredLearnerWrapper(yolo, allowed_classes=args.classes)
 
     # detection before filtering
+    print("No filtering...")
     results = yolo.infer(im1)
     draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=True, line_thickness=3)
 
