@@ -107,7 +107,7 @@ Parameters:
 WhisperLearner.infer(self, audio, initial_prompt)
 ```
 
-This method runs inference on an audio sample. Please call the load() method before calling this method. `initial_prompt` can is a string that suggest the context of the transcription text. For example: people name that will appear in the transcription.
+This method runs inference on an audio sample. Please call the load() method before calling this method. `initial_prompt` is a string that can be used to suggest the context of the transcription text. For example: the name of a person that will appear in the transcription.
 
 Return transcription as `WhisperTranscription` that contains transcription text
 and other side information.
