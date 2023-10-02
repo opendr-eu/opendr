@@ -33,7 +33,7 @@ class FilteredLearnerWrapper:
                        RetinaFaceLearner, SingleShotDetectorLearner)):
             self.classes = self.learner.classes
         if isinstance(self.learner, DetrLearner):
-            coco_classes = [
+            self.classes = [
                 "N/A", "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
                 "traffic light", "fire hydrant", "N/A", "stop sign", "parking meter", "bench", "bird", "cat", "dog",
                 "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "N/A", "backpack", "umbrella", "N/A",
@@ -45,7 +45,6 @@ class FilteredLearnerWrapper:
                 "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "N/A", "book", "clock", "vase",
                 "scissors", "teddy bear", "hair drier", "toothbrush",
             ]
-            self.classes = coco_classes
 
         # Verify that allowed classes are in the detector's class list
         invalid_classes = [cls for cls in self.allowed_classes if cls not in self.classes]
