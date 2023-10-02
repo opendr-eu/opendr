@@ -93,7 +93,7 @@ class FilteredLearnerWrapper:
                 iou_threshold = 0.6
             if nms_max_num is None:
                 nms_max_num = 100
-            boxes = self.learner.infer(input, conf_threshold, iou_threshold, nms_max_num)
+            boxes = self.learner.infer(img, conf_threshold, iou_threshold, nms_max_num)
 
         elif isinstance(self.learner, RetinaFaceLearner):
             if threshold is None:
