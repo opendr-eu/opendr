@@ -56,5 +56,6 @@ if __name__ == '__main__':
     draw_bounding_boxes(np.copy(im2), results, yolo.classes, show=True, line_thickness=3)
 
     # detection after filtering
+    print("With filtering...")
     filtered_results = filtered_yolo.infer(im2)
     draw_bounding_boxes(np.copy(im2), filtered_results, filtered_yolo.classes, show=True, line_thickness=3)
