@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import Callable
+from typing import Optional, Callable
 import argparse
 import time
 
@@ -50,8 +50,8 @@ def record_audio(duration: int, sample_rate: int) -> np.ndarray:
     return audio_data
 
 
-def transcribe_audio(audio_data: np.ndarray, transcribe_function: Callable):
-    output = transcribe_function(audio_data)
+def transcribe_audio(audio_data: np.ndarray, initial_prompt: Optional[str], transcribe_function: Callable):
+    output = transcribe_function(audio=audio_data, initial_prompt=initial_prompt)
     output = output.text
 
     print("Transcription: ", output)
@@ -71,7 +71,7 @@ def wait_for_start_command(learner, sample_rate):
 
 
 def main(
-    backbone, duration, interval, model_path, model_name, language, download_dir, device
+    backbone, duration, interval, model_path, model_name, initial_prompt, language, download_dir, device
 ):
     if backbone == "whisper":
         learner = WhisperLearner(language=language, device=device)
@@ -89,6 +89,8 @@ def main(
 
     # Wait for the user to say "start" before starting the loop
     sample_rate = 16000
+    print("Waiting for 'start' command. Say 'start' to start the transcribe loop.")
+    print("Say 'stop' to stop the transcribe loop.")
     wait_for_start_command(learner, sample_rate)
 
     while True:
@@ -96,7 +98,7 @@ def main(
         audio_data = record_audio(duration, sample_rate)
 
         # Transcribe the recorded audio and check for the "stop" command
-        transcription = transcribe_audio(audio_data, learner.infer).lower()
+        transcription = transcribe_audio(audio_data, initial_prompt, learner.infer).lower()
 
         if "stop" in transcription:
             print("Stop command received. Exiting the program.")
@@ -153,6 +155,12 @@ if __name__ == "__main__":
         default=None,
     )
     parser.add_argument(
+        "--initial_prompt",
+        default="",
+        type=str,
+        help="Prompt to provide some context or instruction for the transcription, only for Whisper",
+    )
+    parser.add_argument(
         "--language",
         type=str,
         help="Language for the model",
@@ -170,6 +178,7 @@ if __name__ == "__main__":
         interval=args.interval,
         model_path=args.model_path,
         model_name=args.model_name,
+        initial_prompt=args.initial_prompt,
         language=args.language,
         download_dir=args.download_dir,
         device=args.device,

@@ -287,6 +287,7 @@ class WhisperLearner(Learner):
     def infer(
         self,
         audio: Union[Timeseries, np.ndarray, torch.Tensor, str],
+        initial_prompt: Optional[str] = None,
     ) -> WhisperTranscription:
         """
         Run inference on an audio sample. Please call the load() method before calling this method.
@@ -294,6 +295,10 @@ class WhisperLearner(Learner):
         Args:
             audio (Union[Timeseries, np.ndarray, torch.Tensor, str]): The audio sample as a Timeseries, torch.Tensor, or
             np.ndarray or a string of file path.
+
+            initial_prompt (str, optional):  Optional text to provide as a prompt for the first window.
+            This can be used to provide, or "prompt-engineer" a context for transcription, e.g. custom vocabularies or
+            proper nouns to make it more likely to predict those word correctly.
 
         Returns:
             WhisperTranscription: Transcription results with side information.
@@ -319,6 +324,7 @@ class WhisperLearner(Learner):
             logprob_threshold=self.logprob_threshold,
             condition_on_previous_text=self.condition_on_previous_text,
             word_timestamps=self.word_timestamps,
+            initial_prompt=initial_prompt,
             prepend_punctuations=self.prepend_punctuations,
             append_punctuations=self.append_punctuations,
             **asdict(self.decode_options),
