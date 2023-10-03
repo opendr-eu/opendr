@@ -44,7 +44,7 @@ for the segmentation task on the COCO2017 val dataset.
 #### `YOLOv8SegLearner.infer`
 The `infer` method:
 ```python
-YOLOv8SegLearner.infer(self, img, conf_thres, iou_thres, image_size, half_prec, agnostic_nms, classes, no_mismatch)
+YOLOv8SegLearner.infer(self, img, conf_thres, iou_thres, image_size, half_prec, agnostic_nms, classes, no_mismatch, verbose)
 ```
 
 Performs inference on a single image. Various arguments of the original implementation are exposed.
@@ -52,29 +52,48 @@ Performs inference on a single image. Various arguments of the original implemen
 Parameters:
 
 - **img**: *object*\
-  Object of type engine.data.Image or OpenCV image.
+  Object of type engine.data.Image or OpenCV image. Can provide strings to take advantage of the YOLOv8 built-in features,,
+  see https://docs.ultralytics.com/modes/predict/#inference-sources.
 - **conf_thres**: *float, default=0.25*\
   Object confidence threshold for detection.
-- TODO
+- **iou_thres**: *float, default=0.7*\
+  Intersection over union (IoU) threshold for NMS.
 - **image_size**: *int or tuple, default=None*\
   Image size as scalar or (h, w) list, i.e. (640, 480).
+- **half_prec**: *bool, default=False*\
+  Use half precision (FP16).
+- **agnostic_nms**: *bool, default=False*\
+  Class-agnostic NMS.
+- **classes**: *list, default=None*\
+  Filter results by class, i.e. classes=["person", "chair"].
+- **no_mismatch**: *bool, default=False*\
+  Whether to check and warn for mismatch between input image size and output heatmap size.
+- **verbose**: *bool, default=False*\
+  Whether to print YOLOv8 prediction information.
   
 #### Examples
 
 * Inference and result drawing example on a test .jpg image using OpenCV:
   ```python
-  import torch
-  from opendr.engine.data import Image
-  from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
-  from opendr.perception.object_detection_2d import draw_bounding_boxes
+  import argparse
+  import cv2
+  from opendr.perception.semantic_segmentation import YOLOv8SegLearner
 
-  yolo = YOLOv5DetectorLearner(model_name='yolov5s', device='cpu')
+  yolov8_seg_learner = YOLOv8SegLearner(model_name="yolov8s-seg", device="cpu")
 
-  torch.hub.download_url_to_file('https://ultralytics.com/images/zidane.jpg', 'zidane.jpg')  # download image
-  im1 = Image.open('zidane.jpg')  # OpenDR image
+  # Add classes=["class_name", ...] argument to filter classes
+  # Use print(yolov8_seg_learner.get_classes()) to see available class names
+  # Providing a string can take advantage of the YOLOv8 built-in features
+  # https://docs.ultralytics.com/modes/predict/#inference-sources
+  heatmap = yolov8_seg_learner.infer("https://ultralytics.com/images/bus.jpg", no_mismatch=True, verbose=True)
 
-  results = yolo.infer(im1)
-  draw_bounding_boxes(im1.opencv(), results, yolo.classes, show=True, line_thickness=3)
+  # Use yolov8 visualization
+  visualization_img = yolov8_seg_learner.get_visualization()
+
+  # Display the annotated frame
+  cv2.imshow('Heatmap', visualization_img)
+  print("Press any key to close OpenCV window...")
+  cv2.waitKey(0)
   ```
 
 #### References
