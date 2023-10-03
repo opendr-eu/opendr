@@ -53,13 +53,13 @@ if __name__ == "__main__":
         choices=["whisper", "vosk"],
     )
     parser.add_argument(
-        "--model-path",
+        "--model_path",
         type=str,
         help="path to the model files, if not given, the pretrained model will be downloaded",
         default=None,
     )
     parser.add_argument(
-        "--model-name",
+        "--model_name",
         type=str,
         help="Specific name for Whisper model",
         choices="Available models name: ['tiny.en', 'tiny', 'base.en', 'base', 'small.en', 'small', 'medium.en', 'medium',"
@@ -72,12 +72,12 @@ if __name__ == "__main__":
         help="Language for the model",
     )
     parser.add_argument(
-        "--download-dir",
+        "--download_dir",
         type=str,
         help="Path to the directory where the model will be downloaded",
     )
     parser.add_argument(
-        "--builtin-transcribe",
+        "--builtin_transcribe",
         type=str2bool,
         help="Use the built-in transcribe function of the Whisper model",
     )

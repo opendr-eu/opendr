@@ -1006,10 +1006,16 @@ The node makes use of the toolkit's speech transcription tools:
 2. You are then ready to start the speech transcription node
 
     ```shell
+    # Enable log to console.
     ros2 run opendr_perception speech_transcription --verbose True
     ```
     ```shell
+    # Use Whisper instead of Vosk and choose tiny.en variant.
     ros2 run opendr_perception speech_transcription --backbone whisper --model_name tiny.en --verbose True
+    ```
+    ```shell
+    # Suggest to Whisper that the speech will contain the name 'Felix'.
+    ros2 run opendr_perception speech_transcription --backbone whisper --model_name tiny.en --initial_prompt "Felix" --verbose True
     ```
     The following optional arguments are available (More in the source code):
    - `-h or --help`: show a help message and exit
@@ -1020,6 +1026,7 @@ The node makes use of the toolkit's speech transcription tools:
    - `--model_name MODEL_NAME`: Specific model name for each backbone. Example: 'tiny', 'tiny.en', 'base', 'base.en' for Whisper, 'vosk-model-small-en-us-0.15' for Vosk (default=`None`) 
    - `--model_path MODEL_PATH`: Path to downloaded model files (default=`None`) 
    - `--language LANGUAGE`: Whisper uses the language parameter to avoid language dectection. Vosk uses the langauge paremeter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk (default=`en-us`). Check the available language codes for Whisper at [Whipser repository](https://github.com/openai/whisper/blob/e8622f9afc4eba139bf796c210f5c01081000472/whisper/tokenizer.py#L10). Check the available language code for Vosk from the Vosk model name at [Vosk website](https://alphacephei.com/vosk/models).
+   - `--initial_prompt INITIAL_PROMPT`: Prompt to provide some context or instruction for the transcription, only for Whisper
    - `--verbose VERBOSE`: Display transcription (default=`False`) 
 
 3. Default output topics:
