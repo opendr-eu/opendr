@@ -47,7 +47,7 @@ class YOLOv8SegLearner(Learner):
         self.results = None
 
     def infer(self, img, conf_thres=0.25, iou_thres=0.7, image_size=None, half_prec=False,
-              agnostic_nms=False, classes=None, no_mismatch=False):
+              agnostic_nms=False, classes=None, no_mismatch=False, verbose=False, show=False):
         """
         Runs inference using the loaded model.
 
@@ -68,6 +68,10 @@ class YOLOv8SegLearner(Learner):
         :param no_mismatch: Whether to check and warn for mismatch between input image
                         size and output heatmap size, defaults to 'False'
         :type no_mismatch: bool, optional
+        :param verbose: Whether to print YOLOv8 prediction information, defaults to 'False'
+        :type verbose: bool, optional
+        :param show: Whether to use the YOLOv8 built-in visualization feature of predict, defaults to 'False'
+        :type show: bool, optional
 
         :return: The detected semantic segmentation OpenDR heatmap
         :rtype: opendr.engine.target.Heatmap
@@ -75,7 +79,7 @@ class YOLOv8SegLearner(Learner):
         if image_size is None:
             image_size = (480, 640)
 
-        if not isinstance(img, Image):
+        if not isinstance(img, Image) and not isinstance(img, str):
             img = Image(img)  # NOQA
 
         # Class filtering
@@ -93,9 +97,15 @@ class YOLOv8SegLearner(Learner):
                                      f"get_classes().")
 
         # https://docs.ultralytics.com/modes/predict/#inference-arguments
-        self.results = self.model.predict(img.opencv(), save=False, verbose=False, device=self.device,
-                                          imgsz=image_size, conf=conf_thres, iou=iou_thres, half=half_prec,
-                                          agnostic_nms=agnostic_nms, classes=class_inds)
+        if isinstance(img, Image):
+            self.results = self.model.predict(img.opencv(), save=False, verbose=verbose, device=self.device,
+                                              imgsz=image_size, conf=conf_thres, iou=iou_thres, half=half_prec,
+                                              agnostic_nms=agnostic_nms, classes=class_inds, show=show)
+        elif isinstance(img, str):
+            # Take advantage of YOLOv8 built-in features, see https://docs.ultralytics.com/modes/predict/#inference-sources
+            self.results = self.model.predict(img, save=False, verbose=verbose, device=self.device,
+                                              imgsz=image_size, conf=conf_thres, iou=iou_thres, half=half_prec,
+                                              agnostic_nms=agnostic_nms, classes=class_inds, show=show)
         heatmap = self.__get_opendr_heatmap(no_mismatch)
 
         return heatmap
