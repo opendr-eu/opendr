@@ -44,7 +44,7 @@ for the segmentation task on the COCO2017 val dataset.
 #### `YOLOv8SegLearner.infer`
 The `infer` method:
 ```python
-YOLOv8SegLearner.infer(self, img, conf_thres, iou_thres, image_size, half_prec, agnostic_nms, classes, no_mismatch, verbose)
+YOLOv8SegLearner.infer(self, img, conf_thres, iou_thres, image_size, half_prec, agnostic_nms, classes, no_mismatch, verbose, show)
 ```
 
 Performs inference on a single image. Various arguments of the original implementation are exposed.
@@ -70,6 +70,8 @@ Parameters:
   Whether to check and warn for mismatch between input image size and output heatmap size.
 - **verbose**: *bool, default=False*\
   Whether to print YOLOv8 prediction information.
+- **show**: *bool, default=False*\
+  Whether to use the YOLOv8 built-in visualization feature of predict.
   
 #### Examples
 
