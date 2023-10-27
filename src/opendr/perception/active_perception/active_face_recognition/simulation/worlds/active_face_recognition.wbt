@@ -1,0 +1,341 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/advertising_board/protos/AdvertisingBoard.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/living_room_furniture/protos/Armchair.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/bedroom/protos/Bed.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/cabinet/protos/Cabinet.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/living_room_furniture/protos/Carpet.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Ceiling.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/school_furniture/protos/Clock.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Door.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/kitchen/fridge/protos/Fridge.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/paintings/protos/LandscapePainting.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/robots/dji/mavic/protos/Mavic2Pro.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/kitchen/oven/protos/Oven.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/bounding_objects/protos/PipeBoundingObject.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/paintings/protos/PortraitPainting.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/plants/protos/PottedTree.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Radiator.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Roughcast.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/tables/protos/RoundTable.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/living_room_furniture/protos/Sofa.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/tables/protos/Table.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/chairs/protos/WoodenChair.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_11_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_01_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_02_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_03_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_04_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_05_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_06_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_07_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_08_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_09_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_10_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_12_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_13_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_14_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_15_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_16_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_17_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_18_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_19_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_20_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_21_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_22_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_23_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_24_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_25_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_26_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_27_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_28_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_29_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_30_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_31_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_32_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_33_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_34_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_35_standing.proto"
+IMPORTABLE EXTERNPROTO "../protos/human_36_standing.proto"
+
+WorldInfo {
+  info [
+    "Autonomous Vehicle Simulation"
+    "The simple controller example uses an on-board camera to follow the yellow road lines and a SICK sensor to avoid the obstacles."
+    "The control of the vehicle is done using the driver library."
+    "The vehicle based on the Car PROTO is modelled with realistic physics properties: motor torques, body mass, friction forces, suspensions, etc."
+  ]
+  title "MavicInARoom"
+  gravity 0
+  basicTimeStep 8
+  defaultDamping Damping {
+    linear 0.5
+    angular 0.5
+  }
+  coordinateSystem "NUE"
+}
+Viewpoint {
+  fieldOfView 0.5
+  orientation -0.3483549067968827 0.18524062346356174 0.9188769070606607 2.1888114927484197
+  position 52.945566300290515 -85.99028754313774 93.64535992479294
+  near 1
+  follow "Mavic 2 PRO"
+  followType "None"
+  followSmoothness 1
+}
+TexturedBackground {
+  texture "empty_office"
+  skybox FALSE
+}
+Fog {
+  color 0.38 0.35 0.32
+  visibilityRange 1000
+}
+Floor {
+  rotation 0 0 1 1.5707963267948966
+  size 20 20
+  appearance Parquetry {
+  }
+}
+DirectionalLight {
+  direction 0 -1 0
+  intensity 2
+}
+DirectionalLight {
+  direction 0 1 0
+  intensity 2
+}
+DirectionalLight {
+  direction -1 0 0
+  intensity 2
+}
+DirectionalLight {
+  direction 1 0 0
+  intensity 2
+}
+DirectionalLight {
+  intensity 2
+}
+DirectionalLight {
+  direction 0 0 1
+}
+DEF board AdvertisingBoard {
+  translation 9.7 0 1.68
+}
+DEF cabinet Cabinet {
+  translation 9.9 3 0
+  rotation 0 0 1 3.141592653589793
+}
+DEF bed Bed {
+  translation 8 -8.7 0
+  rotation 0 0 1 1.5707963267948966
+}
+DEF radiator_1 Radiator {
+  translation 2.96 -9.8 0.31
+  rotation 0 0 1 -1.5707963267948966
+}
+DEF radiator_2 Radiator {
+  translation -9.8 -3.4 0.3
+  name "radiator(1)"
+}
+DEF paintings_2 Transform {
+  translation 6 0 0
+  children [
+    DEF painting_4 PortraitPainting {
+      translation 0 9.82 1.145
+      rotation 0 0 1 -1.5708
+      name "portrait painting(1)"
+    }
+    DEF painting_3 PortraitPainting {
+      translation 1 9.82 1.925
+      rotation 0 0 1 -1.5708
+    }
+    DEF painting_2 LandscapePainting {
+      translation -0.5 9.87 2.28
+      rotation 0 0 1 -1.5707926535897934
+      name "landscape painting(1)"
+    }
+    DEF painting_1 LandscapePainting {
+      translation -1.5 9.81 1.15
+      rotation 0 0 1 -1.5707926535897934
+    }
+  ]
+}
+DEF paintings_6 Transform {
+  rotation 0 0 1 3.141592653589793
+  children [
+    DEF painting_4 PortraitPainting {
+      translation 0 9.82 1.145
+      rotation 0 0 1 -1.5708
+      name "portrait painting(5)"
+    }
+    DEF painting_3 PortraitPainting {
+      translation 1 9.82 1.925
+      rotation 0 0 1 -1.5708
+      name "portrait painting(5)"
+    }
+    DEF painting_2 LandscapePainting {
+      translation -0.5 9.87 2.28
+      rotation 0 0 1 -1.5707926535897934
+      name "landscape painting(2)"
+    }
+    DEF painting_1 LandscapePainting {
+      translation -1.5 9.81 1.15
+      rotation 0 0 1 -1.5707926535897934
+      name "landscape painting(3)"
+    }
+  ]
+}
+DEF wall_1 Wall {
+  translation 0 10 0
+  rotation 0 0 1 1.5708
+  size 0.2 20 3
+  appearance DEF app1 Roughcast {
+    textureTransform TextureTransform {
+      scale 2.4 1
+    }
+  }
+}
+DEF wall_3 Wall {
+  translation 0 -10 0
+  rotation 0 0 1 1.5708
+  name "wall(3)"
+  size 0.2 20 3
+  appearance DEF app3 Roughcast {
+    textureTransform TextureTransform {
+      scale 2.4 1
+    }
+  }
+}
+DEF wall_2 Wall {
+  translation -10 0 0
+  name "wall(2)"
+  size 0.2 20 3
+  appearance DEF app2 Roughcast {
+    textureTransform TextureTransform {
+      scale 2.4 1
+    }
+  }
+}
+DEF wall_4 Wall {
+  translation 10 0 0
+  name "wall(1)"
+  size 0.2 20 3
+  appearance DEF app4 Roughcast {
+    textureTransform TextureTransform {
+      scale 2.4 1
+    }
+  }
+}
+DEF mavic Mavic2Pro {
+  translation 5 1.5 1.5
+  rotation 0 0 1 -2.61799
+  controller "<extern>"
+  supervisor TRUE
+  bodySlot [
+    TouchSensor {
+      boundingObject PipeBoundingObject {
+        height 0.3
+        radius 0.3
+        subdivision 20
+      }
+    }
+  ]
+  cameraSlot [
+    DEF reco_camera Camera {
+      name "reco_camera"
+      width 1024
+      height 768
+    }
+    DEF camera Camera {
+      fieldOfView 1.2
+      width 400
+      height 300
+    }
+  ]
+}
+DEF fridge Fridge {
+  translation 2.53 9.51 0
+  rotation 0 0 1 -1.5707963267948966
+}
+DEF oven Oven {
+  translation 3.11 9.45 0
+  rotation 0 0 1 -1.5707963267948966
+}
+DEF ceiling Ceiling {
+  translation 0 0 3
+  size 20 20
+  appearance DEF app5 Roughcast {
+    textureTransform TextureTransform {
+      scale 10 10
+    }
+  }
+}
+DEF door Door {
+  translation -9.8 0 0
+}
+DEF armchair_1 Armchair {
+  translation 4 -6 0
+  rotation 0 0 1 -1.5707963267948966
+}
+DEF round_table RoundTable {
+  translation 6 -8 0
+}
+DEF armchair_2 Armchair {
+  translation 8 -6 0
+  rotation 0 0 1 -1.5707963267948966
+  name "armchair(1)"
+}
+DEF chair_3 WoodenChair {
+  translation 1.63 -6.82 0
+  rotation 0 0 1 3.141592653589793
+  name "wooden chair(3)"
+}
+DEF chair_1 WoodenChair {
+  translation -0.53 -6.82 0
+  name "wooden chair(1)"
+}
+DEF chair_2 WoodenChair {
+  translation -0.48 -7.82 0
+  name "wooden chair(2)"
+}
+DEF chair_4 WoodenChair {
+  translation 1.68 -7.86 0
+  rotation 0 0 1 -3.141587346410207
+}
+DEF table Table {
+  translation 0.61 -7.35 0
+}
+DEF clock Clock {
+  translation -9.8 5.62 1.97
+}
+DEF tree_1 PottedTree {
+  translation -9.68 6.04 0
+}
+DEF tree_2 PottedTree {
+  translation -9.68 5.22 0
+  name "potted tree(1)"
+}
+DEF tree_3 PottedTree {
+  translation -9.68 6.85 0
+  name "potted tree(2)"
+}
+DEF tree_4 PottedTree {
+  translation -8.5 6.49 0
+  name "potted tree(3)"
+}
+DEF tree_5 PottedTree {
+  translation -8.5 5.69 0
+  name "potted tree(4)"
+}
+DEF sofa Sofa {
+  translation 6 -5 0
+  rotation 0 0 1 -1.5707963267948966
+}
+DEF carpet Carpet {
+  translation 6 -6 0
+}
