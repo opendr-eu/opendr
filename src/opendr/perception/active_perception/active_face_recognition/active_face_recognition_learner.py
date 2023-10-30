@@ -28,12 +28,10 @@ class ActiveFaceRecognitionLearner(LearnerRL):
     def __init__(self, lr=0.0003, iters=5000000, batch_size=64,
                  checkpoint_after_iter=0, checkpoint_load_iter=0,
                  temp_path='', device='cuda',
-                 env=Env(),
                  n_steps=6400,
                  gamma=0.9,
                  clip_range=0.2,
                  target_kl=0.1,
-                 _init_setup_model=True,
                  ):
         super(ActiveFaceRecognitionLearner, self).__init__(lr=lr,
                                                            iters=iters,
@@ -47,7 +45,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         self.target_kl = target_kl
         self.gamma = gamma
         self.clip_range = clip_range
-        self.env = env
+        self.env = Env()
         self.agent = None
 
     def fit(self, logging_path='./', verbose=True):
@@ -59,8 +57,12 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         :param verbose: bool, enable verbosity
         """
         self.env = Monitor(self.env, filename=logging_path)
+        if verbose:
+            verbose = 2
+        else:
+            verbose = 0
         self.agent = PPO('CnnPolicy', env=self.env,
-                         verbose=2,
+                         verbose=verbose,
                          n_steps=self.n_steps,
                          learning_rate=self.lr,
                          gamma=self.gamma,
@@ -69,12 +71,14 @@ class ActiveFaceRecognitionLearner(LearnerRL):
                          target_kl=self.target_kl,
                          clip_range=self.clip_range,
                          )
-        # checkpoint_callback = CheckpointCallback(save_freq=self.checkpoint_after_iter, save_path=logging_path,
-        #                                          name_prefix='rl_model')
+        if self.checkpoint_after_iter > 0:
+            checkpoint_callback = CheckpointCallback(save_freq=self.checkpoint_after_iter, save_path=logging_path,
+                                                     name_prefix='rl_model')
+            self.agent.learn(total_timesteps=self.iters, callback=checkpoint_callback)
+        else:
+            self.agent.learn(total_timesteps=self.iters)
 
-        self.agent.learn(total_timesteps=self.iters)
-
-    def eval(self, env=None, num_episodes=10):
+    def eval(self, num_episodes=10):
         """
         Evaluate the agent on the specified environment.
 
@@ -82,7 +86,6 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         :param num_episodes: int, number of episodes to evaluate agent
                 :return: sum of rewards through the episode
         """
-        self.agent.set_env(env)
         obs = env.reset()
         sum_of_rewards = 0
         for i in range(num_episodes):
@@ -93,16 +96,16 @@ class ActiveFaceRecognitionLearner(LearnerRL):
                 break
         return {"rewards_collected": sum_of_rewards}
 
-    def infer(self, batch, deterministic: bool = False):
+    def infer(self, observation, deterministic: bool = True):
         """
-        :param batch: single or list of observations
-        :type batch: engine.Image
+        :param observation: single observation
+        :type observation: engine.Image
         :param deterministic: use deterministic actions from the policy
         :type deterministic: bool
         :return: the selected action
         :rtype: int or list
         """
-        return self.agent.predict(batch, deterministic=deterministic)
+        return self.agent.predict(observation, deterministic=deterministic)
 
     def download(self, path=None):
         """
