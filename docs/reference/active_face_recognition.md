@@ -152,7 +152,8 @@ After these steps the [UAVDepthPlanningEnv](../../src/opendr/planning/end_to_end
 Training in Webots environment:
 
 ```python
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
+from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
+
 
 env = UAVDepthPlanningEnv()
 learner = EndToEndPlanningRLLearner(env, n_steps=1024)
@@ -163,14 +164,12 @@ learner.fit(logging_path='./end_to_end_planning_tmp')
 Running a pretrained model:
 
 ```python
-from opendr.planning.end_to_end_planning import EndToEndPlanningRLLearner, UAVDepthPlanningEnv
+from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
 
-env = UAVDepthPlanningEnv()
-learner = EndToEndPlanningRLLearner(env)
+learner = ActiveFaceRecognitionLearner()
 learner.load('{$OPENDR_HOME}/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
-obs = env.reset()
-sum_of_rew = 0
-number_of_timesteps = 20
+obs = learner.env.reset()
+
 for i in range(number_of_timesteps):
     action, _states = learner.infer(obs, deterministic=True)
     obs, rewards, dones, info = env.step(action)
