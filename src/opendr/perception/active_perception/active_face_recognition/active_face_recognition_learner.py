@@ -30,7 +30,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
                  temp_path='', device='cuda',
                  n_steps=6400,
                  gamma=0.9,
-                 clip_range=0.2,
+                 clip_range=0.1,
                  target_kl=0.1,
                  ):
         super(ActiveFaceRecognitionLearner, self).__init__(lr=lr,
@@ -70,6 +70,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
                          batch_size=self.batch_size,
                          target_kl=self.target_kl,
                          clip_range=self.clip_range,
+                         _init_setup_model=True,
                          )
         if self.checkpoint_after_iter > 0:
             checkpoint_callback = CheckpointCallback(save_freq=self.checkpoint_after_iter, save_path=logging_path,
@@ -78,23 +79,26 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         else:
             self.agent.learn(total_timesteps=self.iters)
 
-    def eval(self, num_episodes=10):
+    def eval(self, num_episodes=10, deterministic=False):
         """
         Evaluate the agent on the specified environment.
 
-        :param env: gym.Env, env to evaluate on
-        :param num_episodes: int, number of episodes to evaluate agent
-                :return: sum of rewards through the episode
+        :param deterministic: use deterministic actions from the policy
+        :type deterministic: bool
+        :param num_episodes: number of episodes to evaluate agent
+        :type num_episodes: int
+        :return: average rewards through the episodes
         """
-        obs = env.reset()
+        obs = self.env.reset()
         sum_of_rewards = 0
         for i in range(num_episodes):
-            action, _states = self.agent.predict(obs, deterministic=True)
-            obs, rewards, dones, info = env.step(action)
+            action, _states = self.agent.predict(obs, deterministic=deterministic)
+            obs, rewards, dones, info = self.env.step(action)
             sum_of_rewards += rewards
             if dones:
                 break
-        return {"rewards_collected": sum_of_rewards}
+        avg_rewards = sum_of_rewards / num_episodes
+        return {"rewards_collected": avg_rewards}
 
     def infer(self, observation, deterministic: bool = True):
         """

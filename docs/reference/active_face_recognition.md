@@ -56,7 +56,7 @@ Parameters:
 
 #### `ActiveFaceRecognitionLearner.eval`
 ```python
-ActiveFaceRecognitionLearner.eval(self, num_episodes)
+ActiveFaceRecognitionLearner.eval(self, num_episodes, deterministic)
 ```
 Evaluate the agent on the specified environment.
 
@@ -64,6 +64,8 @@ Parameters:
 
 - **num_episodes**: *int, default=10*\
   Number of evaluation episodes to run.
+- **deterministic**: *bool, default=False*\
+  Use deterministic actions from the policy
 
 
 #### `ActiveFaceRecognitionLearner.save`
@@ -100,7 +102,7 @@ Parameters:
 
 - **observation**: *engine.Image, default=None*\
   Single observation.
-- **deterministic**: *bool, default=True*\
+- **deterministic**: *bool, default=False*\
   Use deterministic actions from the policy
 
 
@@ -115,37 +117,19 @@ Parameters:
 - **path**: *str*\
   Path to download model.
 
-### Simulation environment setup
-
-The environment is provided with a [world](../../src/opendr/planning/end_to_end_planning/envs/webots/worlds/train-no-dynamic-random-obstacles.wbt)
-that needs to be opened with Webots version 2023b in order to demonstrate the active face recognition learner.
-
-The environment includes an optional Ardupilot controlled quadrotor for simulating dynamics. 
-For the installation of Ardupilot instructions are available [here](https://github.com/ArduPilot/ardupilot).
-
-The required files to complete Ardupilot setup can be downloaded by running [download_ardupilot_files.py](../../src/opendr/planning/end_to_end_planning/download_ardupilot_files.py) script.
-The downloaded files (zipped as `ardupilot.zip`) should be replaced under the installation of Ardupilot.
-In order to run Ardupilot in Webots 2021a, controller codes should be replaced. (For older versions of Webots, these files can be skipped.)
-The world file for the environment is provided under `/ardupilot/libraries/SITL/examples/webots/worlds/` for training and testing.
-
-Install `mavros` package for ROS communication with Ardupilot.
-Instructions are available [here](https://github.com/mavlink/mavros/blob/master/mavros/README.md#installation).
-Source installation is recommended.
-
 ### Running the environment
 
-The following steps should be executed to have a ROS communication between Gym environment and simulation.
-- Start the Webots and open the provided world file. 
-The simulation time should stop at first time step and wait for Ardupilot software to run.
-- Run following script from Ardupilot directory: `./libraries/SITL/examples/Webots/dronePlus.sh` which starts software in the loop execution of the Ardupilot software.
-- Run `roscore`.
-- Run `roslaunch mavros apm.launch` which creates ROS communication for Ardupilot.
-- Run following ROS nodes in `src/opendr/planning/end_to_end_planning/src`:
-  - `children_robot` which activates required sensors on quadrotor and creates ROS communication for them. 
-  - `take_off` which takes off the quadrotor.
-  - `range_image` which converts the depth image into array format to be input for the learner.
-  
-After these steps the [UAVDepthPlanningEnv](../../src/opendr/planning/end_to_end_planning/envs/UAV_depth_planning_env.py) gym environment can send action comments to the simulated drone and receive depth image and pose information from simulation. 
+The environment is provided with a [world](../../src/opendr/perception/active_perception/active_face_recognition/simulation/worlds/active_face_recognition.wbt)
+that needs to be opened with Webots version 2023b in order to demonstrate the active face recognition learner.
+
+Once the world is opened, you can run a script utilizing ActiveFaceRecognitionLearner by setting WEBOTS_HOME environment variable:
+
+`export WEBOTS_HOME=/usr/local/webots`
+
+and then run the desired script, e.g. demo.py by:
+
+`$WEBOTS_HOME/webots-controller /path/to/script/demo.py`
+
 
 ### Examples
 
@@ -154,10 +138,8 @@ Training in Webots environment:
 ```python
 from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
 
-
-env = UAVDepthPlanningEnv()
-learner = EndToEndPlanningRLLearner(env, n_steps=1024)
-learner.fit(logging_path='./end_to_end_planning_tmp')
+learner = ActiveFaceRecognitionLearner(n_steps=1024)
+learner.fit(logging_path='./active_face_recognition_tmp')
 ```
 
 
@@ -167,39 +149,32 @@ Running a pretrained model:
 from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
 
 learner = ActiveFaceRecognitionLearner()
-learner.load('{$OPENDR_HOME}/src/opendr/planning/end_to_end_planning/pretrained_model/saved_model.zip')
-obs = learner.env.reset()
+path = './'
+learner.download(path)
+learner.load(path)
+rewards = learner.eval(num_episodes=10, deterministic=False)
 
-for i in range(number_of_timesteps):
-    action, _states = learner.infer(obs, deterministic=True)
-    obs, rewards, dones, info = env.step(action)
-    sum_of_rew += rewards
-    if dones:
-        obs = env.reset()
-print("Reward collected is:", sum_of_rew)
+print(rewards)
 ```
 
 ### Performance Evaluation
 
 TABLE 1: Speed (FPS) and energy consumption for inference on various platforms.
 
-|                 | TX2   | Xavier | RTX 2080 Ti |
-| --------------- | ----- | ------ | ----------- |
-| FPS Evaluation  | 153.5 | 201.6  | 973.6       |
-| Energy (Joules) | 0.12  | 0.051  | \-          |
+|                 | TX2  | XavierNX | RTX 2070 Super |
+| --------------- |------|----------|----------------|
+| FPS Evaluation  | TBF  | TBF      | TBF            |
+| Energy (Joules) | TBF  | TBF      | TBF            |
 
 TABLE 2: Platform compatibility evaluation.
 
 | Platform                                     | Test results |
-| -------------------------------------------- | ------------ |
+|----------------------------------------------| ------------ |
 | x86 - Ubuntu 20.04 (bare installation - CPU) | Pass         |
 | x86 - Ubuntu 20.04 (bare installation - GPU) | Pass         |
 | x86 - Ubuntu 20.04 (pip installation)        | Pass         |
 | x86 - Ubuntu 20.04 (CPU docker)              | Pass         |
 | x86 - Ubuntu 20.04 (GPU docker)              | Pass         |
 | NVIDIA Jetson TX2                            | Pass         |
-| NVIDIA Jetson Xavier AGX                     | Pass         |
+| NVIDIA Jetson Xavier NX                      | Pass         |
 
-#### References
-<a name="safe-e2e-planning" href="https://github.com/open-airlab/gym-depth-planning.git">[1]</a> Ugurlu, H.I.; Pham, X.H.; Kayacan, E. Sim-to-Real Deep Reinforcement Learning for Safe End-to-End Planning of Aerial Robots. Robotics 2022, 11, 109. 
-[DOI](https://doi.org/10.3390/robotics11050109). [GitHub](https://github.com/open-airlab/gym-depth-planning.git)
