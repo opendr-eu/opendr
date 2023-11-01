@@ -23,7 +23,7 @@ import cv2
 from flask import Flask, Response, render_template, request
 
 # OpenDR imports
-from opendr.perception.object_tracking_3d import VoxelBofObjectTracking3DLearner
+from opendr.perception.object_tracking_3d import ObjectTracking3DVpitLearner
 from opendr.engine.target import TrackingAnnotation3DList
 from data_generators import (
     lidar_point_cloud_generator,
@@ -183,7 +183,7 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
         if params == "best":
             backbone = "pp"
             device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            tracking_learner = VoxelBofObjectTracking3DLearner(
+            tracking_learner = ObjectTracking3DVpitLearner(
                 model_config_path=backbone_configs[backbone],
                 device=device,
                 backbone=backbone,
@@ -205,7 +205,7 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
                 augment=None,
             )
         else:
-            tracking_learner = VoxelBofObjectTracking3DLearner()
+            tracking_learner = ObjectTracking3DVpitLearner()
 
         if model_name is not None and not os.path.exists(
             "./models/" + model_name

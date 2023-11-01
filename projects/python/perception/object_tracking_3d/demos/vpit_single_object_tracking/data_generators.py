@@ -14,7 +14,7 @@
 
 from opendr.engine.target import TrackingAnnotation3DList
 from opendr.perception.object_tracking_3d.datasets.kitti_tracking import LabeledTrackingPointCloudsDatasetIterator
-from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.run import (
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.run import (
     tracking_boxes_to_lidar
 )
 

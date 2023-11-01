@@ -2,8 +2,8 @@ from opendr.perception.object_tracking_3d.ab3dmot.object_tracking_3d_ab3dmot_lea
     ObjectTracking3DAb3dmotLearner
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.vpit_object_tracking_3d_learner import (
-    VpitObjectTracking3DLearner
+    ObjectTracking3DVpitLearner
 )
 from opendr.perception.object_tracking_3d.datasets.kitti_tracking import KittiTrackingDatasetIterator
 
-__all__ = ['ObjectTracking3DAb3dmotLearner', 'KittiTrackingDatasetIterator', 'VpitObjectTracking3DLearner']
+__all__ = ['ObjectTracking3DAb3dmotLearner', 'KittiTrackingDatasetIterator', 'ObjectTracking3DVpitLearner']
