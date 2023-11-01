@@ -111,7 +111,7 @@ def warn(warning, *args, **kwargs):
 # warnings.warn = warn
 
 
-class VpitObjectTracking3DLearner(Learner):
+class ObjectTracking3DVpitLearner(Learner):
     def __init__(
         self,
         model_config_path,
@@ -168,7 +168,7 @@ class VpitObjectTracking3DLearner(Learner):
         vertical_regressor_kwargs={},
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
-        super(VpitObjectTracking3DLearner, self).__init__(
+        super(ObjectTracking3DVpitLearner, self).__init__(
             lr=lr,
             iters=iters,
             batch_size=batch_size,
