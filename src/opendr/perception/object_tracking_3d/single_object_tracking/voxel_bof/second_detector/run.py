@@ -27,7 +27,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.secon
     center_to_corner_box3d,
 )
 
-import opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.kitti_common as kitti
+from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data import kitti_common as kitti
 from opendr.perception.object_tracking_3d.single_object_tracking.voxel_bof.second_detector.data.preprocess import (
     merge_second_batch,
 )
