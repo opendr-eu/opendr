@@ -176,6 +176,8 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
     # Prep stats
     fps = runnig_fps()
 
+    cv2.namedWindow("VPIT", cv2.WINDOW_NORMAL)
+
     predict = model_name is not None and model_name != "None"
 
     if predict:
@@ -386,6 +388,11 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
 
             with lock:
                 output_frame = frame.copy()
+            
+            cv2.imshow("VPIT", frame)
+
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                return
         except FileExistsError as e:
             print(e)
 
