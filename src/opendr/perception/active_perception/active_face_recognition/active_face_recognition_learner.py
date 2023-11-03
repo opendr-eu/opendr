@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from stable_baselines3 import PPO
 import os
 
 from urllib.request import urlretrieve
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3 import PPO
 
 from opendr.engine.learners import LearnerRL
 from opendr.engine.constants import OPENDR_SERVER_URL
+
 from active_face_recognition_env import Env
 
 
@@ -100,7 +100,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         avg_rewards = sum_of_rewards / num_episodes
         return {"rewards_collected": avg_rewards}
 
-    def infer(self, observation, deterministic: bool = True):
+    def infer(self, observation, deterministic: bool = False):
         """
         :param observation: single observation
         :type observation: engine.Image
@@ -124,8 +124,10 @@ class ActiveFaceRecognitionLearner(LearnerRL):
             os.makedirs(path)
 
         if not os.path.exists(os.path.join(path, 'active_fr.zip')):
-            url = OPENDR_SERVER_URL + 'active_perception/active_face_recognition/'
+            url = OPENDR_SERVER_URL + 'perception/active_perception/active_face_recognition/'
+            print(url)
             url_model = os.path.join(url, 'active_fr.zip')
+            print(url_model)
             urlretrieve(url_model, os.path.join(path, 'active_fr.zip'))
             print('Model downloaded')
         else:
@@ -139,6 +141,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         :type path: str
         """
         self.agent = PPO.load(path)
+        print(self.agent.policy)
 
     def save(self, path=None):
         """

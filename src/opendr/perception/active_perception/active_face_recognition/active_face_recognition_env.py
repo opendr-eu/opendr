@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from controller import Supervisor
 import math
 import random
+
+import gym
+import numpy as np
 import torch
-from transforms3d import quaternions
 
 from abc import ABC
-import numpy as np
-
+from transforms3d import quaternions
 from gym import spaces
-import gym
+
+from controller import Supervisor
 
 from opendr.perception.object_detection_2d import RetinaFaceLearner
 from opendr.perception.object_detection_2d.datasets.transforms import \
