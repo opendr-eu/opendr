@@ -15,25 +15,22 @@ following public methods:
 #### `ActiveFaceRecognitionLearner` constructor
 
 Constructor parameters:
-
-lr=0.0003, iters=5000000, batch_size=64,
-                 checkpoint_after_iter=0, checkpoint_load_iter=0,
-                 temp_path='', device='cuda',
-                 n_steps=6400,
-                 gamma=0.9,
-                 clip_range=0.2,
-                 target_kl=0.1,
-
 - **lr**: *float, default=3e-4*\
   Specifies the initial learning rate to be used during training.
 - **n_steps**: *int, default=1024*\
-  Specifies the number of steps to run for environment per update.
+  Specifies the number of steps to run environment per update.
 - **iters**: *int, default=1e5*\
   Specifies the number of steps the training should run for.
 - **batch_size**: *int, default=64*\
   Specifies the batch size during training.
 - **checkpoint_after_iter**: *int, default=500*\
   Specifies per how many training steps a checkpoint should be saved.
+- - **gamma**: *float, default=0.9*\
+  Discount factor for future rewards.
+- - **clip_range**: *float, default=0.2*\
+  Clip policy updates.
+- - **target_kl**: *float, default=0.1*\
+  KL Divergence update threshold.
 - **temp_path**: *str, default=''*\
   Specifies a path where the algorithm stores log files and saves checkpoints.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
@@ -68,6 +65,19 @@ Parameters:
   Use deterministic actions from the policy
 
 
+#### `ActiveFaceRecognitionLearner.infer`
+```python
+ActiveFaceRecognitionLearner.infer(self, observation, deterministic)
+```
+Performs inference on a single observation.
+
+Parameters:
+
+- **observation**: *engine.Image, default=None*\
+  Single observation.
+- **deterministic**: *bool, default=False*\
+  Use deterministic actions from the policy
+
 #### `ActiveFaceRecognitionLearner.save`
 ```python
 ActiveFaceRecognitionLearner.save(self, path)
@@ -91,19 +101,6 @@ Parameters:
 - **path**: *str*\
   Path of the model to be loaded.
 
-
-#### `ActiveFaceRecognitionLearner.infer`
-```python
-ActiveFaceRecognitionLearner.infer(self, observation, deterministic)
-```
-Performs inference on a single observation.
-
-Parameters:
-
-- **observation**: *engine.Image, default=None*\
-  Single observation.
-- **deterministic**: *bool, default=False*\
-  Use deterministic actions from the policy
 
 
 #### `ActiveFaceRecognitionLearner.download`
@@ -143,7 +140,7 @@ learner.fit(logging_path='./active_face_recognition_tmp')
 ```
 
 
-Running a pretrained model:
+Evaluating a pretrained model:
 
 ```python
 from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
@@ -156,6 +153,26 @@ rewards = learner.eval(num_episodes=10, deterministic=False)
 
 print(rewards)
 ```
+
+
+Running infernece on a pretrained model:
+
+```python
+from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
+
+learner = ActiveFaceRecognitionLearner()
+path = './'
+learner.download(path)
+learner.load(path)
+
+obs = learner.env.reset()
+while True:
+    action, _ = learner.infer(obs)
+    obs, reward, done, info = learner.env.step(action)
+    if done:
+        obs = learner.env.reset()
+```
+
 
 ### Performance Evaluation
 
