@@ -139,7 +139,7 @@ if __name__ == "__main__":
                         help="Model to be used for prediction: matchboxnet, edgespeechnets or quad_selfonn")
     parser.add_argument("--model_path", type=str,
                         help="Path to the model files, if not given, the pretrained model will be downloaded")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

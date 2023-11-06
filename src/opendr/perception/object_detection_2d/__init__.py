@@ -1,3 +1,5 @@
+import torch  # Importing torch to avoid "RuntimeError: cuDNN error: CUDNN_STATUS_NOT_INITIALIZED" error
+
 from opendr.perception.object_detection_2d.centernet.centernet_learner import CenterNetDetectorLearner
 from opendr.perception.object_detection_2d.detr.detr_learner import DetrLearner
 from opendr.perception.object_detection_2d.gem.gem_learner import GemLearner
@@ -19,6 +21,7 @@ from opendr.perception.object_detection_2d.nms.soft_nms.soft_nms import SoftNMS
 from opendr.perception.object_detection_2d.nms.seq2seq_nms.seq2seq_nms_learner import Seq2SeqNMSLearner
 from opendr.perception.object_detection_2d.nms.fseq2_nms.fseq2_nms_learner import FSeq2NMSLearner
 
+torch.__version__  # NOQA Dummy usage of torch to avoid imported but not used pyflakes error
 __all__ = ['CenterNetDetectorLearner', 'DetrLearner', 'GemLearner', 'RetinaFaceLearner', 'SingleShotDetectorLearner',
            'YOLOv3DetectorLearner', 'NanodetLearner', 'WiderPersonDataset', 'WiderFaceDataset', 'transforms',
            'draw_bounding_boxes', 'ClusterNMS', 'FastNMS', 'SoftNMS', 'Seq2SeqNMSLearner', 'FSeq2NMSLearner',

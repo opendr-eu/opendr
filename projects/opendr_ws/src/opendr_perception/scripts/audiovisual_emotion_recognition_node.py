@@ -159,7 +159,7 @@ if __name__ == '__main__':
                         help="Device to use (cpu, cuda)", choices=["cuda", "cpu"])
     parser.add_argument("--buffer_size", type=float, default=3.6,
                         help="Size of the audio buffer in seconds")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():

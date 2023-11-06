@@ -39,7 +39,9 @@ The `demo_live.py` is a simple command line tool that continuously record and tr
 ```
 python demo_live.py -d 5 -i 0.25 --backbone whisper --model_name tiny.en --language en --device cuda
 ```
-
+```
+python demo_live.py -d 5 -i 0.25 --backbone whisper --model_name tiny.en --language en --initial_prompt "Vosk" --device cuda
+```
 ```
 python demo_live.py -d 5 -i 0.25 --backbone vosk --language en-us
 ```

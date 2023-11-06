@@ -5,3 +5,6 @@
 	path = src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS
 	url = https://github.com/robot-learning-freiburg/EfficientLPS.git
 	branch = opendr
+[submodule "src/opendr/perception/continual_slam/algorithm/g2o/g2opy"]
+	path = src/opendr/perception/continual_slam/algorithm/g2o/g2opy
+	url = https://github.com/uoip/g2opy

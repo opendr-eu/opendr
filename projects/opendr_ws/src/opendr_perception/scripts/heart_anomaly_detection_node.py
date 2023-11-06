@@ -117,7 +117,7 @@ if __name__ == '__main__':
     parser.add_argument("--model", type=str, default="anbof", help="model to be used for prediction: anbof or gru",
                         choices=["anbof", "gru"])
 
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
