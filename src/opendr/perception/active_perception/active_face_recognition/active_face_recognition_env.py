@@ -32,6 +32,7 @@ from opendr.perception.face_recognition import FaceRecognitionLearner
 
 opendr_home = os.environ['OPENDR_HOME']
 
+
 class Env(gym.Env, ABC):
     metadata = {'render.modes': ['human']}
 
