@@ -52,7 +52,6 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         """
         Train the agent on the environment.
 
-        :param env: gym.Env, optional, if specified use this env to train
         :param logging_path: str, path for logging and checkpointing
         :param verbose: bool, enable verbosity
         """
@@ -91,12 +90,14 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         """
         obs = self.env.reset()
         sum_of_rewards = 0
-        for i in range(num_episodes):
+        current_episode = 0
+        while current_episode <= num_episodes:
             action, _states = self.agent.predict(obs, deterministic=deterministic)
             obs, rewards, dones, info = self.env.step(action)
             sum_of_rewards += rewards
             if dones:
                 obs = self.env.reset()
+                current_episode += 1
         avg_rewards = sum_of_rewards / num_episodes
         return {"rewards_collected": avg_rewards}
 
@@ -124,6 +125,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
             os.makedirs(path)
 
         if not os.path.exists(os.path.join(path, 'active_fr.zip')):
+            print("Downloading active_fr pretrained model...")
             url = OPENDR_SERVER_URL + 'perception/active_perception/active_face_recognition/'
             url_model = os.path.join(url, 'active_fr.zip')
             urlretrieve(url_model, os.path.join(path, 'active_fr.zip'))

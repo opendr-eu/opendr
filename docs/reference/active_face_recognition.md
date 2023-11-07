@@ -45,7 +45,7 @@ Train the agent on the environment.
 
 Parameters:
 
-- **logging_path**: *str, default=''*\
+- **logging_path**: *str, default='./'*\
   Path for logging and checkpointing.
 - **verbose**: *bool, default=True*\
   Enable verbosity.
@@ -119,7 +119,8 @@ Parameters:
 The environment is provided with a [world](../../src/opendr/perception/active_perception/active_face_recognition/simulation/worlds/active_face_recognition.wbt)
 that needs to be opened with Webots version 2023b in order to demonstrate the active face recognition learner.
 
-Once the world is opened, you can run a script utilizing ActiveFaceRecognitionLearner by setting WEBOTS_HOME environment variable:
+Once the world is opened the simulation is running, you can run a script utilizing ActiveFaceRecognitionLearner \
+by setting WEBOTS_HOME environment variable:
 
 `export WEBOTS_HOME=/usr/local/webots`
 
@@ -155,7 +156,7 @@ print(rewards)
 ```
 
 
-Running infernece on a pretrained model:
+Running inference on a pretrained model:
 
 ```python
 from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner

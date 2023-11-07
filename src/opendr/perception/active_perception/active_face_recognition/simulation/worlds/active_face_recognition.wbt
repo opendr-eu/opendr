@@ -176,7 +176,7 @@ DEF paintings_6 Transform {
     DEF painting_3 PortraitPainting {
       translation 1 9.82 1.925
       rotation 0 0 1 -1.5708
-      name "portrait painting(5)"
+      name "portrait painting(6)"
     }
     DEF painting_2 LandscapePainting {
       translation -0.5 9.87 2.28
