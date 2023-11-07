@@ -125,9 +125,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
 
         if not os.path.exists(os.path.join(path, 'active_fr.zip')):
             url = OPENDR_SERVER_URL + 'perception/active_perception/active_face_recognition/'
-            print(url)
             url_model = os.path.join(url, 'active_fr.zip')
-            print(url_model)
             urlretrieve(url_model, os.path.join(path, 'active_fr.zip'))
             print('Model downloaded')
         else:
@@ -141,7 +139,6 @@ class ActiveFaceRecognitionLearner(LearnerRL):
         :type path: str
         """
         self.agent = PPO.load(path)
-        print(self.agent.policy)
 
     def save(self, path=None):
         """
