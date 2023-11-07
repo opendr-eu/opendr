@@ -14,6 +14,6 @@
 from opendr.perception.active_perception.active_face_recognition import ActiveFaceRecognitionLearner
 
 learner = ActiveFaceRecognitionLearner(iters=500, n_steps=100)
-learner.fit(logging_path='./testing')
+learner.fit(logging_path='../testing')
 learner.save('./best/')
 
