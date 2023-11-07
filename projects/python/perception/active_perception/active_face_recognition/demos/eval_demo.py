@@ -18,4 +18,3 @@ learner.download('./')
 learner.load('./active_fr.zip')
 rewards = learner.eval(num_episodes=5)
 print(rewards)
-
