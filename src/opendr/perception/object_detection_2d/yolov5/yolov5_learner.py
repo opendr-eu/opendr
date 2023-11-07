@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# General imports
+import os
+from urllib.request import urlretrieve
 
 # OpenDR engine imports
 from opendr.engine.learners import Learner
 from opendr.engine.data import Image
 from opendr.engine.target import BoundingBox, BoundingBoxList
+from opendr.engine.constants import OPENDR_SERVER_URL
+
 
 # yolov5 imports
 import torch
@@ -28,6 +33,13 @@ class YOLOv5DetectorLearner(Learner):
 
     def __init__(self, model_name, path=None, device='cuda', temp_path='.', force_reload=False):
         super(YOLOv5DetectorLearner, self).__init__(device=device, temp_path=temp_path)
+        self.device = device
+        self.model_directory = temp_path if path is None else path
+        self.model_name = model_name
+
+        if model_name not in self.available_models:
+             self.download(path='./', mode="pretrained", verbose=True, model_name=model_name)
+
         if model_name not in self.available_models:
             model_name = 'yolov5s'
             print('Unrecognized model name, defaulting to "yolov5s"')
@@ -86,3 +98,57 @@ class YOLOv5DetectorLearner(Learner):
     def save(self):
         """This method is not used in this implementation."""
         return NotImplementedError
+
+    def download(self, path=None, mode="pretrained", verbose=False,
+                 url=OPENDR_SERVER_URL + "/perception/object_detection_2d/yolov5/",
+                 model_name='yolov5_finetuned_in_trucks.pt', img_name='truck1.jpg'):
+        """
+        Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
+        "images", "test_data"].
+        :param path: folder to which files will be downloaded, if None self.temp_path will be used
+        :type path: str, optional
+        :param mode: one of: ["pretrained", "images", "test_data"], where "pretrained" downloads a pretrained
+        network depending on the self.backbone type, "images" downloads example inference data, "backbone" downloads a
+        pretrained resnet backbone for training, and "annotations" downloads additional annotation files for training
+        :type mode: str, optional
+        :param verbose: if True, additional information is printed on stdout
+        :type verbose: bool, optional
+        :param model_name: the name of the model file to download (e.g., 'yolov5s.pt')
+        :type model_name: str, optional
+        :param url: URL to file location on FTP server
+        :type url: str, optional
+        """
+        valid_modes = ["pretrained", "images", "test_data"]
+        if mode not in valid_modes:
+            raise ValueError("Invalid mode. Currently, only 'pretrained' mode is supported.")
+
+        if path is None:
+            path = self.temp_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        if mode == "pretrained":
+            model_path = os.path.join(path, model_name)
+            if not os.path.exists(model_path):
+                if verbose:
+                    print("Downloading pretrained model...")
+                file_url = os.path.join(url, "pretrained", model_name)
+                urlretrieve(file_url, model_path)
+                if verbose:
+                    print(f"Downloaded model to {model_path}.")
+            else:
+                if verbose:
+                    print("Model already exists.")
+        elif mode == "images":
+            image_path = os.path.join(path, img_name)
+            if not os.path.exists(image_path):
+                if verbose:
+                    print("Downloading example image...")
+                file_url = os.path.join(url, "images",img_name)
+                urlretrieve(file_url, image_path)
+                if verbose:
+                    print(f"Downloaded example image to {image_path}.")
+            else:
+                if verbose:
+                    print("Example image already exists.")
