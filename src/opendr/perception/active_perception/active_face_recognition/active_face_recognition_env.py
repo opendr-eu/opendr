@@ -93,7 +93,7 @@ class Env(gym.Env, ABC):
         self.recognizer = FaceRecognitionLearner(device='cuda', backbone='mobilefacenet', mode='backbone_only')
         self.recognizer.download('./fr_model')
         self.recognizer.load('./fr_model')
-        self.recognizer.fit_reference('./data/images', './reference_lab', create_new=True)
+        self.recognizer.fit_reference('./simulation/data/images', './reference_db', create_new=True)
         self.detector = RetinaFaceLearner(backbone='mnet', device='cuda')
         self.detector.download(".", mode="pretrained")
         self.detector.load("./retinaface_mnet")
