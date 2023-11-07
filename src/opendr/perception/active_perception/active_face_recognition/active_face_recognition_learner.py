@@ -96,7 +96,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
             obs, rewards, dones, info = self.env.step(action)
             sum_of_rewards += rewards
             if dones:
-                break
+                obs = self.env.reset()
         avg_rewards = sum_of_rewards / num_episodes
         return {"rewards_collected": avg_rewards}
 
