@@ -13,6 +13,7 @@
 # limitations under the License.
 import math
 import random
+import os
 
 import gym
 import numpy as np
@@ -29,6 +30,7 @@ from opendr.perception.object_detection_2d.datasets.transforms import \
     BoundingBoxListToNumpyArray
 from opendr.perception.face_recognition import FaceRecognitionLearner
 
+opendr_home = os.environ['OPENDR_HOME']
 
 class Env(gym.Env, ABC):
     metadata = {'render.modes': ['human']}
@@ -93,7 +95,10 @@ class Env(gym.Env, ABC):
         self.recognizer = FaceRecognitionLearner(device='cuda', backbone='mobilefacenet', mode='backbone_only')
         self.recognizer.download('./fr_model')
         self.recognizer.load('./fr_model')
-        self.recognizer.fit_reference('./simulation/data/images', './reference_db', create_new=True)
+        self.recognizer.fit_reference(
+            os.path.join(opendr_home,
+                         "src/opendr/perception/active_perception/active_face_recognition/simulation/data/images"),
+            "./reference_db", create_new=True)
         self.detector = RetinaFaceLearner(backbone='mnet', device='cuda')
         self.detector.download(".", mode="pretrained")
         self.detector.load("./retinaface_mnet")

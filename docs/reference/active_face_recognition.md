@@ -177,12 +177,11 @@ while True:
 
 ### Performance Evaluation
 
-TABLE 1: Speed (FPS) and energy consumption for inference on various platforms.
+TABLE 1: Speed (FPS) for inference on various platforms.
 
-|                 | TX2  | XavierNX | RTX 2070 Super |
-| --------------- |------|----------|----------------|
-| FPS Evaluation  | TBF  | TBF      | TBF            |
-| Energy (Joules) | TBF  | TBF      | TBF            |
+|                 | TX2    | XavierNX | RTX 2070 Super |
+| --------------- |--------|----------|----------------|
+| FPS Evaluation  | 425.27 | 512.48   | 683.25         |
 
 TABLE 2: Platform compatibility evaluation.
 

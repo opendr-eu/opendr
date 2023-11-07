@@ -21,12 +21,12 @@ from stable_baselines3 import PPO
 from opendr.engine.learners import LearnerRL
 from opendr.engine.constants import OPENDR_SERVER_URL
 
-from active_face_recognition_env import Env
+from .active_face_recognition_env import Env
 
 
 class ActiveFaceRecognitionLearner(LearnerRL):
     def __init__(self, lr=0.0003, iters=5000000, batch_size=64,
-                 checkpoint_after_iter=0, checkpoint_load_iter=0,
+                 checkpoint_after_iter=0,
                  temp_path='', device='cuda',
                  n_steps=6400,
                  gamma=0.9,
@@ -37,7 +37,6 @@ class ActiveFaceRecognitionLearner(LearnerRL):
                                                            iters=iters,
                                                            batch_size=batch_size,
                                                            checkpoint_after_iter=checkpoint_after_iter,
-                                                           checkpoint_load_iter=checkpoint_load_iter,
                                                            temp_path=temp_path,
                                                            device=device,
                                                            )
@@ -152,7 +151,7 @@ class ActiveFaceRecognitionLearner(LearnerRL):
             path = self.temp_path
         if not os.path.exists(path):
             os.makedirs(path)
-        self.agent.save(path)
+        self.agent.save(os.path.join(path, 'active_fr'))
 
     def reset(self):
         raise NotImplementedError()
