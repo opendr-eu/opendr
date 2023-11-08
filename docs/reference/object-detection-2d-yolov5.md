@@ -58,6 +58,27 @@ Parameters:
 - **size**: *int, default=640*\
   Size of image for inference.
   The image is resized to this in both sides before being fed to the model.
+
+#### `YOLOv5DetectorLearner.download`
+```python
+YOLOv5DetectorLearner.download(self, path, mode, verbose, url, model_name, img_name)
+```
+
+Downloads the pretrained weights of a YOLOv5s model fine-tuned for truck detection, along with sample truck images for inference, stored in .pt and image files respectively.
+
+Parameters:
+
+- **path**: *str, default=None*\
+  Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
+- **mode**: *{'pretrained', 'images', 'test_data'}, default='pretrained'*\
+  If *'pretrained'*, downloads a pretrained detector model. If *'images'*, downloads an image to perform inference on. If
+  *'test_data'* downloads a dummy dataset for testing purposes.
+- **verbose**: *bool default=True*\
+  If True, enables maximum verbosity.
+- **url**: *str, default=OpenDR FTP URL*\
+  URL of the FTP server.
+- **model_name**: name of model ftp server, *default = 'yolov5_finetuned_in_trucks.pt'. *\
+- **image_name**: name of image in ftp server, *default = 'truck1.png'.*\
   
 #### Examples
 
@@ -68,7 +89,7 @@ Parameters:
   from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
   from opendr.perception.object_detection_2d import draw_bounding_boxes
 
-  yolo = YOLOv5DetectorLearner(model_name='yolov5s', device='cpu')
+  yolo = YOLOv5DetectorLearner(model_name='yolov5s-fine', device='cpu')
 
   torch.hub.download_url_to_file('https://ultralytics.com/images/zidane.jpg', 'zidane.jpg')  # download image
   im1 = Image.open('zidane.jpg')  # OpenDR image
