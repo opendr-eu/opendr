@@ -21,12 +21,13 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_name", help="Model name or path", type=str, default='yolov5s_finetuned_in_trucks.pt')
+    parser.add_argument("--model_name", help="Model name or path", type=str, default='yolov5s_trucks')
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
+    parser.add_argument("--model_dir", help="Model directory", type=str, default="./yolov5s_finetuned_in_trucks.pt")
     args = parser.parse_args()
 
     # Initialize the YOLOv5 detector with the given model and device
-    yolo = YOLOv5DetectorLearner(model_name=args.model_name, device=args.device, path="./"+args.model_name)
+    yolo = YOLOv5DetectorLearner(model_name=args.model_name, device=args.device, path=args.model_dir)
     yolo.download(".", mode="images", verbose=True, img_name="truck4.jpg")
     yolo.download(".", mode="images", verbose=True, img_name="truck7.jpg")
 

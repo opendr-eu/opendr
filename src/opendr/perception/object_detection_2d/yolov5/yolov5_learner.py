@@ -37,22 +37,27 @@ class YOLOv5DetectorLearner(Learner):
         self.model_directory = temp_path if path is None else path
         self.model_name = model_name
 
-        if model_name not in self.available_models:
-             self.download(path='./', mode="pretrained", verbose=True, model_name=model_name)
-
-        if model_name not in self.available_models:
-            model_name = 'yolov5s'
-            print('Unrecognized model name, defaulting to "yolov5s"')
-
         default_dir = torch.hub.get_dir()
         torch.hub.set_dir(temp_path)
 
-        if path is None:
-            self.model = torch.hub.load('ultralytics/yolov5:master', 'custom', f'{temp_path}/{model_name}',
-                                        force_reload=force_reload)
-        else:
+        # Downloading and loading the fine-tuned yolov5s model in trucks
+        if model_name == 'yolov5s_trucks':
+            self.download(path='./', mode="pretrained", verbose=True)
             self.model = torch.hub.load('ultralytics/yolov5:master', 'custom', path=path,
                                         force_reload=force_reload)
+        # Getting a generic model
+        else:
+            if model_name not in self.available_models:
+                model_name = 'yolov5s'
+                print('Unrecognized model name, defaulting to "yolov5s"')
+
+            if path is None:
+                self.model = torch.hub.load('ultralytics/yolov5:master', 'custom',
+                                            f'{temp_path}/{model_name}',
+                                            force_reload=force_reload)
+            else:
+                self.model = torch.hub.load('ultralytics/yolov5:master', 'custom', path=path,
+                                            force_reload=force_reload)
         torch.hub.set_dir(default_dir)
 
         self.model.to(device)
@@ -101,7 +106,7 @@ class YOLOv5DetectorLearner(Learner):
 
     def download(self, path=None, mode="pretrained", verbose=False,
                  url=OPENDR_SERVER_URL + "/perception/object_detection_2d/yolov5/",
-                 model_name='yolov5_finetuned_in_trucks.pt', img_name='truck1.jpg'):
+                 model_name='yolov5s_finetuned_in_trucks.pt', img_name='truck1.jpg'):
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
         "images", "test_data"].
@@ -145,7 +150,7 @@ class YOLOv5DetectorLearner(Learner):
             if not os.path.exists(image_path):
                 if verbose:
                     print("Downloading example image...")
-                file_url = os.path.join(url, "images",img_name)
+                file_url = os.path.join(url, "images", img_name)
                 urlretrieve(file_url, image_path)
                 if verbose:
                     print(f"Downloaded example image to {image_path}.")
