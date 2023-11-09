@@ -49,6 +49,7 @@ class ObjectTracking3DAb3dmotLearner(Learner):
         self.covariance_matrix = covariance_matrix
         self.process_uncertainty_matrix = process_uncertainty_matrix
         self.iou_threshold = iou_threshold
+        self.model = None
 
         self.infers_count = 0
         self.infers_time = 0

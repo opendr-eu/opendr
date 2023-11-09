@@ -14,7 +14,7 @@ import time
 import torch
 import math
 from .models.networks.rotate_render import TestRender
-from algorithm.Rotate_and_Render.data import dataset_info
+from .data import dataset_info
 multiprocessing.set_start_method('spawn', force=True)
 __all__ = ['dataset_info']
 

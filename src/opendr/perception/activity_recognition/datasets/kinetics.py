@@ -74,6 +74,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         video_transform=None,
         use_caching=False,
         decoder_backend="pyav",
+        spatial_pixels=224
     ):
         """
         Kinetics dataset
@@ -121,7 +122,7 @@ class KineticsDataset(ExternalDataset, DatasetIterator, torch.utils.data.Dataset
         if video_transform:
             self.video_transform = video_transform
         else:
-            train_transform, eval_transform = standard_video_transforms()
+            train_transform, eval_transform = standard_video_transforms(spatial_pixels=spatial_pixels)
             self.video_transform = (
                 train_transform if self.split == "train" else eval_transform
             )

@@ -59,6 +59,8 @@ class TestClangFormat(unittest.TestCase):
         ]
         skippedPaths = [
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
+            'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
+            'src/opendr/perception/continual_slam/algorithm/g2o',
             'src/opendr/planning/end_to_end_planning/ardupilot',
         ]
         skippedFiles = [
@@ -136,9 +138,12 @@ class TestClangFormat(unittest.TestCase):
             diff = ''
             with open(source, encoding='utf8') as file:
                 try:
-                    for line in difflib.context_diff(self._runClangFormat(source).decode('utf-8').splitlines(),
-                                                     file.read().splitlines()):
-                        diff += line + '\n'
+                    diff += "\n".join(
+                        difflib.context_diff(
+                            self._runClangFormat(source).decode("utf-8").splitlines(),
+                            file.read().splitlines(),
+                        )
+                    )
                 except UnicodeDecodeError:
                     self.assertTrue(False, msg='utf-8 decode problem in %s' % source)
                 self.assertTrue(

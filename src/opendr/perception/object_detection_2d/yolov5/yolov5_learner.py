@@ -19,6 +19,7 @@ from opendr.engine.target import BoundingBox, BoundingBoxList
 
 # yolov5 imports
 import torch
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
 
 
 class YOLOv5DetectorLearner(Learner):

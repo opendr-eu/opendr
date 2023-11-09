@@ -284,46 +284,47 @@ class TrackingEvaluator(object):
             for boxList in input_seq_data:
                 input_seq_boxes += boxList.boxes
 
-            f_data = [[] for x in range(input_seq_boxes[-1].frame + 1)]
+            # f_data = [[] for x in range(input_seq_boxes[-1].frame + 1)]
+            f_data = [[] for x in range(len(input_seq_data))]
 
-            for TrackingAnnotation3D in input_seq_boxes:
+            for trackingAnnotation3D in input_seq_boxes:
                 # KITTI tracking benchmark data format:
                 # (frame,tracklet_id,objectType,truncation,occlusion,alpha,x1,y1,x2,y2,h,w,l,X,Y,Z,ry)
 
-                if not any([s for s in classes if s == TrackingAnnotation3D.name.lower()]):
+                if not any([s for s in classes if s == trackingAnnotation3D.name.lower()]):
                     continue
                 # get fields from table
-                t_data.frame = int(TrackingAnnotation3D.frame)
-                t_data.track_id = int(TrackingAnnotation3D.id)
-                t_data.obj_type = TrackingAnnotation3D.name.lower()  # object type [car, pedestrian, cyclist, ...]
+                t_data.frame = int(trackingAnnotation3D.frame)
+                t_data.track_id = int(trackingAnnotation3D.id)
+                t_data.obj_type = trackingAnnotation3D.name.lower()  # object type [car, pedestrian, cyclist, ...]
                 t_data.truncation = int(
-                    TrackingAnnotation3D.truncated
+                    trackingAnnotation3D.truncated
                 )  # truncation [-1,0,1,2]
                 t_data.occlusion = int(
-                    TrackingAnnotation3D.occluded
+                    trackingAnnotation3D.occluded
                 )  # occlusion  [-1,0,1,2]
-                t_data.obs_angle = float(TrackingAnnotation3D.alpha)  # observation angle [rad]
-                t_data.x1 = float(TrackingAnnotation3D.bbox2d[0])  # left   [px]
-                t_data.y1 = float(TrackingAnnotation3D.bbox2d[1])  # top    [px]
-                t_data.x2 = float(TrackingAnnotation3D.bbox2d[2])  # right  [px]
-                t_data.y2 = float(TrackingAnnotation3D.bbox2d[3])  # bottom [px]
-                t_data.h = float(TrackingAnnotation3D.dimensions[0])  # height [m]
-                t_data.w = float(TrackingAnnotation3D.dimensions[1])  # width  [m]
-                t_data.length = float(TrackingAnnotation3D.dimensions[2])  # length [m]
-                t_data.X = float(TrackingAnnotation3D.location[0])  # X [m]
-                t_data.Y = float(TrackingAnnotation3D.location[1])  # Y [m]
-                t_data.Z = float(TrackingAnnotation3D.location[2])  # Z [m]
-                t_data.yaw = float(TrackingAnnotation3D.rotation_y)  # yaw angle [rad]
-                t_data.score = float(TrackingAnnotation3D.confidence)
+                t_data.obs_angle = float(trackingAnnotation3D.alpha)  # observation angle [rad]
+                t_data.x1 = float(trackingAnnotation3D.bbox2d[0])  # left   [px]
+                t_data.y1 = float(trackingAnnotation3D.bbox2d[1])  # top    [px]
+                t_data.x2 = float(trackingAnnotation3D.bbox2d[2])  # right  [px]
+                t_data.y2 = float(trackingAnnotation3D.bbox2d[3])  # bottom [px]
+                t_data.h = float(trackingAnnotation3D.dimensions[0])  # height [m]
+                t_data.w = float(trackingAnnotation3D.dimensions[1])  # width  [m]
+                t_data.length = float(trackingAnnotation3D.dimensions[2])  # length [m]
+                t_data.X = float(trackingAnnotation3D.location[0])  # X [m]
+                t_data.Y = float(trackingAnnotation3D.location[1])  # Y [m]
+                t_data.Z = float(trackingAnnotation3D.location[2])  # Z [m]
+                t_data.yaw = float(trackingAnnotation3D.rotation_y)  # yaw angle [rad]
+                t_data.score = float(trackingAnnotation3D.confidence)
 
                 # do not consider objects marked as invalid
-                if t_data.track_id is -1 and t_data.obj_type != "dontcare":
+                if t_data.track_id == -1 and t_data.obj_type != "dontcare":
                     continue
 
                 idx = t_data.frame
                 # check if length for frame data is sufficient
                 if idx >= len(f_data):
-                    raise ValueError("Frame " + str(idx) + "is out of range")
+                    raise ValueError("Frame " + str(idx) + " is out of range")
 
                 id_frame = (t_data.frame, t_data.track_id)
                 if id_frame in id_frame_cache and not loading_groundtruth:

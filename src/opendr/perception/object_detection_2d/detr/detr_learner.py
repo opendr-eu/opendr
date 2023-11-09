@@ -43,8 +43,10 @@ from opendr.engine.target import CocoBoundingBox, BoundingBoxList
 import torchvision.transforms as T
 import numpy as np
 import onnxruntime as ort
-import opendr.perception.object_detection_2d.detr.algorithm.util.misc as utils
+from opendr.perception.object_detection_2d.detr.algorithm.util import misc as utils
 from PIL import Image as im
+
+torch.hub._validate_not_a_forked_repo = lambda a, b, c: True  # workaround for rate limit bug
 
 
 class DetrLearner(Learner):
@@ -642,7 +644,6 @@ class DetrLearner(Learner):
             self.model,
             x,
             os.path.join(self.temp_path, "onnx_model_temp.onnx"),
-            enable_onnx_checker=True,
             do_constant_folding=do_constant_folding,
             input_names=input_names,
             output_names=output_names,

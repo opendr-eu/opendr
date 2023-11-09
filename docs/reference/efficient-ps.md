@@ -20,11 +20,13 @@ The *EfficientPsLearner* class is a wrapper around the EfficientPS implementatio
 The [EfficientPsLearner](/src/opendr/perception/panoptic_segmentation/efficient_ps/efficient_ps_learner.py) class has the following public methods:
 #### `EfficientPsLearner` constructor
 ```python
-EfficientPsLearner(lr, iters, batch_size, optimizer, lr_schedule, momentum, weight_decay, optimizer_config, checkpoint_after_iter, temp_path, device, num_workers, seed, config_file)
+EfficientPsLearner(config_file, lr, iters, batch_size, optimizer, lr_schedule, momentum, weight_decay, optimizer_config, checkpoint_after_iter, temp_path, device, num_workers, seed)
 ```
 
 Constructor parameters:
 
+- **config_file**: *str*\
+  Path to the config file that contains the model architecture and the data loading pipelines.
 - **lr**: *float, default=0.07*\
   Specifies the learning rate used during training.
 - **iters**: *int, default=160*\
@@ -51,8 +53,6 @@ Constructor parameters:
   Specifies the number of workers used by the data loaders.
 - **seed**: *float, default=None*\
   Specifies the seed to shuffle the data during training.
-- **config_file**: *str, default='../configs/singlegpu_sample.py*\
-  Path to the config file that contains the model architecture and the data loading pipelines.
 
 #### `EfficientPsLearner.fit`
 ```python
@@ -69,6 +69,11 @@ Parameters:
   Path to store the logging files, e.g., training progress and tensorboard logs.
 - **silent**: *bool, default=False*\
   If True, disables printing the training progress reports to STDOUT. The validation will still be shown.
+
+Return:
+
+- **results**: *dict*\
+  Dictionary with "train" and "val" keys containing the training progress (e.g. losses) and, if a val_dataset is provided, the evaluation results.
 
 #### `EfficientPsLearner.eval`
 ```python

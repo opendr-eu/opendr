@@ -24,14 +24,6 @@ from opendr.perception.object_detection_3d import KittiDataset, LabeledPointClou
 DEVICE = os.getenv('TEST_DEVICE') if os.getenv('TEST_DEVICE') else 'cpu'
 
 print("Using device:", DEVICE)
-print("Using device:", DEVICE, file=sys.stderr)
-
-
-def rmfile(path):
-    try:
-        os.remove(path)
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
 
 
 def rmdir(_dir):
@@ -80,12 +72,9 @@ class TestVoxelObjectDetection3DLearner(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # Clean up downloaded files
-
         rmdir(os.path.join(cls.temp_dir))
-        pass
 
     def test_fit(self):
-
         def test_model(name, config):
             print("Fit", name, "start", file=sys.stderr)
             model_path = os.path.join(self.temp_dir, "test_fit_" + name)

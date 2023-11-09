@@ -14,7 +14,7 @@
 
 from abc import ABC
 import numpy as np
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Any, List
 
 
 class BaseTarget(ABC):
@@ -458,11 +458,14 @@ class BoundingBoxList(Target):
     """
 
     def __init__(
-        self, boxes,
+        self,
+        boxes=None,
+        image_id=-1,
     ):
         super().__init__()
-        self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.data = [] if boxes is None else boxes
+        self.image_id = image_id
+        self.__compute_confidence()
 
     @staticmethod
     def from_coco(boxes_coco, image_id=0):
@@ -470,10 +473,12 @@ class BoundingBoxList(Target):
 
         boxes = []
         for i in range(count):
-            if "segmentation" in boxes_coco[i]:
-                segmentation = boxes_coco[i]["segmentation"]
-            if "iscrowd" in boxes_coco[i]:
-                iscrowd = boxes_coco[i]["iscrowd"]
+            if 'segmentation' in boxes_coco[i]:
+                segmentation = boxes_coco[i]['segmentation']
+            else:
+                segmentation = []
+            if 'iscrowd' in boxes_coco[i]:
+                iscrowd = boxes_coco[i]['iscrowd']
             else:
                 iscrowd = 0
             if "area" in boxes_coco[i]:
@@ -500,9 +505,16 @@ class BoundingBoxList(Target):
 
         return result
 
+    def add_box(self, box: BoundingBox):
+        self.data.append(box)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -603,11 +615,12 @@ class TrackingAnnotationList(Target):
     """
 
     def __init__(
-        self, boxes,
+        self,
+        annotations=None,
     ):
         super().__init__()
-        self.data = boxes
-        self.confidence = np.mean([box.confidence for box in self.data])
+        self.data = [] if annotations is None else annotations
+        self.__compute_confidence()
 
     @staticmethod
     def from_mot(data):
@@ -626,9 +639,16 @@ class TrackingAnnotationList(Target):
     def bounding_box_list(self):
         return BoundingBoxList([box.bounding_box() for box in self.data])
 
+    def add_annotation(self, annotation: TrackingAnnotation):
+        self.data.append(annotation)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -747,10 +767,13 @@ class BoundingBox3DList(Target):
     observation angle of an object (alpha).
     """
 
-    def __init__(self, bounding_boxes_3d):
+    def __init__(
+        self,
+        bounding_boxes_3d=None
+    ):
         super().__init__()
-        self.data = bounding_boxes_3d
-        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
+        self.data = [] if bounding_boxes_3d is None else bounding_boxes_3d
+        self.__compute_confidence()
 
     @staticmethod
     def from_kitti(boxes_kitti):
@@ -827,9 +850,16 @@ class BoundingBox3DList(Target):
 
         return result
 
+    def add_box(self, box: BoundingBox3D):
+        self.data.append(box)
+        self.__compute_confidence()
+
     @property
     def boxes(self):
         return self.data
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -939,11 +969,13 @@ class TrackingAnnotation3DList(Target):
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
     """
-
-    def __init__(self, tracking_bounding_boxes_3d):
+    def __init__(
+        self,
+        annotations_3d=None
+    ):
         super().__init__()
-        self.data = tracking_bounding_boxes_3d
-        self.confidence = None if len(self.data) == 0 else np.mean([box.confidence for box in self.data])
+        self.data = [] if annotations_3d is None else annotations_3d
+        self.__compute_confidence()
 
     @staticmethod
     def from_kitti(boxes_kitti, ids, frames=None):
@@ -1043,8 +1075,15 @@ class TrackingAnnotation3DList(Target):
     def boxes(self):
         return self.data
 
+    def add_annotation(self, annotation: TrackingAnnotation3D):
+        self.data.append(annotation)
+        self.__compute_confidence()
+
     def bounding_box_3d_list(self):
         return BoundingBox3DList([box.bounding_box_3d() for box in self.data])
+
+    def __compute_confidence(self):
+        self.confidence = sum([box.confidence for box in self.data], 0) / max(1, len(self.data))
 
     def __getitem__(self, idx):
         return self.boxes[idx]
@@ -1134,3 +1173,108 @@ class Heatmap(Target):
         :rtype: str
         """
         return str(self.data)
+
+
+class BaseTranscription(Target):
+    """
+    This target is used for speech transcription problems. It contains the transcribed text.
+    """
+
+    def __init__(self, text: str):
+        """
+        Construct a new BaseTranscription object based on the given text.
+
+        Args:
+            text (str): Transcribed text
+        """
+        super().__init__()
+        self._text = text
+
+    @property
+    def text(self):
+        """
+        Getter of text.
+
+        :return: the actual transcription held by the object
+        :rtype: str
+        """
+        if self._text is None:
+            raise ValueError("Transcription text is empty")
+
+        return self._text
+
+    @text.setter
+    def text(self, text: str):
+        """
+        Setter for text. Transcription expects data of str type.
+        :param: data to be used for creating a Transcription object
+        """
+        if isinstance(text, str):
+            self._text = text
+        else:
+            raise ValueError("Transcription expects strings as data")
+
+    def __str__(self):
+        return self._text
+
+
+class WhisperTranscription(BaseTranscription):
+    """
+    This target stores transcription from Whisper outputs, transcription text and other side information such as segment,
+    timestamp, no speech probability, etc.
+    """
+
+    def __init__(self, text, segments: List[Dict]):
+        super().__init__(text)
+
+        self._segments = segments
+
+    @property
+    def segments(self):
+        """
+        Getter of segments field.
+        """
+        return self._segments
+
+    @segments.setter
+    def segments(self, segments):
+        """
+        Setter for segments.
+        """
+        if isinstance(segments, List):
+            self._segments = segments
+        else:
+            raise ValueError("WhisperTranscription expects segments as list.")
+
+
+class VoskTranscription(BaseTranscription):
+    """
+    This target stores transcription from Vosk outputs, including, transcription text and information if a phrase was
+    finised or not.
+    """
+
+    def __init__(self, text, accept_waveform: bool):
+        super().__init__(text=text)
+
+        self._accept_waveform = accept_waveform
+
+    @property
+    def accept_waveform(self):
+        """
+        Getter of accept_waveform field.
+        This returns the accept_waveform field of the corresponding class.
+        :return: the accept_waveform field of the corresponding class
+        :rtype: str
+        """
+        return self._accept_waveform
+
+    @accept_waveform.setter
+    def accept_waveform(self, accept_waveform):
+        """
+        Setter for description.
+        :param: description to be assigned for the winning class
+        """
+        if isinstance(accept_waveform, bool):
+            self._accept_waveform = accept_waveform
+        else:
+            raise ValueError("accept_waveform should be a boolean value.")

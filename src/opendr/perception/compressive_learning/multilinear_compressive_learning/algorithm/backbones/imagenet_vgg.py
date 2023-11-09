@@ -15,6 +15,11 @@
 import torch.nn as nn
 import torchvision.models.vgg as vgg_models
 
+try:
+    from torch.hub import load_state_dict_from_url
+except ImportError:
+    from torch.utils.model_zoo import load_url as load_state_dict_from_url
+
 getters = {'vgg11': vgg_models.vgg11,
            'vgg11_bn': vgg_models.vgg11_bn,
            'vgg13': vgg_models.vgg13,
@@ -36,7 +41,7 @@ class VGG(nn.Module):
 
         if pretrained != '':
             # get pretrained weights
-            state_dict = vgg_models.load_state_dict_from_url(vgg_models.model_urls[model_name], progress=False)
+            state_dict = load_state_dict_from_url(vgg_models.model_urls[model_name], progress=False)
 
             # remove the last classifier layer from pretrained weights
             if pretrained == 'without_classifier':

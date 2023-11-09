@@ -318,3 +318,41 @@ The [Heatmap](/src/opendr/engine/target.py#L994) class has the following public 
   Return the shape of the underlying *data* object.
 #### str()
   Return a human-friendly string-based representation of *data*.
+
+
+### class engine.target.BaseTranscription
+Bases: `engine.target.Target`
+
+This target is used for speech transcription problems. It contains the transcribed text.
+
+The [BaseTranscription](/src/opendr/engine/target.py#1132) class has the following public methods:
+
+#### BaseTranscription(text)
+  Construct a new *BaseTranscription* object based on the given *text*.
+  - *text* is expected to by a string.
+
+
+### class engine.target.WhisperTranscription
+Bases: `engine.target.Target`
+
+This target stores transcription from Whisper outputs, including transcription text and other side information such as segment, timestamp, no speech probability, etc. 
+
+The [WhisperTranscription](/src/opendr/engine/target.py#1175) class has the following public methods
+
+#### WhisperTranscription(text, segments)
+  Construct a new `WhisperTranscription` object to store results from Whisper outputs.
+  - *text* is expected to by a string.
+  - *segments* is a list of dictionary, each element of the list is a segment of the whole transcription text with additional information.
+
+
+### class engine.target.VoskTranscription
+Bases: `engine.target.Target`
+
+This target stores transcription from Vosk outputs, inclduing transcription text and other information about if a phrase was finised or not.
+
+The [VoskTranscription](/src/opendr/engine/target.py#1205) class has the following public methods
+
+#### VoskTranscription(text, accept_waveform)
+  Construct a new `VoskTranscription` object to store results from Vosk outputs.
+  - *text* is expected to by a string.
+  - *accept_waveform* is a boolean value indicate if the phrase in *text* was finised or not. 
