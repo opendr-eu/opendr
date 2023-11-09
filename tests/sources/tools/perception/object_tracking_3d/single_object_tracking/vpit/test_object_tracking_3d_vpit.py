@@ -61,12 +61,14 @@ class TestObjectTracking3DVpit(unittest.TestCase):
             "vpit_temp",
         )
 
-        config_tanet_car = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/car/xyres_16.proto"
-        config_pointpillars_car = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/car/xyres_16.proto"
-        config_pointpillars_car_tracking = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/car/xyres_16_tracking.proto"
-        config_pointpillars_car_tracking_s = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/car/xyres_16_tracking_s.proto"
-        config_tanet_car_tracking = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/car/xyres_16_tracking.proto"
-        config_tanet_car_tracking_s = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/car/xyres_16_tracking_s.proto"
+        config_root = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs"
+
+        config_tanet_car = os.path.join(config_root, "tanet/car/xyres_16.proto")
+        config_pointpillars_car = os.path.join(config_root, "pointpillars/car/xyres_16.proto")
+        config_pointpillars_car_tracking = os.path.join(config_root, "pointpillars/car/xyres_16_tracking.proto")
+        config_pointpillars_car_tracking_s = os.path.join(config_root, "pointpillars/car/xyres_16_tracking_s.proto")
+        config_tanet_car_tracking = os.path.join(config_root, "tanet/car/xyres_16_tracking.proto")
+        config_tanet_car_tracking_s = os.path.join(config_root, "tanet/car/xyres_16_tracking_s.proto")
 
         cls.backbone_configs = {
             "pp": config_pointpillars_car,

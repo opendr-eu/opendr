@@ -300,7 +300,6 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
         else:
             raise ValueError("Unsupported file_format: " + file_format)
 
-
     @staticmethod
     def download_pico_kitti(
         download_path, create_dir=False,

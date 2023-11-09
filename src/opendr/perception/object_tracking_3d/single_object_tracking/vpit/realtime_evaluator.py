@@ -52,16 +52,16 @@ class RealTimeEvaluator:
         )
         self.time_since_last_frame = max(
             0,
-            self.time_since_last_frame
-            + self.model_delta_time(model_delta_time)
+            self.time_since_last_frame +
+            self.model_delta_time(model_delta_time)
         )
 
     def can_frame_be_processed(self):  # expected to be called each frame
 
         self.time_since_last_frame = max(
             0,
-            self.time_since_last_frame
-            - self.data_delta_time,
+            self.time_since_last_frame -
+            self.data_delta_time,
         )
 
         return self.time_since_last_frame <= (self.data_delta_time / 2 if self.wait_for_next_frame else self.data_delta_time)

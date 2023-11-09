@@ -22,8 +22,8 @@ class BhattacharyyaCoeff(nn.Module):
         x_unf = functional.unfold(x, k).view(N, C, k, k, N_b)
 
         coeff = torch.sum(
-            torch.sqrt(x_unf * z.unsqueeze_(4).repeat(1, 1, 1, 1, N_b))
-            * self.weights,
+            torch.sqrt(x_unf * z.unsqueeze_(4).repeat(1, 1, 1, 1, N_b)) *
+            self.weights,
             dim=1,
             keepdim=True,
         )
@@ -162,20 +162,16 @@ class CHNet(nn.Module):
                 lr=self.train_cfg.initial_lr,
                 weight_decay=self.train_cfg.weight_decay,
             )
-        # gamma = (self.train_cfg.final_lr / self.train_cfg.initial_lr) ** \
-        #         (1.0 / ((self.train_cfg.epoch_num - self.train_cfg.finetune_epochs) // self.train_cfg.step_size))
-        # gamma = 0.8
         gamma = self.train_cfg.lr_decay_gamma
-        self.scheduler = StepLR(
+        self.scheduler = torch.nn.StepLR(
             self.optimizer, self.train_cfg.step_size, gamma=gamma
         )
-        # self.scheduler = ExponentialLR(self.optimizer, gamma, last_epoch=-1)
         if self.train_cfg.loss == "bce":
-            self.criterion = BCEWeightedLoss()
+            self.criterion = torch.nn.BCEWeightedLoss()
         elif self.train_cfg.loss == "focal":
-            self.criterion = FocalLoss(alpha=0, gamma=1)  # .to(self.device)
+            self.criterion = torch.nn.FocalLoss(alpha=0, gamma=1)  # .to(self.device)
         elif self.train_cfg.loss == "softmargin":
-            self.criterion = SoftMarginLoss()
+            self.criterion = torch.nn.SoftMarginLoss()
         print(self.criterion)
 
     def step(self, batch, backward=True, update_lr=True, step=None):

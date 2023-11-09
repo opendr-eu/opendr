@@ -8,8 +8,12 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.utils import get_paddings_indicator
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn import Empty
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.utils import (
+    get_paddings_indicator
+)
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn import (
+    Empty
+)
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.tools import (
     change_default_args
 )
@@ -68,7 +72,7 @@ class PillarFeatureNet(nn.Module):
         num_filters=(64,),
         with_distance=False,
         voxel_size=(0.2, 0.2, 4),
-        pc_range=None # (0, -40, -3, 70.4, 40, 1),
+        pc_range=None  # (0, -40, -3, 70.4, 40, 1),
     ):
         """
         Pillar Feature Net.

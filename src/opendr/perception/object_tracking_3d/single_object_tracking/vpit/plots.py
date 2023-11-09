@@ -4,12 +4,7 @@ from plotnine import (
     aes,
     geom_line,
     geom_point,
-    facet_grid,
     facet_wrap,
-    scale_y_continuous,
-    geom_hline,
-    position_dodge,
-    geom_errorbar,
     theme,
     element_text,
 )
@@ -109,20 +104,14 @@ def plot_realtime():
     def plot_frame(frame, output_file_name):
 
         plot = (
-            ggplot(frame)
-            + aes(x="Device", y="Success")
-            + facet_wrap(["Data FPS"], nrow=2, labeller="label_both")
-            + geom_point(
+            ggplot(frame) +
+            aes(x="Device", y="Success") +
+            facet_wrap(["Data FPS"], nrow=2, labeller="label_both") +
+            geom_point(
                 aes(colour="Method"),
-                # size=3,
-                # position=position_dodge(width=0.8),
-                # stroke=0.2,
-            )
-            + geom_line(aes(colour="Method", group="Method"))
+            ) +
+            geom_line(aes(colour="Method", group="Method"))
         )
-
-        # if len(params["facet"]) > 2:
-        #     plot = plot + theme(strip_text_x=element_text(size=5))
 
         plot.save("plots/" + output_file_name + ".png", dpi=600)
 
@@ -290,14 +279,14 @@ def plot_ablation(lines_count):
 
         for i, frame in enumerate(frames):
             plot = (
-                ggplot(frame["data"])
-                + aes(x=frame["x"], y="Success")
-                + ylim(22, 43)
-                + geom_point(
+                ggplot(frame["data"]) +
+                aes(x=frame["x"], y="Success") +
+                ylim(22, 43) +
+                geom_point(
                     aes(),
-                )
-                + geom_line(group=frame["x"])
-                + theme(
+                ) +
+                geom_line(group=frame["x"]) +
+                theme(
                     axis_title=element_text(size=20), axis_text=element_text(size=14)
                 )
             )

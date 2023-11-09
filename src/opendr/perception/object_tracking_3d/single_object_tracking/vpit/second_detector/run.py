@@ -19,7 +19,6 @@ import time
 import math
 import torchgeometry as tgm
 from pathlib import Path
-import torch.nn.functional as F
 from opendr.engine.data import PointCloud
 from opendr.engine.target import TrackingAnnotation3DList
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.box_np_ops import (
@@ -168,7 +167,7 @@ def draw_pseudo_image(pseudo_image, path, targets=[], colors=[]):
         pos_min = (target[0] - target[1] // 2).astype(np.int32)
         pos_max = (target[0] + (target[1] + 1) // 2 - 1).astype(np.int32)
 
-        rgb_pi[pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1, :] = color
+        rgb_pi[pos_min[0]: pos_max[0] + 1, pos_min[1]: pos_max[1] + 1, :] = color
 
     os.makedirs(str(Path(path).parent), exist_ok=True)
     image = PilImage.fromarray(rgb_pi)
@@ -395,8 +394,8 @@ def get_sub_image(image, center, size):
 
     if np.all(pos_max > pos_min):
         result[
-            :, local_min[0] : local_max[0] + 1, local_min[1] : local_max[1] + 1
-        ] = image[:, pos_min[0] : pos_max[0] + 1, pos_min[1] : pos_max[1] + 1]
+            :, local_min[0]: local_max[0] + 1, local_min[1]: local_max[1] + 1
+        ] = image[:, pos_min[0]: pos_max[0] + 1, pos_min[1]: pos_max[1] + 1]
     else:
         print("Empty image")
 
@@ -422,11 +421,9 @@ def create_logisticloss_labels(
     for r in range(label_size[0]):
         for c in range(label_size[1]):
             dist = np.sqrt(
-                ((r - t[0]) - label_size[0] // 2) ** 2
-                + ((c - t[1]) - label_size[1] // 2) ** 2,
+                ((r - t[0]) - label_size[0] // 2) ** 2 +
+                ((c - t[1]) - label_size[1] // 2) ** 2,
             )
-            # if dist <= 0:
-            #     labels[r, c] = 1
             if loss == "bce":
                 if r_pos is not None and np.all(dist <= r_pos + r_additional):
                     labels[r, c] = min_pos * dist / r_pos + max_pos * (1 - dist / r_pos)
@@ -566,11 +563,11 @@ def create_static_label_and_weights(
     label_size = (
         image_to_feature_coordinates(
             search_size, feature_blocks, overwrite_strides, upscaling_mode
-        )
-        - image_to_feature_coordinates(
+        ) -
+        image_to_feature_coordinates(
             target_size, feature_blocks, overwrite_strides, upscaling_mode
-        )
-        + 1
+        ) +
+        1
     ).astype(np.int32)
 
     delta_position_original = target[0] - search[0]
@@ -578,10 +575,9 @@ def create_static_label_and_weights(
 
     delta_position_label_space = (
         rotated_delta_position_original / search_size_with_context * label_size
-    )  # .astype(np.int32)
+    )
 
     t = delta_position_label_space[[1, 0]]
-    # t = (0, 0)
 
     r_pos = (
         None if radius is None else image_to_feature_coordinates(radius, feature_blocks)
@@ -596,9 +592,6 @@ def create_static_label_and_weights(
         min_pos=min_pos,
     )
     weights = np.zeros_like(labels)
-
-    # pred_target_position = score_to_image_coordinates(torch.tensor(labels), target[1], search)
-    # p = image_to_feature_coordinates(pred_target_position) - image_to_feature_coordinates(search[0])
 
     neg_label = 0 if loss == "bce" or loss == "focal" else -1
 
@@ -646,7 +639,6 @@ def sub_image_with_context(
         sub_image_size[[1, 0]],
         target[2],
     )
-    # draw_pseudo_image(sub_image, "./plots/train/sub_image" + str(0) + ".png")
 
     if interoplation_size[0] > 0:
         interpolated_image = torch.nn.functional.interpolate(
@@ -656,7 +648,6 @@ def sub_image_with_context(
         )
     else:
         interpolated_image = sub_image.unsqueeze(axis=0)
-    # draw_pseudo_image(interpolated_image.squeeze(axis=0), "./plots/train/interpolated_image" + str(0) + ".png")
     return interpolated_image, sub_image
 
 
@@ -709,7 +700,6 @@ def create_pseudo_images_and_labels(
     for i, (targets, searches) in enumerate(zip(batch_targets, batch_searches)):
         for target, search in zip(targets, searches):
 
-            target_size_with_context = size_with_context(target[1], context_amount)
             search_size_with_context = size_with_context(search[1], context_amount)
 
             target_image, _ = sub_image_with_context(
@@ -728,15 +718,7 @@ def create_pseudo_images_and_labels(
                 offset=None,
             )
 
-            # draw_pseudo_image(target_image.squeeze(axis=0), "./plots/pi_target_" + str(0) + ".png")
-            # draw_pseudo_image(search_image.squeeze(axis=0), "./plots/pi_search_" + str(0) + ".png")
-            # draw_pseudo_image(pseudo_image[i], "./plots/pi_" + str(0) + ".png")
-            # draw_pseudo_image(pseudo_image[i], "./plots/pi_t" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
-            # # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
-
             labels, weights = create_static_label_and_weights(
-                # [target[0][[1, 0]], target[1][[1, 0]]],
-                # [search[0][[1, 0]], search[1][[1, 0]]],
                 target,
                 search,
                 target_size,
@@ -841,12 +823,9 @@ def displacement_score_to_image_coordinates(
     half = (final_score_size - 1) / 2
 
     disp_score = max_idx.cpu().numpy() - half
-    # disp_search = feature_to_image_coordinates(disp_score, feature_blocks) / score_upscale
     disp_image_rotated = (
-        # disp_search * search_region_size / search_region_upscale_size
-        # disp_search * search_region_size / feature_to_image_coordinates(final_score_size, feature_blocks) # search_region_upscale_size
-        (disp_score / final_score_size)
-        * search_region_size_with_context[[1, 0]]  # search_region_upscale_size
+        (disp_score / final_score_size) *
+        search_region_size_with_context[[1, 0]]
     )
 
     theta = search_region_rotation
@@ -860,9 +839,6 @@ def displacement_score_to_image_coordinates(
 
     disp_image = np.dot(rot, disp_image_rotated)
 
-    # draw_pseudo_image(scores.squeeze(0), "./plots/f.png", [[max_idx.cpu().numpy(), np.array((1, 1)), 0], [half, np.array((1, 1)), 0]], [[255, 0, 0], [0, 255, 0]])
-
-    # return disp_image_rotated
     return disp_image, norm_max
 
 
@@ -918,69 +894,9 @@ def directed_penalty(shape, direction, device):
 
     matrix = hann_1d.expand((shape[0], shape[1])).unsqueeze(0)
 
-    # angle = np.arctan2(direction[1], direction[0])
-
-    # M = tgm.get_rotation_matrix2d(
-    #     torch.tensor([shape[1] / 2, shape[0] / 2], dtype=torch.float32).reshape(1, 2),
-    #     torch.tensor(-angle / np.pi * 180).reshape(1),
-    #     torch.tensor(1).reshape(1),
-    # ).to(device)
-    # matrix_warped = tgm.warp_affine(matrix.unsqueeze(0), M, dsize=(matrix.shape[1], matrix.shape[2])).squeeze(0).squeeze(0)
-
     t = time.time() - t
     print("matrix time =", t)
     return matrix  # matrix_warped
-    return torch.ones(shape, device=device)
-
-    # too slow so far
-
-    def kernel(sigma, length, x, y):
-        return sigma**2 * np.exp(-np.abs(x - y) ** 2 / (2 * length**2))
-
-    t = time.time()
-    matrix = torch.empty(shape, device=device)
-
-    for x in range(shape[0]):
-        for y in range(shape[1]):
-            matrix[x, y] = max(
-                0.5,
-                kernel(
-                    1,
-                    1,
-                    8 * (x - shape[0] / 2) / shape[0],
-                    8 * (y - shape[1] / 2) / shape[1],
-                ),
-            )
-
-    t = time.time() - t
-    print("matrix time =", t)
-    return matrix
-
-
-# def draw_msra_gaussian(shape, sigma, device):
-
-#     heatmap = np.zeros(shape)
-#     center = [shape[0] / 2, shape[1] / 2]
-
-#     tmp_size = sigma * 3
-#     mu_x = int(center[0] + 0.5)
-#     mu_y = int(center[1] + 0.5)
-#     w, h = shape
-#     ul = [int(mu_x - tmp_size), int(mu_y - tmp_size)]
-#     br = [int(mu_x + tmp_size + 1), int(mu_y + tmp_size + 1)]
-#     if ul[0] >= h or ul[1] >= w or br[0] < 0 or br[1] < 0:
-#         return heatmap
-#     size = 2 * tmp_size + 1
-#     x = np.arange(0, size, 1, np.float32)
-#     y = x[:, np.newaxis]
-#     x0 = y0 = size // 2
-#     g = np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
-#     g_x = max(0, -ul[0]), min(br[0], h) - ul[0]
-#     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
-#     img_x = max(0, ul[0]), min(br[0], h)
-#     img_y = max(0, ul[1]), min(br[1], w)
-#     heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = g[g_y[0]: g_y[1], g_x[0]: g_x[1]]
-#     return torch.tensor(heatmap, device=device)
 
 
 def draw_msra_gaussian(shape, sigma, theta, device):
@@ -1014,8 +930,8 @@ def draw_msra_gaussian(shape, sigma, theta, device):
     g_y = max(0, -ul[1]), min(br[1], w) - ul[1]
     img_x = max(0, ul[0]), min(br[0], h)
     img_y = max(0, ul[1]), min(br[1], w)
-    heatmap[img_y[0] : img_y[1], img_x[0] : img_x[1]] = g[
-        g_y[0] : g_y[1], g_x[0] : g_x[1]
+    heatmap[img_y[0]: img_y[1], img_x[0]: img_x[1]] = g[
+        g_y[0]: g_y[1], g_x[0]: g_x[1]
     ]
     return torch.tensor(heatmap, device=device) / heatmap.sum()
 
@@ -1079,26 +995,10 @@ def create_scaled_scores(
                 "./plots/directed_scores/gaussian_penalty.png",
             )
         penalty = penalty_maps[index]
-    # draw_pseudo_image(scores2.squeeze(0), "./plots/directed_scores/scores2.png")
 
     scores2_scaled = (1 - window_influence) * scores2 + window_influence * penalty
 
     return scores2_scaled, scores, penalty.unsqueeze(0)
-
-
-# def create_scaled_scores(
-#     target_features, search_features, model, score_upscale, window_influence,
-#     extrapolation_direction=None,
-# ):
-
-#     scores = model.process_features(search_features, target_features)
-#     scores2 = torch.nn.functional.interpolate(
-#         scores, scale_factor=score_upscale, mode="bicubic"
-#     )
-#     penalty = hann_window(scores2.shape[-2:], device=scores2.device)
-#     scores2_scaled = (1 - window_influence) * scores2 + window_influence * penalty
-
-#     return scores2_scaled, scores, scores2
 
 
 def rotate_vector(vector, angle):
@@ -1280,21 +1180,9 @@ def create_siamese_pseudo_images_and_labels(
         offset=search[0],
     )
 
-    # draw_pseudo_image(
-    #     target_image.squeeze(axis=0), "./plots/siamese/pi_target_" + str(0) + ".png"
-    # )
-    # draw_pseudo_image(
-    #     search_image.squeeze(axis=0), "./plots/siamese/pi_search_" + str(0) + ".png"
-    # )
-    # draw_pseudo_image(target_pseudo_image, "./plots/siamese/pi_t" + str(0) + ".png")
-    # draw_pseudo_image(search_pseudo_image, "./plots/siamese/pi_s" + str(0) + ".png")
-    # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
-
     feature_blocks = net.feature_blocks
 
     labels, weights = create_static_label_and_weights(
-        # [target[0][[1, 0]], target[1][[1, 0]]],
-        # [search[0][[1, 0]], search[1][[1, 0]]],
         search_target,
         search,
         target_size,
@@ -1485,13 +1373,10 @@ def create_siamese_triplet_pseudo_images_and_labels(
     draw_pseudo_image(
         other_search_pseudo_image, "./plots/siamese/pi_o" + str(0) + ".png"
     )
-    # draw_pseudo_image(pseudo_image[i], "./plots/pi_t2" + str(0) + ".png", [[target[0][[1, 0]], target[1][[1, 0]]]], [(255, 0, 0)])
 
     feature_blocks = net.feature_blocks
 
     labels_plus, weights_plus = create_static_label_and_weights(
-        # [target[0][[1, 0]], target[1][[1, 0]]],
-        # [search[0][[1, 0]], search[1][[1, 0]]],
         search_target,
         search,
         target_size,
@@ -1504,8 +1389,6 @@ def create_siamese_triplet_pseudo_images_and_labels(
     )
 
     labels_minus, weights_minus = create_static_label_and_weights(
-        # [target[0][[1, 0]], target[1][[1, 0]]],
-        # [search[0][[1, 0]], search[1][[1, 0]]],
         [other_search[0], search_target[1], other_search[2]],
         other_search,
         target_size,
@@ -1639,21 +1522,12 @@ def train_siamese_triplet(
         pin_memory=False,
         worker_init_fn=_worker_init_fn,
     )
-    eval_dataloader = torch.utils.data.DataLoader(
-        eval_dataset_iterator,
-        batch_size=1,
-        shuffle=False,
-        num_workers=eval_input_cfg.num_workers,
-        pin_memory=False,
-        collate_fn=merge_second_batch,
-    )
     data_iter = iter(dataloader)
 
     ######################
     # TRAINING
     ######################
     total_step_elapsed = 0
-    t = time.time()
 
     total_loop = train_cfg.steps // train_cfg.steps_per_eval + 1
     clear_metrics_every_epoch = train_cfg.clear_metrics_every_epoch
@@ -1757,30 +1631,6 @@ def train_siamese_triplet(
                 true_center_image = search[0] + true_delta
 
                 if debug:
-                    # feat_search.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/feat_search.png"),
-                    #     )[0]
-                    # )
-                    # feat_target.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/feat_target.png"),
-                    #     )[0]
-                    # )
-                    # search_image.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/search_image.png"),
-                    #     )[0]
-                    # )
-                    # target_image.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/target_image.png"),
-                    #     )[0]
-                    # )
                     draw_pseudo_image(pred_plus[0], "./plots/train/pred_plus.png")
                     draw_pseudo_image(pred_minus[0], "./plots/train/pred_minus.png")
                     draw_pseudo_image(labels_plus[0], "./plots/train/labels_plus.png")
@@ -1819,23 +1669,23 @@ def train_siamese_triplet(
                                 0,
                             ],
                             [
-                                (rot1 / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (rot1 / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
                             [
-                                (delta / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (delta / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
                             [
-                                (true_delta / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (true_delta / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
@@ -1952,8 +1802,8 @@ def train_siamese_triplet(
                     average_delta_error = 0
 
                 if (
-                    checkpoint_after_iter > 0
-                    and global_step % checkpoint_after_iter == 0
+                    checkpoint_after_iter > 0 and
+                    global_step % checkpoint_after_iter == 0
                 ):
 
                     save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
@@ -2059,7 +1909,6 @@ def train_siamese(
         num_workers=eval_input_cfg.num_workers,
         pin_memory=False,
         worker_init_fn=_worker_init_fn,
-        # collate_fn=merge_second_batch,
     )
     data_iter = iter(dataloader)
 
@@ -2067,7 +1916,6 @@ def train_siamese(
     # TRAINING
     ######################
     total_step_elapsed = 0
-    t = time.time()
 
     total_loop = train_cfg.steps // train_cfg.steps_per_eval + 1
     clear_metrics_every_epoch = train_cfg.clear_metrics_every_epoch
@@ -2084,8 +1932,8 @@ def train_siamese(
         freeze_model(net, True)
 
     if regress_vertical_position and (
-        regression_training_isolation is True
-        or isinstance(regression_training_isolation, int)
+        regression_training_isolation is True or
+        isinstance(regression_training_isolation, int)
     ):
         freeze_model(net)
 
@@ -2184,30 +2032,6 @@ def train_siamese(
                 true_center_image = search[0] + true_delta
 
                 if debug:
-                    # feat_search.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/feat_search.png"),
-                    #     )[0]
-                    # )
-                    # feat_target.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/feat_target.png"),
-                    #     )[0]
-                    # )
-                    # search_image.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/search_image.png"),
-                    #     )[0]
-                    # )
-                    # target_image.register_hook(
-                    #     lambda grad: (
-                    #         None,
-                    #         draw_pseudo_image(grad[0], "./plots/grad/target_image.png"),
-                    #     )[0]
-                    # )
                     draw_pseudo_image(pred[0], "./plots/train/pred.png")
                     draw_pseudo_image(labels[0], "./plots/train/labels.png")
                     draw_pseudo_image(feat_search[0], "./plots/train/feat_search.png")
@@ -2232,23 +2056,23 @@ def train_siamese(
                                 0,
                             ],
                             [
-                                (rot1 / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (rot1 / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
                             [
-                                (delta / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (delta / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
                             [
-                                (true_delta / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (true_delta / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
@@ -2296,7 +2120,6 @@ def train_siamese(
                     print("#", end="")
                 else:
                     loss.backward()
-                    # torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
                     mixed_optimizer.step()
                     mixed_optimizer.zero_grad()
                 net.update_global_step()
@@ -2311,9 +2134,9 @@ def train_siamese(
                     bof_training_steps = 0
 
                 if (
-                    isinstance(regression_training_isolation, int)
-                    and regression_training_isolation > 0
-                    and global_step >= regression_training_isolation
+                    isinstance(regression_training_isolation, int)and
+                    regression_training_isolation > 0 and
+                    global_step >= regression_training_isolation
                 ):
                     unfreeze_model(net)
                     regression_training_isolation = 0
@@ -2329,8 +2152,8 @@ def train_siamese(
                         global_step,
                         "]",
                         "loss=" + str(float(average_loss.detach().cpu())),
-                        "v_loss="
-                        + (
+                        "v_loss=" +
+                        (
                             str(float(average_v_loss.detach().cpu()))
                             if regress_vertical_position
                             else "None"
@@ -2364,8 +2187,8 @@ def train_siamese(
                     average_delta_error = 0
 
                 if (
-                    checkpoint_after_iter > 0
-                    and global_step % checkpoint_after_iter == 0
+                    checkpoint_after_iter > 0 and
+                    global_step % checkpoint_after_iter == 0
                 ):
 
                     save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
@@ -2487,10 +2310,10 @@ def train_siamese(
                             "/",
                             val_steps,
                             "]",
-                            "loss="
-                            + str(float(val_average_loss.detach().cpu()) / (step + 1)),
-                            "v_loss="
-                            + (
+                            "loss=" +
+                            str(float(val_average_loss.detach().cpu()) / (step + 1)),
+                            "v_loss=" +
+                            (
                                 str(
                                     float(
                                         val_average_v_loss.detach().cpu() / (step + 1)
@@ -2584,10 +2407,7 @@ def train_detection(
     # PREPARE INPUT
     ######################
 
-    take_gt_annos_from_example = False
-
     if gt_annos is None:
-        take_gt_annos_from_example = True
         gt_annos = []
 
     def _worker_init_fn(worker_id):
@@ -2608,21 +2428,12 @@ def train_detection(
         collate_fn=merge_second_batch,
         worker_init_fn=_worker_init_fn,
     )
-    eval_dataloader = torch.utils.data.DataLoader(
-        eval_dataset_iterator,
-        batch_size=eval_input_cfg.batch_size,
-        shuffle=False,
-        num_workers=eval_input_cfg.num_workers,
-        pin_memory=False,
-        collate_fn=merge_second_batch,
-    )
     data_iter = iter(dataloader)
 
     ######################
     # TRAINING
     ######################
     total_step_elapsed = 0
-    t = time.time()
 
     total_loop = train_cfg.steps // train_cfg.steps_per_eval + 1
     clear_metrics_every_epoch = train_cfg.clear_metrics_every_epoch
@@ -2768,23 +2579,23 @@ def train_detection(
                                 0,
                             ],
                             [
-                                (rot1 / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (rot1 / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
                             [
-                                (delta / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (delta / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
                             [
-                                (true_delta / search_size_with_context)[[1, 0]]
-                                * np.array(search_image.shape[-2:])
-                                + np.array(search_image.shape[-2:]) / 2,
+                                (true_delta / search_size_with_context)[[1, 0]] *
+                                np.array(search_image.shape[-2:]) +
+                                np.array(search_image.shape[-2:]) / 2,
                                 np.array([1, 1]),
                                 0,
                             ],
@@ -2878,8 +2689,8 @@ def train_detection(
                     average_delta_error = 0
 
                 if (
-                    checkpoint_after_iter > 0
-                    and global_step % checkpoint_after_iter == 0
+                    checkpoint_after_iter > 0 and
+                    global_step % checkpoint_after_iter == 0
                 ):
 
                     save_path = checkpoints_path / f"checkpoint_{global_step}.pth"
@@ -2941,8 +2752,8 @@ def evaluate(
     t = time.time()
 
     if (
-        model_cfg.rpn.module_class_name == "PSA"
-        or model_cfg.rpn.module_class_name == "RefineDet"
+        model_cfg.rpn.module_class_name == "PSA" or
+        model_cfg.rpn.module_class_name == "RefineDet"
     ):
         dt_annos_coarse = []
         dt_annos_refine = []
@@ -2986,18 +2797,6 @@ def evaluate(
                 example_numpy, float_dtype, device=device
             )
 
-            items = create_pseudo_images_and_labels(
-                net,
-                example,
-                gt_annos[
-                    i * eval_input_cfg.batch_size : (i + 1) * eval_input_cfg.batch_size
-                ],
-                augment=augment,
-                augment_rotation=augment_rotation,
-                search_type=search_type,
-                target_type=target_type,
-            )
-
             dt_annos += predict_kitti_to_anno(
                 net,
                 example,
@@ -3016,8 +2815,8 @@ def evaluate(
 
     if count is not None:
         if (
-            model_cfg.rpn.module_class_name == "PSA"
-            or model_cfg.rpn.module_class_name == "RefineDet"
+            model_cfg.rpn.module_class_name == "PSA" or
+            model_cfg.rpn.module_class_name == "RefineDet"
         ):
             gt_annos = gt_annos[: len(dt_annos_refine)]
         else:
@@ -3040,8 +2839,8 @@ def evaluate(
     if not predict_test:
 
         if (
-            model_cfg.rpn.module_class_name == "PSA"
-            or model_cfg.rpn.module_class_name == "RefineDet"
+            model_cfg.rpn.module_class_name == "PSA" or
+            model_cfg.rpn.module_class_name == "RefineDet"
         ):
             log(Logger.LOG_WHEN_NORMAL, "Before Refine:")
             result_coarse = get_official_eval_result(
@@ -3378,9 +3177,6 @@ def infer_create_pseudo_image(
             times["pseudo_image/merge_second_batch"].append(t21 - t2)
     elif isinstance(point_clouds, list):
         raise Exception()
-        input_data = merge_second_batch(
-            [infer_point_cloud_mapper(x.data) for x in point_clouds]
-        )
     else:
         raise ValueError("point_clouds should be a PointCloud or a list of PointCloud")
 

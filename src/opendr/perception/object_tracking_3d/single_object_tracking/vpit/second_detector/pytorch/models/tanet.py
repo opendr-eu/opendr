@@ -1,12 +1,16 @@
 import torch
 from torch import nn
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.utils import get_paddings_indicator
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.utils import (
+    get_paddings_indicator
+)
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.\
     second_detector.torchplus_tanet.tools import change_default_args
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.torchplus_tanet.nn import (
     Empty, GroupNorm, Sequential
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.pointpillars import PFNLayer
+from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.pointpillars import (
+    PFNLayer
+)
 import numpy as np
 
 import yaml
@@ -585,4 +589,3 @@ class PSA(nn.Module):
         # x = torch.cat([up1, up2, up3], dim=1)
 
         return x
-

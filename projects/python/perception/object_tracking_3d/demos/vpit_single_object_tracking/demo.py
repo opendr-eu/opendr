@@ -199,8 +199,8 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
                 search_type="small",
                 target_type="normal",
                 feature_blocks=1,
-                target_size=[-1,-1],
-                search_size=[-1,-1],
+                target_size=[-1, -1],
+                search_size=[-1, -1],
                 context_amount=0.25,
                 lr=0.0001,
                 r_pos=2,
@@ -388,7 +388,7 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
 
             with lock:
                 output_frame = frame.copy()
-            
+
             cv2.imshow("VPIT", frame)
 
             if cv2.waitKey(10) & 0xFF == ord('q'):

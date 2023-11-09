@@ -43,10 +43,8 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
     load_from_checkpoint,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.run import (
-    compute_lidar_kitti_output,
     create_lidar_aabb_from_target,
     create_multi_rotate_searches,
-    create_multi_scale_searches,
     create_pseudo_image_features,
     create_scaled_scores,
     create_target_search_regions,
@@ -54,13 +52,10 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
     draw_pseudo_image,
     evaluate,
     example_convert_to_torch,
-    feature_to_image_coordinates,
-    hann_window,
     image_to_lidar_coordinates,
     infer_create_pseudo_image,
     original_search_size_by_target_size,
     pc_range_by_lidar_aabb,
-    score_to_image_coordinates,
     select_best_scores_and_search,
     size_with_context,
     tracking_boxes_to_lidar,
@@ -86,29 +81,11 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
     merge_second_batch,
 )
 from opendr.engine.target import (
-    BoundingBox3DList,
     TrackingAnnotation3D,
     TrackingAnnotation3DList,
 )
 from opendr.engine.constants import OPENDR_SERVER_URL
 from urllib.request import urlretrieve
-import warnings
-from numba import errors
-from PIL import Image as PilImage
-
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.siamese import (
-    SiameseConvNet,
-)
-
-original_warn = warnings.warn
-
-
-def warn(warning, *args, **kwargs):
-    if not isinstance(warning, errors.NumbaPerformanceWarning):
-        original_warn(warning, *args, **kwargs)
-
-
-# warnings.warn = warn
 
 
 class ObjectTracking3DVpitLearner(Learner):
@@ -738,33 +715,33 @@ class ObjectTracking3DVpitLearner(Learner):
                     if draw:
                         draw_scores = draw_pseudo_image(
                             scores.squeeze(axis=0),
-                            "./plots/scores/"
-                            + str(frame)
-                            + "_"
-                            + str(i)
-                            + "_"
-                            + str(it)
-                            + ".png",
+                            "./plots/scores/" +
+                            str(frame) +
+                            "_" +
+                            str(i) +
+                            "_" +
+                            str(it) +
+                            ".png",
                         )
                         draw_scores_original = draw_pseudo_image(
                             original_scores.squeeze(axis=0),
-                            "./plots/scores_original/"
-                            + str(frame)
-                            + "_"
-                            + str(i)
-                            + "_"
-                            + str(it)
-                            + ".png",
+                            "./plots/scores_original/" +
+                            str(frame) +
+                            "_" +
+                            str(i) +
+                            "_" +
+                            str(it) +
+                            ".png",
                         )
                         draw_penalty_map = draw_pseudo_image(
                             penalty_map,
-                            "./plots/penalty_map/"
-                            + str(frame)
-                            + "_"
-                            + str(i)
-                            + "_"
-                            + str(it)
-                            + ".png",
+                            "./plots/penalty_map/" +
+                            str(frame) +
+                            "_" +
+                            str(i) +
+                            "_" +
+                            str(it) +
+                            ".png",
                         )
                         self.__add_image(draw_scores, "scores")
                         self.__add_image(draw_scores_original, "scores_original")
@@ -877,9 +854,9 @@ class ObjectTracking3DVpitLearner(Learner):
             vertical_position = self.init_label.location[-1]
 
             create_target_features = (
-                self.target_feature_merge_scale > 0
-                or self.regress_vertical_position
-                or self.target_features_mode in ["all", "selected", "last"]
+                self.target_feature_merge_scale > 0 or
+                self.regress_vertical_position or
+                self.target_features_mode in ["all", "selected", "last"]
             )
 
             if create_target_features and not unreliable:
@@ -894,16 +871,16 @@ class ObjectTracking3DVpitLearner(Learner):
 
                 if self.target_feature_merge_scale:
                     self.init_target_features = (
-                        self.init_target_features
-                        * (1 - self.target_feature_merge_scale)
-                        + target_features * self.target_feature_merge_scale
+                        self.init_target_features *
+                        (1 - self.target_feature_merge_scale) +
+                        target_features * self.target_feature_merge_scale
                     )
 
                 if self.regress_vertical_position:
                     vertical_position = (
                         (
-                            np.mean(self.model.branch.point_cloud_range[[2, 5]])
-                            + self.model.vertical_position_regressor(target_features)
+                            np.mean(self.model.branch.point_cloud_range[[2, 5]]) +
+                            self.model.vertical_position_regressor(target_features)
                         )
                         .detach()
                         .cpu()
@@ -932,16 +909,16 @@ class ObjectTracking3DVpitLearner(Learner):
                     )
                     draw_target_feat_current_frame = draw_pseudo_image(
                         target_features.squeeze(axis=0),
-                        "./plots/scores/"
-                        + str(frame)
-                        + "_target_feat_current_frame.png",
+                        "./plots/scores/" +
+                        str(frame) +
+                        "_target_feat_current_frame.png",
                     )
 
                     draw_target_image = draw_pseudo_image(
                         target_image.squeeze(axis=0),
-                        "./plots/scores/"
-                        + str(frame)
-                        + "_target_image_current_frame.png",
+                        "./plots/scores/" +
+                        str(frame) +
+                        "_target_image_current_frame.png",
                     )
                     self.__add_image(draw_target_feat_full, "target_feat_full")
                     self.__add_image(
@@ -950,8 +927,8 @@ class ObjectTracking3DVpitLearner(Learner):
                     self.__add_image(draw_target_image, "target_image_current_frame")
 
             vertical_position = (
-                vertical_position * self.vertical_offset_interpolation
-                + self.last_vertical_position * (1 - self.vertical_offset_interpolation)
+                vertical_position * self.vertical_offset_interpolation +
+                self.last_vertical_position * (1 - self.vertical_offset_interpolation)
             )
             self.last_vertical_position = vertical_position
 
@@ -1399,9 +1376,9 @@ class ObjectTracking3DVpitLearner(Learner):
 
             if dataset.dataset_type.lower() != "kitti":
                 raise ValueError(
-                    "ExternalDataset ("
-                    + str(dataset)
-                    + ") is given as a dataset, but it is not a KITTI dataset"
+                    "ExternalDataset (" +
+                    str(dataset) +
+                    ") is given as a dataset, but it is not a KITTI dataset"
                 )
 
             dataset_path = dataset.path
@@ -1448,9 +1425,9 @@ class ObjectTracking3DVpitLearner(Learner):
             val_dataset_path = val_dataset.path
             if val_dataset.dataset_type.lower() != "kitti":
                 raise ValueError(
-                    "ExternalDataset ("
-                    + str(val_dataset)
-                    + ") is given as a val_dataset, but it is not a KITTI dataset"
+                    "ExternalDataset (" +
+                    str(val_dataset) +
+                    ") is given as a val_dataset, but it is not a KITTI dataset"
                 )
 
             eval_input_cfg.kitti_info_path = (
@@ -1463,9 +1440,9 @@ class ObjectTracking3DVpitLearner(Learner):
                 val_dataset_path + "/" + eval_input_cfg.record_file_path
             )
             eval_input_cfg.database_sampler.database_info_path = (
-                val_dataset_path
-                + "/"
-                + eval_input_cfg.database_sampler.database_info_path
+                val_dataset_path +
+                "/" +
+                eval_input_cfg.database_sampler.database_info_path
             )
 
             eval_dataset_iterator = input_reader_builder.build(
@@ -1502,9 +1479,9 @@ class ObjectTracking3DVpitLearner(Learner):
                 dataset_path = dataset.path
                 if dataset.dataset_type.lower() != "kitti":
                     raise ValueError(
-                        "ExternalDataset ("
-                        + str(dataset)
-                        + ") is given as a dataset, but it is not a KITTI dataset"
+                        "ExternalDataset (" +
+                        str(dataset) +
+                        ") is given as a dataset, but it is not a KITTI dataset"
                     )
 
                 eval_input_cfg.kitti_info_path = (
@@ -1517,9 +1494,9 @@ class ObjectTracking3DVpitLearner(Learner):
                     dataset_path + "/" + eval_input_cfg.record_file_path
                 )
                 eval_input_cfg.database_sampler.database_info_path = (
-                    dataset_path
-                    + "/"
-                    + eval_input_cfg.database_sampler.database_info_path
+                    dataset_path +
+                    "/" +
+                    eval_input_cfg.database_sampler.database_info_path
                 )
 
                 eval_dataset_iterator = input_reader_builder.build(
@@ -1543,8 +1520,8 @@ class ObjectTracking3DVpitLearner(Learner):
                 )
             else:
                 raise ValueError(
-                    "val_dataset is None and can't be derived from"
-                    + " the dataset object because the dataset is not an ExternalDataset"
+                    "val_dataset is None and can't be derived from" +
+                    " the dataset object because the dataset is not an ExternalDataset"
                 )
         else:
             raise ValueError(

@@ -379,7 +379,7 @@ class BoundingBox(Target):
             )
         else:
             result = np.array(
-                [self.frame, self.left, self.top, self.width, self.height,],
+                [self.frame, self.left, self.top, self.width, self.height],
                 dtype=np.float32,
             )
 
@@ -1068,7 +1068,7 @@ class Heatmap(Target):
     """
 
     def __init__(
-        self, data: np.ndarray, class_names: Optional[Dict[Any, str]] = None
+        self, data: np.ndarray, class_names: Optional[Dict[Any, str]]=None
     ):
         super().__init__()
         self._class_names = None

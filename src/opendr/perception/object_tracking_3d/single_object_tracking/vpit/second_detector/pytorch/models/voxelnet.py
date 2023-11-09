@@ -39,9 +39,6 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
     PillarFeature_TANet,
     PSA,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.models.loss_utils import (
-    create_refine_loss,
-)
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.pytorch.utils import (
     get_paddings_indicator,
 )

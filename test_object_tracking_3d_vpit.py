@@ -1,1 +1,0 @@
-/home/io/OpenDR/opendr/tests/sources/tools/perception/object_tracking_3d/single_object_tracking/vpit/test_object_tracking_3d_vpit.py

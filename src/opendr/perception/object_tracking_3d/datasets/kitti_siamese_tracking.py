@@ -18,10 +18,6 @@
 # (frame,objectType,truncation,occlusion,alpha,x1,y1,x2,y2,h,w,l,X,Y,Z,ry,[score])
 
 import os
-import time
-from zipfile import ZipFile
-from urllib.request import urlretrieve
-from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.target import (
     BoundingBox3D,
     BoundingBox3DList,
@@ -31,7 +27,6 @@ from opendr.engine.target import (
 from opendr.engine.data import PointCloudWithCalibration
 from opendr.engine.datasets import DatasetIterator
 import numpy as np
-from skimage import io
 
 from opendr.perception.object_detection_3d.datasets.kitti import parse_calib
 
@@ -75,9 +70,9 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
                 for frame, frame_labels in enumerate(track_labels):
                     for label in frame_labels:
                         if (
-                            (label.id == object_id)
-                            and (label.id >= 0)
-                            and label.name in classes
+                            (label.id == object_id) and
+                            (label.id >= 0) and
+                            label.name in classes
                         ):
                             frames_with_current_object.append(frame)
 
@@ -319,7 +314,7 @@ def load_tracking_file(file_path, format, return_format, remove_dontcare=False):
                         float(fields[10]),
                         float(fields[11]),
                     ],
-                    location=[float(fields[13]), float(fields[14]), float(fields[15]),],
+                    location=[float(fields[13]), float(fields[14]), float(fields[15])],
                     rotation_y=float(fields[16]),
                     score=0 if len(fields) <= 17 else fields[17],
                     frame=int(float(fields[0])),
@@ -342,7 +337,7 @@ def load_tracking_file(file_path, format, return_format, remove_dontcare=False):
                         float(fields[10]),
                         float(fields[11]),
                     ],
-                    location=[float(fields[13]), float(fields[14]), float(fields[15]),],
+                    location=[float(fields[13]), float(fields[14]), float(fields[15])],
                     rotation_y=float(fields[16]),
                     score=0 if len(fields) <= 17 else fields[17],
                 )
@@ -366,7 +361,7 @@ def load_tracking_file(file_path, format, return_format, remove_dontcare=False):
                         float(fields[9]),
                         float(fields[10]),
                     ],
-                    location=[float(fields[12]), float(fields[13]), float(fields[14]),],
+                    location=[float(fields[12]), float(fields[13]), float(fields[14])],
                     rotation_y=float(fields[15]),
                     score=0 if len(fields) <= 15 else fields[16],
                     frame=int(float(fields[0])),
@@ -389,7 +384,7 @@ def load_tracking_file(file_path, format, return_format, remove_dontcare=False):
                         float(fields[9]),
                         float(fields[10]),
                     ],
-                    location=[float(fields[12]), float(fields[13]), float(fields[14]),],
+                    location=[float(fields[12]), float(fields[13]), float(fields[14])],
                     rotation_y=float(fields[15]),
                     score=0 if len(fields) <= 15 else fields[16],
                 )

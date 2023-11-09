@@ -1,12 +1,12 @@
 import sys
 import os
 import torch
-from opendr.engine.target import TrackingAnnotation3D, TrackingAnnotation3DList
+from opendr.engine.target import TrackingAnnotation3DList
 from opendr.perception.object_detection_3d.voxel_object_detection_3d.second_detector.utils.eval import d3_box_overlap
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.run import (
     iou_2d,
+    tracking_boxes_to_lidar,
 )
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.test import label_to_AABB, tracking_boxes_to_camera, tracking_boxes_to_lidar
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.vpit_object_tracking_3d_learner import (
     ObjectTracking3DVpitLearner,
 )
@@ -15,18 +15,15 @@ from opendr.perception.object_detection_3d.datasets.kitti import (
     LabeledPointCloudsDatasetIterator,
 )
 from opendr.perception.object_tracking_3d.datasets.kitti_tracking import (
-    KittiTrackingDatasetIterator,
     LabeledTrackingPointCloudsDatasetIterator,
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.draw import (
     draw_point_cloud_bev,
-    draw_point_cloud_projected_2,
 )
 from PIL import Image as PilImage
 import numpy as np
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.core.box_np_ops import (
-    box_camera_to_lidar,
-    camera_to_lidar,
+    box_lidar_to_camera,
     center_to_corner_box3d,
 )
 
@@ -48,10 +45,12 @@ temp_dir = os.path.join(
     "voxel_object_detection_3d_temp",
 )
 
-config_tanet_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/car/xyres_16.proto"
-config_tanet_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/tanet/ped_cycle/xyres_16.proto"
-config_pointpillars_car = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/car/xyres_16.proto"
-config_pointpillars_ped_cycle = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs/pointpillars/ped_cycle/xyres_16.proto"
+config_root = "src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs"
+
+config_tanet_car = os.path.join(config_root + "tanet/car/xyres_16.proto")
+config_tanet_ped_cycle = os.path.join(config_root + "tanet/ped_cycle/xyres_16.proto")
+config_pointpillars_car = os.path.join(config_root + "pointpillars/car/xyres_16.proto")
+config_pointpillars_ped_cycle = os.path.join(config_root + "pointpillars/ped_cycle/xyres_16.proto")
 
 subsets_path = os.path.join(
     ".",
@@ -105,6 +104,96 @@ tanet_model_path = model_paths[tanet_name]
 
 pq = 1
 lq = 20
+
+
+def tracking_boxes_to_camera(
+    label_original, calib,
+):
+
+    label = label_original.kitti()
+
+    if len(label["name"]) <= 0:
+        return label_original
+
+    r0_rect = calib["R0_rect"]
+    trv2c = calib["Tr_velo_to_cam"]
+
+    dims = label["dimensions"]
+    locs = label["location"]
+    rots = label["rotation_y"]
+
+    boxes_lidar = np.concatenate([locs, dims, rots.reshape(-1, 1)], axis=1)
+    boxes_camera = box_lidar_to_camera(boxes_lidar, r0_rect, trv2c)
+    locs_camera = boxes_camera[:, 0:3]
+    dims_camera = boxes_camera[:, 3:6]
+    rots_camera = boxes_camera[:, 6:7]
+
+    new_label = {
+        "name": label["name"],
+        "truncated": label["truncated"],
+        "occluded": label["occluded"],
+        "alpha": label["alpha"],
+        "bbox": label["bbox"],
+        "dimensions": dims_camera,
+        "location": locs_camera,
+        "rotation_y": rots_camera,
+        "score": label["score"],
+        "id": label["id"]
+        if "id" in label
+        else np.array(list(range(len(label["name"])))),
+        "frame": label["frame"]
+        if "frame" in label
+        else np.array([0] * len(label["name"])),
+    }
+
+    result = TrackingAnnotation3DList.from_kitti(
+        new_label, new_label["id"], new_label["frame"]
+    )
+
+    return result
+
+
+def label_to_AABB(label):
+
+    if len(label) == 0:
+        return label
+
+    label = label.kitti()
+
+    dims = label["dimensions"]
+    locs = label["location"]
+    rots = label["rotation_y"]
+
+    origin = [0.5, 0.5, 0]
+    gt_corners = center_to_corner_box3d(
+        locs, dims, rots.reshape(-1), origin=origin, axis=2,
+    )
+
+    mins = np.min(gt_corners, axis=1)
+    maxs = np.max(gt_corners, axis=1)
+    centers = (maxs + mins) / 2
+    sizes = maxs - mins
+    rotations = np.zeros((centers.shape[0],), dtype=np.float32)
+
+    new_label = {
+        "name": label["name"],
+        "truncated": label["truncated"],
+        "occluded": label["occluded"],
+        "alpha": label["alpha"],
+        "bbox": label["bbox"],
+        "dimensions": sizes,
+        "location": centers,
+        "rotation_y": rotations,
+        "score": label["score"],
+        "id": label["id"],
+        "frame": label["frame"],
+    }
+
+    result = TrackingAnnotation3DList.from_kitti(
+        new_label, new_label["id"], new_label["frame"]
+    )
+
+    return result
 
 
 def test_rotated_pp_siamese_eval(draw=True, iou_min=0.0, classes=["Car", "Van", "Truck"]):
@@ -230,11 +319,11 @@ def test_rotated_pp_siamese_eval(draw=True, iou_min=0.0, classes=["Car", "Van", 
                 print(track_id, "%", object_id, "[", i, "/", count - 1, "] iou3d =", iou3d, "iouAabb =", iouAabb)
 
                 filename = (
-                    "./plots/video/eval_aabb_rotated_track_"
-                    + str(track_id)
-                    + "_obj_"
-                    + str(object_id)
-                    + ".gif"
+                    "./plots/video/eval_aabb_rotated_track_" +
+                    str(track_id) +
+                    "_obj_" +
+                    str(object_id) +
+                    ".gif"
                 )
 
             if len(ious) <= 0:

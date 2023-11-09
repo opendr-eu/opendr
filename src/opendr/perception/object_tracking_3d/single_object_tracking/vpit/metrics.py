@@ -23,8 +23,8 @@ class Success(object):
     @property
     def value(self):
         succ = [
-            np.sum(i >= thres for i in self.overlaps).astype(float)
-            / self.count
+            np.sum(i >= thres for i in self.overlaps).astype(float) /
+            self.count
             for thres in self.Xaxis
         ]
         return np.array(succ)
@@ -58,8 +58,8 @@ class Precision(object):
     @property
     def value(self):
         prec = [
-            np.sum(i <= thres for i in self.accuracies).astype(float)
-            / self.count
+            np.sum(i <= thres for i in self.accuracies).astype(float) /
+            self.count
             for thres in self.Xaxis
         ]
         return np.array(prec)

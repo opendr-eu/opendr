@@ -1,6 +1,5 @@
 import pathlib
 from collections import defaultdict
-import time
 
 import numpy as np
 
@@ -281,7 +280,7 @@ def prep_pointcloud(
 
     if (rect is not None) or (Trv2c is not None) or (P2 is not None):
         example.update(
-            {"rect": rect, "Trv2c": Trv2c, "P2": P2,}
+            {"rect": rect, "Trv2c": Trv2c, "P2": P2}
         )
     feature_map_size = grid_size[:2] // out_size_factor
     feature_map_size = [*feature_map_size, 1][::-1]
@@ -383,7 +382,7 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
         )
         difficulty = annos["difficulty"]
         input_dict.update(
-            {"gt_boxes": gt_boxes, "gt_names": gt_names, "difficulty": difficulty,}
+            {"gt_boxes": gt_boxes, "gt_names": gt_names, "difficulty": difficulty}
         )
         if "group_ids" in annos:
             input_dict["group_ids"] = annos["group_ids"]
@@ -421,7 +420,7 @@ def _prep_v9(points, calib, prep_func, annos=None):
             annos["difficulty"] if "difficulty" in annos else compute_difficulty(annos)
         )
         input_dict.update(
-            {"gt_boxes": gt_boxes, "gt_names": gt_names, "difficulty": difficulty,}
+            {"gt_boxes": gt_boxes, "gt_names": gt_names, "difficulty": difficulty}
         )
         if "group_ids" in annos:
             input_dict["group_ids"] = annos["group_ids"]

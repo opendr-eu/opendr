@@ -18,6 +18,7 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
     tracking_boxes_to_lidar
 )
 
+
 def disk_single_object_point_cloud_generator(
     path, track, object_ids, num_point_features=4, cycle=True,
     classes=["Car", "Van", "Truck"],
@@ -48,7 +49,7 @@ def disk_single_object_point_cloud_generator(
             selected_labels = TrackingAnnotation3DList(
                 [label for label in labels if (label.id == object_id)]
             )
-            
+
         if not selected_labels[0].name in classes:
             continue
 
