@@ -191,7 +191,7 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
         self.num_point_features = num_point_features
 
         self.lidar_files = sorted(os.listdir(self.lidar_path))
-        # self.label_files = sorted(os.listdir(self.label_path))
+
         # self.calib_files = sorted(os.listdir(self.calib_path))
         self.image_files = (
             sorted(os.listdir(self.image_path))
@@ -234,6 +234,90 @@ class LabeledTrackingPointCloudsDatasetIterator(DatasetIterator):
 
     def __len__(self):
         return len(self.lidar_files)
+
+    @staticmethod
+    def download(
+        url,
+        download_path,
+        lidar_sub_path="./velodyne/0000",
+        label_sub_path="./label_02/0000.txt",
+        calib_sub_path="./calib/0000.txt",
+        image_sup_path=None,
+        file_format="zip",
+        create_dir=False,
+    ):
+
+        if file_format == "zip":
+            if create_dir:
+                os.makedirs(download_path, exist_ok=True)
+
+            print(
+                "Downloading Labeled Tracking Point Clouds Dataset",
+                url,
+                "to",
+                download_path,
+            )
+
+            start_time = 0
+            last_print = 0
+
+            def reporthook(count, block_size, total_size):
+                nonlocal start_time
+                nonlocal last_print
+                if count == 0:
+                    start_time = time.time()
+                    last_print = start_time
+                    return
+
+                duration = time.time() - start_time
+                progress_size = int(count * block_size)
+                speed = int(progress_size / (1024 * duration))
+                if time.time() - last_print >= 1:
+                    last_print = time.time()
+                    print(
+                        "\r%d MB, %d KB/s, %d seconds passed"
+                        % (progress_size / (1024 * 1024), speed, duration),
+                        end="",
+                    )
+
+            zip_path = os.path.join(download_path, "dataset.zip")
+            urlretrieve(url, zip_path, reporthook=reporthook)
+            print()
+
+            print("Extracting Dataset from zip file")
+            with ZipFile(zip_path, "r") as zip_ref:
+                zip_ref.extractall(download_path)
+
+            os.remove(zip_path)
+
+            return LabeledTrackingPointCloudsDatasetIterator(
+                os.path.join(download_path, lidar_sub_path),
+                os.path.join(download_path, label_sub_path),
+                os.path.join(download_path, calib_sub_path),
+                None if image_sup_path is None else os.path.join(download_path, image_sup_path),
+            )
+
+        else:
+            raise ValueError("Unsupported file_format: " + file_format)
+
+
+    @staticmethod
+    def download_pico_kitti(
+        download_path, create_dir=False,
+    ):
+        return LabeledTrackingPointCloudsDatasetIterator.download(
+            os.path.join(
+                OPENDR_SERVER_URL,
+                "perception",
+                "object_tracking_3d",
+                "kitti_tracking_pico.zip",
+            ),
+            download_path,
+            "kitti_tracking_pico/velodyne/0000",
+            "kitti_tracking_pico/label_02/0000.txt",
+            "kitti_tracking_pico/calib/0000.txt",
+            create_dir=create_dir,
+        )
 
 
 def load_tracking_file(

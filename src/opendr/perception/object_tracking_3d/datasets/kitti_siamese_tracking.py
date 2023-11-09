@@ -43,7 +43,7 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
         label_paths,
         calib_paths,
         labels_format="tracking",  # detection, tracking
-        clases=["Car"],  # detection, tracking
+        classes=["Car"],  # detection, tracking
         num_point_features=4,
         samples_per_object=200,
     ):
@@ -77,7 +77,7 @@ class SiameseTrackingDatasetIterator(DatasetIterator):
                         if (
                             (label.id == object_id)
                             and (label.id >= 0)
-                            and label.name in clases
+                            and label.name in classes
                         ):
                             frames_with_current_object.append(frame)
 
@@ -166,7 +166,7 @@ class SiameseTripletTrackingDatasetIterator(DatasetIterator):
         label_paths,
         calib_paths,
         labels_format="tracking",  # detection, tracking
-        clases=["Car"],  # detection, tracking
+        classes=["Car"],  # detection, tracking
         num_point_features=4,
     ):
         super().__init__()
@@ -198,7 +198,7 @@ class SiameseTripletTrackingDatasetIterator(DatasetIterator):
                 other_objects = []
                 for frame, frame_labels in enumerate(track_labels):
                     for label in frame_labels:
-                        if (label.id >= 0) and label.name in clases:
+                        if (label.id >= 0) and label.name in classes:
                             if label.id == object_id:
                                 frames_with_current_object.append(frame)
                             else:

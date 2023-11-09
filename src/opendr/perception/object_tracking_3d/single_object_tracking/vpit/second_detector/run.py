@@ -1548,7 +1548,7 @@ def create_siamese_triplet_pseudo_images_and_labels(
 
 def train(
     *args,
-    training_method="detection",
+    training_method="siamese",
     **kwargs,
 ):
     if training_method == "detection":

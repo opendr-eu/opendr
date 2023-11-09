@@ -244,10 +244,10 @@ class ObjectTracking3DVpitLearner(Learner):
             "target_feature_merge": [],
             "final_result": [],
         }
-        self.training_method = "detection"
+        self.training_method = "siamese"
         self.extrapolation_direction = None
 
-        self.model.rpn_ort_session = None  # ONNX runtime inference session
+        self.model.ort_session = None  # ONNX runtime inference session
 
     def save(self, path, verbose=False):
         """
@@ -291,66 +291,30 @@ class ObjectTracking3DVpitLearner(Learner):
             "optimizer_info": {},
         }
 
-        if self.model.rpn_ort_session is None:
+        if self.model.ort_session is None:
             model_metadata["model_paths"] = [
-                folder_name_no_ext + "_vfe.pth",
-                folder_name_no_ext + "_mfe.pth",
-                folder_name_no_ext + "_rpn.pth",
+                folder_name_no_ext + ".pth",
             ]
             model_metadata["optimized"] = False
             model_metadata["format"] = "pth"
 
             torch.save(
-                {"state_dict": self.model.voxel_feature_extractor.state_dict()},
+                {"siamese_model": self.model.state_dict()},
                 os.path.join(
                     path_no_folder_name,
                     folder_name_no_ext,
                     model_metadata["model_paths"][0],
                 ),
             )
-            torch.save(
-                {"state_dict": self.model.middle_feature_extractor.state_dict()},
-                os.path.join(
-                    path_no_folder_name,
-                    folder_name_no_ext,
-                    model_metadata["model_paths"][1],
-                ),
-            )
-            torch.save(
-                {"state_dict": self.model.rpn.state_dict()},
-                os.path.join(
-                    path_no_folder_name,
-                    folder_name_no_ext,
-                    model_metadata["model_paths"][2],
-                ),
-            )
             if verbose:
-                print("Saved Pytorch VFE, MFE and RPN sub-models.")
+                print("Saved Pytorch models")
         else:
             model_metadata["model_paths"] = [
-                folder_name_no_ext + "_vfe.pth",
-                folder_name_no_ext + "_mfe.pth",
-                folder_name_no_ext + "_rpn.onnx",
+                folder_name_no_ext + ".onnx",
             ]
             model_metadata["optimized"] = True
             model_metadata["format"] = "onnx"
 
-            torch.save(
-                {"state_dict": self.model.voxel_feature_extractor.state_dict()},
-                os.path.join(
-                    path_no_folder_name,
-                    folder_name_no_ext,
-                    model_metadata["model_paths"][0],
-                ),
-            )
-            torch.save(
-                {"state_dict": self.model.middle_feature_extractor.state_dict()},
-                os.path.join(
-                    path_no_folder_name,
-                    folder_name_no_ext,
-                    model_metadata["model_paths"][1],
-                ),
-            )
             # Copy already optimized model from temp path
             shutil.copy2(
                 os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"),
@@ -361,7 +325,7 @@ class ObjectTracking3DVpitLearner(Learner):
                 ),
             )
             if verbose:
-                print("Saved Pytorch VFE, MFE and ONNX RPN sub-models.")
+                print("Saved ONNX model.")
 
         with open(os.path.join(new_path, folder_name_no_ext + ".json"), "w") as outfile:
             json.dump(model_metadata, outfile)
@@ -1198,47 +1162,12 @@ class ObjectTracking3DVpitLearner(Learner):
 
     def optimize(self, do_constant_folding=False):
         """
-        Optimize method converts the model to ONNX format and saves the
+        Not Implemented. Optimize method converts the model to ONNX format and saves the
         model in the parent directory defined by self.temp_path. The ONNX model is then loaded.
         :param do_constant_folding: whether to optimize constants, defaults to 'False'
         :type do_constant_folding: bool, optional
         """
-        if self.model is None:
-            raise UserWarning(
-                "No model is loaded, cannot optimize. Load or train a model first."
-            )
-        if self.model.rpn_ort_session is not None:
-            raise UserWarning("Model is already optimized in ONNX.")
-
-        input_shape = [
-            1,
-            self.model.middle_feature_extractor.nchannels,
-            self.model.middle_feature_extractor.ny,
-            self.model.middle_feature_extractor.nx,
-        ]
-
-        has_refine = self.model.rpn_class_name in ["PSA", "RefineDet"]
-
-        try:
-            self.__convert_rpn_to_onnx(
-                input_shape,
-                has_refine,
-                os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"),
-                do_constant_folding,
-            )
-        except FileNotFoundError:
-            # Create temp directory
-            os.makedirs(self.temp_path, exist_ok=True)
-            self.__convert_rpn_to_onnx(
-                input_shape,
-                has_refine,
-                os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx"),
-                do_constant_folding,
-            )
-
-        self.__load_rpn_from_onnx(
-            os.path.join(self.temp_path, "onnx_model_rpn_temp.onnx")
-        )
+        raise NotImplementedError()
 
     @staticmethod
     def download(model_name, path, server_url=None):
@@ -1324,7 +1253,7 @@ class ObjectTracking3DVpitLearner(Learner):
         :param path: path to ONNX model
         :type path: str
         """
-        self.model.rpn_ort_session = ort.InferenceSession(path)
+        self.model.ort_session = ort.InferenceSession(path)
 
         # The comments below are the alternative way to use the onnx model, it might be useful in the future
         # depending on how ONNX saving/loading will be implemented across the toolkit.
