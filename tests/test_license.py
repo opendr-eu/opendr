@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2020-2022 OpenDR European Project
+# Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,6 +107,7 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/nanodet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
+            'src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector',
         ]
 
         skippedFilePaths = [

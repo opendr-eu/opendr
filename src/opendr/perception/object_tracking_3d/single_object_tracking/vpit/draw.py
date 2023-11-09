@@ -1,3 +1,17 @@
+# Copyright 2020-2023 OpenDR European Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import cv2
 import numpy as np
 import math
@@ -37,11 +51,6 @@ def draw_point_cloud_bev(
     y_min = MinMetric()
     x_max = MaxMetric()
     y_max = MaxMetric()
-
-    # x_min.update(0)
-    # x_max.update(90)
-    # y_min.update(-40)
-    # y_max.update(40)
 
     x_min.update(xs[0])
     x_max.update(xs[1])
@@ -97,10 +106,6 @@ def draw_point_cloud_bev(
     black_image = np.zeros((image_size_y + 1, image_size_x + 1, 3), dtype=np.uint8)
     black_image[point_cloud_x, point_cloud_y] = colors
 
-    # pil_image = Image.new(
-    #     "RGB", (image_size_y + 1, image_size_x + 1), color="black"
-    # )
-
     pil_image = Image.fromarray(black_image)
     pil_draw = ImageDraw.Draw(pil_image, "RGBA")
     font = ImageFont.truetype("./fonts/arial.ttf", 30)
@@ -120,12 +125,6 @@ def draw_point_cloud_bev(
         )
 
         half_size_x, half_size_y = (size[:2] * scale / 2).astype(np.int32)
-
-        # pil_draw.polygon(
-        #     rotate_rectangle(x_bev, y_bev, half_size_x, half_size_y, rotation),
-        #     fill=label_to_color[name],
-        #     outline=(255, 0, 255),
-        # )
 
         origin = [0.5, 0.5, 0]
         gt_corners = center_to_corner_box3d(
@@ -225,8 +224,6 @@ def draw_point_cloud_projected_2(
 
     pc = point_cloud[:, :3].astype(np.float64)
     pc = pc[:, [1, 0, 2]]
-    # pc[:, 2] /= 10
-    # pc /= 100
 
     R = cv2.Rodrigues(rvec)[0]
     t = tvec
@@ -237,7 +234,6 @@ def draw_point_cloud_projected_2(
         nonlocal R, t, K, D
 
         proj_mat = np.dot(K, np.hstack((R, t[:, np.newaxis])))
-        # proj_mat = np.dot(K, np.hstack((R, t)))
         # convert 3D points into homgenous points
         xyz_hom = np.hstack((xyzs, np.ones((xyzs.shape[0], 1))))
 
@@ -246,9 +242,6 @@ def draw_point_cloud_projected_2(
         # get 2d coordinates in image [pixels]
         z = xy_hom[:, -1]
         xy = xy_hom[:, :2] / np.tile(z[:, np.newaxis], (1, 2))
-
-        # undistort - has to be 1xNx2 structure
-        # xy = cv2.undistortPoints(np.expand_dims(xy, axis=0), np.eye(3), D).squeeze()
 
         # drop all points behind camera
         if drop:
