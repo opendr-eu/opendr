@@ -64,7 +64,7 @@ DEF FOG Fog {
   fogType "EXPONENTIAL"
 }
 DEF BACKGROUND TexturedBackground {
-  texture "noon_stormy_empty"
+  texture "noon_cloudy_countryside"
 }
 Mavic2Pro {
   hidden linearVelocity_0 -1.2102519493318901e-06 -1.727391971801067e-08 -2.3535755719478624e-05
@@ -83,7 +83,7 @@ Mavic2Pro {
   ]
 }
 DEF BACKGROUND_LIGHT TexturedBackgroundLight {
-  texture "noon_stormy_empty"
+  texture "noon_cloudy_countryside"
   luminosity 2
 }
 Floor {
@@ -385,7 +385,7 @@ DEF FIELD_SOIL Solid {
       name "plant_0_1"
       enableBoundingObject FALSE
     }
-    CropPlant { 
+    CropPlant {
       translation 0 16 0
       rotation 0 0 1 1.1173067453697407
       name "plant_0_2"
