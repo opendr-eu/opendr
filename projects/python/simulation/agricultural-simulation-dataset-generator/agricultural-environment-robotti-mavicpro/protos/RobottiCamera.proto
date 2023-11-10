@@ -57,7 +57,7 @@ PROTO RobottiCamera [
       %< if (fields.recognition.value) { >%
         recognition Recognition {
           segmentation TRUE
-          occlusion TRUE
+          occlusion 1
           maxRange 200
         }
       %< } >%

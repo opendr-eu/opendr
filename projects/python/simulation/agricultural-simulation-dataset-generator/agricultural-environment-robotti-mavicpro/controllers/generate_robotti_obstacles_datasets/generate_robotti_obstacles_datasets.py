@@ -324,7 +324,7 @@ if (useRobotti):
 
     timestep = int(supervisor.getBasicTimeStep())
 
-    IMUx = supervisor.getInertialUnit('imu_robotti')
+    IMUx = supervisor.getDevice('imu_robotti')
     IMUx.enable(timestep)
 
     # init devices
