@@ -19,7 +19,7 @@ else
 fi
 
 # Install base ubuntu deps
-sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv qt5-default
+sudo apt-get install --yes unzip libfreetype6-dev lsb-release git python3-pip curl wget python3.8-venv qt5-default libavdevice-dev libavfilter-dev
 
 # Get all submodules
 git submodule init
