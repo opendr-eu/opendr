@@ -28,11 +28,12 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in heatmap generation", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-
+    parser.add_argument("--method", help="Choose between primary or adaptive ROI selection methodology defaults to primary",
+                        default="primary")
     args = parser.parse_args()
 
-    device, accelerate, base_height1, base_height2 = args.device, args.accelerate,\
-        args.height1, args.height2
+    device, accelerate, base_height1, base_height2, method = args.device, args.accelerate, \
+        args.height1, args.height2, args.method
 
     if device == 'cpu':
         import torch
@@ -51,7 +52,8 @@ if __name__ == '__main__':
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
                                                          mobilenet_use_stride=stride, half_precision=half_precision,
                                                          first_pass_height=int(base_height1),
-                                                         second_pass_height=int(base_height2))
+                                                         second_pass_height=int(base_height2),
+                                                         method=method)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
@@ -65,8 +67,10 @@ if __name__ == '__main__':
     for i in tqdm(range(50)):
         start_time = time.perf_counter()
         # Perform inference
-        poses = pose_estimator.infer(img)
-
+        if method == 'primary':
+            poses, _, _ = pose_estimator.infer(img)
+        if method == 'adaptive':
+            poses, _, _ = pose_estimator.infer_adaptive(img)
         end_time = time.perf_counter()
         fps_list.append(1.0 / (end_time - start_time))
     print("Average FPS: %.2f" % (np.mean(fps_list)))

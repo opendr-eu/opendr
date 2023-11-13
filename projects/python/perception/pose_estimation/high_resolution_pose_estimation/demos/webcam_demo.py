@@ -50,13 +50,15 @@ if __name__ == '__main__':
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda")
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=True,
                         action="store_true")
-    parser.add_argument("--height1", help="Base height of resizing in first inference, defaults to 420", default=420)
-    parser.add_argument("--height2", help="Base height of resizing in second inference, defaults to 360", default=360)
-
+    parser.add_argument("--height1", help="Base height of resizing in first inference, defaults to 420", default=360)
+    parser.add_argument("--height2", help="Base height of resizing in second inference, defaults to 360", default=540)
+    parser.add_argument("--method", help="Choose between primary or adaptive ROI selection methodology defaults to primary",
+                        default="adaptive")
     args = parser.parse_args()
 
     onnx, device, accelerate = args.onnx, args.device, args.accelerate
-    base_height1, base_height2 = args.height1, args.height2
+    base_height1, base_height2, method = args.height1, args.height2, args.method
+
     if accelerate:
         stride = True
         stages = 1
@@ -73,7 +75,8 @@ if __name__ == '__main__':
                                                             mobilenet_use_stride=stride, half_precision=half_precision,
                                                             first_pass_height=base_height1,
                                                             second_pass_height=base_height2,
-                                                            percentage_around_crop=0.1)
+                                                            percentage_around_crop=0.1,
+                                                            method=method)
     hr_pose_estimator.download(path=".", verbose=True)
     hr_pose_estimator.load("openpose_default")
 
@@ -109,7 +112,7 @@ if __name__ == '__main__':
 
         # Perform inference
         start_time = time.perf_counter()
-        hr_poses, heatmap = hr_pose_estimator.infer(img)
+        hr_poses, heatmap, _ = hr_pose_estimator.infer_adaptive(img)
         hr_time = time.perf_counter() - start_time
 
         # Perform inference
@@ -143,6 +146,17 @@ if __name__ == '__main__':
                     fontFace=cv2.FONT_HERSHEY_TRIPLEX,
                     fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
                     thickness=int(np.ceil(height / 600)))
+
+        cv2.putText(img=img_copy, text='FPS: ' + str(int(lw_avg_fps)), org=(20, int(height / 4)),
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
+                    thickness=int(np.ceil(height / 600)))
+
+        cv2.putText(img=img, text='FPS:' + str(int(hr_avg_fps)), org=(20, int(height / 4)),
+                    fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+                    fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
+                    thickness=int(np.ceil(height / 600)))
+
 
         heatmap = heatmap * 5
         heatmap = cv2.cvtColor(heatmap, cv2.COLOR_GRAY2BGR)

@@ -26,11 +26,12 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-
+    parser.add_argument("--method", help="Choose between primary or adaptive ROI selection methodology defaults to primary",
+                        default="primary")
     args = parser.parse_args()
 
-    device, accelerate, base_height1, base_height2 = args.device, args.accelerate,\
-        args.height1, args.height2
+    device, accelerate, base_height1, base_height2, method = args.device, args.accelerate, \
+        args.height1, args.height2, args.method
 
     if accelerate:
         stride = True
@@ -45,7 +46,8 @@ if __name__ == '__main__':
                                                          mobilenet_use_stride=stride,
                                                          half_precision=half_precision,
                                                          first_pass_height=int(base_height1),
-                                                         second_pass_height=int(base_height2))
+                                                         second_pass_height=int(base_height2),
+                                                         method=method)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
@@ -55,8 +57,12 @@ if __name__ == '__main__':
     eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 
     t0 = time.time()
-    results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
-                                       images_folder_name="image", annotations_filename="annotation.json")
+    if method == "primary":
+        results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=True,
+                                           images_folder_name="image", annotations_filename="annotation.json")
+    if method == "adaptive":
+        results_dict = pose_estimator.eval_adaptive(eval_dataset, use_subset=False, verbose=True, silent=True,
+                                                    images_folder_name="image", annotations_filename="annotation.json")
     t1 = time.time()
     print("\n Evaluation time:  ", t1 - t0, "seconds")
     print("Evaluation results = ", results_dict)

@@ -9,4 +9,5 @@ More specifically, the applications provided are:
 3. demos/benchmarking_demo.py: A simple benchmarking tool for measuring the performance of High Resolution Pose Estimation in various platforms.
 4. demos/webcam_demo.py: A tool that performs live pose estimation both with high resolution and simple lightweight OpenPose using a webcam.
 
-
+NOTE: All demos can run either with "primary ROI selection" mode or with "adaptive ROI selection".
+Use `--method primary` or `--method adaptive` for each case.
