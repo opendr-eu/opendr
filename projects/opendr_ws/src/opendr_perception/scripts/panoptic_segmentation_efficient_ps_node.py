@@ -17,9 +17,11 @@ import sys
 from pathlib import Path
 import argparse
 from typing import Optional
-
+from time import perf_counter
 import matplotlib
+
 import rospy
+from std_msgs.msg import Float32
 from sensor_msgs.msg import Image as ROS_Image
 
 from opendr_bridge import ROSBridge
@@ -35,7 +37,8 @@ class EfficientPsNode:
                  checkpoint: str,
                  output_heatmap_topic: Optional[str] = None,
                  output_rgb_visualization_topic: Optional[str] = None,
-                 detailed_visualization: bool = False
+                 detailed_visualization: bool = False,
+                 performance_topic=None
                  ):
         """
         Initialize the EfficientPS ROS node and create an instance of the respective learner class.
@@ -48,6 +51,9 @@ class EfficientPsNode:
         :type output_heatmap_topic: str
         :param output_rgb_visualization_topic: ROS topic for the generated visualization of the panoptic map
         :type output_rgb_visualization_topic: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param detailed_visualization: if True, generate a combined overview of the input RGB image and the
             semantic, instance, and panoptic segmentation maps and publish it on output_rgb_visualization_topic
         :type detailed_visualization: bool
@@ -57,6 +63,11 @@ class EfficientPsNode:
         self.output_heatmap_topic = output_heatmap_topic
         self.output_rgb_visualization_topic = output_rgb_visualization_topic
         self.detailed_visualization = detailed_visualization
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         # Initialize all ROS related things
         self._bridge = ROSBridge()
@@ -130,12 +141,21 @@ class EfficientPsNode:
         :param data: Input image message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image to OpenDR Image
         image = self._bridge.from_ros_image(data)
 
         try:
             # Retrieve a list of two OpenDR heatmaps: [instance map, semantic map]
             prediction = self._learner.infer(image)
+
+            if self.performance_publisher:
+                end_time = perf_counter()
+                fps = 1.0 / (end_time - start_time)  # NOQA
+                fps_msg = Float32()
+                fps_msg.data = fps
+                self.performance_publisher.publish(fps_msg)
 
             # The output topics are only published if there is at least one subscriber
             if self._visualization_publisher is not None and self._visualization_publisher.get_num_connections() > 0:
@@ -166,16 +186,19 @@ if __name__ == '__main__':
                         default='/opendr/panoptic/rgb_visualization',
                         help='publish the panoptic segmentation map as an RGB image on this topic or a more detailed \
                               overview if using the --detailed_visualization flag')
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument('--detailed_visualization', action='store_true',
                         help='generate a combined overview of the input RGB image and the semantic, instance, and \
                               panoptic segmentation maps and publish it on OUTPUT_RGB_IMAGE_TOPIC')
     parser.add_argument('--checkpoint', type=str, default='cityscapes',
                         help='download pretrained models [cityscapes, kitti] or load from the provided path')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     efficient_ps_node = EfficientPsNode(args.input_rgb_image_topic,
                                         args.checkpoint,
                                         args.output_heatmap_topic,
                                         args.output_rgb_image_topic,
-                                        args.detailed_visualization)
+                                        args.detailed_visualization,
+                                        performance_topic=args.performance_topic)
     efficient_ps_node.listen()

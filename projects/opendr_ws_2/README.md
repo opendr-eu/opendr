@@ -62,27 +62,36 @@ Currently, apart from tools, opendr_ws_2 contains the following ROS2 nodes (cate
 1. [Pose Estimation](src/opendr_perception/README.md#pose-estimation-ros2-node)
 2. [High Resolution Pose Estimation](src/opendr_perception/README.md#high-resolution-pose-estimation-ros2-node)
 3. [Fall Detection](src/opendr_perception/README.md#fall-detection-ros2-node)
-4. [Face Detection](src/opendr_perception/README.md#face-detection-ros2-node)
-5. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros2-node)
-6. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros2-nodes)
-7. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros2-node)
-8. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
-9. [Vision Based Panoptic Segmentation](src/opendr_perception/README.md#vision-based-panoptic-segmentation-ros2-node)
-10. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
-11. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros2-node)
-12. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
-13. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
-14. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-node)
-15. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
+4. [Wave Detection](src/opendr_perception/README.md#wave-detection-ros2-node)
+5. [Face Detection](src/opendr_perception/README.md#face-detection-ros2-node)
+6. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros2-node)
+7. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros2-nodes)
+8. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros2-node)
+9. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros2-nodes)
+10. [Vision Based Panoptic Segmentation](src/opendr_perception/README.md#vision-based-panoptic-segmentation-ros2-node)
+11. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros2-node)
+12. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros2-node)
+13. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros2-node)
+14. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros2-node)
+15. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros2-nodes)
+16. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros2-node)
+17. [RGB Hand Gesture Recognition](src/opendr_perception/README.md#rgb-gesture-recognition-ros2-node)
 
 ## RGB + Infrared input
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#2d-object-detection-gem-ros2-node)
 ## RGBD input
 1. [RGBD Hand Gesture Recognition](src/opendr_perception/README.md#rgbd-hand-gesture-recognition-ros2-node)
+## RGB + IMU input
+1. [Continual SLAM](src/opendr_perception//README.md#continual-slam-ros2-nodes)
 ## RGB + Audio input
 1. [Audiovisual Emotion Recognition](src/opendr_perception/README.md#audiovisual-emotion-recognition-ros2-node)
+
 ## Audio input
 1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros2-node)
+2. [Speech Transcription](src/opendr_perception/README.md#speech-transcription-ros2-node)
+## Text input
+1. [Intent Recognition](src/opendr_perception/README.md#intent-recognition-ros2-node)
+
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros2-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros2-node)

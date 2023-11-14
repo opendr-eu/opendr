@@ -46,6 +46,11 @@ Before you can run any of the package's ROS nodes, some prerequisites need to be
 
     _An example would be to disable the output annotated image topic in a node when visualization is not needed and only use the detection message in another node, thus eliminating the OpenCV operations._
 
+- ### Logging the node performance in the console
+   OpenDR provides the utility [performance node](#performance-ros-node) to log performance messages in the console for the running node.
+   You can set the `performance_topic` of the node you are using and also run the performance node to get the time it takes for the
+   node to process a single input and its average speed expressed in frames per second.
+
 - ### An example diagram of OpenDR nodes running
     ![Pose Estimation ROS node running diagram](../../images/opendr_node_diagram.png)
     - On the left, the `usb_cam` node can be seen, which is using a system camera to publish images on the `/usb_cam/image_raw` topic.
@@ -79,6 +84,7 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: acceleration flag that causes pose estimation to run faster but with less accuracy
 
@@ -107,6 +113,7 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: Acceleration flag that causes pose estimation to run faster but with less accuracy
 
@@ -120,32 +127,123 @@ The node publishes the detected poses in [OpenDR's 2D pose message format](../op
 
 You can find the fall detection ROS node python script [here](./scripts/fall_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
 The node makes use of the toolkit's [fall detection tool](../../../../src/opendr/perception/fall_detection/fall_detector_learner.py) whose documentation can be found [here](../../../../docs/reference/fall-detection.md).
-Fall detection uses the toolkit's pose estimation tool internally.
+Fall detection is rule-based and works on top of pose estimation.
 
-<!-- TODO Should add information about taking advantage of the pose estimation ros node when running fall detection, see issue https://github.com/opendr-eu/opendr/issues/282 -->
+This node normally runs on `detection mode` where it subscribes to a topic of OpenDR poses and detects whether the poses are fallen persons or not.
+By providing an image topic the node runs on `visualization mode`. It also gets images, performs pose estimation internally and visualizes the output on an output image topic.
+Note that when providing an image topic the node has significantly worse performance in terms of speed, due to running pose estimation internally.
 
-#### Instructions for basic usage:
+- #### Instructions for basic usage in `detection mode`:
 
-1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+1. Start the node responsible for publishing poses. Refer to the [pose estimation node above](#pose-estimation-ros-node).
 
 2. You are then ready to start the fall detection node:
 
     ```shell
     rosrun opendr_perception fall_detection_node.py
     ```
-    The following optional arguments are available:
+    The following optional arguments are available and relevant for running fall detection on pose messages only:
    - `-h or --help`: show a help message and exit
-   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
-   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_fallen_annotated`)
-   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/fallen`)
+   - `-ip or --input_pose_topic INPUT_POSE_TOPIC`: topic name for input pose, `None` to stop the node from running detections on pose messages (default=`/opendr/poses`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/fallen` (default=`None`, disabled)
+
+3. Detections are published on the `detections_topic`
+
+- #### Instructions for `visualization mode`:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the fall detection node in `visualization mode`, which needs an input image topic to be provided:
+
+    ```shell
+    rosrun opendr_perception fall_detection_node.py -ii /usb_cam/image_raw
+    ```
+    The following optional arguments are available and relevant for running fall detection on images. Note that the
+`input_rgb_image_topic` is required for running in `visualization mode`:
+   - `-h or --help`: show a help message and exit
+   - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_fallen_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/fallen`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/image` (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
 
-3. Default output topics:
-   - Output images: `/opendr/image_fallen_annotated`
-   - Detection messages: `/opendr/fallen`
+- Default output topics:
+  - Detection messages: `/opendr/fallen`
+  - Output images: `/opendr/image_fallen_annotated`
 
-   For viewing the output, refer to the [notes above.](#notes)
+  For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+Note that when the node runs on the default `detection mode` it is significantly faster than when it is provided with an 
+input image topic. However, pose estimation needs to be performed externally on another node which publishes poses.
+When an input image topic is provided and the node runs in `visualization mode`, it runs pose estimation internally, and 
+consequently it is recommended to only use it for testing purposes and not run other pose estimation nodes in parallel.
+The node can run in both modes in parallel or only on one of the two. To run the node only on `visualization mode` provide
+the argument `-ip None` to disable the `detection mode`. Detection messages on `detections_topic` are published in both modes.
+
+### Wave Detection ROS Node
+
+You can find the wave detection ROS node python script [here](./scripts/wave_detection_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node is based on a [wave detection demo of the Lightweight OpenPose tool](../../../../projects/python/perception/pose_estimation/lightweight_open_pose/demos/wave_detection_demo.py).
+Wave detection is rule-based and works on top of pose estimation.
+
+This node normally runs on `detection mode` where it subscribes to a topic of OpenDR poses and detects whether the poses are waving or not.
+By providing an image topic the node runs on `visualization mode`. It also gets images, performs pose estimation internally and visualizes the output on an output image topic.
+Note that when providing an image topic the node has significantly worse performance in terms of speed, due to running pose estimation internally.
+
+- #### Instructions for basic usage in `detection mode`:
+
+1. Start the node responsible for publishing poses. Refer to the [pose estimation node above](#pose-estimation-ros-node).
+
+2. You are then ready to start the wave detection node:
+
+    ```shell
+    rosrun opendr_perception wave_detection_node.py
+    ```
+    The following optional arguments are available and relevant for running fall detection on pose messages only:
+   - `-h or --help`: show a help message and exit
+   - `-ip or --input_pose_topic INPUT_POSE_TOPIC`: topic name for input pose, `None` to stop the node from running detections on pose messages (default=`/opendr/poses`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/wave`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/wave` (default=`None`, disabled)
+
+3. Detections are published on the `detections_topic`
+
+- #### Instructions for `visualization mode`:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the wave detection node in `visualization mode`, which needs an input image topic to be provided:
+
+    ```shell
+    rosrun opendr_perception wave_detection_node.py -ii /usb_cam/image_raw
+    ```
+    The following optional arguments are available and relevant for running wave detection on images. Note that the
+`input_rgb_image_topic` is required for running in `visualization mode`:
+   - `-h or --help`: show a help message and exit
+   - `-ii or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`None`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_wave_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/wave`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages, note that performance will be published to `PERFORMANCE_TOPIC/image` (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--accelerate`: acceleration flag that causes pose estimation that runs internally to run faster but with less accuracy
+
+- Default output topics:
+  - Detection messages: `/opendr/wave`
+  - Output images: `/opendr/image_wave_annotated`
+
+  For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+Note that when the node runs on the default `detection mode` it is significantly faster than when it is provided with an 
+input image topic. However, pose estimation needs to be performed externally on another node which publishes poses.
+When an input image topic is provided and the node runs in `visualization mode`, it runs pose estimation internally, and 
+consequently it is recommended to only use it for testing purposes and not run other pose estimation nodes in parallel.
+The node can run in both modes in parallel or only on one of the two. To run the node only on `visualization mode` provide
+the argument `-ip None` to disable the `detection mode`. Detection messages on `detections_topic` are published in both modes.
 
 ### Face Detection ROS Node
 
@@ -168,6 +266,7 @@ The node makes use of the toolkit's [face detection tool](../../../../src/opendr
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_faces_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/faces`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--backbone BACKBONE`: retinaface backbone, options are either `mnet` or `resnet`, where `mnet` detects masked faces as well (default=`resnet`)
 
@@ -197,6 +296,7 @@ The node makes use of the toolkit's [face recognition tool](../../../../src/open
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_face_reco_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition`)
    - `-id or --detections_id_topic DETECTIONS_ID_TOPIC`: topic name for detection ID messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition_id`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--backbone BACKBONE`: backbone network (default=`mobilefacenet`)
    - `--dataset_path DATASET_PATH`: path of the directory where the images of the faces to be recognized are stored (default=`./database`)
@@ -289,6 +389,7 @@ whose documentation can be found here:
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_objects_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -317,6 +418,7 @@ The node makes use of the toolkit's [single object tracking 2D SiamRPN tool](../
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC` : listen to RGB images on this topic (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_tracking_annotated`)
    - `-t or --tracker_topic TRACKER_TOPIC`: topic name for tracker messages, `None` to stop the node from publishing on this topic (default=`/opendr/tracked_object`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -367,6 +469,7 @@ whose documentation can be found here: [Deep Sort docs](../../../../docs/referen
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_objects_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
    - `-t or --tracking_id_topic TRACKING_ID_TOPIC`: topic name for tracking ID messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects_tracking_id`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `-td --temp_dir TEMP_DIR`: path to a temporary directory with models (default=`temp`)
 
@@ -406,6 +509,7 @@ and additional information about EfficientPS [here](../../../../src/opendr/perce
    - `-oh or --output_heatmap_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the semantic and instance maps on this topic as `OUTPUT_HEATMAP_TOPIC/semantic` and `OUTPUT_HEATMAP_TOPIC/instance` (default=`/opendr/panoptic`)
    - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: publish the panoptic segmentation map as an RGB image on `VISUALIZATION_TOPIC` or a more detailed overview if using the `--detailed_visualization` flag (default=`/opendr/panoptic/rgb_visualization`)
    - `--detailed_visualization`: generate a combined overview of the input RGB image and the semantic, instance, and panoptic segmentation maps and publish it on `OUTPUT_RGB_IMAGE_TOPIC` (default=deactivated)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
 
 3. Default output topics:
    - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`
@@ -430,6 +534,7 @@ The node makes use of the toolkit's [semantic segmentation tool](../../../../src
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap`)
    - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -473,6 +578,7 @@ The node makes use of the toolkit's [binary high resolution tool](../../../../sr
    - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/binary_hr_heatmap_visualization`)
    - `-m or --model_path MODEL_PATH`: path to the directory of the trained model (default=`test_model`)
    - `-a or --architecture ARCHITECTURE`: architecture used for the trained model, either `VGG_720p` or `VGG_1080p` (default=`VGG_720p`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -502,6 +608,7 @@ whose documentation can be found [here](../../../../docs/reference/image_based_f
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_emotion_estimation_annotated`)
    - `-e or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the facial emotion results, `None` to stop the node from publishing on this topic (default=`"/opendr/facial_emotion_estimation"`)
    - `-m or --output_emotions_description_topic OUTPUT_EMOTIONS_DESCRIPTION_TOPIC`: topic to which we are publishing the description of the estimated facial emotion, `None` to stop the node from publishing on this topic (default=`/opendr/facial_emotion_estimation_description`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -540,6 +647,7 @@ whose documentation can be found [here](../../../../docs/reference/landmark-base
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic to which we are publishing the recognized facial expression category info, `None` to stop the node from publishing on this topic (default=`"/opendr/landmark_expression_recognition"`)
    - `-d or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic to which we are publishing the description of the recognized facial expression, `None` to stop the node from publishing on this topic (default=`/opendr/landmark_expression_recognition_description`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--model`: architecture to use for facial expression recognition, options are `pstbln_ck+`, `pstbln_casia`, `pstbln_afew` (default=`pstbln_afew`)
    - `-s or --shape_predictor SHAPE_PREDICTOR`: shape predictor (landmark_extractor) to use (default=`./predictor_path`)
@@ -590,6 +698,7 @@ Their documentation can be found [here](../../../../docs/reference/skeleton-base
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output pose-annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_pose_annotated`)
    - `-p or --pose_annotations_topic POSE_ANNOTATIONS_TOPIC`: topic name for pose annotations, `None` to stop the node from publishing on this topic (default=`/opendr/poses`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -624,6 +733,7 @@ The node makes use of the toolkit's video human activity recognition tools which
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_category_topic OUTPUT_CATEGORY_TOPIC`: topic to which we are publishing the recognized activity, `None` to stop the node from publishing on this topic (default=`"/opendr/human_activity_recognition"`)
    - `-od or --output_category_description_topic OUTPUT_CATEGORY_DESCRIPTION_TOPIC`: topic to which we are publishing the ID of the recognized action, `None` to stop the node from publishing on this topic (default=`/opendr/human_activity_recognition_description`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--model`: architecture to use for human activity recognition, options are `cox3d-s`, `cox3d-m`, `cox3d-l`, `x3d-xs`, `x3d-s`, `x3d-m`, or `x3d-l` (default=`cox3d-m`)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
@@ -635,6 +745,31 @@ The node makes use of the toolkit's video human activity recognition tools which
 **Notes**
 
 You can find the corresponding IDs regarding activity recognition [here](https://github.com/opendr-eu/opendr/blob/master/src/opendr/perception/activity_recognition/datasets/kinetics400_classes.csv).
+
+### RGB Gesture Recognition ROS Node
+
+For gesture recognition, the ROS [node](./scripts/gesture_recognition_node.py) is based on the gesture recognition learner defined [here](../../../../src/opendr/perception/gesture_recognition/gesture_recognition_learner.py), and the documentation of the learner can be found [here](../../../../docs/reference/gesture-recognition-learner.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. Start the gesture recognition node:
+   ```shell
+   rosrun opendr_perception gesture_recognition_node.py
+   ```
+   The following arguments are available:
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image (default=`/opendr/image_gesture_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/gestures`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: Device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--threshold THRESHOLD`: Confidence threshold for predictions (default=0.5)
+   - `--model MODEL`: Config file name of the model that will be used (default=`plus_m_1.5x_416)`
+
+3. Default output topics:
+   - Output images: `/opendr/image_gesture_annotated`
+   - Detection messages: `/opendr/gestures`
 
 ## RGB + Infrared input
 
@@ -669,6 +804,7 @@ whose documentation can be found [here](../../../../docs/reference/gem.md).
    - `-oc or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/rgb_image_objects_annotated`)
    - `-oi or --output_infra_image_topic OUTPUT_INFRA_IMAGE_TOPIC`: topic name for output annotated infrared image, `None` to stop the node from publishing on this topic (default=`/opendr/infra_image_objects_annotated`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 5. Default output topics:
@@ -702,6 +838,7 @@ whose documentation can be found [here](../../../../docs/reference/rgbd-hand-ges
    - `-ic or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/kinect2/qhd/image_color_rect`)
    - `-id or --input_depth_image_topic INPUT_DEPTH_IMAGE_TOPIC`: topic name for input depth image (default=`/kinect2/qhd/image_depth_rect`)
    - `-o or --output_gestures_topic OUTPUT_GESTURES_TOPIC`: topic name for predicted gesture class (default=`/opendr/gestures`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
 
 3. Default output topics:
@@ -732,6 +869,7 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
    - `-iv or --input_video_topic INPUT_VIDEO_TOPIC`: topic name for input video, expects detected face of size 224x224 (default=`/usb_cam/image_raw`)
    - `-ia or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
    - `-o or --output_emotions_topic OUTPUT_EMOTIONS_TOPIC`: topic to which we are publishing the predicted emotion (default=`/opendr/audiovisual_emotion`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--buffer_size BUFFER_SIZE`: length of audio and video in seconds, (default=`3.6`)
    - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
 
@@ -741,6 +879,61 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
+## RGB + IMU input
+
+### Continual SLAM ROS Nodes
+A ROS node for performing depth+position output mapping based on visual + imu input. Continual SLAM involves the use of two distinct ROS nodes, one dedicated to performing inference and the other exclusively focused on training. Both of the nodes are based on the learner class defined in [ContinualSLAMLearner](../../../../src/opendr/perception/continual_slam/continual_slam_learner.py).
+
+You can find the continual slam ROS node python scripts here [learner](./scripts/continual_slam_learner_node.py), [predictor](./scripts/continual_slam_predictor_node.py). You can further also find the RGB image + IMU publisher node [here](./scripts/continual_slam_dataset_node.py). 
+
+#### Instructions for basic usage:
+
+1. Download the KITTI Visual Odometry datased as it is described [here](../../../../src/opendr/perception/continual_slam/datasets/README.md). 
+
+2. Decide on the frame rate FPS, then one can start the dataset publisher node using the following line:
+   ```shell
+   rosrun opendr_perception continual_slam_dataset_node.py
+   ```
+
+   The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `--dataset_path`: path to the dataset (default=`./kitti`)
+   - `--config_file_path`: path to the config file for learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `--output_image_topic OUTPUT_IMAGE_TOPIC`: topic to which we are publishing the RGB image (default=`/cl_slam/image`)
+   - `--output_distance_topic OUTPUT_DISTANCE_TOPIC`: topic to publish distances (default=`/cl_slam/distance`)
+   - `--dataset_fps FPS`: frame rate which the dataset will be published, (default=`3`)
+
+3. Start the Predictor Node
+    ```shell
+    rosrun opendr_perception continual_slam_predictor_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
+   - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
+   - `-odt or --output_depth_topic`: output depth topic, published to visual output tools (default=`/opendr/predicted/image`)
+   - `-opt or --output_pose_topic`: output pose topic, published to visual output tools (default=`/opendr/predicted/pose`)
+   - `-ppcl or --publish_pointcloud`: boolean to decide whether pointcloud output is asked or not (default=`false`)
+   - `-opct or --output_pointcloud_topic`: output pointcloud topic, depending on `--publish_pointcloud`, published to visual output tools (default=`/opendr/predicted/pointcloud`)
+   - `-ut or --update_topic`: update topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/update`)
+
+4. Start the Learner Node (Optional)
+    ```shell
+    rosrun opendr_perception continual_slam_learner_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
+   - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
+   - `-ot or --output_weights_topic`: output weights topic to be published to Continual SLAM Predictor Node (default=`/cl_slam/update`)
+   - `-pr or --publish_rate`: publish rate of the weights (default=`20`)
+   - `-bs or --buffer_size`: size of the replay buffer (default=`10`)
+   - `-ss or --sample_size`: sample size of the replay buffer. If 0 is given, only online data is used (default=`3`)
+   - `-sm or --save_memory`: whether to save memory or not. Add it to the command if you want to write to disk (default=`True`)
+----
+
 ## Audio input
 
 ### Speech Command Recognition ROS Node
@@ -752,6 +945,7 @@ The node makes use of the toolkit's speech command recognition tools:
 [EdgeSpeechNets tool](../../../../src/opendr/perception/speech_recognition/edgespeechnets/edgespeechnets_learner.py), [MatchboxNet tool](../../../../src/opendr/perception/speech_recognition/matchboxnet/matchboxnet_learner.py), [Quadratic SelfONN tool](../../../../src/opendr/perception/speech_recognition/quadraticselfonn/quadraticselfonn_learner.py)
 whose documentation can be found here:
 [EdgeSpeechNet docs](../../../../docs/reference/edgespeechnets.md), [MatchboxNet docs](../../../../docs/reference/matchboxnet.md), [Quadratic SelfONN docs](../../../../docs/reference/quadratic-selfonn.md).
+
 
 #### Instructions for basic usage:
 
@@ -766,6 +960,7 @@ whose documentation can be found here:
    - `-h or --help`: show a help message and exit
    - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
    - `-o or --output_speech_command_topic OUTPUT_SPEECH_COMMAND_TOPIC`: topic name for speech command output (default=`/opendr/speech_recognition`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--buffer_size BUFFER_SIZE`: set the size of the audio buffer (expected command duration) in seconds (default=`1.5`)
    - `--model MODEL`: the model to use, choices are `matchboxnet`, `edgespeechnets` or `quad_selfonn` (default=`matchboxnet`)
    - `--model_path MODEL_PATH`: if given, the pretrained model will be loaded from the specified local path, otherwise it will be downloaded from an OpenDR FTP server
@@ -778,6 +973,101 @@ whose documentation can be found here:
 **Notes**
 
 EdgeSpeechNets currently does not have a pretrained model available for download, only local files may be used.
+
+### Speech Transcription ROS Node
+
+A ROS node for speech transcription from an audio stream using Whisper or Vosk.
+
+You can find the speech transcription ROS node python script [here](./scripts/speech_transcription_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's speech transcription tools:
+[Whipser tool](../../../../src/opendr/perception/speech_transcription/whisper/whisper_learner.py), [Vosk tool](../../../../src/opendr/perception/speech_transcription/vosk/vosk_learner.py) whose documentation can be found here:
+[Whisper docs](../../../../docs/reference/speech-transcription-whisper.md), [Vosk docs](../../../../docs/reference/speech-transcription-vosk.md).
+
+#### Instruction for basic usage:
+
+1. Start the node responsible for publishing audio, must be in wave format.  For example
+    
+    ```shell
+    roslaunch audio_capture capture_wave.launch
+    ```
+   Remember to modify the input topics using the arguments in step 2, if needed:
+    ```shell
+    roslaunch audio_play play.launch -t /audio/audio
+    ```
+
+2. You are then ready to start the speech transcription node
+
+    ```shell
+    # Enable log to console.
+    rosrun opendr_perception speech_transcription_node.py --verbose True
+    ```
+    ```shell
+    # Use Whisper instead of Vosk and choose tiny.en variant.
+    rosrun opendr_perception speech_transcription_node.py --backbone whisper --model_name tiny.en --verbose True
+    ```
+    ```shell
+    # Suggest to Whisper that the speech will contain the name 'Felix'.
+    rosrun opendr_perception speech_transcription_node.py --backbone whisper --model_name tiny.en --initial_prompt "Felix" --verbose True
+    ```
+    The following optional arguments are available (More in the source code):
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_audio_topic INPUT_AUDIO_TOPIC`: topic name for input audio (default=`/audio/audio`)
+   - `-o or --output_speech_transcription_topic OUTPUT_TRANSCRIPTION_TOPIC`: topic name for speech transcription output (default=`/opendr/speech_transcription`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--backbone {vosk,whisper}`: Backbone model for speech transcription
+   - `--model_name MODEL_NAME`: Specific model name for each backbone. Example: 'tiny', 'tiny.en', 'base', 'base.en' for Whisper, 'vosk-model-small-en-us-0.15' for Vosk (default=`None`) 
+   - `--model_path MODEL_PATH`: Path to downloaded model files (default=`None`) 
+   - `--language LANGUAGE`: Whisper uses the language parameter to avoid language dectection. Vosk uses the langauge paremeter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk (default=`en-us`). Check the available language codes for Whisper at [Whipser repository](https://github.com/openai/whisper/blob/e8622f9afc4eba139bf796c210f5c01081000472/whisper/tokenizer.py#L10). Check the available language code for Vosk from the Vosk model name at [Vosk website](https://alphacephei.com/vosk/models).
+   - `--initial_prompt INITIAL_PROMPT`: Prompt to provide some context or instruction for the transcription, only for Whisper
+   - `--verbose VERBOSE`: Display transcription (default=`False`).
+
+3. Default output topics:
+   - Speech transcription: `/opendr/speech_transcription`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+----
+## Text input
+
+### Intent Recognition ROS Node
+
+A ROS node for recognizing intents from language.
+This node should be used together with the speech transcription node that would transcribe the speech into text and infer intent from it.
+The provided intent recognition node subscribes to the speech transcription output topic.
+
+You can find the intent recognition ROS node python script [here](./scripts/intent_recognition_node.py) to inspect the code and modify if you wish for your needs.
+The node makes use of the toolkit's intent recognition [learner](../../../../src/opendr/perception/multimodal_human_centric/intent_recognition_learner/intent_recognition_learner.py), and the documentation can be found [here](../../../../docs/reference/intent-recognition-learner.md).
+
+#### Instructions for basic usage:
+
+1. Follow the instructions of the speech transcription node and start it.
+
+2. Start the intent recognition node
+
+    ```shell
+    rosrun opendr_perception intent_recognition_node.py
+    ```
+    The following arguments are available:
+   - `-i or --input_transcription_topic INPUT_TRANSCRIPTION_TOPIC`: topic name for input transcription of type OpenDRTranscription (default=`/opendr/speech_transcription`)
+   - `-o or --output_intent_topic OUTPUT_INTENT_TOPIC`: topic name for predicted intent (default=`/opendr/intent`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to be used for inference (default=`cuda`)
+   - `--text_backbone TEXT_BACKBONE`: text backbone tobe used, choices are `bert-base-uncased`, `albert-base-v2`, `bert-small`, `bert-mini`, `bert-tiny` (default=`bert-base-uncased`)
+   - `--cache_path CACHE_PATH`: cache path for tokenizer files (default=`./cache/`)
+
+3. Default output topics:
+   - Predicted intents and confidence: `/opendr/intent`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+On the table below you can find the detectable classes and their corresponding IDs:
+
+| Class  | Complain | Praise | Apologise | Thank | Criticize | Agree | Taunt | Flaunt | Joke | Oppose | Comfort | Care | Inform | Advise | Arrange | Introduce | Leave | Prevent | Greet | Ask for help |
+|--------|----------|--------|-----------|-------|-----------|-------|-------|--------|------|--------|---------|------|--------|--------|---------|-----------|-------|---------|-------|--------------|
+| **ID** | 0        | 1      | 2         | 3     | 4         | 5     | 6     | 7      | 8    | 9      | 10      | 11   | 12     | 13     | 14      | 15        | 16    | 17      | 18    | 19           |
+
 
 ----
 ## Point cloud input
@@ -803,6 +1093,7 @@ whose documentation can be found [here](../../../../docs/reference/voxel-object-
    - `-h or --help`: show a help message and exit
    - `-i or --input_point_cloud_topic INPUT_POINT_CLOUD_TOPIC`: point cloud topic provided by either a point_cloud_dataset_node or any other 3D point cloud node (default=`/opendr/dataset_point_cloud`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages (default=`/opendr/objects3d`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `-n or --model_name MODEL_NAME`: name of the trained model (default=`tanet_car_xyres_16`)
    - `-c or --model_config_path MODEL_CONFIG_PATH`: path to a model .proto config (default=`../../src/opendr/perception/object_detection3d/voxel_object_detection_3d/second_detector/configs/tanet/car/xyres_16.proto`)
@@ -836,6 +1127,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
    - `-i or --input_point_cloud_topic INPUT_POINT_CLOUD_TOPIC`: point cloud topic provided by either a point_cloud_dataset_node or any other 3D point cloud node (default=`/opendr/dataset_point_cloud`)
    - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects3d`)
    - `-t or --tracking3d_id_topic TRACKING3D_ID_TOPIC`: topic name for output tracking IDs with the same element count as in detection topic, `None` to stop the node from publishing on this topic (default=`/opendr/objects_tracking_id`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `-dn or --detector_model_name DETECTOR_MODEL_NAME`: name of the trained model (default=`tanet_car_xyres_16`)
    - `-dc or --detector_model_config_path DETECTOR_MODEL_CONFIG_PATH`: path to a model .proto config (default=`../../src/opendr/perception/object_detection3d/voxel_object_detection_3d/second_detector/configs/tanet/car/xyres_16.proto`)
@@ -870,6 +1162,7 @@ and additional information about EfficientLPS [here](../../../../src/opendr/perc
   The following optional arguments are available:
    - `-h, --help`: show a help message and exit
    - `-i or --input_point_cloud_2_topic INPUT_POINTCLOUD2_TOPIC` : Point Cloud 2 topic provided by either a point_cloud_2_publisher_node or any other 3D Point Cloud 2 Node (default=`/opendr/dataset_point_cloud2`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `-c or --checkpoint CHECKPOINT` : download pretrained models [semantickitti] or load from the provided path (default=`semantickitti`)
    - `-o or --output_heatmap_pointcloud_topic OUTPUT_HEATMAP_POINTCLOUD_TOPIC`: publish the 3D heatmap pointcloud on `OUTPUT_HEATMAP_POINTCLOUD_TOPIC` (default=`/opendr/panoptic`)
  
@@ -901,6 +1194,7 @@ The node makes use of the toolkit's heart anomaly detection tools: [ANBOF tool](
    - `-h or --help`: show a help message and exit
    - `-i or --input_ecg_topic INPUT_ECG_TOPIC`: topic name for input ECG data (default=`/ecg/ecg`)
    - `-o or --output_heart_anomaly_topic OUTPUT_HEART_ANOMALY_TOPIC`: topic name for heart anomaly detection (default=`/opendr/heart_anomaly`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
    - `--model MODEL`: the model to use, choices are `anbof` or `gru` (default=`anbof`)
 
@@ -976,3 +1270,28 @@ The following optional arguments are available:
    - `-s or --split SPLIT`: split of the dataset to use, only (train, valid, test) are available (default=`valid`)
    - `-o or --output_point_cloud_2_topic OUTPUT_POINT_CLOUD_2_TOPIC`: topic name to publish the data (default=`/opendr/dataset_point_cloud2`)
    - `-t or --test_data`: Add this argument if you want to only test this node with the test data available in our server
+
+----
+## Utility ROS Nodes
+
+### Performance ROS Node
+
+The performance node is used to subscribe to the optional performance topic of a running node and log its performance in terms of the time it
+took to process a single input and produce output and in terms of frames per second. It uses a modifiable rolling window to calculate the average FPS.
+
+You can inspect [the node](./scripts/performance_node.py) and modify it to your needs.
+
+#### Instructions for basic usage:
+
+1. Start the node you want to benchmark as usual but also set the optional argument `--performance_topic` to, for example, `/opendr/performance`
+2. Start the performance node:
+    ```shell
+    rosrun opendr_perception performance_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_performance_topic INPUT_PERFORMANCE_TOPIC`: topic name for input performance data (default=`/opendr/performance`)
+   - `-w or --window WINDOW`: the window to use in number of frames to calculate the running average FPS (default=`20`)
+
+Note that the `input_performance_topic` of the performance node must match the `performance_topic` of the running node.
+Also note that the running node should properly get input and produce output to publish performance messages for the performance node to use.

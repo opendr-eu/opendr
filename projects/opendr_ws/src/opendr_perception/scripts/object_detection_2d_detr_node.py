@@ -16,8 +16,10 @@
 
 import argparse
 import torch
+from time import perf_counter
 
 import rospy
+from std_msgs.msg import Float32
 from vision_msgs.msg import Detection2DArray
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
@@ -29,11 +31,12 @@ from opendr.perception.object_detection_2d import draw_bounding_boxes
 
 class ObjectDetectionDetrNode:
     def __init__(
-        self,
-        input_rgb_image_topic="/usb_cam/image_raw",
-        output_rgb_image_topic="/opendr/image_objects_annotated",
-        detections_topic="/opendr/objects",
-        device="cuda",
+            self,
+            input_rgb_image_topic="/usb_cam/image_raw",
+            output_rgb_image_topic="/opendr/image_objects_annotated",
+            detections_topic="/opendr/objects",
+            performance_topic=None,
+            device="cuda",
     ):
         """
         Creates a ROS Node for object detection with DETR.
@@ -45,6 +48,9 @@ class ObjectDetectionDetrNode:
         :param detections_topic: Topic to which we are publishing the annotations (if None, no object detection message
         is published)
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -59,6 +65,11 @@ class ObjectDetectionDetrNode:
             self.object_publisher = rospy.Publisher(detections_topic, Detection2DArray, queue_size=1)
         else:
             self.object_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
 
         self.bridge = ROSBridge()
 
@@ -175,21 +186,28 @@ class ObjectDetectionDetrNode:
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
 
         # Run object detection
         boxes = self.detr_learner.infer(image)
 
-        # Get an OpenCV image back
-        image = image.opencv()
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         # Publish detections in ROS message
-        ros_boxes = self.bridge.to_ros_bounding_box_list(boxes)  # Convert to ROS bounding_box_list
         if self.object_publisher is not None:
-            self.object_publisher.publish(ros_boxes)
+            self.object_publisher.publish(self.bridge.to_ros_bounding_box_list(boxes))
 
         if self.image_publisher is not None:
+            # Get an OpenCV image back
+            image = image.opencv()
             # Annotate image with object detection boxes
             image = draw_bounding_boxes(image, boxes, class_names=self.class_names)
             # Convert the annotated OpenDR image to ROS2 image message using bridge and publish it
@@ -204,9 +222,11 @@ def main():
                         type=str, default="/opendr/image_objects_annotated")
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=str, default="/opendr/objects")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
@@ -224,7 +244,8 @@ def main():
     object_detection_detr_node = ObjectDetectionDetrNode(device=device,
                                                          input_rgb_image_topic=args.input_rgb_image_topic,
                                                          output_rgb_image_topic=args.output_rgb_image_topic,
-                                                         detections_topic=args.detections_topic)
+                                                         detections_topic=args.detections_topic,
+                                                         performance_topic=args.performance_topic)
     object_detection_detr_node.listen()
 
 

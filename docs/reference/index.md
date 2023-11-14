@@ -32,6 +32,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
             - [high_resolution_pose_estimation Module](high-resolution-pose-estimation.md)
+        - gesture recognition:
+            - [gesture_recognition Module](gesture-recognition-learner.md)
         - activity recognition:
             - [skeleton-based action recognition](skeleton-based-action-recognition.md)
             - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#class-costgcnlearner)
@@ -42,6 +44,9 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
             - [quadraticselfonn Module](quadratic-selfonn.md)
+        - speech transcription
+            - [whisper Module](speech-transcription-whisper.md)
+            - [vosk Module](speech-transcription-vosk.md)
         - object detection 2d:
             - [nanodet Module](object-detection-2d-nanodet.md)
             - [detr Module](detr.md)
@@ -63,6 +68,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Module](rgbd-hand-gesture-learner.md)
             - [audiovisual_emotion_recognition_learner Module](audiovisual-emotion-recognition-learner.md)
+            - [intent_recognition_learner Module](intent-recognition-learner.md)
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:

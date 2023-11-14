@@ -16,7 +16,7 @@ jobs:
   publish-wheel:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
       with:
         submodules: true
     - name: Set up Python 3.8
@@ -39,9 +39,6 @@ jobs:
   publish-docker-cpu:
     runs-on: ubuntu-20.04
     steps:
-    - name: Free Disk Space
-      if: ${{ github.event.issue.release }}
-      uses: jlumbroso/free-disk-space@v1.2.0
     - uses: actions/checkout@v3
       with:
         submodules: true
@@ -62,8 +59,6 @@ jobs:
   publish-docker-cuda:
     runs-on: ubuntu-20.04
     steps:
-    - name: Free Disk Space
-      uses: jlumbroso/free-disk-space@v1.2.0
     - uses: actions/checkout@v3
       with:
         submodules: true

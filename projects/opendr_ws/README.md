@@ -69,27 +69,37 @@ Currently, apart from tools, opendr_ws contains the following ROS nodes (categor
 1. [Pose Estimation](src/opendr_perception/README.md#pose-estimation-ros-node)
 2. [High Resolution Pose Estimation](src/opendr_perception/README.md#high-resolution-pose-estimation-ros-node)
 3. [Fall Detection](src/opendr_perception/README.md#fall-detection-ros-node)
-4. [Face Detection](src/opendr_perception/README.md#face-detection-ros-node)
-5. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros-node)
-6. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros-nodes)
-7. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros-node)
-8. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros-nodes)
-9. [Vision Based Panoptic Segmentation](src/opendr_perception/README.md#vision-based-panoptic-segmentation-ros-node)
-10. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros-node)
-11. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros-node)
-12. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros-node)
-13. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros-node)
-14. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-node)
-15. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros-node)
+4. [Wave Detection](src/opendr_perception/README.md#wave-detection-ros-node)
+5. [Face Detection](src/opendr_perception/README.md#face-detection-ros-node)
+6. [Face Recognition](src/opendr_perception/README.md#face-recognition-ros-node)
+7. [2D Object Detection](src/opendr_perception/README.md#2d-object-detection-ros-nodes)
+8. [2D Single Object Tracking](src/opendr_perception/README.md#2d-single-object-tracking-ros-node)
+9. [2D Object Tracking](src/opendr_perception/README.md#2d-object-tracking-ros-nodes)
+10. [Vision Based Panoptic Segmentation](src/opendr_perception/README.md#vision-based-panoptic-segmentation-ros-node)
+11. [Semantic Segmentation](src/opendr_perception/README.md#semantic-segmentation-ros-node)
+12. [Binary High Resolution](src/opendr_perception/README.md#binary-high-resolution-ros-node)
+13. [Image-based Facial Emotion Estimation](src/opendr_perception/README.md#image-based-facial-emotion-estimation-ros-node)
+14. [Landmark-based Facial Expression Recognition](src/opendr_perception/README.md#landmark-based-facial-expression-recognition-ros-node)
+15. [Skeleton-based Human Action Recognition](src/opendr_perception/README.md#skeleton-based-human-action-recognition-ros-nodes)
+16. [Video Human Activity Recognition](src/opendr_perception/README.md#video-human-activity-recognition-ros-node)
+17. [RGB Hand Gesture Recognition](src/opendr_perception/README.md#rgb-gesture-recognition-ros-node)
 
 ## RGB + Infrared input
 1. [End-to-End Multi-Modal Object Detection (GEM)](src/opendr_perception/README.md#2d-object-detection-gem-ros-node)
 ## RGBD input
 1. [RGBD Hand Gesture Recognition](src/opendr_perception/README.md#rgbd-hand-gesture-recognition-ros-node)
+## RGB + IMU input
+1. [Continual SLAM](src/opendr_perception//README.md#continual-slam-ros-nodes)
 ## RGB + Audio input
 1. [Audiovisual Emotion Recognition](src/opendr_perception/README.md#audiovisual-emotion-recognition-ros-node)
+
+
 ## Audio input
 1. [Speech Command Recognition](src/opendr_perception/README.md#speech-command-recognition-ros-node)
+2. [Speech Transcription](src/opendr_perception/README.md#speech-transcription-ros-node)
+## Text input
+1. [Intent Recognition](src/opendr_perception/README.md#intent-recognition-ros-node)
+
 ## Point cloud input
 1. [3D Object Detection Voxel](src/opendr_perception/README.md#3d-object-detection-voxel-ros-node)
 2. [3D Object Tracking AB3DMOT](src/opendr_perception/README.md#3d-object-tracking-ab3dmot-ros-node)
