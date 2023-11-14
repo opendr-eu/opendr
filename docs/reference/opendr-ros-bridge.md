@@ -339,6 +339,34 @@ Parameters:
 - **point_cloud**: *engine.data.PointCloud*\
   OpenDR PointCloud to be converted.
 
+#### `ROSBridge.from_ros_point_cloud2`
+
+```python
+ROSBridge.from_ros_point_cloud2(self, point_cloud)
+```
+
+Converts a ROS PointCloud2 message into an OpenDR PointCloud.
+
+Parameters:
+
+- **point_cloud**: *sensor_msgs.msg.PointCloud2*\
+  ROS PointCloud2 to be converted.
+
+#### `ROSBridge.to_ros_point_cloud2`
+
+```python
+ROSBridge.to_ros_point_cloud2(self, point_cloud, channels)
+```
+Converts an OpenDR PointCloud message into a ROS PointCloud2.
+
+Parameters:
+
+- **point_cloud**: *engine.data.PointCloud*\
+  OpenDR PointCloud to be converted.
+- **channels**: *str*\
+  Channels to be included in the PointCloud2 message.  
+  Available channels names are ["rgb", "rgba"]
+
 #### `ROSBridge.from_ros_boxes_3d`
 
 ```python
@@ -415,6 +443,34 @@ Parameters:
 - **ros_detection_box**: *vision_msgs.Detection2D*\
   The box to be converted.
 
+#### `ROSBridge.from_ros_transcription`
+
+```python
+ROSBridge.from_ros_transcription(self, ros_transcription)
+```
+
+Converts an `LiveSpeech` object to a `VoskTranscription` object.
+
+Parameters:
+
+- **ros_transcription**: *hri_msgs.msg.LiveSpeech*\
+ A ROS transcription message to be converted.
+
+
+##### `ROSBridge.to_ros_transcription`
+
+```python
+ROSBridge.to_ros_transcription(self, transcription)
+```
+
+Converts a `VoskTranscription` object to an `LiveSpeech` object.
+
+Parameters:
+
+- **transcription**: *opendr.engine.target.VoskTranscription*\
+ A VoskTranscription object to be converted.
+
+
 ## ROS message equivalence with OpenDR
 1. `sensor_msgs.msg.Img` is used as an equivalent to `engine.data.Image`
 2. `opendr_bridge.msg.Pose` is used as an equivalent to `engine.target.Pose`
@@ -424,6 +480,8 @@ Parameters:
 5. `geometry_msgs.msg.Pose`  is used as an equivalent to `engine.target.Pose` for 3D poses conversion only.
 6. `vision_msgs.msg.Detection3DArray`  is used as an equivalent to `engine.target.BoundingBox3DList`.
 7. `sensor_msgs.msg.PointCloud`  is used as an equivalent to `engine.data.PointCloud`.
+8. `sensor_msgs.msg.PointCloud2`  is used as an equivalent to `engine.data.PointCloud`.
+9. `hri_msgs.msg.LiveSpeech` is used as an equivalent to `engine.target.VoskTranscription`.
 
 ## ROS services
 The following ROS services are implemented (`srv` folder):

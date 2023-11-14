@@ -15,6 +15,7 @@
 import os
 import datetime
 import json
+import warnings
 from pathlib import Path
 
 import pytorch_lightning as pl
@@ -30,7 +31,6 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.evaluator i
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.inferencer.utilities import Predictor
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import (
     NanoDetLightningLogger,
-    Logger,
     cfg,
     load_config,
     load_model_weight,
@@ -44,13 +44,15 @@ from opendr.engine.constants import OPENDR_SERVER_URL
 from opendr.engine.learners import Learner
 from urllib.request import urlretrieve
 
+import onnxruntime as ort
+
 _MODEL_NAMES = {"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512",
                 "RepVGG_A0_416", "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416",
                 "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "custom"}
 
 
 class NanodetLearner(Learner):
-    def __init__(self, model_to_use="plus_m_1.5x_416", iters=None, lr=None, batch_size=None, checkpoint_after_iter=None,
+    def __init__(self, model_to_use="m", iters=None, lr=None, batch_size=None, checkpoint_after_iter=None,
                  checkpoint_load_iter=None, temp_path='', device='cuda', weight_decay=None, warmup_steps=None,
                  warmup_ratio=None, lr_schedule_T_max=None, lr_schedule_eta_min=None, grad_clip=None):
 
@@ -82,6 +84,11 @@ class NanodetLearner(Learner):
                                              checkpoint_load_iter=self.checkpoint_load_iter,
                                              temp_path=self.temp_path, device=self.device)
 
+        self.ort_session = None
+        self.jit_model = None
+        self.predictor = None
+
+        self.pipeline = None
         self.model = build_model(self.cfg.model)
         self.logger = None
         self.task = None
@@ -173,73 +180,87 @@ class NanodetLearner(Learner):
         Method for saving the current model and metadata in the path provided.
         :param path: path to folder where model will be saved
         :type path: str, optional
-        :param verbose: whether to print a success message or not, defaults to False
+        :param verbose: whether to print a success message or not
         :type verbose: bool, optional
         """
+
         path = path if path is not None else self.cfg.save_dir
         model = self.cfg.check_point_name
+
         os.makedirs(path, exist_ok=True)
 
-        metadata = {"model_paths": [], "framework": "pytorch", "format": "pth",
-                    "has_data": False, "inference_params": {}, "optimized": False,
-                    "optimizer_info": {}, "classes": self.classes}
+        if self.ort_session:
+            self._save_onnx(path, verbose=verbose)
+            return
+        if self.jit_model:
+            self._save_jit(path, verbose=verbose)
+            return
 
-        param_filepath = "nanodet_{}.pth".format(model)
-        metadata["model_paths"].append(param_filepath)
+        metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
+                    "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes},
+                    "optimized": False, "optimizer_info": {}}
 
-        logger = self.logger if verbose else None
+        metadata["model_paths"].append("nanodet_{}.pth".format(model))
+
         if self.task is None:
-            print("You do not have call a task yet, only the state of the loaded or initialized model will be saved")
-            save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, logger)
+            print("You haven't called a task yet, only the state of the loaded or initialized model will be saved.")
+            save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, verbose)
         else:
-            self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]), logger)
+            self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]), verbose)
 
         with open(os.path.join(path, "nanodet_{}.json".format(model)), 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
         if verbose:
             print("Model metadata saved.")
-        return True
+        return
 
     def load(self, path=None, verbose=True):
         """
         Loads the model from the path provided.
         :param path: path of the directory where the model was saved
         :type path: str, optional
-        :param verbose: whether to print a success message or not, defaults to False
+        :param verbose: whether to print a success message or not, defaults to True
         :type verbose: bool, optional
         """
+
         path = path if path is not None else self.cfg.save_dir
+
         model = self.cfg.check_point_name
         if verbose:
-            print("Model name:", model, "-->", os.path.join(path, model + ".json"))
+            print("Model name:", model, "-->", os.path.join(path, "nanodet_" + model + ".json"))
         with open(os.path.join(path, "nanodet_{}.json".format(model))) as f:
             metadata = json.load(f)
 
-        logger = Logger(-1, path, False) if verbose else None
-        ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]), map_location=torch.device(self.device))
-        self.model = load_model_weight(self.model, ckpt, logger)
+        if metadata['optimized']:
+            if metadata['format'] == "onnx":
+                self._load_onnx(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
+                print("Loaded ONNX model.")
+            else:
+                self._load_jit(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
+                print("Loaded JIT model.")
+        else:
+            ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]), map_location=torch.device(self.device))
+            self.model = load_model_weight(self.model, ckpt, verbose)
         if verbose:
-            logger.log("Loaded model weight from {}".format(path))
+            print("Loaded model weights from {}".format(path))
         pass
 
-    def download(self, path=None, mode="pretrained", verbose=False,
+    def download(self, path=None, mode="pretrained", verbose=True,
                  url=OPENDR_SERVER_URL + "/perception/object_detection_2d/nanodet/"):
 
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
         "images", "test_data"].
         :param path: folder to which files will be downloaded, if None self.temp_path will be used
-        :type path: str, optional
+        :type path: str
         :param mode: one of: ["pretrained", "images", "test_data"], where "pretrained" downloads a pretrained
-        network depending on the network choosed in config file, "images" downloads example inference data,
-        and "test_data" downloads additional image,annotation file and pretrained network for training and testing
-        :type mode: str, optional
-        :param model: the specific name of the model to download, all pre-configured configs files have their pretrained
-        model and can be selected, if None self.cfg.check_point_name will be used
-        :param verbose: if True, additional information is printed on stdout
-        :type verbose: bool, optional
+        network depending on the network chosen in the config file, "images" downloads example inference data,
+        and "test_data" downloads additional images and corresponding annotations files
+        :type mode: str
+        :param verbose: if True, additional information is printed on STDOUT
+        :type verbose: bool
         :param url: URL to file location on FTP server
-        :type url: str, optional
+        :type url: str
         """
 
         valid_modes = ["pretrained", "images", "test_data"]
@@ -278,9 +299,9 @@ class NanodetLearner(Learner):
 
                 if verbose:
                     print("Making metadata...")
-                metadata = {"model_paths": [], "framework": "pytorch", "format": "pth",
-                            "has_data": False, "inference_params": {}, "optimized": False,
-                            "optimizer_info": {}, "classes": self.classes}
+                metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
+                            "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes},
+                            "optimized": False, "optimizer_info": {}}
 
                 param_filepath = "nanodet_{}.pth".format(model)
                 metadata["model_paths"].append(param_filepath)
@@ -289,13 +310,13 @@ class NanodetLearner(Learner):
 
             except:
                 print("Pretrain weights for this model are not provided!!! \n"
-                      "Only the hole ckeckpoint will be download")
+                      "Only the hole checkpoint will be download")
 
                 if verbose:
                     print("Making metadata...")
-                metadata = {"model_paths": [], "framework": "pytorch", "format": "pth",
-                            "has_data": False, "inference_params": {}, "optimized": False,
-                            "optimizer_info": {}, "classes": self.classes}
+                metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
+                            "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes},
+                            "optimized": False, "optimizer_info": {}}
 
                 param_filepath = "nanodet_{}.ckpt".format(model)
                 metadata["model_paths"].append(param_filepath)
@@ -333,11 +354,152 @@ class NanodetLearner(Learner):
         """This method is not used in this implementation."""
         return NotImplementedError
 
-    def optimize(self):
-        """This method is not used in this implementation."""
-        return NotImplementedError
+    def __dummy_input(self):
+        width, height = self.cfg.data.val.input_size
+        dummy_input = (
+            torch.randn((3, width, height), device=self.device, dtype=torch.float32),
+            torch.tensor(width, device="cpu", dtype=torch.int64),
+            torch.tensor(height, device="cpu", dtype=torch.int64),
+            torch.eye(3, device="cpu", dtype=torch.float32),
+        )
+        return dummy_input
 
-    def fit(self, dataset, val_dataset=None, logging_path='', verbose=True, seed=123):
+    def _save_onnx(self, onnx_path, do_constant_folding=False, verbose=True, conf_threshold=0.35, iou_threshold=0.6,
+                   nms_max_num=100):
+        if not self.predictor:
+            self.predictor = Predictor(self.cfg, self.model, device=self.device, conf_thresh=conf_threshold,
+                                       iou_thresh=iou_threshold, nms_max_num=nms_max_num)
+
+        os.makedirs(onnx_path, exist_ok=True)
+        export_path = os.path.join(onnx_path, "nanodet_{}.onnx".format(self.cfg.check_point_name))
+
+        dummy_input = self.__dummy_input()
+
+        torch.onnx.export(
+            self.predictor,
+            dummy_input[0],
+            export_path,
+            verbose=verbose,
+            keep_initializers_as_inputs=True,
+            do_constant_folding=do_constant_folding,
+            opset_version=11,
+            input_names=['data'],
+            output_names=['output'],
+            dynamic_axes={'data': {1: 'width',
+                                   2: 'height'}}
+        )
+
+        metadata = {"model_paths": ["nanodet_{}.onnx".format(self.cfg.check_point_name)], "framework": "pytorch",
+                    "format": "onnx", "has_data": False, "optimized": True, "optimizer_info": {},
+                    "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
+                                         "conf_threshold": conf_threshold, "iou_threshold": iou_threshold}}
+
+        with open(os.path.join(onnx_path, "nanodet_{}.json".format(self.cfg.check_point_name)),
+                  'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+
+        if verbose:
+            print("Finished exporting ONNX model.")
+
+        try:
+            import onnxsim
+        except:
+            print("For compression in optimized models, install onnxsim and rerun optimize.")
+            return
+
+        import onnx
+        if verbose:
+            print("Simplifying ONNX model...")
+        input_data = {"data": dummy_input[0].detach().cpu().numpy()}
+        model_sim, flag = onnxsim.simplify(export_path, input_data=input_data)
+        if flag:
+            onnx.save(model_sim, export_path)
+            if verbose:
+                print("ONNX simplified successfully.")
+        else:
+            if verbose:
+                print("ONNX simplified failed.")
+
+    def _load_onnx(self, onnx_path, verbose=True):
+        if verbose:
+            print("Loading ONNX runtime inference session from {}".format(onnx_path))
+
+        self.ort_session = ort.InferenceSession(onnx_path)
+
+    def _save_jit(self, jit_path, verbose=True, conf_threshold=0.35, iou_threshold=0.6,
+                  nms_max_num=100):
+
+        if not self.predictor:
+            self.predictor = Predictor(self.cfg, self.model, device=self.device, conf_thresh=conf_threshold,
+                                       iou_thresh=iou_threshold, nms_max_num=nms_max_num)
+
+        os.makedirs(jit_path, exist_ok=True)
+
+        dummy_input = self.__dummy_input()
+
+        with torch.no_grad():
+            export_path = os.path.join(jit_path, "nanodet_{}.pth".format(self.cfg.check_point_name))
+            self.predictor.trace_model(dummy_input)
+            model_traced = torch.jit.script(self.predictor)
+
+            metadata = {"model_paths": ["nanodet_{}.pth".format(self.cfg.check_point_name)], "framework": "pytorch",
+                        "format": "pth", "has_data": False, "optimized": True, "optimizer_info": {},
+                        "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
+                                             "conf_threshold": conf_threshold, "iou_threshold": iou_threshold}}
+            model_traced.save(export_path)
+
+            with open(os.path.join(jit_path, "nanodet_{}.json".format(self.cfg.check_point_name)),
+                      'w', encoding='utf-8') as f:
+                json.dump(metadata, f, ensure_ascii=False, indent=4)
+
+            if verbose:
+                print("Finished export to TorchScript.")
+
+    def _load_jit(self, jit_path, verbose=True):
+        if verbose:
+            print("Loading JIT model from {}.".format(jit_path))
+
+        self.jit_model = torch.jit.load(jit_path, map_location=self.device)
+
+    def optimize(self, export_path, verbose=True, optimization="jit", conf_threshold=0.35, iou_threshold=0.6,
+                 nms_max_num=100):
+        """
+        Method for optimizing the model with ONNX or JIT.
+        :param export_path: The file path to the folder where the optimized model will be saved. If a model already
+        exists at this path, it will be overwritten.
+        :type export_path: str
+        :param verbose: if set to True, additional information is printed to STDOUT
+        :type verbose: bool, optional
+        :param optimization: the kind of optimization you want to perform [jit, onnx]
+        :type optimization: str
+        :param conf_threshold: confidence threshold
+        :type conf_threshold: float, optional
+        :param iou_threshold: iou threshold
+        :type iou_threshold: float, optional
+        :param nms_max_num: determines the maximum number of bounding boxes that will be retained following the nms.
+        :type nms_max_num: int
+        """
+
+        optimization = optimization.lower()
+        if not os.path.exists(export_path):
+            if optimization == "jit":
+                self._save_jit(export_path, verbose=verbose, conf_threshold=conf_threshold, iou_threshold=iou_threshold,
+                               nms_max_num=nms_max_num)
+            elif optimization == "onnx":
+                self._save_onnx(export_path, verbose=verbose, conf_threshold=conf_threshold, iou_threshold=iou_threshold,
+                                nms_max_num=nms_max_num)
+            else:
+                assert NotImplementedError
+        with open(os.path.join(export_path, "nanodet_{}.json".format(self.cfg.check_point_name))) as f:
+            metadata = json.load(f)
+        if optimization == "jit":
+            self._load_jit(os.path.join(export_path, metadata["model_paths"][0]), verbose)
+        elif optimization == "onnx":
+            self._load_onnx(os.path.join(export_path, metadata["model_paths"][0]), verbose)
+        else:
+            assert NotImplementedError
+
+    def fit(self, dataset, val_dataset=None, logging_path='', verbose=True, logging=False, seed=123, local_rank=1):
         """
         This method is used to train the detector on the COCO dataset. Validation is performed in a val_dataset if
         provided, else validation is performed in training dataset.
@@ -348,27 +510,32 @@ class NanodetLearner(Learner):
         :param val_dataset: validation dataset object
         :type val_dataset: ExternalDataset, DetectionDataset not implemented yet
         :param logging_path: subdirectory in temp_path to save logger outputs
-        :type logging_path: str, optional
-        :param verbose: if set to True, additional information is printed to STDOUT and logger txt output,
-        defaults to True
+        :type logging_path: str
+        :param verbose: if set to True, additional information is printed to STDOUT
         :type verbose: bool
+        :param logging: if set to True, text and STDOUT logging will be used
+        :type logging: bool
         :param seed: seed for reproducibility
         :type seed: int
+        :param local_rank: for distribution learning
+        :type local_rank: int
         """
 
-        mkdir(self.cfg.save_dir)
+        mkdir(local_rank, self.cfg.save_dir)
 
-        if verbose:
+        if logging:
             self.logger = NanoDetLightningLogger(self.temp_path + "/" + logging_path)
             self.logger.dump_cfg(self.cfg)
 
         if seed != '' or seed is not None:
-            if verbose:
+            if logging:
                 self.logger.info("Set random seed to {}".format(seed))
             pl.seed_everything(seed)
 
-        if verbose:
+        if logging:
             self.logger.info("Setting up data...")
+        elif verbose:
+            print("Setting up data...")
 
         train_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "train")
         val_dataset = train_dataset if val_dataset is None else \
@@ -381,7 +548,7 @@ class NanodetLearner(Learner):
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=True,
+            pin_memory=False,
             collate_fn=naive_collate,
             drop_last=True,
         )
@@ -390,7 +557,7 @@ class NanodetLearner(Learner):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=True,
+            pin_memory=False,
             collate_fn=naive_collate,
             drop_last=False,
         )
@@ -401,14 +568,15 @@ class NanodetLearner(Learner):
             if self.checkpoint_load_iter > 0 else None
         )
 
-        if verbose:
+        if logging:
             self.logger.info("Creating task...")
+        elif verbose:
+            print("Creating task...")
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
-        if self.device == "cpu":
-            gpu_ids = None
-            accelerator = None
-        elif self.device == "cuda":
+        gpu_ids = None
+        accelerator = None
+        if self.device == "cuda":
             gpu_ids = self.cfg.device.gpu_ids
             accelerator = None if len(gpu_ids) <= 1 else "ddp"
 
@@ -421,7 +589,7 @@ class NanodetLearner(Learner):
             log_every_n_steps=self.cfg.log.interval,
             num_sanity_val_steps=0,
             resume_from_checkpoint=model_resume_path,
-            callbacks=[ProgressBar(refresh_rate=0)],  # disable tqdm bar
+            callbacks=[ProgressBar(refresh_rate=0)],
             logger=self.logger,
             benchmark=True,
             gradient_clip_val=self.cfg.get("grad_clip", 0.0),
@@ -429,27 +597,32 @@ class NanodetLearner(Learner):
 
         trainer.fit(self.task, train_dataloader, val_dataloader)
 
-    def eval(self, dataset, verbose=True):
+    def eval(self, dataset, verbose=True, logging=False, local_rank=1):
         """
         This method performs evaluation on a given dataset and returns a dictionary with the evaluation results.
         :param dataset: dataset object, to perform evaluation on
-        :type dataset: ExternalDataset, DetectionDataset not implemented yet
-        :param verbose: if set to True, additional information is printed to STDOUT and logger txt output,
-        defaults to True
+        :type dataset: ExternalDataset, XMLBasedDataset
+        :param verbose: if set to True, additional information is printed to STDOUT
         :type verbose: bool
+        :param logging: if set to True, text and STDOUT logging will be used
+        :type logging: bool
+        :param local_rank: for distribution learning
+        :type local_rank: int
         """
 
         timestr = datetime.datetime.now().__format__("%Y_%m_%d_%H:%M:%S")
         save_dir = os.path.join(self.cfg.save_dir, timestr)
-        mkdir(save_dir)
+        mkdir(local_rank, save_dir)
 
-        if verbose:
+        if logging:
             self.logger = NanoDetLightningLogger(save_dir)
 
         self.cfg.update({"test_mode": "val"})
 
-        if verbose:
+        if logging:
             self.logger.info("Setting up data...")
+        elif verbose:
+            print("Setting up data...")
 
         val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "val")
 
@@ -458,20 +631,22 @@ class NanodetLearner(Learner):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=True,
+            pin_memory=False,
             collate_fn=naive_collate,
             drop_last=False,
         )
         evaluator = build_evaluator(self.cfg.evaluator, val_dataset)
 
-        if verbose:
+        if logging:
             self.logger.info("Creating task...")
+        elif verbose:
+            print("Creating task...")
+
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
-        if self.device == "cpu":
-            gpu_ids = None
-            accelerator = None
-        elif self.device == "cuda":
+        gpu_ids = None
+        accelerator = None
+        if self.device == "cuda":
             gpu_ids = self.cfg.device.gpu_ids
             accelerator = None if len(gpu_ids) <= 1 else "ddp"
 
@@ -483,43 +658,62 @@ class NanodetLearner(Learner):
             num_sanity_val_steps=0,
             logger=self.logger,
         )
-        if verbose:
+        if self.logger:
             self.logger.info("Starting testing...")
-        return trainer.test(self.task, val_dataloader, verbose=verbose)
+        elif verbose:
+            print("Starting testing...")
 
-    def infer(self, input, threshold=0.35, verbose=True):
+        test_results = (verbose or logging)
+        return trainer.test(self.task, val_dataloader, verbose=test_results)
+
+    def infer(self, input, conf_threshold=0.35, iou_threshold=0.6, nms_max_num=100):
         """
         Performs inference
-        :param input: input can be an Image type image to perform inference
-        :type input: str, optional
-        :param threshold: confidence threshold
-        :type threshold: float, optional
-        :param verbose: if set to True, additional information is printed to STDOUT and logger txt output,
-        defaults to True
-        :type verbose: bool
+        :param input: input image to perform inference on
+        :type input: opendr.data.Image
+        :param conf_threshold: confidence threshold
+        :type conf_threshold: float, optional
+        :param iou_threshold: iou threshold
+        :type iou_threshold: float, optional
+        :param nms_max_num: determines the maximum number of bounding boxes that will be retained following the nms.
+        :type nms_max_num: int
         :return: list of bounding boxes of last image of input or last frame of the video
-        :rtype: BoundingBoxList
+        :rtype: opendr.engine.target.BoundingBoxList
         """
+        if not self.predictor:
+            self.predictor = Predictor(self.cfg, self.model, device=self.device, conf_thresh=conf_threshold,
+                                       iou_thresh=iou_threshold, nms_max_num=nms_max_num)
 
-        if verbose:
-            self.logger = Logger(0, use_tensorboard=False)
-        predictor = Predictor(self.cfg, self.model, device=self.device)
         if not isinstance(input, Image):
             input = Image(input)
         _input = input.opencv()
-        meta, res = predictor.inference(_input, verbose)
 
-        bounding_boxes = BoundingBoxList([])
-        for label in res[0]:
-            for box in res[0][label]:
-                score = box[-1]
-                if score > threshold:
-                    bbox = BoundingBox(left=box[0], top=box[1],
-                                       width=box[2] - box[0],
-                                       height=box[3] - box[1],
-                                       name=label,
-                                       score=score)
-                    bounding_boxes.data.append(bbox)
+        _input, *metadata = self.predictor.preprocessing(_input)
+
+        if self.ort_session:
+            if self.jit_model:
+                warnings.warn(
+                    "Warning: Both JIT and ONNX models are initialized, inference will run in ONNX mode by default.\n"
+                    "To run in JIT please delete the self.ort_session like: detector.ort_session = None.")
+            preds = self.ort_session.run(['output'], {'data': _input.cpu().detach().numpy()})
+            res = self.predictor.postprocessing(torch.from_numpy(preds[0]), _input, *metadata)
+        elif self.jit_model:
+            res = self.jit_model(_input, *metadata)
+        else:
+            preds = self.predictor(_input, *metadata)
+            res = self.predictor.postprocessing(preds, _input, *metadata)
+
+        bounding_boxes = []
+        for label in res:
+            for box in label:
+                box = box.to("cpu")
+                bbox = BoundingBox(left=box[0], top=box[1],
+                                   width=box[2] - box[0],
+                                   height=box[3] - box[1],
+                                   name=box[5],
+                                   score=box[4])
+                bounding_boxes.append(bbox)
+        bounding_boxes = BoundingBoxList(bounding_boxes)
         bounding_boxes.data.sort(key=lambda v: v.confidence)
 
         return bounding_boxes

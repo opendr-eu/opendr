@@ -19,10 +19,11 @@ import numpy as np
 import cv2
 from torchvision import transforms
 import PIL
+from time import perf_counter
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROS2Bridge
@@ -45,6 +46,7 @@ class FacialEmotionEstimationNode(Node):
                  output_rgb_image_topic="/opendr/image_emotion_estimation_annotated",
                  output_emotions_topic="/opendr/facial_emotion_estimation",
                  output_emotions_description_topic="/opendr/facial_emotion_estimation_description",
+                 performance_topic=None,
                  device="cuda"):
         """
         Creates a ROS Node for facial emotion estimation.
@@ -59,6 +61,9 @@ class FacialEmotionEstimationNode(Node):
         :param output_emotions_description_topic: Topic to which we are publishing the description of the estimated
         facial emotion (if None, we are not publishing the description)
         :type output_emotions_description_topic: str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -82,6 +87,11 @@ class FacialEmotionEstimationNode(Node):
         else:
             self.string_publisher = None
 
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         # Initialize the face detector
         self.face_detector = face_detector_learner
 
@@ -101,12 +111,13 @@ class FacialEmotionEstimationNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding='bgr8').opencv()
+
         emotion = None
         # Run face detection and emotion estimation
-
         if image is not None:
             bounding_boxes = self.face_detector.infer(image)
             if bounding_boxes:
@@ -126,6 +137,13 @@ class FacialEmotionEstimationNode(Node):
                     affect = np.array([a.cpu().detach().numpy() for a in affect])
                     affect = affect[0]  # a numpy array of valence and arousal values
                     emotion = emotion[0]  # the emotion class with confidence tensor
+
+                    if self.performance_publisher:
+                        end_time = perf_counter()
+                        fps = 1.0 / (end_time - start_time)  # NOQA
+                        fps_msg = Float32()
+                        fps_msg.data = fps
+                        self.performance_publisher.publish(fps_msg)
 
                     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 255, 255), thickness=2)
                     cv2.putText(image, "Valence: %.2f" % affect[0], (startX, endY - 30), cv2.FONT_HERSHEY_SIMPLEX,
@@ -178,6 +196,8 @@ def main(args=None):
                         help='Topic to which we are publishing the description of the estimated facial emotion',
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/facial_emotion_estimation_description")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument('-d', '--device', help='Device to use, either cpu or cuda',
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -207,6 +227,7 @@ def main(args=None):
         output_rgb_image_topic=args.output_rgb_image_topic,
         output_emotions_topic=args.output_emotions_topic,
         output_emotions_description_topic=args.output_emotions_description_topic,
+        performance_topic=args.performance_topic,
         device=device)
 
     rclpy.spin(facial_emotion_estimation_node)

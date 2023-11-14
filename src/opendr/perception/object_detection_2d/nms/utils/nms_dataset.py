@@ -31,7 +31,8 @@ import gc
 
 
 class Dataset_NMS(Dataset):
-    def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, device='cuda'):
+    def __init__(self, path=None, dataset_name=None, split=None, use_ssd=True, ssd_model=None, device='cuda',
+                 use_maps=False):
         super().__init__()
         available_dataset = ['COCO', 'PETS', 'TEST_MODULE']
         self.dataset_sets = {'train': None,
@@ -45,12 +46,18 @@ class Dataset_NMS(Dataset):
                     except_str = except_str + ','
             except_str = except_str + '.'
             raise ValueError(except_str)
-
+        if not use_ssd and use_maps:
+            except_str = 'Feature-maps can be used only if SSD is the corresponding detector...'
+            raise ValueError(except_str)
         ssl._create_default_https_context = ssl._create_unverified_context
         self.dataset_name = dataset_name
         self.split = split
         # self.__prepare_dataset()
         self.path = os.path.join(path, dataset_name)
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
         self.src_data = []
         if self.dataset_name == "PETS":
             self.detector = 'JPD'
@@ -94,15 +101,26 @@ class Dataset_NMS(Dataset):
                 self.download('http://datasets.d2.mpi-inf.mpg.de/hosang17cvpr/PETS_annotations_json.zip',
                               download_path=os.path.join(self.path, 'annotations'), file_format="zip",
                               create_dir=True)
-            pkl_filename = os.path.join(self.path,
-                                        'data_' + self.detector + '_' + self.dataset_sets[self.split] + '_pets.pkl')
+            pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' + self.dataset_sets[self.split] +
+                                        '_pets.pkl')
+            if self.detector == 'SSD':
+                pkl_filename = os.path.join(self.path, 'data_' + ssd_model + '_' +
+                                            self.dataset_sets[self.split] + '_pets.pkl')
+            create_pkl = False
             if not os.path.exists(pkl_filename):
+                create_pkl = True
+            elif os.path.exists(pkl_filename) and use_maps:
+                with open(pkl_filename, 'rb') as fp_pkl:
+                    data = pickle.load(fp_pkl)
+                    if 'ssd_maps' not in data[0]:
+                        create_pkl = True
+            if create_pkl:
                 ssd = None
                 if use_ssd:
                     from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                     ssd = SingleShotDetectorLearner(device=device)
-                    ssd.download(".", mode="pretrained")
-                    ssd.load("./ssd_default_person", verbose=True)
+                    ssd.download(path=path, mode="pretrained")
+                    ssd.load(os.path.join(path, ssd_model), verbose=True)
                 if not os.path.exists(
                         os.path.join(self.path, 'detections',
                                      'PETS-' + self.dataset_sets[self.split] + '_siyudpm_dets.idl')):
@@ -172,7 +190,7 @@ class Dataset_NMS(Dataset):
                                 raise ValueError('Errors in files...')
 
                         img = Image.open(os.path.join(self.path, 'images/', filename_gt))
-
+                        img_height, img_width, _ = img.opencv().shape
                         dt_boxes = []
                         if self.detector_type == 'default':
                             for i in range(1, (len(data_dt)), 5):
@@ -180,27 +198,55 @@ class Dataset_NMS(Dataset):
                                                    float(data_dt[i + 3]), 1 / (1 + math.exp(- float(data_dt[i + 4])))))
                                 dt_boxes.append(dt_box)
                         else:
-                            bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
-                                                    nms_topk=6000, post_nms=6000)
+                            if use_maps:
+                                bboxes_list, maps = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                                              nms_topk=6000, post_nms=6000, extract_maps=True)
+                            else:
+                                bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                                        nms_topk=6000, post_nms=6000)
                             bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
                             bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
+                            bboxes_list[:, 0][bboxes_list[:, 0] < 0] = 0
+                            bboxes_list[:, 1][bboxes_list[:, 1] < 0] = 0
+                            bboxes_list[:, 2][bboxes_list[:, 2] >= img_width] = img_width - 1
+                            bboxes_list[:, 3][bboxes_list[:, 3] >= img_height] = img_height - 1
+                            val_ids = np.logical_and((bboxes_list[:, 2] - bboxes_list[:, 0]) > 4,
+                                                     (bboxes_list[:, 3] - bboxes_list[:, 1]) > 4)
+                            bboxes_list = bboxes_list[val_ids, :]
+
                             bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
                             bboxes_list = bboxes_list[:5000, :]
                             for b in range(len(bboxes_list)):
-                                dt_boxes.append(np.array([bboxes_list[b, 0], bboxes_list[b, 1], bboxes_list[b, 2],
-                                                          bboxes_list[b, 3], bboxes_list[b, 4][0]]))
+                                dt_boxes.append(np.array([float(bboxes_list[b, 0]), float(bboxes_list[b, 1]),
+                                                          float(bboxes_list[b, 2]), float(bboxes_list[b, 3]),
+                                                          bboxes_list[b, 4][0]]))
                         gt_boxes = []
                         for i in range(1, (len(data_gt)), 5):
                             gt_box = np.array((float(data_gt[i]), float(data_gt[i + 1]), float(data_gt[i + 2]),
                                                float(data_gt[i + 3])))
                             gt_boxes.append(gt_box)
+                        dt_boxes = np.asarray(dt_boxes)
+                        gt_boxes = np.asarray(gt_boxes)
+                        gt_boxes[gt_boxes[:, 0] < 0, 0] = 0
+                        gt_boxes[gt_boxes[:, 1] < 0, 1] = 0
+                        gt_boxes[gt_boxes[:, 2] >= img_width, 2] = img_width - 1
+                        gt_boxes[gt_boxes[:, 3] >= img_height, 3] = img_height - 1
                         self.src_data.append({
                             'id': current_id,
                             'filename': os.path.join('images', filename_gt),
                             'resolution': img.opencv().shape[0:2][::-1],
-                            'gt_boxes': [np.asarray([]), np.asarray(gt_boxes)],
-                            'dt_boxes': [np.asarray([]), np.asarray(dt_boxes)]
+                            'gt_boxes': [np.asarray([]), gt_boxes],
+                            'dt_boxes': [np.asarray([]), dt_boxes]
                         })
+                        if use_maps:
+                            filename_dir = os.path.dirname(filename_gt)
+                            filename_f = os.path.splitext(os.path.basename(filename_gt))[0] + '.pkl'
+                            self.src_data[-1]['ssd_maps'] = os.path.join('maps_' + ssd_model, filename_dir, filename_f)
+                            if not os.path.exists(os.path.join(self.path, 'maps_' + ssd_model, filename_dir)):
+                                os.makedirs(os.path.join(self.path, 'maps_' + ssd_model, filename_dir))
+                            with open(os.path.join(self.path, 'maps_' + ssd_model, filename_dir, filename_f),
+                                      'wb') as handle:
+                                pickle.dump(maps, handle, protocol=pickle.DEFAULT_PROTOCOL)
                         current_id = current_id + 1
                         pbar.update(1)
                         if self.detector_type == 'default':
@@ -217,7 +263,6 @@ class Dataset_NMS(Dataset):
             else:
                 with open(pkl_filename, 'rb') as fp_pkl:
                     self.src_data = pickle.load(fp_pkl)
-
             self.classes = ['background', 'human']
             self.class_ids = [-1, 1]
             self.annotation_file = 'pets_' + self.dataset_sets[self.split] + '.json'
@@ -239,15 +284,26 @@ class Dataset_NMS(Dataset):
                 self.detector_type = 'custom'
                 from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
                 ssd = SingleShotDetectorLearner(device=device)
-                ssd.download(".", mode="pretrained")
-                ssd.load("./ssd_default_person", verbose=True)
+                ssd.download(path=path, mode="pretrained")
+                ssd.load(os.path.join(path, ssd_model), verbose=True)
             if not os.path.exists(os.path.join(self.path, imgs_split)):
                 self.download('http://images.cocodataset.org/zips/' + imgs_split + '.zip',
                               download_path=os.path.join(self.path), file_format="zip",
                               create_dir=True)
             pkl_filename = os.path.join(self.path, 'data_' + self.detector + '_' +
                                         self.dataset_sets[self.split] + '_coco.pkl')
+            if self.detector == 'SSD':
+                pkl_filename = os.path.join(self.path, 'data_' + ssd_model + '_' + self.dataset_sets[self.split] +
+                                            '_coco.pkl')
+            create_pkl = False
             if not os.path.exists(pkl_filename):
+                create_pkl = True
+            elif os.path.exists(pkl_filename) and use_maps:
+                with open(pkl_filename, 'rb') as fp_pkl:
+                    data = pickle.load(fp_pkl)
+                    if 'ssd_maps' not in data:
+                        create_pkl = True
+            if create_pkl:
                 if not os.path.exists(os.path.join(self.path, 'annotations', 'instances_' +
                                                                              self.dataset_sets[self.split] +
                                                                              '2014.json')):
@@ -284,11 +340,15 @@ class Dataset_NMS(Dataset):
                     if self.detector_type == 'default':
                         dt_boxes = dets_default[0][1][i]
                     elif self.detector == 'SSD':
-                        bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
-                                                nms_topk=6000, post_nms=6000)
+                        if use_maps:
+                            bboxes_list, maps = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                                          nms_topk=6000, post_nms=6000, extract_maps=True)
+                        else:
+                            bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                                    nms_topk=6000, post_nms=6000)
                         bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
                         if bboxes_list.shape[0] > 0:
-                            bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
+                            bboxes_list = bboxes_list[bboxes_list[:, 4] >= 0.010]
                         if bboxes_list.shape[0] > 0:
                             bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
                             bboxes_list = bboxes_list[:5000, :]
@@ -312,6 +372,15 @@ class Dataset_NMS(Dataset):
                         'gt_boxes': [np.asarray([]), gt_boxes],
                         'dt_boxes': [np.asarray([]), dt_boxes]
                     })
+                    if use_maps:
+                        self.src_data[-1]['ssd_maps'] = os.path.join('maps_' + ssd_model, imgs_split,
+                                                                     img_info["file_name"])
+                        if not os.path.exists(os.path.join(self.path, 'maps_' + ssd_model, imgs_split,
+                                                           img_info["file_name"])):
+                            os.makedirs(os.path.join(self.path, 'maps_' + ssd_model, imgs_split, img_info["file_name"]))
+                        with open(os.path.join(self.path, 'maps_' + ssd_model, imgs_split, img_info["file_name"]),
+                                  'wb') as handle:
+                            pickle.dump(maps, handle, protocol=pickle.DEFAULT_PROTOCOL)
                     pbar.update(1)
                 pbar.close()
                 if self.detector == 'SSD':
@@ -334,13 +403,63 @@ class Dataset_NMS(Dataset):
             pkl_filename = os.path.join(self.path, 'test_module.pkl')
             if not os.path.exists(pkl_filename):
                 data_url = OPENDR_SERVER_URL + '/perception/object_detection_2d/nms/datasets/test_module.zip'
-                self.download(data_url, download_path=os.path.join(self.path).replace("TEST_MODULE", ""), file_format="zip",
-                              create_dir=True)
+                self.download(data_url, download_path=os.path.join(self.path).replace("TEST_MODULE", ""),
+                              file_format="zip", create_dir=True)
+
             with open(pkl_filename, 'rb') as fp_pkl:
                 self.src_data = pickle.load(fp_pkl)
+            if use_ssd:
+                self.detector = 'SSD'
+                self.detector_type = 'custom'
+                from opendr.perception.object_detection_2d.ssd.ssd_learner import SingleShotDetectorLearner
+                ssd = SingleShotDetectorLearner(device=device)
+                ssd.download(path, mode="pretrained")
+                ssd.load(os.path.join(path, ssd_model), verbose=True)
+                img = Image.open(os.path.join(self.path, self.src_data[0]['filename']))
+                if use_maps:
+                    bboxes_list, maps = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                                  nms_topk=6000, post_nms=6000, extract_maps=True)
+                else:
+                    bboxes_list = ssd.infer(img, threshold=0.0, custom_nms=None, nms_thresh=0.975,
+                                            nms_topk=6000, post_nms=6000)
+                bboxes_list = BoundingBoxListToNumpyArray()(bboxes_list)
+                bboxes_list = bboxes_list[bboxes_list[:, 4] > 0.015]
+                bboxes_list[:, 0][bboxes_list[:, 0] < 0] = 0
+                bboxes_list[:, 1][bboxes_list[:, 1] < 0] = 0
+                bboxes_list[:, 2][bboxes_list[:, 2] >= img.data.shape[2]] = img.data.shape[2] - 1
+                bboxes_list[:, 3][bboxes_list[:, 3] >= img.data.shape[1]] = img.data.shape[1] - 1
+                val_ids = np.logical_and((bboxes_list[:, 2] - bboxes_list[:, 0]) > 4,
+                                         (bboxes_list[:, 3] - bboxes_list[:, 1]) > 4)
+                bboxes_list = bboxes_list[val_ids, :]
+
+                bboxes_list = bboxes_list[np.argsort(bboxes_list[:, 4]), :][::-1]
+                bboxes_list = bboxes_list[:5000, :]
+                dt_boxes = []
+                for b in range(len(bboxes_list)):
+                    dt_boxes.append(np.array([float(bboxes_list[b, 0]), float(bboxes_list[b, 1]),
+                                              float(bboxes_list[b, 2]), float(bboxes_list[b, 3]),
+                                              bboxes_list[b, 4][0]]))
+                self.src_data[0]['dt_boxes'] = [np.asarray([]), np.asarray(dt_boxes)]
+                if use_maps:
+                    self.src_data[0]['ssd_maps'] = self.src_data[0]['filename'].split('.')[0] + '_map.pkl'
+                    with open(os.path.join(self.path, self.src_data[0]['ssd_maps']),
+                              'wb') as handle:
+                        pickle.dump(maps, handle, protocol=pickle.DEFAULT_PROTOCOL)
             self.classes = ['background', 'person']
             self.class_ids = [-1, 1]
             self.annotation_file = 'test_module_anns.json'
+        if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json')):
+            os.remove(os.path.join(path, 'ssd_default_person', 'ssd_default_person.json'))
+        if os.path.exists(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params')):
+            os.remove(os.path.join(path, 'ssd_default_person', 'ssd_512_vgg16_atrous_wider_person.params'))
+        if os.path.exists(os.path.join(path, 'ssd_default_person')):
+            os.rmdir(os.path.join(path, 'ssd_default_person'))
+        if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json')):
+            os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.json'))
+        if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params')):
+            os.remove(os.path.join(path, 'ssd_512_vgg16_atrous_pets', 'ssd_512_vgg16_atrous_pets.params'))
+        if os.path.exists(os.path.join(path, 'ssd_512_vgg16_atrous_pets')):
+            os.rmdir(os.path.join(path, 'ssd_512_vgg16_atrous_pets'))
 
     @staticmethod
     def download(

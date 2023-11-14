@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
+import torch.jit
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
@@ -99,8 +100,6 @@ def fill_fc_weights(layers):
     for m in layers.modules():
         if isinstance(m, nn.Conv2d):
             nn.init.normal_(m.weight, std=0.001)
-            # torch.nn.init.kaiming_normal_(m.weight.data, nonlinearity='relu')
-            # torch.nn.init.xavier_normal_(m.weight.data)
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
@@ -161,6 +160,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
+    @torch.jit.unused
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
@@ -173,7 +173,7 @@ class ResNet(nn.Module):
             if i in self.out_stages:
                 output.append(x)
 
-        return tuple(output)
+        return output
 
     def init_weights(self, pretrain=True):
         if pretrain:

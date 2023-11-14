@@ -1,6 +1,6 @@
 # OpenDR Toolkit Reference Manual
 
-*Release 2.0.0*
+*Release 2.2.0*
 <div align="center">
   <img src="images/opendr_logo.png" />
 </div>
@@ -32,6 +32,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - pose estimation:
             - [lightweight_open_pose Module](lightweight-open-pose.md)
             - [high_resolution_pose_estimation Module](high-resolution-pose-estimation.md)
+        - gesture recognition:
+            - [gesture_recognition Module](gesture-recognition-learner.md)
         - activity recognition:
             - [skeleton-based action recognition](skeleton-based-action-recognition.md)
             - [continual skeleton-based action recognition Module](skeleton-based-action-recognition.md#class-costgcnlearner)
@@ -42,8 +44,11 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [matchboxnet Module](matchboxnet.md)
             - [edgespeechnets Module](edgespeechnets.md)
             - [quadraticselfonn Module](quadratic-selfonn.md)
+        - speech transcription
+            - [whisper Module](speech-transcription-whisper.md)
+            - [vosk Module](speech-transcription-vosk.md)
         - object detection 2d:
-            - [nanodet Module](nanodet.md)
+            - [nanodet Module](object-detection-2d-nanodet.md)
             - [detr Module](detr.md)
             - [gem Module](gem.md)
             - [retinaface Module](face-detection-2d-retinaface.md)
@@ -63,12 +68,14 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - multimodal human centric:
             - [rgbd_hand_gesture_learner Module](rgbd-hand-gesture-learner.md)
             - [audiovisual_emotion_recognition_learner Module](audiovisual-emotion-recognition-learner.md)
+            - [intent_recognition_learner Module](intent-recognition-learner.md)
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
             - [semantic_segmentation Module](semantic-segmentation.md)
         - panoptic segmentation:
             - [efficient_ps Module](efficient-ps.md)
+            - [efficient_lps Module](efficient-lps.md)
         - heart anomaly detection:
             - [gated_recurrent_unit Module](gated-recurrent-unit-learner.md)
             - [attention_neural_bag_of_feature_learner Module](attention-neural-bag-of-feature-learner.md)
@@ -136,6 +143,7 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
             - [siamrpn Demo](/projects/python/perception/object_tracking_2d/demos/siamrpn)
         - panoptic segmentation:
             - [efficient_ps Demo](/projects/python/perception/panoptic_segmentation/efficient_ps)
+            - [efficient_lps Demo](/projects/python/perception/panoptic_segmentation/efficient_lps)
         - semantic segmentation:
             - [bisnet Demo](/projects/python/perception/semantic_segmentation/bisenet)
         - action recognition:

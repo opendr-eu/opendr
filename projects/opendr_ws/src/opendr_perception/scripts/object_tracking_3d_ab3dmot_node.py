@@ -16,9 +16,10 @@
 import argparse
 import os
 import torch
+from time import perf_counter
 import rospy
 from vision_msgs.msg import Detection3DArray
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int32MultiArray, Float32
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
 from opendr_bridge import ROSBridge
 from opendr.perception.object_tracking_3d import ObjectTracking3DAb3dmotLearner
@@ -27,12 +28,13 @@ from opendr.perception.object_detection_3d import VoxelObjectDetection3DLearner
 
 class ObjectTracking3DAb3dmotNode:
     def __init__(
-        self,
-        detector=None,
-        input_point_cloud_topic="/opendr/dataset_point_cloud",
-        output_detection3d_topic="/opendr/detection3d",
-        output_tracking3d_id_topic="/opendr/tracking3d_id",
-        device="cuda:0",
+            self,
+            detector=None,
+            input_point_cloud_topic="/opendr/dataset_point_cloud",
+            output_detection3d_topic="/opendr/detection3d",
+            output_tracking3d_id_topic="/opendr/tracking3d_id",
+            performance_topic=None,
+            device="cuda:0",
     ):
         """
         Creates a ROS Node for 3D object tracking
@@ -44,6 +46,9 @@ class ObjectTracking3DAb3dmotNode:
         :type output_detection3d_topic:  str
         :param output_tracking3d_id_topic: Topic to which we are publishing the tracking ids
         :type output_tracking3d_id_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
@@ -66,6 +71,11 @@ class ObjectTracking3DAb3dmotNode:
                 output_tracking3d_id_topic, Int32MultiArray, queue_size=10
             )
 
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
+
         rospy.Subscriber(input_point_cloud_topic, ROS_PointCloud, self.callback)
 
     def callback(self, data):
@@ -74,11 +84,20 @@ class ObjectTracking3DAb3dmotNode:
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         point_cloud = self.bridge.from_ros_point_cloud(data)
         detection_boxes = self.detector.infer(point_cloud)
-        tracking_boxes = self.learner.infer(detection_boxes)
+        if self.tracking_id_publisher or self.performance_publisher:
+            tracking_boxes = self.learner.infer(detection_boxes)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         if self.detection_publisher is not None:
             # Convert detected boxes to ROS type and publish
@@ -113,6 +132,8 @@ def main():
     parser.add_argument("-t", "--tracking3d_id_topic",
                         help="Output tracking ids topic with the same element count as in output_detection_topic",
                         type=lambda value: value if value.lower() != "none" else None, default="/opendr/objects_tracking_id")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-dn", "--detector_model_name", help="Name of the trained model",
@@ -127,7 +148,7 @@ def main():
     )
     parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     input_point_cloud_topic = args.input_point_cloud_topic
     detector_model_name = args.detector_model_name
@@ -165,6 +186,7 @@ def main():
         input_point_cloud_topic=input_point_cloud_topic,
         output_detection3d_topic=output_detection3d_topic,
         output_tracking3d_id_topic=output_tracking3d_id_topic,
+        performance_topic=args.performance_topic
     )
 
     ab3dmot_node.listen()

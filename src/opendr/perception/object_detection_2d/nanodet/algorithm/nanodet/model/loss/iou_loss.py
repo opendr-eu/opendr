@@ -449,6 +449,7 @@ class GIoULoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
+    @torch.jit.unused
     def forward(
         self,
         pred,

@@ -14,33 +14,35 @@
 # limitations under the License.
 
 
-import argparse
-import cv2
-import message_filters
-import numpy as np
 import rclpy
-import torch
 from rclpy.node import Node
-from opendr_bridge import ROS2Bridge
-from sensor_msgs.msg import Image as ROS_Image
+import torch
+import message_filters
+import cv2
+import numpy as np
+import argparse
+from time import perf_counter
+from std_msgs.msg import Float32
 from vision_msgs.msg import Detection2DArray
-
-from opendr.engine.data import Image
+from sensor_msgs.msg import Image as ROS_Image
+from opendr_bridge import ROS2Bridge
 from opendr.perception.object_detection_2d import GemLearner
 from opendr.perception.object_detection_2d import draw_bounding_boxes
+from opendr.engine.data import Image
 
 
 class ObjectDetectionGemNode(Node):
     def __init__(
-        self,
-        input_rgb_image_topic="/camera/color/image_raw",
-        input_infra_image_topic="/camera/infra/image_raw",
-        output_rgb_image_topic="/opendr/rgb_image_objects_annotated",
-        output_infra_image_topic="/opendr/infra_image_objects_annotated",
-        detections_topic="/opendr/objects",
-        device="cuda",
-        pts_rgb=None,
-        pts_infra=None,
+            self,
+            input_rgb_image_topic="/camera/color/image_raw",
+            input_infra_image_topic="/camera/infra/image_raw",
+            output_rgb_image_topic="/opendr/rgb_image_objects_annotated",
+            output_infra_image_topic="/opendr/infra_image_objects_annotated",
+            detections_topic="/opendr/objects",
+            performance_topic=None,
+            device="cuda",
+            pts_rgb=None,
+            pts_infra=None,
     ):
         """
         Creates a ROS2 Node for object detection with GEM
@@ -57,6 +59,9 @@ class ObjectDetectionGemNode(Node):
         :param detections_topic: Topic to which we are publishing the annotations (if None, we are
         not publishing annotations)
         :type detections_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: Device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param pts_rgb: Point on the rgb image that define alignment with the infrared image. These are camera
@@ -83,6 +88,12 @@ class ObjectDetectionGemNode(Node):
             self.detection_publisher = self.create_publisher(msg_type=Detection2DArray, topic=detections_topic, qos_profile=10)
         else:
             self.detection_publisher = None
+
+        if performance_topic is not None:
+            self.performance_publisher = self.create_publisher(Float32, performance_topic, 1)
+        else:
+            self.performance_publisher = None
+
         if pts_infra is None:
             pts_infra = np.array(
                 [
@@ -187,8 +198,8 @@ class ObjectDetectionGemNode(Node):
         self.gem_learner.download(path=".", verbose=True)
 
         # Subscribers
-        msg_rgb = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic, 1)
-        msg_ir = message_filters.Subscriber(self, ROS_Image, input_infra_image_topic, 1)
+        msg_rgb = message_filters.Subscriber(self, ROS_Image, input_rgb_image_topic)
+        msg_ir = message_filters.Subscriber(self, ROS_Image, input_infra_image_topic)
 
         sync = message_filters.TimeSynchronizer([msg_rgb, msg_ir], 1)
         sync.registerCallback(self.callback)
@@ -201,6 +212,8 @@ class ObjectDetectionGemNode(Node):
         :param msg_ir: input infrared image message
         :type msg_ir: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert images to OpenDR standard
         image_rgb = self.bridge.from_ros_image(msg_rgb).opencv()
         image_ir_raw = self.bridge.from_ros_image(msg_ir, "bgr8").opencv()
@@ -208,6 +221,13 @@ class ObjectDetectionGemNode(Node):
 
         # Perform inference on images
         boxes, w_sensor1, _ = self.gem_learner.infer(image_rgb, image_ir)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         #  Annotate image and publish results:
         if self.detection_publisher is not None:
@@ -243,6 +263,8 @@ def main(args=None):
     parser.add_argument("-d", "--detections_topic", help="Topic name for detection messages",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/objects")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
                         type=str, default="cuda", choices=["cuda", "cpu"])
     args = parser.parse_args()
@@ -267,6 +289,7 @@ def main(args=None):
         input_infra_image_topic=args.input_infra_image_topic,
         output_infra_image_topic=args.output_infra_image_topic,
         detections_topic=args.detections_topic,
+        performance_topic=args.performance_topic,
     )
 
     rclpy.spin(gem_node)

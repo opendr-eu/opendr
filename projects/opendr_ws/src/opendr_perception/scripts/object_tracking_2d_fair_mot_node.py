@@ -17,12 +17,13 @@ import argparse
 import cv2
 import torch
 import os
-from opendr.engine.target import TrackingAnnotationList
+from time import perf_counter
 import rospy
 from vision_msgs.msg import Detection2DArray
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int32MultiArray, Float32
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
+from opendr.engine.target import TrackingAnnotationList
 from opendr.perception.object_tracking_2d import (
     ObjectTracking2DFairMotLearner,
 )
@@ -31,14 +32,15 @@ from opendr.engine.data import Image
 
 class ObjectTracking2DFairMotNode:
     def __init__(
-        self,
-        input_rgb_image_topic="/usb_cam/image_raw",
-        output_detection_topic="/opendr/objects",
-        output_tracking_id_topic="/opendr/objects_tracking_id",
-        output_rgb_image_topic="/opendr/image_objects_annotated",
-        device="cuda:0",
-        model_name="fairmot_dla34",
-        temp_dir="temp",
+            self,
+            input_rgb_image_topic="/usb_cam/image_raw",
+            output_detection_topic="/opendr/objects",
+            output_tracking_id_topic="/opendr/objects_tracking_id",
+            output_rgb_image_topic="/opendr/image_objects_annotated",
+            performance_topic=None,
+            device="cuda:0",
+            model_name="fairmot_dla34",
+            temp_dir="temp",
     ):
         """
         Creates a ROS Node for 2D object tracking
@@ -51,6 +53,9 @@ class ObjectTracking2DFairMotNode:
         :type output_detection_topic:  str
         :param output_tracking_id_topic: Topic to which we are publishing the tracking ids
         :type output_tracking_id_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model_name: the pretrained model to download or a saved model in temp_dir folder to use
@@ -85,16 +90,29 @@ class ObjectTracking2DFairMotNode:
                 output_rgb_image_topic, ROS_Image, queue_size=10
             )
 
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
+
     def callback(self, data):
         """
         Callback that process the input data and publishes to the corresponding topics
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-
+        if self.performance_publisher:
+            start_time = perf_counter()
         # Convert sensor_msgs.msg.Image into OpenDR Image
         image = self.bridge.from_ros_image(data, encoding="bgr8")
         tracking_boxes = self.learner.infer(image)
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         if self.output_image_publisher is not None:
             frame = image.opencv()
@@ -188,13 +206,15 @@ def main():
                         help="Output tracking ids topic with the same element count as in output_detection_topic",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/objects_tracking_id")
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("-n", "--model_name", help="Name of the trained model",
                         type=str, default="fairmot_dla34", choices=["fairmot_dla34"])
     parser.add_argument("-td", "--temp_dir", help="Path to a temporary directory with models",
                         type=str, default="temp")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
@@ -217,6 +237,7 @@ def main():
         output_detection_topic=args.detections_topic,
         output_tracking_id_topic=args.tracking_id_topic,
         output_rgb_image_topic=args.output_rgb_image_topic,
+        performance_topic=args.performance_topic
     )
 
     fair_mot_node.listen()

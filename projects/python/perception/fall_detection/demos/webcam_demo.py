@@ -77,27 +77,29 @@ if __name__ == '__main__':
 
             for detection in detections:
                 fallen = detection[0].data
-                keypoints = detection[1]
-                pose = detection[2]
+                pose = detection[1]
 
                 if draw_poses:
                     draw(img, pose)
 
-                color = (255, 255, 255)
                 if fallen == 1:
                     color = (0, 0, 255)
                     x, y, w, h = get_bbox(pose)
                     cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
-                    cv2.putText(img, "Detected fallen person", (5, 55), cv2.FONT_HERSHEY_SIMPLEX,
-                                0.75, color, 1, cv2.LINE_AA)
-
-                if draw_poses:
-                    if keypoints[0].data[0] != -1:
-                        cv2.line(img, (int(keypoints[0].x), int(keypoints[0].y)),
-                                 (int(keypoints[1].x), int(keypoints[1].y)), color, 4)
-                    if keypoints[2].data[0] != -1:
-                        cv2.line(img, (int(keypoints[1].x), int(keypoints[1].y)),
-                                 (int(keypoints[2].x), int(keypoints[2].y)), color, 4)
+                    cv2.putText(img, "Detected fallen person", (x, y-5), cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5, color, 1, cv2.LINE_AA)
+                elif fallen == -1:
+                    color = (0, 255, 0)
+                    x, y, w, h = get_bbox(pose)
+                    cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                    cv2.putText(img, "Detected standing person", (x, y-5), cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5, color, 1, cv2.LINE_AA)
+                elif fallen == 0:
+                    color = (255, 255, 255)
+                    x, y, w, h = get_bbox(pose)
+                    cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                    cv2.putText(img, "Unable to detect if fallen", (x, y-5), cv2.FONT_HERSHEY_SIMPLEX,
+                                0.5, color, 1, cv2.LINE_AA)
             cv2.imshow('Result', img)
             cv2.waitKey(1)
             counter += 1

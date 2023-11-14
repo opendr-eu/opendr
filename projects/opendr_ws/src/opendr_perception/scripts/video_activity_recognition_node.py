@@ -18,8 +18,9 @@ import rospy
 import torch
 import torchvision
 import cv2
+from time import perf_counter
 from pathlib import Path
-from std_msgs.msg import String
+from std_msgs.msg import String, Float32
 from vision_msgs.msg import ObjectHypothesis
 from sensor_msgs.msg import Image as ROS_Image
 from opendr_bridge import ROSBridge
@@ -31,12 +32,13 @@ from opendr.perception.activity_recognition import X3DLearner
 
 class HumanActivityRecognitionNode:
     def __init__(
-        self,
-        input_rgb_image_topic="/usb_cam/image_raw",
-        output_category_topic="/opendr/human_activity_recognition",
-        output_category_description_topic="/opendr/human_activity_recognition_description",
-        device="cuda",
-        model="cox3d-m",
+            self,
+            input_rgb_image_topic="/usb_cam/image_raw",
+            output_category_topic="/opendr/human_activity_recognition",
+            output_category_description_topic="/opendr/human_activity_recognition_description",
+            performance_topic=None,
+            device="cuda",
+            model="cox3d-m",
     ):
         """
         Creates a ROS Node for video-based human activity recognition.
@@ -48,6 +50,9 @@ class HumanActivityRecognitionNode:
         :param output_category_description_topic: Topic to which we are publishing the ID of the recognized action
          (if None, we are not publishing the ID)
         :type output_category_description_topic:  str
+        :param performance_topic: Topic to which we are publishing performance information (if None, no performance
+        message is published)
+        :type performance_topic:  str
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         :param model:  Architecture to use for human activity recognition.
@@ -96,6 +101,11 @@ class HumanActivityRecognitionNode:
             else None
         )
 
+        if performance_topic is not None:
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
+        else:
+            self.performance_publisher = None
+
         self.bridge = ROSBridge()
 
     def listen(self):
@@ -119,6 +129,8 @@ class HumanActivityRecognitionNode:
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
+        if self.performance_publisher:
+            start_time = perf_counter()
         image = self.bridge.from_ros_image(data, encoding="rgb8")
         if image is None:
             return
@@ -130,6 +142,13 @@ class HumanActivityRecognitionNode:
         category = result[0]
         category.confidence = float(category.confidence.max())  # Confidence for predicted class
         category.description = KINETICS400_CLASSES[category.data]  # Class name
+
+        if self.performance_publisher:
+            end_time = perf_counter()
+            fps = 1.0 / (end_time - start_time)  # NOQA
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.performance_publisher.publish(fps_msg)
 
         if self.hypothesis_publisher is not None:
             self.hypothesis_publisher.publish(self.bridge.to_ros_category(category))
@@ -217,12 +236,14 @@ def main():
                         help="Topic to which we are publishing the ID of the recognized action",
                         type=lambda value: value if value.lower() != "none" else None,
                         default="/opendr/human_activity_recognition_description")
-    parser.add_argument("--device",  help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
+    parser.add_argument("--performance_topic", help="Topic name for performance messages, disabled (None) by default",
+                        type=str, default=None)
+    parser.add_argument("--device", help='Device to use, either "cpu" or "cuda", defaults to "cuda"',
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Architecture to use for human activity recognition.",
                         type=str, default="cox3d-m",
                         choices=["cox3d-s", "cox3d-m", "cox3d-l", "x3d-xs", "x3d-s", "x3d-m", "x3d-l"])
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
@@ -241,6 +262,7 @@ def main():
         input_rgb_image_topic=args.input_rgb_image_topic,
         output_category_topic=args.output_category_topic,
         output_category_description_topic=args.output_category_description_topic,
+        performance_topic=args.performance_topic,
         device=device,
         model=args.model,
     )
