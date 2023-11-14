@@ -732,6 +732,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             if image_resolution in (1080, 1440):
                 file_url = os.path.join(url, "dataset", "image", "000000000785_" + str(image_resolution) + ".jpg")
                 urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1080.jpg"))
+                file_url = os.path.join(url, "dataset", "image", "000000052591_" + str(image_resolution) + ".jpg")
+                urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000052591_1080.jpg"))
             else:
                 raise UserWarning("There are no data for this image resolution (only 1080 and 1440 are supported).")
 
