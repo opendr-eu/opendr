@@ -93,18 +93,12 @@ class ObjectTracking3DVpitLearner(Learner):
         self,
         model_config_path,
         lr=0.0001,
-        iters=10,
-        batch_size=64,
         optimizer="adam_optimizer",
         lr_schedule="exponential_decay_learning_rate",
-        backbone="pp",
-        network_head="",
         checkpoint_after_iter=0,
         checkpoint_load_iter=0,
         temp_path="",
         device="cuda:0",
-        threshold=0.0,
-        scale=1.0,
         tanet_config_path=None,
         optimizer_params={"weight_decay": 0.0001},
         lr_schedule_params={
@@ -137,28 +131,32 @@ class ObjectTracking3DVpitLearner(Learner):
         vertical_offset_interpolation=1,
         min_top_score=None,
         overwrite_strides=None,
-        target_features_mode="init",  # "all", "selected", "last"
-        upscaling_mode="none",  # "raw", "processed"
+        target_features_mode="init",  # "init", "all", "selected", "last"
+        upscaling_mode="none",  # "none", "raw", "processed"
         regress_vertical_position=False,
         regression_training_isolation=False,
         vertical_regressor_type="center_linear",
         vertical_regressor_kwargs={},
+        iters=10,
+        backbone="pp",
+        batch_size=64,
+        threshold=0.0,
+        scale=1.0,
     ):
         # Pass the shared parameters on super's constructor so they can get initialized as class attributes
         super(ObjectTracking3DVpitLearner, self).__init__(
             lr=lr,
             iters=iters,
+            backbone=backbone,
             batch_size=batch_size,
+            threshold=threshold,
+            scale=scale,
             optimizer=optimizer,
             lr_schedule=lr_schedule,
-            backbone=backbone,
-            network_head=network_head,
             checkpoint_after_iter=checkpoint_after_iter,
             checkpoint_load_iter=checkpoint_load_iter,
             temp_path=temp_path,
             device=device,
-            threshold=threshold,
-            scale=scale,
         )
 
         self.model_config_path = model_config_path
@@ -812,13 +810,7 @@ class ObjectTracking3DVpitLearner(Learner):
                 else:
                     raise ValueError()
 
-                # print("^not reliable, delta_image =", delta_image)
-
                 new_angle = self.search_region[2]
-
-            # print(
-            #     "norm_max_score =", norm_max, "raw_max_score =", torch.max(top_scores)
-            # )
 
             delta_image = delta_image[[1, 0]]
             delta_image *= self.offset_interpolation

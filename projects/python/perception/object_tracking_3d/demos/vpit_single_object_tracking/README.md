@@ -5,7 +5,7 @@
   </a>
 </div>
 
-Live demo of 3D object detection using the [OpenDR toolkit](https://opendr.eu).
+Live demo of 3D single object tracking tool VPIT using the [OpenDR toolkit](https://opendr.eu).
 It captures the point cloud stream from either a disk, O3D Lidar or RPLidar, performs frame-by-frame predictions, and presents the results on a web UI.
 
 
@@ -17,30 +17,25 @@ pip install -e .
 
 
 ## Running the example
-Car 3D Object Detection using [TANet](https://arxiv.org/abs/1912.05163) from [KITTI](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d)-like dataset
+VPIT from [KITTI](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d)-like dataset
 ```bash
-python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=tanet_car_xyres_16 --source=disk --data_path=/data/sets/kitti_second/training/velodyne --model_config=configs/tanet_car_xyres_16.proto
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=vpit --model_name=vpit --source=disk --data_path=/data/sets/kitti_second/training/velodyne
 ```
 
-Car 3D Object Detection using [PointPillars](https://arxiv.org/abs/1812.05784) from [KITTI](http://www.cvlibs.net/datasets/kitti/eval_object.php?obj_benchmark=3d)-like dataset
+VPIT using a specially trained model X for O3M Lidar
 ```bash
-python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=pointpillars_car_xyres_16 --source=disk --data_path=/data/sets/kitti_second/training/velodyne --model_config=configs/tanet_car_xyres_16.proto
-```
-
-3D Object Detection using a specially trained model X for O3M Lidar
-```bash
-python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=X --source=o3mlidar --o3m_ip=0.0.0.0 --o3m_port=42000 --o3m_buffer_size=1460
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=vpit --model_name=X --source=o3mlidar --o3m_ip=0.0.0.0 --o3m_port=42000 --o3m_buffer_size=1460
 ```
 
 
-3D Object Detection using a specially trained model X for RPLidar
+VPIT using a specially trained model X for O3M Lidar
 ```bash
-python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=voxel --model_name=X --source=rplidar --rplidar_port=/dev/ttyUSB0
+python3 demo.py --ip=0.0.0.0 --port=2605 --algorithm=vpit --model_name=X --source=rplidar --rplidar_port=/dev/ttyUSB0
 ```
 
-If you run camera demo and navigate to http://0.0.0.0:2605, you might see something like this:
+If you run camera demo and navigate to http://0.0.0.0:2605 or open the created window, you might see something like this:
 
-<img src="media/demo.png">
+<img src="media/demo.jpg">
 
 For other options, see `python3 demo.py --help`
 
