@@ -16,21 +16,21 @@ following public methods:
 
 Constructor parameters:
 - **lr**: *float, default=3e-4*\
-  Specifies the initial learning rate to be used during training.
+  The initial learning rate to be used during training.
 - **iters**: *int, default=5e6*\
-  Specifies the number of steps the training should run for.
+  The number of steps the training should run for.
 - **batch_size**: *int, default=64*\
-  Specifies the batch size during training.
+  The batch size during training.
 - **checkpoint_after_iter**: *int, default=0*\
-  Specifies per how many training steps a checkpoint should be saved.
+  After how many training steps a checkpoint should be saved.
 - **checkpoint_load_iter**: *int, default=0*\
-  Specifies which checkpoint to load.
+  Checkpoint to load.
 - **temp_path**: *str, default=''*\
-  Specifies a path where the algorithm stores log files and saves checkpoints.
+  Path where the algorithm stores log files and saves checkpoints.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
-  Specifies the device to be used.
+  The device to be used.
 - **n_steps**: *int, default=6400*\
-  Specifies the number of steps to run environment per update.
+  Number of steps to run environment per update.
 - **gamma**: *float, default=0.9*\
   Discount factor for future rewards.
 - **clip_range**: *float, default=0.1*\
