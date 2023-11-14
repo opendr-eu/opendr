@@ -1,5 +1,32 @@
 # OpenDR Toolkit Change Log
 
+## Version 3.0.0
+Released on Dec, XXX, 2023.
+- New Features:  
+  - Binary High Resolution Learner ([#402](https://github.com/opendr-eu/opendr/pull/402))
+  - ROS2 node for EfficientLPS ([#404](https://github.com/opendr-eu/opendr/pull/404))
+  - Fall and wave detection ROS nodes ([#423](https://github.com/opendr-eu/opendr/pull/423))
+  - Continual SLAM: Adds a new SLAM tool for Continual SLAM ([#424](https://github.com/opendr-eu/opendr/pull/424))
+  - Add RGB gesture recognition ([#436](https://github.com/opendr-eu/opendr/pull/436))
+  - FSeq2-NMS ([#442](https://github.com/opendr-eu/opendr/pull/442))
+  - Intent recognition tool ([#443](https://github.com/opendr-eu/opendr/pull/443))
+  - Robotti human detection simulation demo ([#451](https://github.com/opendr-eu/opendr/pull/451))
+  - Object Detection 2D Class Filtering ([#467](https://github.com/opendr-eu/opendr/pull/467))
+  - RL-based Learner for Active Face Recognition ([#473](https://github.com/opendr-eu/opendr/pull/473))
+  - YOLOv5s Inference Demo with Optimized Weights for Agricultural Use ([#476]([#](https://github.com/opendr-eu/opendr/pull/)476))
+  - Adaptive HR Pose Estimation ([#479](https://github.com/opendr-eu/opendr/pull/479))
+- Enhancements:
+  - Wave detection demo based on pose estimation ([#394](https://github.com/opendr-eu/opendr/pull/394))
+  - Facial expression recognition demo update ([#405](https://github.com/opendr-eu/opendr/pull/405))
+  - Object detection 2d camera demos ([#408](https://github.com/opendr-eu/opendr/pull/408))
+  - High Resolution Pose Estimation webcam demo ([#409](https://github.com/opendr-eu/opendr/pull/409))
+  - ROS nodes FPS performance measurements ([#419](https://github.com/opendr-eu/opendr/pull/419))
+  - Refactoring: pythonic joins in `test_clang_format.py`/`test_cppcheck.py` ([#455](https://github.com/opendr-eu/opendr/pull/455))
+  - Test-tools improvement ([#456](https://github.com/opendr-eu/opendr/pull/456)) 
+  - Adding prompt when transcribe with Whisper ([#462](https://github.com/opendr-eu/opendr/pull/462))
+ 
+- Bug Fixes:
+
 ## Version 2.2.0
 Released on July, 3rd, 2023.
 
