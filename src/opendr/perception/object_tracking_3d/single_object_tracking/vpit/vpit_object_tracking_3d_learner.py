@@ -952,9 +952,6 @@ class ObjectTracking3DVpitLearner(Learner):
                         None,
                         location=np.array([*location_lidar, vertical_position]),
                         dimensions=self.init_label.dimensions,
-                        # np.array(
-                        #     [*size_lidar, self.init_label.dimensions[-1]]
-                        # ),
                         rotation_y=new_target[2],
                         id=self.init_label.id if id is None else id,
                         score=1,
@@ -967,7 +964,6 @@ class ObjectTracking3DVpitLearner(Learner):
             self.times["final_result"].append(t7 - t6)
 
             fps = 1 / (t8 - t)
-            # print("fps =", fps)
 
             self.fpses.append(fps)
 
@@ -1005,14 +1001,6 @@ class ObjectTracking3DVpitLearner(Learner):
                     image,
                     "./plots/summary/a" + ".png",
                 )
-
-            # delta_image_f = displacement_score_to_image_coordinates(
-            #     top_scores,
-            #     self.score_upscale,
-            #     top_search[1],
-            #     top_search[2],
-            #     self.search_size,
-            # )
 
             return result
 
@@ -1067,7 +1055,6 @@ class ObjectTracking3DVpitLearner(Learner):
 
         init_lidar_aabb = create_lidar_aabb_from_target(
             [target[0], init_size_with_context, target[2]],
-            # [target[0], target[1] * 4, target[2]],
             net.voxel_size,
             net.bv_range,
             net.point_cloud_range[[2, 5]],
@@ -1109,8 +1096,6 @@ class ObjectTracking3DVpitLearner(Learner):
                 image,
                 "./plots/init/all.png",
             )
-
-        # draw_pseudo_image(init_image, "./plots/init_image.png")
 
         self.search_region = search
         self.init_target = target
