@@ -186,7 +186,7 @@ RUN echo 'source /opt/ros/${ROS_DISTRO}/setup.bash' >> /root/.bashrc
 CMD ["bash"]
 WORKDIR /
 
-RUN git clone --depth 1 --recurse-submodules -j8 --branch develop https://github.com/opendr-eu/opendr
+RUN git clone --depth 1 --recurse-submodules -j8 --branch master https://github.com/opendr-eu/opendr
 RUN apt-get update
 RUN cd ./opendr && ./bin/install_nvidia.sh $device
 RUN cd ./opendr/projects/opendr_ws/src && \
