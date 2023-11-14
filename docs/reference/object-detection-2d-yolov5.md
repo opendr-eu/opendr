@@ -89,7 +89,7 @@ Parameters:
   from opendr.perception.object_detection_2d import YOLOv5DetectorLearner
   from opendr.perception.object_detection_2d import draw_bounding_boxes
 
-  yolo = YOLOv5DetectorLearner(model_name='yolov5s-fine', device='cpu')
+  yolo = YOLOv5DetectorLearner(model_name='yolov5s', device='cpu')
 
   torch.hub.download_url_to_file('https://ultralytics.com/images/zidane.jpg', 'zidane.jpg')  # download image
   im1 = Image.open('zidane.jpg')  # OpenDR image
