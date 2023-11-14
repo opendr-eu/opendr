@@ -26,6 +26,25 @@ Released on Dec, XXX, 2023.
   - Adding prompt when transcribe with Whisper ([#462](https://github.com/opendr-eu/opendr/pull/462))
  
 - Bug Fixes:
+  - Fix package creator and sources ([#390](https://github.com/opendr-eu/opendr/pull/390))
+  - Lightweight OpenPose tool fixes and improvements ([#392](https://github.com/opendr-eu/opendr/pull/392))
+  - Fall Detection - alternative infer input ([#397](https://github.com/opendr-eu/opendr/pull/397))
+  - Yolov5 training bugfix ([#401](https://github.com/opendr-eu/opendr/pull/401))
+  - Fix the dependency conflict of geffnet installation ([#410](https://github.com/opendr-eu/opendr/pull/410))
+  - Fix bug in GEM ROS2 node ([#420](https://github.com/opendr-eu/opendr/pull/420))
+  - Fix link to nanodet documentation ([#421](https://github.com/opendr-eu/opendr/pull/421))
+  - EfficientLPS panoptic segmentation coloring bug ([#426](https://github.com/opendr-eu/opendr/pull/426))
+  - Bump flask from 1.1.2 to 2.3.2 ([#430](https://github.com/opendr-eu/opendr/pull/430))
+  - Fix tests on master branch ([#438](https://github.com/opendr-eu/opendr/pull/438))
+  - Added unzip installation as base ubuntu dependency and tool tests fixes ([#454](https://github.com/opendr-eu/opendr/pull/454))
+  - Active face recognition demo and bug fixes on Face Recognition ([#459](https://github.com/opendr-eu/opendr/pull/459))
+  - GPU installation fix ([#463](https://github.com/opendr-eu/opendr/pull/463))
+  - Fix ROS1 nodes argparse issue with .launch files ([#465](https://github.com/opendr-eu/opendr/pull/465))
+  - Minor fix on yolov5 webcam demo ([#466](https://github.com/opendr-eu/opendr/pull/466))
+  - Apply cuDNN init fix to all Object Detectors 2D ([#469](https://github.com/opendr-eu/opendr/pull/469))
+  - Updated test_suite_develop.yml based on latest test_suite.yml ([#471](https://github.com/opendr-eu/opendr/pull/471))
+  - Fix fmpgmapping ([#472](https://github.com/opendr-eu/opendr/pull/472))
+  - Synchronization and bugfixes ([#478](https://github.com/opendr-eu/opendr/pull/478))
 
 ## Version 2.2.0
 Released on July, 3rd, 2023.
