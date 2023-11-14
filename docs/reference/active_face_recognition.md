@@ -17,24 +17,26 @@ following public methods:
 Constructor parameters:
 - **lr**: *float, default=3e-4*\
   Specifies the initial learning rate to be used during training.
-- **n_steps**: *int, default=1024*\
-  Specifies the number of steps to run environment per update.
-- **iters**: *int, default=1e5*\
+- **iters**: *int, default=5e6*\
   Specifies the number of steps the training should run for.
 - **batch_size**: *int, default=64*\
   Specifies the batch size during training.
-- **checkpoint_after_iter**: *int, default=500*\
+- **checkpoint_after_iter**: *int, default=0*\
   Specifies per how many training steps a checkpoint should be saved.
-- - **gamma**: *float, default=0.9*\
-  Discount factor for future rewards.
-- - **clip_range**: *float, default=0.2*\
-  Clip policy updates.
-- - **target_kl**: *float, default=0.1*\
-  KL Divergence update threshold.
+- **checkpoint_load_iter**: *int, default=0*\
+  Specifies which checkpoint to load.
 - **temp_path**: *str, default=''*\
   Specifies a path where the algorithm stores log files and saves checkpoints.
 - **device**: *{'cpu', 'cuda'}, default='cuda'*\
   Specifies the device to be used.
+- **n_steps**: *int, default=6400*\
+  Specifies the number of steps to run environment per update.
+- **gamma**: *float, default=0.9*\
+  Discount factor for future rewards.
+- **clip_range**: *float, default=0.1*\
+  Clip policy updates.
+- **target_kl**: *float, default=0.1*\
+  KL Divergence update threshold.
 
 #### `ActiveFaceRecognitionLearner.fit`
 ```python
