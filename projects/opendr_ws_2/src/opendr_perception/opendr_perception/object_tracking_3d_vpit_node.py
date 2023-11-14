@@ -167,7 +167,7 @@ class ObjectTracking3DVpitNode(Node):
         # Convert sensor_msgs.msg.Image into OpenDR Image
         point_cloud = self.bridge.from_ros_point_cloud(data)
         self.last_point_cloud = point_cloud
-        
+
         if self.waiting_for_init:
             if self.last_input_detection is not None:
                 self.init()
@@ -197,7 +197,7 @@ class ObjectTracking3DVpitNode(Node):
             ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
             self.get_logger().info("Published " + str(len(ids)) + " tracking ids")
-        
+
         self.frame += 1
 
     def callback_det(self, data):
@@ -206,7 +206,7 @@ class ObjectTracking3DVpitNode(Node):
         :param data: input message
         :type data: sensor_msgs.msg.Image
         """
-        
+
         self.last_input_detection = self.bridge.from_ros_boxes_3d(data)[0]
 
         if self.last_point_cloud is not None:
@@ -306,7 +306,6 @@ def main(args=None):
         output_tracking3d_id_topic=output_tracking3d_id_topic,
         performance_topic=args.performance_topic,
     )
-
 
     rclpy.spin(vpit_node)
     # Destroy the node explicitly
