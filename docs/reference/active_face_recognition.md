@@ -62,7 +62,7 @@ Parameters:
 - **num_episodes**: *int, default=10*\
   Number of evaluation episodes to run.
 - **deterministic**: *bool, default=False*\
-  Use deterministic actions from the policy
+  Use deterministic actions from the policy.
 
 
 #### `ActiveFaceRecognitionLearner.infer`
@@ -119,7 +119,7 @@ Parameters:
 The environment is provided with a [world](../../src/opendr/perception/active_perception/active_face_recognition/simulation/worlds/active_face_recognition.wbt)
 that needs to be opened with Webots version 2023b in order to demonstrate the active face recognition learner.
 
-Once the world is opened the simulation is running, you can run a script utilizing ActiveFaceRecognitionLearner \
+Once the world is opened and the simulation is running, you can run a script utilizing ActiveFaceRecognitionLearner \
 by setting WEBOTS_HOME environment variable:
 
 `export WEBOTS_HOME=/usr/local/webots`
@@ -149,7 +149,7 @@ from opendr.perception.active_perception.active_face_recognition import ActiveFa
 learner = ActiveFaceRecognitionLearner()
 path = './'
 learner.download(path)
-learner.load(path)
+learner.load("./active_fr.zip")
 rewards = learner.eval(num_episodes=10, deterministic=False)
 
 print(rewards)
@@ -164,7 +164,7 @@ from opendr.perception.active_perception.active_face_recognition import ActiveFa
 learner = ActiveFaceRecognitionLearner()
 path = './'
 learner.download(path)
-learner.load(path)
+learner.load("./active_fr.zip")
 
 obs = learner.env.reset()
 while True:
