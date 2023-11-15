@@ -76,7 +76,7 @@ Parameters:
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-- **model_name**: name of model ftp server, *default = 'yolov5s_finetuned_in_trucks.pt'.*\
+- **model_name**: name of model ftp server, currently only supports `yolov5s_finetuned_in_trucks.pt`, *default = 'yolov5s_finetuned_in_trucks.pt'.*\
 - **image_name**: name of image in ftp server, available files are `truckX.jpg` for `X=1 to 10`, *default = 'truck7.jpg'.*\
   
 #### Examples
