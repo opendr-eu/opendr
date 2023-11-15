@@ -105,6 +105,32 @@ def get_translate_matrix(translate, width, height):
     return T
 
 
+def get_jitter_boxes(boxes, ratio=0.0, let_neg=True):
+    """
+    :param boxes:
+    :param ratio: adjust each box boundary independently
+    :param let_neg: let smaller than original boxes to be found
+    :return:
+    """
+    x_min, y_min, x_max, y_max = (boxes[:, i] for i in range(4))
+    width = x_max - x_min
+    height = y_max - y_min
+    y_center = y_min + height / 2.0
+    x_center = x_min + width / 2.0
+
+    neg_ratio = -ratio if let_neg else 0
+    distortion = 1.0 + np.random.uniform(neg_ratio, ratio, boxes.shape)
+    y_min_jitter = height * distortion[:, 0]
+    x_min_jitter = width * distortion[:, 1]
+    y_max_jitter = height * distortion[:, 2]
+    x_max_jitter = width * distortion[:, 3]
+
+    y_min, y_max = y_center - (y_min_jitter / 2.0), y_center + (y_max_jitter / 2.0)
+    x_min, x_max = x_center - (x_min_jitter / 2.0), x_center + (x_max_jitter / 2.0)
+    jitter_boxes = np.vstack((x_min, y_min, x_max, y_max)).T
+    return jitter_boxes
+
+
 def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
     """
     Get resize matrix for resizing raw img to input size
@@ -138,6 +164,29 @@ def get_resize_matrix(raw_shape, dst_shape, keep_ratio):
         return Rs
 
 
+def get_hard_pos(img, bboxes, ratio):
+    """
+    Get resize matrix for resizing raw img to input size
+    :param img: (width, height) of raw image
+    :param bboxes: (width, height) of input image
+    :param ratio: whether keep original
+    :return: 3x3 Matrix
+    """
+    height = img.shape[0]  # shape(w,h,c)
+    width = img.shape[1]
+
+    mask_array = np.zeros_like(img)
+    bigger_boxes = get_jitter_boxes(bboxes, ratio=ratio, let_neg=False)
+    x_min, y_min, x_max, y_max = (bigger_boxes[:, i] for i in range(4))
+    x_min = [int(x.clip(0, width)) for x in x_min]
+    x_max = [int(x.clip(0, width)) for x in x_max]
+    y_min = [int(x.clip(0, height)) for x in y_min]
+    y_max = [int(x.clip(0, height)) for x in y_max]
+    for x1, y1, x2, y2 in zip(x_min, y_min, x_max, y_max):
+        mask_array[y1:y2, x1:x2] = 1
+    return img * mask_array
+
+
 def scriptable_warp_boxes(boxes, M, width, height):
     """
     Warp boxes function that uses pytorch api, so it can be used with scripting and tracing for optimization.
@@ -163,6 +212,18 @@ def scriptable_warp_boxes(boxes, M, width, height):
         return xy
     else:
         return boxes
+
+
+def filter_bboxes(boxes, classes, dst_shape, min_x=10, min_y=10, max_x=10, max_y=10):
+    max_x, max_y = dst_shape[0] - max_x, dst_shape[1] - max_y
+    filterd_boxes = np.empty([0, 4], dtype=np.float32)
+    filterd_classes = np.array([], dtype=np.int64)
+    for box, box_class in zip(boxes, classes):
+        if box[0] > max_x or box[1] > max_y or box[2] < min_x or box[3] < min_y:
+            continue
+        filterd_boxes = np.vstack((filterd_boxes, box))
+        filterd_classes = np.append(filterd_classes, box_class)
+    return filterd_boxes, filterd_classes
 
 
 def warp_boxes(boxes, M, width, height):
@@ -225,19 +286,25 @@ class ShapeTransform:
         shear: Random shear degree.
         translate: Random translate ratio.
         flip: Random flip probability.
+        jitter_box: Random adjust box width and height.
+        hard_pos: Probability for hard positive mining to be applied an image to.
+        jard_pos_ratio: Random adjust box width and height for hard positive mining.
     """
 
     def __init__(
         self,
-        keep_ratio,
-        divisible=0,
-        perspective=0.0,
-        scale=(1, 1),
-        stretch=((1, 1), (1, 1)),
-        rotation=0.0,
-        shear=0.0,
-        translate=0.0,
-        flip=0.0,
+        keep_ratio: bool,
+        divisible: int = 0,
+        perspective: float = 0.0,
+        scale: Tuple[int, int] = (1, 1),
+        stretch: Tuple = ((1, 1), (1, 1)),
+        rotation: float = 0.0,
+        shear: float = 0.0,
+        translate: float = 0.0,
+        flip: float = 0.0,
+        jitter_box: float = 0.0,
+        hard_pos: float = 0.0,
+        hard_pos_ratio: float = 0.0,
         **kwargs
     ):
         self.keep_ratio = keep_ratio
@@ -249,6 +316,9 @@ class ShapeTransform:
         self.shear_degree = shear
         self.flip_prob = flip
         self.translate_ratio = translate
+        self.jitter_box_ratio = jitter_box
+        self.hard_pos = hard_pos
+        self.hard_pos_ratio = hard_pos_ratio
 
     def __call__(self, meta_data, dst_shape):
         raw_img = meta_data["img"]
@@ -289,15 +359,25 @@ class ShapeTransform:
         ResizeM = get_resize_matrix((width, height), dst_shape, self.keep_ratio)
         M = ResizeM @ M
         img = cv2.warpPerspective(raw_img, M, dsize=tuple(dst_shape))
-        meta_data["img"] = img
-        meta_data["warp_matrix"] = M
         if "gt_bboxes" in meta_data:
-            boxes = meta_data["gt_bboxes"]
-            meta_data["gt_bboxes"] = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
+            boxes = get_jitter_boxes(meta_data["gt_bboxes"], self.jitter_box_ratio)
+            boxes = warp_boxes(boxes, M, dst_shape[0], dst_shape[1])
+            boxes, labels = filter_bboxes(boxes, meta_data["gt_labels"], (dst_shape[0], dst_shape[1]))
+            if len(boxes) == 0:
+                img = cv2.warpPerspective(raw_img, ResizeM, dsize=tuple(dst_shape))
+                M = ResizeM
+                boxes = get_jitter_boxes(meta_data["gt_bboxes"], self.jitter_box_ratio)
+                boxes = warp_boxes(boxes, ResizeM, dst_shape[0], dst_shape[1])
+                labels = meta_data["gt_labels"]
+            if random.uniform(0, 1) < self.hard_pos:
+                img = get_hard_pos(img, boxes, self.hard_pos_ratio)
+            meta_data["gt_bboxes"] = boxes
+            meta_data["gt_labels"] = labels
         if "gt_masks" in meta_data:
             for i, mask in enumerate(meta_data["gt_masks"]):
                 meta_data["gt_masks"][i] = cv2.warpPerspective(
                     mask, M, dsize=tuple(dst_shape)
                 )
-
+        meta_data["warp_matrix"] = M
+        meta_data["img"] = img
         return meta_data
