@@ -23,6 +23,22 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.modul
 
 
 class FPN(nn.Module):
+    """Feature proposal network
+
+        Args:
+            in_channels (List[int]): Number of input channels per scale.
+            out_channels (int): Number of output channels (used at each scale)
+            num_outs (int): Number of output scales.
+            start_level (int): Index of the start input backbone level used to
+                build the feature pyramid. Default: 0.
+            end_level (int): Index of the end input backbone level (exclusive) to
+                build the feature pyramid. Default: -1, which means the last level.
+            conv_cfg (dict): Config dict for convolution layer. Default: None.
+            norm_cfg (dict): Config dict for normalization layer. Default: None.
+            activation (str): Config dict for activation layer in ConvModule.
+                Default: None.
+    """
+
     def __init__(
         self,
         in_channels,

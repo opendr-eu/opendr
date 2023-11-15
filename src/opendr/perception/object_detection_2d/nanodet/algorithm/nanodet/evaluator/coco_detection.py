@@ -27,7 +27,7 @@ from pycocotools.cocoeval import COCOeval
 from tabulate import tabulate
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import mkdir
-logger = logging.getLogger("NanoDet")
+def_logger = logging.getLogger("NanoDet")
 
 
 def xyxy2xywh(bbox):
@@ -45,11 +45,12 @@ def xyxy2xywh(bbox):
 
 
 class CocoDetectionEvaluator:
-    def __init__(self, dataset):
+    def __init__(self, dataset, logger=None):
         assert hasattr(dataset, "coco_api")
         self.class_names = dataset.class_names
         self.coco_api = dataset.coco_api
         self.cat_ids = dataset.cat_ids
+        self.logger = def_logger if (logger is None) else logger
         self.metric_names = ["mAP", "AP_50", "AP_75", "AP_small", "AP_m", "AP_l"]
 
     def results2json(self, results):
@@ -63,7 +64,11 @@ class CocoDetectionEvaluator:
         json_results = []
         for image_id, dets in results.items():
             for label, bboxes in dets.items():
-                category_id = self.cat_ids[label]
+                try:
+                    category_id = self.cat_ids[label]
+                except IndexError as e:
+                    warnings.warn(f"error: {e}!!! change config file for correct number of classes")
+                    os.sys.exit()
                 for bbox in bboxes:
                     score = float(bbox[4])
                     detection = dict(
@@ -108,7 +113,7 @@ class CocoDetectionEvaluator:
         redirect_string = io.StringIO()
         with contextlib.redirect_stdout(redirect_string):
             coco_eval.summarize()
-        logger.info("\n" + redirect_string.getvalue())
+        self.logger.info("\n" + redirect_string.getvalue())
 
         # print per class AP
         headers = ["class", "AP50", "mAP"]
@@ -149,7 +154,7 @@ class CocoDetectionEvaluator:
             headers=table_headers,
             numalign="left",
         )
-        logger.info("\n" + table)
+        self.logger.info("\n" + table)
 
         aps = coco_eval.stats[:6]
         eval_results = {}

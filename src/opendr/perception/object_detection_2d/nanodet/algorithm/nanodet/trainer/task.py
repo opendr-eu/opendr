@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import copy
+import json
 import os
 import warnings
 from typing import Any, Dict, List
@@ -35,7 +36,8 @@ class TrainingTask(LightningModule):
     Pytorch Lightning module of a general training task.
     Including training, evaluating and testing.
     Args:
-        cfg: Training configurations
+        cfg: Training configurations.
+        model: Model to be used.
         evaluator: Evaluator for evaluating the model performance.
     """
 

@@ -64,14 +64,9 @@ class Integral(nn.Module):
             x (Tensor): Integral result of box locations, i.e., distance
                 offsets from the box center in four directions, shape (N, 4).
         """
-        shape = x.size()
-        if torch.jit.is_scripting():
-            x = F.softmax(x.reshape(shape[0], shape[1], 4, self.reg_max + 1), dim=-1)
-            x = F.linear(x, self.project.type_as(x)).reshape(shape[0], shape[1], 4)
-            return x
-
-        x = F.softmax(x.reshape(*shape[:-1], 4, self.reg_max + 1), dim=-1)
-        x = F.linear(x, self.project.type_as(x)).reshape(*shape[:-1], 4)
+        bs, fmap, regs = x.shape
+        x = F.softmax(x.view(bs, fmap, 4, self.reg_max + 1), dim=-1)
+        x = F.linear(x, self.project.unsqueeze(0)).view(bs, fmap, 4)
         return x
 
 
@@ -90,7 +85,7 @@ class GFLHead(nn.Module):
     :param num_classes: Number of categories excluding the background category.
     :param loss: Config of all loss functions.
     :param input_channel: Number of channels in the input feature map.
-    :param feat_channels: Number of conv layers in cls and reg tower. Default: 4.
+    :param feat_channels: Number of channels in the intermediate feature maps.
     :param stacked_convs: Number of conv layers in cls and reg tower. Default: 4.
     :param octave_base_scale: Scale factor of grid cells.
     :param strides: Down sample strides of all level feature map
@@ -192,6 +187,7 @@ class GFLHead(nn.Module):
         normal_init(self.gfl_cls, std=0.01, bias=bias_cls)
         normal_init(self.gfl_reg, std=0.01)
 
+    @torch.jit.unused
     def forward(self, feats: List[Tensor]):
         outputs = []
         for idx, scale in enumerate(self.scales):
@@ -576,11 +572,6 @@ class GFLHead(nn.Module):
 
         return det_result
 
-    def most_common_tensor(self, tensor):
-        _, frequencies = torch.unique(tensor, return_counts=True)
-        max_count = frequencies[torch.argmax(frequencies)].item()
-        return max_count
-
     def _eval_post_process(self, preds, meta):
         cls_scores, bbox_preds = preds.split(
             [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
@@ -656,10 +647,10 @@ class GFLHead(nn.Module):
         # get grid cells of one image
         mlvl_center_priors = []
         for i, stride in enumerate(self.strides):
-            proiors = self.get_single_level_center_priors(
-                b, featmap_sizes[i], stride, torch.float32, device
+            priors = self.get_single_level_center_priors(
+                b, featmap_sizes[i], stride, cls_preds.dtype, device
             )
-            mlvl_center_priors.append(proiors)
+            mlvl_center_priors.append(priors)
 
         center_priors = torch.cat(mlvl_center_priors, dim=1)
         dis_preds = self.distribution_project(reg_preds) * center_priors[..., 2, None]
@@ -714,8 +705,8 @@ class GFLHead(nn.Module):
         """
         x, y = self.get_single_level_center_point(featmap_size, stride, dtype, device, flatten)
         strides = x.new_full((x.shape[0],), stride)
-        proiors = torch.stack([x, y, strides, strides], dim=-1)
-        return proiors.unsqueeze(0).repeat(batch_size, 1, 1)
+        priors = torch.stack([x, y, strides, strides], dim=-1)
+        return priors.unsqueeze(0).repeat(batch_size, 1, 1)
 
     def get_single_level_center_point(
         self,

@@ -219,8 +219,6 @@ class GhostPAN(nn.Module):
             feat_heigh = inner_outs[0]
             feat_low = inputs[idx - 1]
 
-            inner_outs[0] = feat_heigh
-
             upsample_feat = self.upsample(feat_heigh)
 
             inner_out = self.top_down_blocks[len(self.in_channels) - 1 - idx](

@@ -10,6 +10,23 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.modul
 
 
 class SimpleConvHead(nn.Module):
+    """Detection head used in NanoDet-Plus.
+
+    Args:
+        num_classes (int): Number of categories excluding the background
+            category.
+        input_channel (int): Number of channels of the input feature.
+        feat_channels (int): Number of channels in the intermediate feature maps.
+        stacked_convs (int): Number of conv layers in the stacked convs.
+            Default: 4.
+        strides (list[int]): Strides of input multi-level feature maps.
+            Default: [8, 16, 32].
+        conv_cfg (dict): Dictionary to construct and config conv layer.
+        norm_cfg (dict): Dictionary to construct and config norm layer.
+        reg_max (int): The maximal value of the discrete set. Default: 16.
+        activation (str): Type of activation function. Default: "LeakyReLU".
+    """
+
     def __init__(
         self,
         num_classes,

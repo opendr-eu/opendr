@@ -15,7 +15,6 @@
 import torch
 import torch.nn as nn
 
-from typing import Dict
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone import build_backbone
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.fpn import build_fpn
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head import build_head
