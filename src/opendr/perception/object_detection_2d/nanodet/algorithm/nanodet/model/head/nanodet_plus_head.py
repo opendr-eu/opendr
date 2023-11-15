@@ -10,9 +10,8 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
     import bbox2distance, distance2bbox, multi_apply
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp \
     import warp_boxes, scriptable_warp_boxes
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss \
-    import DistributionFocalLoss, QualityFocalLoss
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import GIoULoss
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss import DistributionFocalLoss,\
+    QualityFocalLoss, GIoULoss
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv \
     import ConvModule, DepthwiseConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
