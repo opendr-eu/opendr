@@ -54,8 +54,7 @@ if __name__ == '__main__':
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
 
-    image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
-
+    image_path = join("temp", "dataset", "image", "000000052591_1080.jpg")
     img = Image.open(image_path)
 
     if method == 'primary':
@@ -68,7 +67,8 @@ if __name__ == '__main__':
 
     for i in range(len(bounds)):
         if bounds[i][0] is not None:
-            cv2.rectangle(img_cv, (int(bounds[i][0]), int(bounds[i][2])), (int(bounds[i][1]), int(bounds[i][3])), (0, 0, 255),
-                          thickness=2)
+            cv2.rectangle(img_cv, (int(bounds[i][0]), int(bounds[i][2])),
+                          (int(bounds[i][1]), int(bounds[i][3])), (0, 0, 255), thickness=2)
+    img_cv = cv2.resize(img_cv, (1280, 720), interpolation=cv2.INTER_CUBIC)
     cv2.imshow('Results', img_cv)
     cv2.waitKey(0)

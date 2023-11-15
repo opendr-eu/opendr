@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
-    image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
+    image_path = join("temp", "dataset", "image", "000000052591_1080.jpg")
     img = cv2.imread(image_path)
 
     fps_list = []

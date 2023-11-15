@@ -157,7 +157,6 @@ if __name__ == '__main__':
                     fontScale=int(np.ceil(height / 600)), color=(200, 0, 0),
                     thickness=int(np.ceil(height / 600)))
 
-
         heatmap = heatmap * 5
         heatmap = cv2.cvtColor(heatmap, cv2.COLOR_GRAY2BGR)
         heatmap = cv2.resize(heatmap, (int(img.shape[1] / 4), int(img.shape[0] / 4)))

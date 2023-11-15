@@ -483,15 +483,6 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             pbar_desc = "Evaluation progress"
             pbar_eval = tqdm(desc=pbar_desc, total=len(data), bar_format="{l_bar}%s{bar}{r_bar}" % '\x1b[38;5;231m')
 
-        img_height = data[0]['img'].shape[0]
-
-        if img_height in (1080, 1440):
-            offset = 200
-        elif img_height == 720:
-            offset = 50
-        else:
-            offset = 0
-
         for sample in data:
             file_name = sample['file_name']
             img = sample['img']
@@ -550,7 +541,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 if (xmax - xmin) > 40 and (ymax - ymin) > 40:
                     crop_img = img[ymin:ymax, xmin:xmax]
                 else:
-                    crop_img = img[offset:img.shape[0], offset:img.shape[1]]
+                    crop_img = img[0:img.shape[0], 0:img.shape[1]]
 
                 h, w, _ = crop_img.shape
 
@@ -571,10 +562,10 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
                 for i in range(all_keypoints.shape[0]):
                     for j in range(all_keypoints.shape[1]):
-                        if j == 0:  # Adjust offset if needed for evaluation on our HR datasets
-                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)
-                        if j == 1:  # Adjust offset if needed for evaluation on our HR datasets
-                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)
+                        if j == 0:
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin))
+                        if j == 1:
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin))
 
                 current_poses = []
                 for n in range(len(pose_entries)):
@@ -603,7 +594,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             if self.visualize:
                 for keypoints in coco_keypoints:
                     for idx in range(len(keypoints) // 3):
-                        cv2.circle(img, (int(keypoints[idx * 3] + offset), int(keypoints[idx * 3 + 1]) + offset),
+                        cv2.circle(img, (int(keypoints[idx * 3]), int(keypoints[idx * 3 + 1])),
                                    3, (255, 0, 255), -1)
                 cv2.imshow('keypoints', img)
                 key = cv2.waitKey()
@@ -995,7 +986,6 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                     heatmap -> np.array()
         """
         current_poses = []
-        offset = 0
         num_keypoints = Pose.num_kpts
         if not isinstance(img, Image):
             img = Image(img)
@@ -1085,7 +1075,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                 if (xmax - xmin) > 40 and (ymax - ymin) > 40:
                     crop_img = img[int(ymin):int(ymax), int(xmin):int(xmax)]
                 else:
-                    crop_img = img[offset:img.shape[0], offset:img.shape[1]]
+                    crop_img = img[0:img.shape[0], 0:img.shape[1]]
 
                 h, w, _ = crop_img.shape
                 if crop_img.shape[0] < self.second_pass_height:
@@ -1113,10 +1103,10 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
                 for i in range(all_keypoints.shape[0]):
                     for j in range(all_keypoints.shape[1]):
-                        if j == 0:  # Adjust offset if needed for evaluation on our HR datasets
-                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)
-                        if j == 1:  # Adjust offset if needed for evaluation on our HR datasets
-                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)
+                        if j == 0:
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + xmin))
+                        if j == 1:
+                            all_keypoints[i][j] = round((all_keypoints[i][j] + ymin))
 
                 current_poses = []
                 for n in range(len(pose_entries)):
@@ -1171,7 +1161,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             if (xmax - xmin) > 40 and (ymax - ymin) > 40:
                 crop_img = img[int(ymin):int(ymax), int(xmin):int(xmax)]
             else:
-                crop_img = img[offset:img.shape[0], offset:img.shape[1]]
+                crop_img = img[0:img.shape[0], 0:img.shape[1]]
 
             h, w, _ = crop_img.shape
             if crop_img.shape[0] < self.second_pass_height:
@@ -1197,10 +1187,10 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
             for i in range(all_keypoints.shape[0]):
                 for j in range(all_keypoints.shape[1]):
-                    if j == 0:  # Adjust offset if needed for evaluation on our HR datasets
-                        all_keypoints[i][j] = round((all_keypoints[i][j] + xmin) - offset)
-                    if j == 1:  # Adjust offset if needed for evaluation on our HR datasets
-                        all_keypoints[i][j] = round((all_keypoints[i][j] + ymin) - offset)
+                    if j == 0:
+                        all_keypoints[i][j] = round((all_keypoints[i][j] + xmin))
+                    if j == 1:
+                        all_keypoints[i][j] = round((all_keypoints[i][j] + ymin))
 
             current_poses = []
             for n in range(len(pose_entries)):
@@ -1283,12 +1273,11 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             self.prev_heatmap = heatmap
             heatmap_dims, detection = self.__crop_heatmap(heatmap)
 
-            # self.xmin = heatmap_dims[0] * (img.shape[1] / heatmap.shape[1])
-            # self.ymin = heatmap_dims[2] * (img.shape[0] / heatmap.shape[0])
-            # self.xmax = heatmap_dims[1] * (img.shape[1] / heatmap.shape[1])
-            # self.ymax = heatmap_dims[3] * (img.shape[0] / heatmap.shape[0])
-
             if detection:
+                self.xmin = heatmap_dims[0] * (img.shape[1] / heatmap.shape[1])
+                self.ymin = heatmap_dims[2] * (img.shape[0] / heatmap.shape[0])
+                self.xmax = heatmap_dims[1] * (img.shape[1] / heatmap.shape[1])
+                self.ymax = heatmap_dims[3] * (img.shape[0] / heatmap.shape[0])
                 cropped_heatmap = heatmap[heatmap_dims[2]:heatmap_dims[3], heatmap_dims[0]:heatmap_dims[1]]
                 if self.__check_for_split(cropped_heatmap):
                     # Split horizontal or vertical
@@ -1399,6 +1388,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                         xmin = xmin - extra_pad_x
                     else:
                         xmin = xmin
+
                     if xmax + extra_pad_x < img.shape[1]:
                         xmax = xmax + extra_pad_x
                     else:
@@ -1408,6 +1398,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                         ymin = ymin - extra_pad_y
                     else:
                         ymin = ymin
+
                     if ymax + extra_pad_y < img.shape[0]:
                         ymax = ymax + extra_pad_y
                     else:
@@ -1628,8 +1619,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "annotation.json"))
             # Download test image
             if image_resolution in (1080, 1440):
-                file_url = os.path.join(url, "dataset", "image", "000000000785_" + str(image_resolution) + ".jpg")
-                urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1080.jpg"))
+                file_url = os.path.join(url, "dataset", "image", "000000052591_" + str(image_resolution) + ".jpg")
+                urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000052591_1080.jpg"))
             else:
                 raise UserWarning("There are no data for this image resolution (only 1080 and 1440 are supported).")
 
