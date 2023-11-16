@@ -147,20 +147,53 @@ To install the toolkit, please first make sure that you have `git` available on 
 ```bash
 sudo apt install git
 ```
-Then, clone the toolkit:
+
+### Clone the toolkit
+
+Then, shallow clone the toolkit:
 ```bash
 git clone --depth 1 --recurse-submodules -j8 https://github.com/opendr-eu/opendr
 ```
 
-If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable.
-The toolkit defaults to using CPU.
-Therefore, if you want to use GPU, please set this variable accordingly *before* running the installation script:
+or if you intend to use it as a development environment clone it fully:
+```bash
+git clone --recurse-submodules -j8 https://github.com/opendr-eu/opendr
+```
+
+### Installing for GPU
+
+If you want to install GPU-related dependencies, then you can appropriately set the `OPENDR_DEVICE` variable and install some 
+additional packages, otherwise skip this section. 
+
+To use GPU-enabled functionalities, you are strongly advised to install the following:
+
+1. NVIDIA drivers >460.106.00:
+2. CUDA 11.2: 
+   1. cuda_11.2.0_460.27.04_linux.run from [here](https://developer.nvidia.com/cuda-11.2.0-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=runfilelocal)
+   2. Linux -> x86_64 -> Ubuntu-> 20.04 -> runfile local  
+   3. Skip driver installation, since drivers are already installed in the previous step
+3. cuDNN installed through [here](https://developer.nvidia.com/rdp/cudnn-archive)
+   1. Look for and download cuDNN v8.1.0 (January 26th, 2021), for CUDA 11.0, 11.1 and 11.2
+   2. cuDNN Runtime Library for Ubuntu20.04 x86_64 (Deb)
+
+The toolkit defaults to using CPU. Therefore, if you want to use GPU, please set this variable accordingly 
+*before* running the installation script:
+
 ```bash
 export OPENDR_DEVICE=gpu
 ```
 
-If you want to use ROS or ROS2, then you need to set the `ROS_DISTRO` variable *before* running the installation script so that additional required dependencies are correctly installed.
+**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*.
+It only affects the dependency installation.
+You can use OpenDR API to change the inference device.
+
+### Using ROS
+
+If you want to use ROS or ROS2, then you need to set the `ROS_DISTRO` variable *before* running the installation script so that 
+additional required dependencies are correctly installed, otherwise skip this section.
 This variable should be set to either `noetic` or `melodic` for ROS, and `foxy` or `humble` for ROS2.
+
+### Installing the cloned repository
 
 You are then ready to install the toolkit:
 ```bash
@@ -168,7 +201,7 @@ cd opendr
 ./bin/install.sh
 ```
 The installation script automatically installs all the required dependencies.
-Note that this might take a while (~10-20min depending on your machine and network connection), while the script also makes system-wide changes.
+Note that this might take a while (~10-20 minutes depending on your machine and network connection), while the script also makes system-wide changes.
 Using dockerfiles is strongly advised (please see below), unless you know what you are doing.
 Please also make sure that you have enough RAM available for the installation (about 4GB of free RAM is needed for the full installation/compilation).
 
@@ -180,9 +213,7 @@ source ./bin/activate.sh
 ```
 Then, you are ready to use the toolkit!
 
-**NOTE:** `OPENDR_DEVICE` does not alter the inference/training device at *runtime*.
-It only affects the dependency installation.
-You can use OpenDR API to change the inference device.
+### Verify the installation
 
 You can also verify the installation by using the supplied Python and C unit tests:
 ```bash
@@ -190,13 +221,11 @@ make unittest
 make ctests
 ```
 
-If you plan to use GPU-enabled functionalities, then you are advised to install [CUDA 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive), along with [CuDNN](https://developer.nvidia.com/cudnn).
-
 **HINT:** All tests probe for the `TEST_DEVICE` enviromental variable when running.
 If this enviromental variable is set during testing, it allows for easily running all tests on a different device (e.g., setting `TEST_DEVICE=cuda:0` runs all tests on the first GPU of the system).
 
 
-## Nvidia embedded devices docker
+# Nvidia embedded devices docker
 You can also run the corresponding docker image on an Nvidia embedded device (supported: TX-2, Xavier-NX and AGX):
 
 Note that the embedded device should be flashed with Jetpack 4.6.
