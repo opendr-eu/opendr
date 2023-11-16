@@ -1,5 +1,6 @@
 engine
 perception/speech_recognition
+perception/speech_transcription
 perception/semantic_segmentation
 perception/binary_high_resolution
 perception/face_recognition
