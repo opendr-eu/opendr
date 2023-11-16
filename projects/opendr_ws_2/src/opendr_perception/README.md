@@ -891,6 +891,61 @@ whose documentation can be found [here](../../../../docs/reference/audiovisual-e
    For viewing the output, refer to the [notes above.](#notes)
 
 ----
+## RGB + IMU input
+
+### Continual SLAM ROS2 Nodes
+A ROS node for performing depth+position output mapping based on visual + imu input. Continual SLAM involves the use of two distinct ROS nodes, one dedicated to performing inference and the other exclusively focused on training. Both of the nodes are based on the learner class defined in [ContinualSLAMLearner](../../../../src/opendr/perception/continual_slam/continual_slam_learner.py).
+
+You can find the continual slam ROS node python scripts here [learner](./opendr_perception/continual_slam_learner_node.py), [predictor](./opendr_perception/continual_slam_predictor_node.py). You can further also find the RGB image + IMU publisher node [here](./opendr_perception/continual_slam_dataset_node.py). 
+
+#### Instructions for basic usage:
+
+1. Download the KITTI Visual Odometry datased as it is described [here](../../../../src/opendr/perception/continual_slam/datasets/README.md). 
+
+2. Decide on the frame rate FPS, then one can start the dataset publisher node using the following line:
+   ```shell
+   ros2 run opendr_perception continual_slam_dataset
+   ```
+
+   The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `--dataset_path`: path to the dataset (default=`./kitti`)
+   - `--config_file_path`: path to the config file for learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `--output_image_topic OUTPUT_IMAGE_TOPIC`: topic to which we are publishing the RGB image (default=`/cl_slam/image`)
+   - `--output_distance_topic OUTPUT_DISTANCE_TOPIC`: topic to publish distances (default=`/cl_slam/distance`)
+   - `--dataset_fps FPS`: frame rate which the dataset will be published, (default=`3`)
+
+3. Start the Predictor Node
+    ```shell
+    ros2 run opendr_perception continual_slam_predictor
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
+   - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
+   - `-odt or --output_depth_topic`: output depth topic, published to visual output tools (default=`/opendr/predicted/image`)
+   - `-opt or --output_pose_topic`: output pose topic, published to visual output tools (default=`/opendr/predicted/pose`)
+   - `-ppcl or --publish_pointcloud`: boolean to decide whether pointcloud output is asked or not (default=`false`)
+   - `-opct or --output_pointcloud_topic`: output pointcloud topic, depending on `--publish_pointcloud`, published to visual output tools (default=`/opendr/predicted/pointcloud`)
+   - `-ut or --update_topic`: update topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/update`)
+
+4. Start the Learner Node (Optional)
+    ```shell
+    ros2 run opendr_perception continual_slam_learner
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-c or --config_path`: path to the config file for the learner class (default=`src/opendr/perception/continual_slam/configs/singlegpu_kitti.yaml`)
+   - `-it or --input_image_topic`: input image topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/image`)
+   - `-dt or --input_distance_topic`: input distance topic, listened from Continual SLAM Dataset Node (default=`/cl_slam/distance`)
+   - `-ot or --output_weights_topic`: output weights topic to be published to Continual SLAM Predictor Node (default=`/cl_slam/update`)
+   - `-pr or --publish_rate`: publish rate of the weights (default=`20`)
+   - `-bs or --buffer_size`: size of the replay buffer (default=`10`)
+   - `-ss or --sample_size`: sample size of the replay buffer. If 0 is given, only online data is used (default=`3`)
+   - `-sm or --save_memory`: whether to save memory or not. Add it to the command if you want to write to disk (default=`True`)
+
+----
 ## Audio input
 
 ### Speech Command Recognition ROS2 Node
@@ -951,10 +1006,16 @@ The node makes use of the toolkit's speech transcription tools:
 2. You are then ready to start the speech transcription node
 
     ```shell
+    # Enable log to console.
     ros2 run opendr_perception speech_transcription --verbose True
     ```
     ```shell
+    # Use Whisper instead of Vosk and choose tiny.en variant.
     ros2 run opendr_perception speech_transcription --backbone whisper --model_name tiny.en --verbose True
+    ```
+    ```shell
+    # Suggest to Whisper that the speech will contain the name 'Felix'.
+    ros2 run opendr_perception speech_transcription --backbone whisper --model_name tiny.en --initial_prompt "Felix" --verbose True
     ```
     The following optional arguments are available (More in the source code):
    - `-h or --help`: show a help message and exit
@@ -965,12 +1026,56 @@ The node makes use of the toolkit's speech transcription tools:
    - `--model_name MODEL_NAME`: Specific model name for each backbone. Example: 'tiny', 'tiny.en', 'base', 'base.en' for Whisper, 'vosk-model-small-en-us-0.15' for Vosk (default=`None`) 
    - `--model_path MODEL_PATH`: Path to downloaded model files (default=`None`) 
    - `--language LANGUAGE`: Whisper uses the language parameter to avoid language dectection. Vosk uses the langauge paremeter to select a specific model. Example: 'en' for Whisper, 'en-us' for Vosk (default=`en-us`). Check the available language codes for Whisper at [Whipser repository](https://github.com/openai/whisper/blob/e8622f9afc4eba139bf796c210f5c01081000472/whisper/tokenizer.py#L10). Check the available language code for Vosk from the Vosk model name at [Vosk website](https://alphacephei.com/vosk/models).
+   - `--initial_prompt INITIAL_PROMPT`: Prompt to provide some context or instruction for the transcription, only for Whisper
    - `--verbose VERBOSE`: Display transcription (default=`False`) 
 
 3. Default output topics:
    - Speech transcription: `/opendr/speech_transcription`
 
    For viewing the output, refer to the [notes above.](#notes)
+
+----
+## Text input
+
+### Intent Recognition ROS2 Node
+
+A ROS2 node for recognizing intents from language.
+This node should be used together with the speech transcription node that would transcribe the speech into text and infer intent from it.
+The provided intent recognition node subscribes to the speech transcription output topic.
+
+You can find the intent recognition ROS node python script [here](./opendr_perception/intent_recognition_node.py) to inspect the code and modify if you wish for your needs.
+The node makes use of the toolkit's intent recognition [learner](../../../../src/opendr/perception/multimodal_human_centric/intent_recognition_learner/intent_recognition_learner.py), and the documentation can be found [here](../../../../docs/reference/intent-recognition-learner.md).
+
+#### Instructions for basic usage:
+
+1. Follow the instructions of the speech transcription node and start it.
+
+2. Start the intent recognition node
+
+    ```shell
+    ros2 run opendr_perception intent_recognition
+    ```
+    The following arguments are available:
+   - `-i or --input_transcription_topic INPUT_TRANSCRIPTION_TOPIC`: topic name for input transcription of type OpenDRTranscription (default=`/opendr/speech_transcription`)
+   - `-o or --output_intent_topic OUTPUT_INTENT_TOPIC`: topic name for predicted intent (default=`/opendr/intent`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to be used for inference (default=`cuda`)
+   - `--text_backbone TEXT_BACKBONE`: text backbone tobe used, choices are `bert-base-uncased`, `albert-base-v2`, `bert-small`, `bert-mini`, `bert-tiny` (default=`bert-base-uncased`)
+   - `--cache_path CACHE_PATH`: cache path for tokenizer files (default=`./cache/`)
+
+3. Default output topics:
+   - Predicted intents and confidence: `/opendr/intent`
+   
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+On the table below you can find the detectable classes and their corresponding IDs:
+
+| Class  | Complain | Praise | Apologise | Thank | Criticize | Agree | Taunt | Flaunt | Joke | Oppose | Comfort | Care | Inform | Advise | Arrange | Introduce | Leave | Prevent | Greet | Ask for help |
+|--------|----------|--------|-----------|-------|-----------|-------|-------|--------|------|--------|---------|------|--------|--------|---------|-----------|-------|---------|-------|--------------|
+| **ID** | 0        | 1      | 2         | 3     | 4         | 5     | 6     | 7      | 8    | 9      | 10      | 11   | 12     | 13     | 14      | 15        | 16    | 17      | 18    | 19           |
+
 
 ----
 ## Point cloud input

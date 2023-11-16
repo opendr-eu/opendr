@@ -149,7 +149,7 @@ def main():
                         type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--accelerate", help="Enables acceleration flags (e.g., stride)", default=False,
                         action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     try:
         if args.device == "cuda" and torch.cuda.is_available():
