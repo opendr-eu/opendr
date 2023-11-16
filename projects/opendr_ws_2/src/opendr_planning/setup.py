@@ -12,7 +12,7 @@ data_files.append(('share/' + package_name, ['package.xml']))
 
 setup(
     name=package_name,
-    version='2.2.0',
+    version='3.0.0',
     packages=[package_name],
     data_files=data_files,
     install_requires=['setuptools'],
