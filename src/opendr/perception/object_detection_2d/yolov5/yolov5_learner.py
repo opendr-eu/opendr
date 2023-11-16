@@ -109,23 +109,24 @@ class YOLOv5DetectorLearner(Learner):
                  model_name='yolov5s_finetuned_in_trucks.pt', img_name='truck1.jpg'):
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
-        "images", "test_data"].
+        "images"].
         :param path: folder to which files will be downloaded, if None self.temp_path will be used
         :type path: str, optional
-        :param mode: one of: ["pretrained", "images", "test_data"], where "pretrained" downloads a pretrained
-        network depending on the self.backbone type, "images" downloads example inference data, "backbone" downloads a
-        pretrained resnet backbone for training, and "annotations" downloads additional annotation files for training
+        :param mode: one of: ["pretrained", "images"], where "pretrained" downloads a pretrained
+        network, "images" downloads example inference data
         :type mode: str, optional
         :param verbose: if True, additional information is printed on stdout
         :type verbose: bool, optional
-        :param model_name: the name of the model file to download (e.g., 'yolov5s.pt')
-        :type model_name: str, optional
         :param url: URL to file location on FTP server
         :type url: str, optional
+        :param model_name: the name of the model file to download, currently only supports `yolov5s_finetuned_in_trucks.pt`
+        :type model_name: str, optional
+        :param img_name: name of image in ftp server, available files are `truckX.jpg` for `X=1 to 10`
+        :type img_name: str, optional
         """
-        valid_modes = ["pretrained", "images", "test_data"]
+        valid_modes = ["pretrained", "images"]
         if mode not in valid_modes:
-            raise ValueError("Invalid mode. Currently, only 'pretrained' mode is supported.")
+            raise ValueError("Invalid mode. Currently, only 'pretrained' and 'images' mode is supported.")
 
         if path is None:
             path = self.temp_path
