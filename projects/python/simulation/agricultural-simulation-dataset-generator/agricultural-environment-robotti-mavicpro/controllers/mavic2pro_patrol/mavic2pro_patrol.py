@@ -32,6 +32,7 @@ STOP_ON = 193
 
 useMavic = True
 
+
 class Mavic(Robot):
     # Constants, empirically found.
     K_VERTICAL_THRUST = 68.5  # 68.5  # with this thrust, the drone lifts.
