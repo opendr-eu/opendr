@@ -16,6 +16,7 @@ EXTERNPROTO "../protos/Silo.proto"
 EXTERNPROTO "../protos/AgriculturalWarehouse.proto"
 EXTERNPROTO "../protos/StraightRoadSegment.proto"
 IMPORTABLE EXTERNPROTO "../protos/CropPlant.proto"
+IMPORTABLE EXTERNPROTO "../protos/SolidBoxAF.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/master/projects/objects/solids/protos/SolidBox.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/master/projects/objects/trees/protos/SimpleTree.proto"
 IMPORTABLE EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/master/projects/humans/skin_animated_humans/protos/CharacterSkin.proto"
@@ -63,7 +64,7 @@ DEF FOG Fog {
   fogType "EXPONENTIAL"
 }
 DEF BACKGROUND TexturedBackground {
-  texture "noon_stormy_empty"
+  texture "noon_cloudy_countryside"
 }
 Mavic2Pro {
   hidden linearVelocity_0 -1.2102519493318901e-06 -1.727391971801067e-08 -2.3535755719478624e-05
@@ -82,7 +83,7 @@ Mavic2Pro {
   ]
 }
 DEF BACKGROUND_LIGHT TexturedBackgroundLight {
-  texture "noon_stormy_empty"
+  texture "noon_cloudy_countryside"
   luminosity 2
 }
 Floor {
@@ -370,9 +371,8 @@ Rabbit {
   translation 0 -50.87 0.07
   rotation 0 0 1 1.0472
 }
-DEF FIELD_SOIL Transform {
+DEF FIELD_SOIL Solid {
   translation -40 -11.200000000000001 -0.08
-  scale 0.2 0.2 0.1
   children [
     CropPlant {
       rotation 0 0 1 1.861569607761256
@@ -380,3355 +380,3355 @@ DEF FIELD_SOIL Transform {
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 8 0
+      translation 0.0 1.6 0
       rotation 0 0 1 2.8601775736370243
       name "plant_0_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 16 0
+      translation 0.0 3.2 0
       rotation 0 0 1 1.1173067453697407
       name "plant_0_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 24 0
+      translation 0.0 4.8 0
       rotation 0 0 1 2.934184193513271
       name "plant_0_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 32 0
+      translation 0.0 6.4 0
       rotation 0 0 1 2.0945943023024487
       name "plant_0_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 40 0
+      translation 0.0 8.0 0
       rotation 0 0 1 1.3691975248055628
       name "plant_0_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 48 0
+      translation 0.0 9.6 0
       rotation 0 0 1 1.72394310054955
       name "plant_0_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 56 0
+      translation 0.0 11.2 0
       rotation 0 0 1 2.2801417880749266
       name "plant_0_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 64 0
+      translation 0.0 12.8 0
       rotation 0 0 1 1.2810466074229476
       name "plant_0_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 72 0
+      translation 0.0 14.4 0
       rotation 0 0 1 2.644243117455953
       name "plant_0_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 80 0
+      translation 0.0 16.0 0
       rotation 0 0 1 2.000960960306035
       name "plant_0_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 88 0
+      translation 0.0 17.6 0
       rotation 0 0 1 1.5836299421219189
       name "plant_0_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 96 0
+      translation 0.0 19.2 0
       rotation 0 0 1 1.0552347714766221
       name "plant_0_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 0 104 0
+      translation 0.0 20.8 0
       rotation 0 0 1 0.3657265307999545
       name "plant_0_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 0 0
+      translation 1.0 0.0 0
       rotation 0 0 1 0.0768266628564984
       name "plant_1_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 8 0
+      translation 1.0 1.6 0
       rotation 0 0 1 2.509669013841209
       name "plant_1_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 16 0
+      translation 1.0 3.2 0
       rotation 0 0 1 1.8779246625641637
       name "plant_1_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 24 0
+      translation 1.0 4.8 0
       rotation 0 0 1 0.08174374949208504
       name "plant_1_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 32 0
+      translation 1.0 6.4 0
       rotation 0 0 1 2.8110498690051857
       name "plant_1_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 40 0
+      translation 1.0 8.0 0
       rotation 0 0 1 2.007393133123769
       name "plant_1_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 48 0
+      translation 1.0 9.6 0
       rotation 0 0 1 0.884550562203186
       name "plant_1_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 56 0
+      translation 1.0 11.2 0
       rotation 0 0 1 1.284395296661178
       name "plant_1_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 64 0
+      translation 1.0 12.8 0
       rotation 0 0 1 1.419208641784986
       name "plant_1_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 72 0
+      translation 1.0 14.4 0
       rotation 0 0 1 2.635529101650747
       name "plant_1_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 80 0
+      translation 1.0 16.0 0
       rotation 0 0 1 1.7265535234564258
       name "plant_1_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 88 0
+      translation 1.0 17.6 0
       rotation 0 0 1 1.3024416163533268
       name "plant_1_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 96 0
+      translation 1.0 19.2 0
       rotation 0 0 1 1.0137809930698591
       name "plant_1_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 5 104 0
+      translation 1.0 20.8 0
       rotation 0 0 1 1.7949710464988602
       name "plant_1_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 0 0
+      translation 2.0 0.0 0
       rotation 0 0 1 0.5230866755892264
       name "plant_2_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 8 0
+      translation 2.0 1.6 0
       rotation 0 0 1 2.129869919066065
       name "plant_2_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 16 0
+      translation 2.0 3.2 0
       rotation 0 0 1 1.872708565976403
       name "plant_2_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 24 0
+      translation 2.0 4.8 0
       rotation 0 0 1 1.4895598688236167
       name "plant_2_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 32 0
+      translation 2.0 6.4 0
       rotation 0 0 1 2.088260366980533
       name "plant_2_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 40 0
+      translation 2.0 8.0 0
       rotation 0 0 1 2.1248490305613443
       name "plant_2_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 48 0
+      translation 2.0 9.6 0
       rotation 0 0 1 2.412231887044956
       name "plant_2_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 56 0
+      translation 2.0 11.2 0
       rotation 0 0 1 1.8196292944809278
       name "plant_2_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 64 0
+      translation 2.0 12.8 0
       rotation 0 0 1 0.9239573547378203
       name "plant_2_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 72 0
+      translation 2.0 14.4 0
       rotation 0 0 1 0.8917398765419421
       name "plant_2_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 80 0
+      translation 2.0 16.0 0
       rotation 0 0 1 1.0232897747457728
       name "plant_2_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 88 0
+      translation 2.0 17.6 0
       rotation 0 0 1 0.23478346158920793
       name "plant_2_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 96 0
+      translation 2.0 19.2 0
       rotation 0 0 1 0.47408054843921293
       name "plant_2_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 10 104 0
+      translation 2.0 20.8 0
       rotation 0 0 1 2.7291516944279532
       name "plant_2_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 0 0
+      translation 3.0 0.0 0
       rotation 0 0 1 1.0457105934258315
       name "plant_3_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 8 0
+      translation 3.0 1.6 0
       rotation 0 0 1 1.1456641394470055
       name "plant_3_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 16 0
+      translation 3.0 3.2 0
       rotation 0 0 1 0.23281974406663924
       name "plant_3_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 24 0
+      translation 3.0 4.8 0
       rotation 0 0 1 2.070215986296963
       name "plant_3_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 32 0
+      translation 3.0 6.4 0
       rotation 0 0 1 2.2152995422725676
       name "plant_3_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 40 0
+      translation 3.0 8.0 0
       rotation 0 0 1 2.6371315357968044
       name "plant_3_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 48 0
+      translation 3.0 9.6 0
       rotation 0 0 1 3.0081713436052913
       name "plant_3_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 56 0
+      translation 3.0 11.2 0
       rotation 0 0 1 2.976897328466115
       name "plant_3_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 64 0
+      translation 3.0 12.8 0
       rotation 0 0 1 1.6499234490313432
       name "plant_3_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 72 0
+      translation 3.0 14.4 0
       rotation 0 0 1 2.807874575410455
       name "plant_3_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 80 0
+      translation 3.0 16.0 0
       rotation 0 0 1 1.4572962967101912
       name "plant_3_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 88 0
+      translation 3.0 17.6 0
       rotation 0 0 1 0.29802142914543317
       name "plant_3_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 96 0
+      translation 3.0 19.2 0
       rotation 0 0 1 2.0215771078643576
       name "plant_3_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 15 104 0
+      translation 3.0 20.8 0
       rotation 0 0 1 1.3594570672881487
       name "plant_3_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 0 0
+      translation 4.0 0.0 0
       rotation 0 0 1 0.9010126439210618
       name "plant_4_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 8 0
+      translation 4.0 1.6 0
       rotation 0 0 1 2.3754689279236336
       name "plant_4_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 16 0
+      translation 4.0 3.2 0
       rotation 0 0 1 1.907667303466259
       name "plant_4_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 24 0
+      translation 4.0 4.8 0
       rotation 0 0 1 1.1903105903901252
       name "plant_4_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 32 0
+      translation 4.0 6.4 0
       rotation 0 0 1 1.9329159178426045
       name "plant_4_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 40 0
+      translation 4.0 8.0 0
       rotation 0 0 1 1.7589882365261562
       name "plant_4_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 48 0
+      translation 4.0 9.6 0
       rotation 0 0 1 2.477540766555059
       name "plant_4_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 56 0
+      translation 4.0 11.2 0
       rotation 0 0 1 2.940618511933653
       name "plant_4_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 64 0
+      translation 4.0 12.8 0
       rotation 0 0 1 2.851429598015305
       name "plant_4_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 72 0
+      translation 4.0 14.4 0
       rotation 0 0 1 2.7259843287297945
       name "plant_4_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 80 0
+      translation 4.0 16.0 0
       rotation 0 0 1 1.2257939383864969
       name "plant_4_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 88 0
+      translation 4.0 17.6 0
       rotation 0 0 1 2.212092340368185
       name "plant_4_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 96 0
+      translation 4.0 19.2 0
       rotation 0 0 1 1.4657780443963613
       name "plant_4_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 20 104 0
+      translation 4.0 20.8 0
       rotation 0 0 1 0.08185475319651012
       name "plant_4_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 0 0
+      translation 5.0 0.0 0
       rotation 0 0 1 1.9611924275312818
       name "plant_5_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 8 0
+      translation 5.0 1.6 0
       rotation 0 0 1 1.4633240468812145
       name "plant_5_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 16 0
+      translation 5.0 3.2 0
       rotation 0 0 1 1.4485069718417687
       name "plant_5_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 24 0
+      translation 5.0 4.8 0
       rotation 0 0 1 0.6256102364553513
       name "plant_5_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 32 0
+      translation 5.0 6.4 0
       rotation 0 0 1 0.1676255932033508
       name "plant_5_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 40 0
+      translation 5.0 8.0 0
       rotation 0 0 1 3.002310351585933
       name "plant_5_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 48 0
+      translation 5.0 9.6 0
       rotation 0 0 1 0.6206870301798881
       name "plant_5_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 56 0
+      translation 5.0 11.2 0
       rotation 0 0 1 0.7600053784954417
       name "plant_5_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 64 0
+      translation 5.0 12.8 0
       rotation 0 0 1 0.5652001440376796
       name "plant_5_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 72 0
+      translation 5.0 14.4 0
       rotation 0 0 1 1.9268459321322613
       name "plant_5_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 80 0
+      translation 5.0 16.0 0
       rotation 0 0 1 2.4498644249829917
       name "plant_5_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 88 0
+      translation 5.0 17.6 0
       rotation 0 0 1 2.373064811798857
       name "plant_5_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 96 0
+      translation 5.0 19.2 0
       rotation 0 0 1 1.982410362084438
       name "plant_5_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 25 104 0
+      translation 5.0 20.8 0
       rotation 0 0 1 0.9421440428820034
       name "plant_5_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 0 0
+      translation 6.0 0.0 0
       rotation 0 0 1 0.7445789598962065
       name "plant_6_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 8 0
+      translation 6.0 1.6 0
       rotation 0 0 1 2.3942016087336384
       name "plant_6_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 16 0
+      translation 6.0 3.2 0
       rotation 0 0 1 1.1165325813002505
       name "plant_6_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 24 0
+      translation 6.0 4.8 0
       rotation 0 0 1 1.2357682486874866
       name "plant_6_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 32 0
+      translation 6.0 6.4 0
       rotation 0 0 1 0.4111797980686247
       name "plant_6_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 40 0
+      translation 6.0 8.0 0
       rotation 0 0 1 2.954701208605165
       name "plant_6_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 48 0
+      translation 6.0 9.6 0
       rotation 0 0 1 1.8635743184805234
       name "plant_6_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 56 0
+      translation 6.0 11.2 0
       rotation 0 0 1 0.7166281657560584
       name "plant_6_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 64 0
+      translation 6.0 12.8 0
       rotation 0 0 1 3.0874534514473297
       name "plant_6_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 72 0
+      translation 6.0 14.4 0
       rotation 0 0 1 2.5056426258153377
       name "plant_6_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 80 0
+      translation 6.0 16.0 0
       rotation 0 0 1 2.3942263919288975
       name "plant_6_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 88 0
+      translation 6.0 17.6 0
       rotation 0 0 1 2.3195174277432784
       name "plant_6_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 96 0
+      translation 6.0 19.2 0
       rotation 0 0 1 1.134245079194879
       name "plant_6_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 30 104 0
+      translation 6.0 20.8 0
       rotation 0 0 1 2.0655191311773624
       name "plant_6_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 0 0
+      translation 7.0 0.0 0
       rotation 0 0 1 2.148534758520408
       name "plant_7_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 8 0
+      translation 7.0 1.6 0
       rotation 0 0 1 0.13416009829676084
       name "plant_7_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 16 0
+      translation 7.0 3.2 0
       rotation 0 0 1 2.45023355643826
       name "plant_7_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 24 0
+      translation 7.0 4.8 0
       rotation 0 0 1 0.9355072868912896
       name "plant_7_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 32 0
+      translation 7.0 6.4 0
       rotation 0 0 1 1.4410086483058402
       name "plant_7_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 40 0
+      translation 7.0 8.0 0
       rotation 0 0 1 2.1418818306418888
       name "plant_7_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 48 0
+      translation 7.0 9.6 0
       rotation 0 0 1 0.9920174475119187
       name "plant_7_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 56 0
+      translation 7.0 11.2 0
       rotation 0 0 1 0.03440508219849407
       name "plant_7_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 64 0
+      translation 7.0 12.8 0
       rotation 0 0 1 1.939393066282425
       name "plant_7_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 72 0
+      translation 7.0 14.4 0
       rotation 0 0 1 2.415876628297667
       name "plant_7_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 80 0
+      translation 7.0 16.0 0
       rotation 0 0 1 2.5818574983459106
       name "plant_7_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 88 0
+      translation 7.0 17.6 0
       rotation 0 0 1 3.0914177158533196
       name "plant_7_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 96 0
+      translation 7.0 19.2 0
       rotation 0 0 1 1.1882598513497902
       name "plant_7_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 35 104 0
+      translation 7.0 20.8 0
       rotation 0 0 1 0.539295496904755
       name "plant_7_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 0 0
+      translation 8.0 0.0 0
       rotation 0 0 1 2.5585932911635854
       name "plant_8_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 8 0
+      translation 8.0 1.6 0
       rotation 0 0 1 1.5105989442446632
       name "plant_8_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 16 0
+      translation 8.0 3.2 0
       rotation 0 0 1 0.8604215563661466
       name "plant_8_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 24 0
+      translation 8.0 4.8 0
       rotation 0 0 1 0.9704505826314981
       name "plant_8_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 32 0
+      translation 8.0 6.4 0
       rotation 0 0 1 1.7811924319659365
       name "plant_8_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 40 0
+      translation 8.0 8.0 0
       rotation 0 0 1 1.6324276843516328
       name "plant_8_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 48 0
+      translation 8.0 9.6 0
       rotation 0 0 1 0.579502755480221
       name "plant_8_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 56 0
+      translation 8.0 11.2 0
       rotation 0 0 1 0.5894425661213225
       name "plant_8_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 64 0
+      translation 8.0 12.8 0
       rotation 0 0 1 2.528163328590053
       name "plant_8_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 72 0
+      translation 8.0 14.4 0
       rotation 0 0 1 1.2858497012244796
       name "plant_8_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 80 0
+      translation 8.0 16.0 0
       rotation 0 0 1 1.1196570243705772
       name "plant_8_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 88 0
+      translation 8.0 17.6 0
       rotation 0 0 1 2.32616704021596
       name "plant_8_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 96 0
+      translation 8.0 19.2 0
       rotation 0 0 1 1.5807820000850763
       name "plant_8_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 40 104 0
+      translation 8.0 20.8 0
       rotation 0 0 1 0.22718041992915092
       name "plant_8_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 0 0
+      translation 9.0 0.0 0
       rotation 0 0 1 2.080995256914662
       name "plant_9_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 8 0
+      translation 9.0 1.6 0
       rotation 0 0 1 1.6734661828495265
       name "plant_9_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 16 0
+      translation 9.0 3.2 0
       rotation 0 0 1 1.1706630786905634
       name "plant_9_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 24 0
+      translation 9.0 4.8 0
       rotation 0 0 1 0.378530096367788
       name "plant_9_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 32 0
+      translation 9.0 6.4 0
       rotation 0 0 1 2.583594484826162
       name "plant_9_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 40 0
+      translation 9.0 8.0 0
       rotation 0 0 1 2.6805430057743047
       name "plant_9_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 48 0
+      translation 9.0 9.6 0
       rotation 0 0 1 1.800148095808875
       name "plant_9_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 56 0
+      translation 9.0 11.2 0
       rotation 0 0 1 2.4414660143075255
       name "plant_9_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 64 0
+      translation 9.0 12.8 0
       rotation 0 0 1 0.8858643592590042
       name "plant_9_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 72 0
+      translation 9.0 14.4 0
       rotation 0 0 1 1.772429745149875
       name "plant_9_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 80 0
+      translation 9.0 16.0 0
       rotation 0 0 1 1.040114707078786
       name "plant_9_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 88 0
+      translation 9.0 17.6 0
       rotation 0 0 1 0.5093876086785423
       name "plant_9_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 96 0
+      translation 9.0 19.2 0
       rotation 0 0 1 1.6028314652942466
       name "plant_9_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 45 104 0
+      translation 9.0 20.8 0
       rotation 0 0 1 1.8370945700524415
       name "plant_9_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 0 0
+      translation 10.0 0.0 0
       rotation 0 0 1 0.3981009912016938
       name "plant_10_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 8 0
+      translation 10.0 1.6 0
       rotation 0 0 1 0.5203912367123205
       name "plant_10_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 16 0
+      translation 10.0 3.2 0
       rotation 0 0 1 1.0610196309306208
       name "plant_10_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 24 0
+      translation 10.0 4.8 0
       rotation 0 0 1 2.324229674956315
       name "plant_10_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 32 0
+      translation 10.0 6.4 0
       rotation 0 0 1 0.30597811242096334
       name "plant_10_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 40 0
+      translation 10.0 8.0 0
       rotation 0 0 1 0.208705484664246
       name "plant_10_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 48 0
+      translation 10.0 9.6 0
       rotation 0 0 1 0.07515468342580914
       name "plant_10_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 56 0
+      translation 10.0 11.2 0
       rotation 0 0 1 1.7141672040622062
       name "plant_10_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 64 0
+      translation 10.0 12.8 0
       rotation 0 0 1 1.9807855850246319
       name "plant_10_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 72 0
+      translation 10.0 14.4 0
       rotation 0 0 1 0.028880506600508615
       name "plant_10_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 80 0
+      translation 10.0 16.0 0
       rotation 0 0 1 2.0622923584389015
       name "plant_10_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 88 0
+      translation 10.0 17.6 0
       rotation 0 0 1 2.1716058435952403
       name "plant_10_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 96 0
+      translation 10.0 19.2 0
       rotation 0 0 1 2.2207859744752363
       name "plant_10_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 50 104 0
+      translation 10.0 20.8 0
       rotation 0 0 1 1.1257782513914991
       name "plant_10_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 0 0
+      translation 11.0 0.0 0
       rotation 0 0 1 1.0867076293660363
       name "plant_11_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 8 0
+      translation 11.0 1.6 0
       rotation 0 0 1 0.6616823003849527
       name "plant_11_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 16 0
+      translation 11.0 3.2 0
       rotation 0 0 1 2.742405901802043
       name "plant_11_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 24 0
+      translation 11.0 4.8 0
       rotation 0 0 1 0.06139036397560555
       name "plant_11_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 32 0
+      translation 11.0 6.4 0
       rotation 0 0 1 1.931937351000028
       name "plant_11_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 40 0
+      translation 11.0 8.0 0
       rotation 0 0 1 0.48295288682126486
       name "plant_11_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 48 0
+      translation 11.0 9.6 0
       rotation 0 0 1 2.751849010535117
       name "plant_11_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 56 0
+      translation 11.0 11.2 0
       rotation 0 0 1 1.575456515144181
       name "plant_11_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 64 0
+      translation 11.0 12.8 0
       rotation 0 0 1 0.5502909742190729
       name "plant_11_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 72 0
+      translation 11.0 14.4 0
       rotation 0 0 1 1.4649199711781822
       name "plant_11_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 80 0
+      translation 11.0 16.0 0
       rotation 0 0 1 0.5917539741132096
       name "plant_11_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 88 0
+      translation 11.0 17.6 0
       rotation 0 0 1 2.872888708818661
       name "plant_11_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 96 0
+      translation 11.0 19.2 0
       rotation 0 0 1 0.5418101156436562
       name "plant_11_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 55 104 0
+      translation 11.0 20.8 0
       rotation 0 0 1 2.892678969308291
       name "plant_11_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 0 0
+      translation 12.0 0.0 0
       rotation 0 0 1 1.2837931344113356
       name "plant_12_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 8 0
+      translation 12.0 1.6 0
       rotation 0 0 1 0.1508763696065961
       name "plant_12_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 16 0
+      translation 12.0 3.2 0
       rotation 0 0 1 1.5900947426063112
       name "plant_12_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 24 0
+      translation 12.0 4.8 0
       rotation 0 0 1 0.41494064042992074
       name "plant_12_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 32 0
+      translation 12.0 6.4 0
       rotation 0 0 1 2.9454499450580447
       name "plant_12_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 40 0
+      translation 12.0 8.0 0
       rotation 0 0 1 0.5047416678162951
       name "plant_12_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 48 0
+      translation 12.0 9.6 0
       rotation 0 0 1 2.309286786731612
       name "plant_12_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 56 0
+      translation 12.0 11.2 0
       rotation 0 0 1 1.6130264481291134
       name "plant_12_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 64 0
+      translation 12.0 12.8 0
       rotation 0 0 1 1.1605655073067256
       name "plant_12_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 72 0
+      translation 12.0 14.4 0
       rotation 0 0 1 2.7547724475701405
       name "plant_12_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 80 0
+      translation 12.0 16.0 0
       rotation 0 0 1 2.346017627768528
       name "plant_12_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 88 0
+      translation 12.0 17.6 0
       rotation 0 0 1 1.3140412809368012
       name "plant_12_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 96 0
+      translation 12.0 19.2 0
       rotation 0 0 1 0.8990540798014033
       name "plant_12_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 60 104 0
+      translation 12.0 20.8 0
       rotation 0 0 1 0.4650233428702099
       name "plant_12_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 0 0
+      translation 13.0 0.0 0
       rotation 0 0 1 2.5960659699627415
       name "plant_13_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 8 0
+      translation 13.0 1.6 0
       rotation 0 0 1 2.8556559318667047
       name "plant_13_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 16 0
+      translation 13.0 3.2 0
       rotation 0 0 1 1.2787776450007766
       name "plant_13_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 24 0
+      translation 13.0 4.8 0
       rotation 0 0 1 1.0466490109968545
       name "plant_13_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 32 0
+      translation 13.0 6.4 0
       rotation 0 0 1 0.5390847289553047
       name "plant_13_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 40 0
+      translation 13.0 8.0 0
       rotation 0 0 1 0.17743215019933975
       name "plant_13_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 48 0
+      translation 13.0 9.6 0
       rotation 0 0 1 2.715258865601706
       name "plant_13_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 56 0
+      translation 13.0 11.2 0
       rotation 0 0 1 1.7339351108544632
       name "plant_13_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 64 0
+      translation 13.0 12.8 0
       rotation 0 0 1 0.881634139864065
       name "plant_13_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 72 0
+      translation 13.0 14.4 0
       rotation 0 0 1 2.9728572424146376
       name "plant_13_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 80 0
+      translation 13.0 16.0 0
       rotation 0 0 1 2.581613716326809
       name "plant_13_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 88 0
+      translation 13.0 17.6 0
       rotation 0 0 1 2.7425296602708724
       name "plant_13_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 96 0
+      translation 13.0 19.2 0
       rotation 0 0 1 1.441780834036534
       name "plant_13_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 65 104 0
+      translation 13.0 20.8 0
       rotation 0 0 1 1.3095392158291312
       name "plant_13_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 0 0
+      translation 14.0 0.0 0
       rotation 0 0 1 0.9065816771011421
       name "plant_14_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 8 0
+      translation 14.0 1.6 0
       rotation 0 0 1 1.2000960416269177
       name "plant_14_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 16 0
+      translation 14.0 3.2 0
       rotation 0 0 1 0.5038714343533411
       name "plant_14_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 24 0
+      translation 14.0 4.8 0
       rotation 0 0 1 0.9984518095267545
       name "plant_14_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 32 0
+      translation 14.0 6.4 0
       rotation 0 0 1 1.3617235682116355
       name "plant_14_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 40 0
+      translation 14.0 8.0 0
       rotation 0 0 1 0.4073209917768138
       name "plant_14_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 48 0
+      translation 14.0 9.6 0
       rotation 0 0 1 0.1432898547650991
       name "plant_14_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 56 0
+      translation 14.0 11.2 0
       rotation 0 0 1 2.1720309102204567
       name "plant_14_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 64 0
+      translation 14.0 12.8 0
       rotation 0 0 1 1.0976388818317222
       name "plant_14_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 72 0
+      translation 14.0 14.4 0
       rotation 0 0 1 0.11737432538099582
       name "plant_14_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 80 0
+      translation 14.0 16.0 0
       rotation 0 0 1 1.652009362711935
       name "plant_14_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 88 0
+      translation 14.0 17.6 0
       rotation 0 0 1 3.03883260733615
       name "plant_14_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 96 0
+      translation 14.0 19.2 0
       rotation 0 0 1 1.530398174590944
       name "plant_14_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 70 104 0
+      translation 14.0 20.8 0
       rotation 0 0 1 0.5759698405197541
       name "plant_14_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 0 0
+      translation 15.0 0.0 0
       rotation 0 0 1 0.6753447968804364
       name "plant_15_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 8 0
+      translation 15.0 1.6 0
       rotation 0 0 1 0.5597777794742469
       name "plant_15_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 16 0
+      translation 15.0 3.2 0
       rotation 0 0 1 3.0210435479983744
       name "plant_15_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 24 0
+      translation 15.0 4.8 0
       rotation 0 0 1 0.46785009546459294
       name "plant_15_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 32 0
+      translation 15.0 6.4 0
       rotation 0 0 1 2.57079573889431
       name "plant_15_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 40 0
+      translation 15.0 8.0 0
       rotation 0 0 1 2.9681642255561913
       name "plant_15_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 48 0
+      translation 15.0 9.6 0
       rotation 0 0 1 1.3405965417349563
       name "plant_15_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 56 0
+      translation 15.0 11.2 0
       rotation 0 0 1 0.3819183614469151
       name "plant_15_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 64 0
+      translation 15.0 12.8 0
       rotation 0 0 1 3.1240796735977097
       name "plant_15_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 72 0
+      translation 15.0 14.4 0
       rotation 0 0 1 1.8980001939575046
       name "plant_15_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 80 0
+      translation 15.0 16.0 0
       rotation 0 0 1 2.0909327690019177
       name "plant_15_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 88 0
+      translation 15.0 17.6 0
       rotation 0 0 1 2.9147764732286268
       name "plant_15_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 96 0
+      translation 15.0 19.2 0
       rotation 0 0 1 2.4842215112048875
       name "plant_15_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 75 104 0
+      translation 15.0 20.8 0
       rotation 0 0 1 1.2683805821636336
       name "plant_15_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 0 0
+      translation 16.0 0.0 0
       rotation 0 0 1 0.9500484706239786
       name "plant_16_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 8 0
+      translation 16.0 1.6 0
       rotation 0 0 1 2.6061552867969677
       name "plant_16_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 16 0
+      translation 16.0 3.2 0
       rotation 0 0 1 0.9864117979506949
       name "plant_16_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 24 0
+      translation 16.0 4.8 0
       rotation 0 0 1 0.8989311908922183
       name "plant_16_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 32 0
+      translation 16.0 6.4 0
       rotation 0 0 1 1.169935764682808
       name "plant_16_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 40 0
+      translation 16.0 8.0 0
       rotation 0 0 1 3.1114273453296115
       name "plant_16_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 48 0
+      translation 16.0 9.6 0
       rotation 0 0 1 0.9671670002403142
       name "plant_16_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 56 0
+      translation 16.0 11.2 0
       rotation 0 0 1 1.0180029488782074
       name "plant_16_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 64 0
+      translation 16.0 12.8 0
       rotation 0 0 1 0.8938615049748933
       name "plant_16_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 72 0
+      translation 16.0 14.4 0
       rotation 0 0 1 0.9225676100872579
       name "plant_16_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 80 0
+      translation 16.0 16.0 0
       rotation 0 0 1 0.3512767897619375
       name "plant_16_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 88 0
+      translation 16.0 17.6 0
       rotation 0 0 1 2.290552198396101
       name "plant_16_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 96 0
+      translation 16.0 19.2 0
       rotation 0 0 1 1.1755664997092357
       name "plant_16_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 80 104 0
+      translation 16.0 20.8 0
       rotation 0 0 1 0.14834112480275322
       name "plant_16_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 0 0
+      translation 17.0 0.0 0
       rotation 0 0 1 3.023037621597894
       name "plant_17_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 8 0
+      translation 17.0 1.6 0
       rotation 0 0 1 2.6445198920606234
       name "plant_17_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 16 0
+      translation 17.0 3.2 0
       rotation 0 0 1 2.3121478379511107
       name "plant_17_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 24 0
+      translation 17.0 4.8 0
       rotation 0 0 1 2.6960535122419858
       name "plant_17_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 32 0
+      translation 17.0 6.4 0
       rotation 0 0 1 3.003833868227385
       name "plant_17_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 40 0
+      translation 17.0 8.0 0
       rotation 0 0 1 2.5278478417113615
       name "plant_17_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 48 0
+      translation 17.0 9.6 0
       rotation 0 0 1 3.0386426922048453
       name "plant_17_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 56 0
+      translation 17.0 11.2 0
       rotation 0 0 1 1.0859882323258012
       name "plant_17_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 64 0
+      translation 17.0 12.8 0
       rotation 0 0 1 1.5046428647581453
       name "plant_17_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 72 0
+      translation 17.0 14.4 0
       rotation 0 0 1 2.716570247300834
       name "plant_17_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 80 0
+      translation 17.0 16.0 0
       rotation 0 0 1 0.06909019835198922
       name "plant_17_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 88 0
+      translation 17.0 17.6 0
       rotation 0 0 1 1.0886351816217636
       name "plant_17_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 96 0
+      translation 17.0 19.2 0
       rotation 0 0 1 1.2414454628713125
       name "plant_17_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 85 104 0
+      translation 17.0 20.8 0
       rotation 0 0 1 0.8872679034265636
       name "plant_17_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 0 0
+      translation 18.0 0.0 0
       rotation 0 0 1 1.1932342221258536
       name "plant_18_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 8 0
+      translation 18.0 1.6 0
       rotation 0 0 1 1.7892472620213162
       name "plant_18_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 16 0
+      translation 18.0 3.2 0
       rotation 0 0 1 0.4284869005151851
       name "plant_18_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 24 0
+      translation 18.0 4.8 0
       rotation 0 0 1 3.127482608494779
       name "plant_18_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 32 0
+      translation 18.0 6.4 0
       rotation 0 0 1 1.2072842787285039
       name "plant_18_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 40 0
+      translation 18.0 8.0 0
       rotation 0 0 1 1.772721226234377
       name "plant_18_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 48 0
+      translation 18.0 9.6 0
       rotation 0 0 1 1.4580427484445369
       name "plant_18_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 56 0
+      translation 18.0 11.2 0
       rotation 0 0 1 0.16961711231838913
       name "plant_18_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 64 0
+      translation 18.0 12.8 0
       rotation 0 0 1 0.39890207282488627
       name "plant_18_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 72 0
+      translation 18.0 14.4 0
       rotation 0 0 1 1.396051202140796
       name "plant_18_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 80 0
+      translation 18.0 16.0 0
       rotation 0 0 1 0.7896064275144234
       name "plant_18_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 88 0
+      translation 18.0 17.6 0
       rotation 0 0 1 2.4390974746980127
       name "plant_18_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 96 0
+      translation 18.0 19.2 0
       rotation 0 0 1 2.6690278539885117
       name "plant_18_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 90 104 0
+      translation 18.0 20.8 0
       rotation 0 0 1 0.6765378190500559
       name "plant_18_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 0 0
+      translation 19.0 0.0 0
       rotation 0 0 1 0.022348835171936008
       name "plant_19_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 8 0
+      translation 19.0 1.6 0
       rotation 0 0 1 0.9784025885115071
       name "plant_19_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 16 0
+      translation 19.0 3.2 0
       rotation 0 0 1 0.4679937414292931
       name "plant_19_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 24 0
+      translation 19.0 4.8 0
       rotation 0 0 1 0.14314444269858034
       name "plant_19_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 32 0
+      translation 19.0 6.4 0
       rotation 0 0 1 1.0746813784437697
       name "plant_19_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 40 0
+      translation 19.0 8.0 0
       rotation 0 0 1 2.0177470135801543
       name "plant_19_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 48 0
+      translation 19.0 9.6 0
       rotation 0 0 1 0.7242349819532936
       name "plant_19_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 56 0
+      translation 19.0 11.2 0
       rotation 0 0 1 0.08649435280086663
       name "plant_19_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 64 0
+      translation 19.0 12.8 0
       rotation 0 0 1 2.6920055405243213
       name "plant_19_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 72 0
+      translation 19.0 14.4 0
       rotation 0 0 1 2.4264582112270925
       name "plant_19_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 80 0
+      translation 19.0 16.0 0
       rotation 0 0 1 0.584839933276671
       name "plant_19_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 88 0
+      translation 19.0 17.6 0
       rotation 0 0 1 0.22090220035171987
       name "plant_19_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 96 0
+      translation 19.0 19.2 0
       rotation 0 0 1 1.5225674263289326
       name "plant_19_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 95 104 0
+      translation 19.0 20.8 0
       rotation 0 0 1 0.09379465480801547
       name "plant_19_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 0 0
+      translation 20.0 0.0 0
       rotation 0 0 1 2.0015247169590347
       name "plant_20_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 8 0
+      translation 20.0 1.6 0
       rotation 0 0 1 1.776034259697863
       name "plant_20_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 16 0
+      translation 20.0 3.2 0
       rotation 0 0 1 0.9765105169638518
       name "plant_20_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 24 0
+      translation 20.0 4.8 0
       rotation 0 0 1 1.0896138885866917
       name "plant_20_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 32 0
+      translation 20.0 6.4 0
       rotation 0 0 1 0.6296128693796201
       name "plant_20_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 40 0
+      translation 20.0 8.0 0
       rotation 0 0 1 1.1870315406433147
       name "plant_20_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 48 0
+      translation 20.0 9.6 0
       rotation 0 0 1 1.2376203689848913
       name "plant_20_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 56 0
+      translation 20.0 11.2 0
       rotation 0 0 1 0.802156540807011
       name "plant_20_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 64 0
+      translation 20.0 12.8 0
       rotation 0 0 1 0.09426760468299397
       name "plant_20_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 72 0
+      translation 20.0 14.4 0
       rotation 0 0 1 2.0343644016571556
       name "plant_20_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 80 0
+      translation 20.0 16.0 0
       rotation 0 0 1 0.9671190631602696
       name "plant_20_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 88 0
+      translation 20.0 17.6 0
       rotation 0 0 1 2.159088043608281
       name "plant_20_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 96 0
+      translation 20.0 19.2 0
       rotation 0 0 1 0.9633480952671432
       name "plant_20_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 100 104 0
+      translation 20.0 20.8 0
       rotation 0 0 1 3.1174424762334207
       name "plant_20_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 0 0
+      translation 21.0 0.0 0
       rotation 0 0 1 1.2657691947243308
       name "plant_21_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 8 0
+      translation 21.0 1.6 0
       rotation 0 0 1 2.782695715830862
       name "plant_21_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 16 0
+      translation 21.0 3.2 0
       rotation 0 0 1 1.327792508815839
       name "plant_21_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 24 0
+      translation 21.0 4.8 0
       rotation 0 0 1 0.5602275250270187
       name "plant_21_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 32 0
+      translation 21.0 6.4 0
       rotation 0 0 1 0.41444415376048754
       name "plant_21_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 40 0
+      translation 21.0 8.0 0
       rotation 0 0 1 1.2036146640803236
       name "plant_21_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 48 0
+      translation 21.0 9.6 0
       rotation 0 0 1 2.6844326173315354
       name "plant_21_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 56 0
+      translation 21.0 11.2 0
       rotation 0 0 1 2.1375452970076516
       name "plant_21_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 64 0
+      translation 21.0 12.8 0
       rotation 0 0 1 0.30070723027642715
       name "plant_21_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 72 0
+      translation 21.0 14.4 0
       rotation 0 0 1 2.011807115756785
       name "plant_21_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 80 0
+      translation 21.0 16.0 0
       rotation 0 0 1 1.1251420365714286
       name "plant_21_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 88 0
+      translation 21.0 17.6 0
       rotation 0 0 1 1.3375112934375846
       name "plant_21_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 96 0
+      translation 21.0 19.2 0
       rotation 0 0 1 0.02724018847869122
       name "plant_21_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 105 104 0
+      translation 21.0 20.8 0
       rotation 0 0 1 2.8354592297228
       name "plant_21_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 0 0
+      translation 22.0 0.0 0
       rotation 0 0 1 0.9240958843166082
       name "plant_22_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 8 0
+      translation 22.0 1.6 0
       rotation 0 0 1 1.6876979707828077
       name "plant_22_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 16 0
+      translation 22.0 3.2 0
       rotation 0 0 1 2.5364134606360986
       name "plant_22_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 24 0
+      translation 22.0 4.8 0
       rotation 0 0 1 2.640847925302432
       name "plant_22_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 32 0
+      translation 22.0 6.4 0
       rotation 0 0 1 0.9928205430477296
       name "plant_22_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 40 0
+      translation 22.0 8.0 0
       rotation 0 0 1 0.9552218727541123
       name "plant_22_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 48 0
+      translation 22.0 9.6 0
       rotation 0 0 1 0.22274651883680827
       name "plant_22_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 56 0
+      translation 22.0 11.2 0
       rotation 0 0 1 2.2842575043318933
       name "plant_22_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 64 0
+      translation 22.0 12.8 0
       rotation 0 0 1 0.44644343181981816
       name "plant_22_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 72 0
+      translation 22.0 14.4 0
       rotation 0 0 1 2.0694487378557147
       name "plant_22_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 80 0
+      translation 22.0 16.0 0
       rotation 0 0 1 1.2391161688455825
       name "plant_22_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 88 0
+      translation 22.0 17.6 0
       rotation 0 0 1 1.1664511272867764
       name "plant_22_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 96 0
+      translation 22.0 19.2 0
       rotation 0 0 1 3.1378779576594957
       name "plant_22_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 110 104 0
+      translation 22.0 20.8 0
       rotation 0 0 1 1.4027805966720934
       name "plant_22_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 0 0
+      translation 23.0 0.0 0
       rotation 0 0 1 3.120807679776193
       name "plant_23_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 8 0
+      translation 23.0 1.6 0
       rotation 0 0 1 2.777863571511741
       name "plant_23_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 16 0
+      translation 23.0 3.2 0
       rotation 0 0 1 2.1840340556338713
       name "plant_23_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 24 0
+      translation 23.0 4.8 0
       rotation 0 0 1 1.0860829494221607
       name "plant_23_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 32 0
+      translation 23.0 6.4 0
       rotation 0 0 1 1.4821419911631877
       name "plant_23_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 40 0
+      translation 23.0 8.0 0
       rotation 0 0 1 0.06521151092668309
       name "plant_23_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 48 0
+      translation 23.0 9.6 0
       rotation 0 0 1 2.309187494432979
       name "plant_23_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 56 0
+      translation 23.0 11.2 0
       rotation 0 0 1 3.099047732818846
       name "plant_23_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 64 0
+      translation 23.0 12.8 0
       rotation 0 0 1 1.4573787629190902
       name "plant_23_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 72 0
+      translation 23.0 14.4 0
       rotation 0 0 1 1.158114980516327
       name "plant_23_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 80 0
+      translation 23.0 16.0 0
       rotation 0 0 1 2.6646278010143654
       name "plant_23_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 88 0
+      translation 23.0 17.6 0
       rotation 0 0 1 0.06956239496674552
       name "plant_23_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 96 0
+      translation 23.0 19.2 0
       rotation 0 0 1 2.6275857406012295
       name "plant_23_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 115 104 0
+      translation 23.0 20.8 0
       rotation 0 0 1 0.9239248017092032
       name "plant_23_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 0 0
+      translation 24.0 0.0 0
       rotation 0 0 1 3.0528761811635277
       name "plant_24_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 8 0
+      translation 24.0 1.6 0
       rotation 0 0 1 0.8289579686600312
       name "plant_24_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 16 0
+      translation 24.0 3.2 0
       rotation 0 0 1 0.26537753466613756
       name "plant_24_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 24 0
+      translation 24.0 4.8 0
       rotation 0 0 1 1.1477641173567044
       name "plant_24_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 32 0
+      translation 24.0 6.4 0
       rotation 0 0 1 2.490480916296271
       name "plant_24_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 40 0
+      translation 24.0 8.0 0
       rotation 0 0 1 0.22738752776763188
       name "plant_24_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 48 0
+      translation 24.0 9.6 0
       rotation 0 0 1 0.47958328146836937
       name "plant_24_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 56 0
+      translation 24.0 11.2 0
       rotation 0 0 1 1.2409132658001776
       name "plant_24_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 64 0
+      translation 24.0 12.8 0
       rotation 0 0 1 2.5176502555228204
       name "plant_24_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 72 0
+      translation 24.0 14.4 0
       rotation 0 0 1 2.617933035749828
       name "plant_24_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 80 0
+      translation 24.0 16.0 0
       rotation 0 0 1 1.5999882645835368
       name "plant_24_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 88 0
+      translation 24.0 17.6 0
       rotation 0 0 1 2.2307048286540643
       name "plant_24_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 96 0
+      translation 24.0 19.2 0
       rotation 0 0 1 0.8084891261874866
       name "plant_24_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 120 104 0
+      translation 24.0 20.8 0
       rotation 0 0 1 0.30514094348368254
       name "plant_24_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 0 0
+      translation 25.0 0.0 0
       rotation 0 0 1 1.3303792016632194
       name "plant_25_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 8 0
+      translation 25.0 1.6 0
       rotation 0 0 1 1.998695970110089
       name "plant_25_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 16 0
+      translation 25.0 3.2 0
       rotation 0 0 1 0.697612043453313
       name "plant_25_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 24 0
+      translation 25.0 4.8 0
       rotation 0 0 1 2.206357578820495
       name "plant_25_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 32 0
+      translation 25.0 6.4 0
       rotation 0 0 1 0.6429850750814399
       name "plant_25_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 40 0
+      translation 25.0 8.0 0
       rotation 0 0 1 1.7687724613237303
       name "plant_25_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 48 0
+      translation 25.0 9.6 0
       rotation 0 0 1 2.7333797129452364
       name "plant_25_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 56 0
+      translation 25.0 11.2 0
       rotation 0 0 1 2.655027369139829
       name "plant_25_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 64 0
+      translation 25.0 12.8 0
       rotation 0 0 1 1.201333743597813
       name "plant_25_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 72 0
+      translation 25.0 14.4 0
       rotation 0 0 1 2.1306803423987337
       name "plant_25_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 80 0
+      translation 25.0 16.0 0
       rotation 0 0 1 1.1844138556431991
       name "plant_25_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 88 0
+      translation 25.0 17.6 0
       rotation 0 0 1 2.9269086232640493
       name "plant_25_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 96 0
+      translation 25.0 19.2 0
       rotation 0 0 1 2.2623877506053818
       name "plant_25_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 125 104 0
+      translation 25.0 20.8 0
       rotation 0 0 1 1.0057690390498655
       name "plant_25_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 0 0
+      translation 26.0 0.0 0
       rotation 0 0 1 0.4187454942863866
       name "plant_26_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 8 0
+      translation 26.0 1.6 0
       rotation 0 0 1 2.8937576020127693
       name "plant_26_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 16 0
+      translation 26.0 3.2 0
       rotation 0 0 1 2.3999867933719607
       name "plant_26_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 24 0
+      translation 26.0 4.8 0
       rotation 0 0 1 0.9025319146831386
       name "plant_26_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 32 0
+      translation 26.0 6.4 0
       rotation 0 0 1 3.109603291123836
       name "plant_26_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 40 0
+      translation 26.0 8.0 0
       rotation 0 0 1 2.070761279884695
       name "plant_26_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 48 0
+      translation 26.0 9.6 0
       rotation 0 0 1 3.0728021977527242
       name "plant_26_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 56 0
+      translation 26.0 11.2 0
       rotation 0 0 1 1.9708622963510882
       name "plant_26_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 64 0
+      translation 26.0 12.8 0
       rotation 0 0 1 1.7867780372189022
       name "plant_26_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 72 0
+      translation 26.0 14.4 0
       rotation 0 0 1 2.490011041053869
       name "plant_26_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 80 0
+      translation 26.0 16.0 0
       rotation 0 0 1 1.4616732902727643
       name "plant_26_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 88 0
+      translation 26.0 17.6 0
       rotation 0 0 1 2.070592712244887
       name "plant_26_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 96 0
+      translation 26.0 19.2 0
       rotation 0 0 1 2.0752542746297564
       name "plant_26_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 130 104 0
+      translation 26.0 20.8 0
       rotation 0 0 1 1.211049904568832
       name "plant_26_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 0 0
+      translation 27.0 0.0 0
       rotation 0 0 1 1.248955297373838
       name "plant_27_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 8 0
+      translation 27.0 1.6 0
       rotation 0 0 1 1.0948169300215844
       name "plant_27_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 16 0
+      translation 27.0 3.2 0
       rotation 0 0 1 2.2682664680904563
       name "plant_27_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 24 0
+      translation 27.0 4.8 0
       rotation 0 0 1 1.544012801349103
       name "plant_27_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 32 0
+      translation 27.0 6.4 0
       rotation 0 0 1 0.9259508628334274
       name "plant_27_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 40 0
+      translation 27.0 8.0 0
       rotation 0 0 1 1.995954682401995
       name "plant_27_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 48 0
+      translation 27.0 9.6 0
       rotation 0 0 1 2.6738863199248577
       name "plant_27_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 56 0
+      translation 27.0 11.2 0
       rotation 0 0 1 1.0490937990675022
       name "plant_27_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 64 0
+      translation 27.0 12.8 0
       rotation 0 0 1 2.2435622545263287
       name "plant_27_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 72 0
+      translation 27.0 14.4 0
       rotation 0 0 1 1.5540687333268757
       name "plant_27_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 80 0
+      translation 27.0 16.0 0
       rotation 0 0 1 1.8198938246370095
       name "plant_27_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 88 0
+      translation 27.0 17.6 0
       rotation 0 0 1 0.3011320692426377
       name "plant_27_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 96 0
+      translation 27.0 19.2 0
       rotation 0 0 1 2.044514252577299
       name "plant_27_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 135 104 0
+      translation 27.0 20.8 0
       rotation 0 0 1 0.8699684983025159
       name "plant_27_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 0 0
+      translation 28.0 0.0 0
       rotation 0 0 1 1.3871848875781911
       name "plant_28_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 8 0
+      translation 28.0 1.6 0
       rotation 0 0 1 0.6086922795098122
       name "plant_28_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 16 0
+      translation 28.0 3.2 0
       rotation 0 0 1 2.6626564268053805
       name "plant_28_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 24 0
+      translation 28.0 4.8 0
       rotation 0 0 1 2.2575582225618533
       name "plant_28_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 32 0
+      translation 28.0 6.4 0
       rotation 0 0 1 0.7847956147602402
       name "plant_28_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 40 0
+      translation 28.0 8.0 0
       rotation 0 0 1 2.459388947010375
       name "plant_28_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 48 0
+      translation 28.0 9.6 0
       rotation 0 0 1 2.749427893970159
       name "plant_28_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 56 0
+      translation 28.0 11.2 0
       rotation 0 0 1 2.706903122730646
       name "plant_28_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 64 0
+      translation 28.0 12.8 0
       rotation 0 0 1 2.108047889417286
       name "plant_28_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 72 0
+      translation 28.0 14.4 0
       rotation 0 0 1 2.9027439423046886
       name "plant_28_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 80 0
+      translation 28.0 16.0 0
       rotation 0 0 1 2.6279478988324336
       name "plant_28_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 88 0
+      translation 28.0 17.6 0
       rotation 0 0 1 1.2289787779926062
       name "plant_28_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 96 0
+      translation 28.0 19.2 0
       rotation 0 0 1 0.18796120661614787
       name "plant_28_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 140 104 0
+      translation 28.0 20.8 0
       rotation 0 0 1 3.054016477005203
       name "plant_28_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 0 0
+      translation 29.0 0.0 0
       rotation 0 0 1 0.10970087158858201
       name "plant_29_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 8 0
+      translation 29.0 1.6 0
       rotation 0 0 1 0.9519882881346253
       name "plant_29_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 16 0
+      translation 29.0 3.2 0
       rotation 0 0 1 1.1908694531827135
       name "plant_29_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 24 0
+      translation 29.0 4.8 0
       rotation 0 0 1 1.7569443487417769
       name "plant_29_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 32 0
+      translation 29.0 6.4 0
       rotation 0 0 1 1.784224893734402
       name "plant_29_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 40 0
+      translation 29.0 8.0 0
       rotation 0 0 1 2.0663199170934665
       name "plant_29_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 48 0
+      translation 29.0 9.6 0
       rotation 0 0 1 0.6297575188306265
       name "plant_29_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 56 0
+      translation 29.0 11.2 0
       rotation 0 0 1 1.6097051344075004
       name "plant_29_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 64 0
+      translation 29.0 12.8 0
       rotation 0 0 1 1.077475516644883
       name "plant_29_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 72 0
+      translation 29.0 14.4 0
       rotation 0 0 1 1.674836296787922
       name "plant_29_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 80 0
+      translation 29.0 16.0 0
       rotation 0 0 1 1.0746453959672357
       name "plant_29_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 88 0
+      translation 29.0 17.6 0
       rotation 0 0 1 2.005036529968237
       name "plant_29_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 96 0
+      translation 29.0 19.2 0
       rotation 0 0 1 3.0597280096469572
       name "plant_29_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 145 104 0
+      translation 29.0 20.8 0
       rotation 0 0 1 1.6187726805024154
       name "plant_29_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 0 0
+      translation 30.0 0.0 0
       rotation 0 0 1 1.8530272412018747
       name "plant_30_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 8 0
+      translation 30.0 1.6 0
       rotation 0 0 1 1.6031966316587614
       name "plant_30_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 16 0
+      translation 30.0 3.2 0
       rotation 0 0 1 2.610438798242441
       name "plant_30_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 24 0
+      translation 30.0 4.8 0
       rotation 0 0 1 2.937710118712118
       name "plant_30_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 32 0
+      translation 30.0 6.4 0
       rotation 0 0 1 2.900751857507859
       name "plant_30_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 40 0
+      translation 30.0 8.0 0
       rotation 0 0 1 0.11685234495370567
       name "plant_30_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 48 0
+      translation 30.0 9.6 0
       rotation 0 0 1 0.14247220298974603
       name "plant_30_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 56 0
+      translation 30.0 11.2 0
       rotation 0 0 1 1.0241023265734641
       name "plant_30_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 64 0
+      translation 30.0 12.8 0
       rotation 0 0 1 1.208921735424066
       name "plant_30_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 72 0
+      translation 30.0 14.4 0
       rotation 0 0 1 2.2267050761465637
       name "plant_30_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 80 0
+      translation 30.0 16.0 0
       rotation 0 0 1 1.3430703652845768
       name "plant_30_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 88 0
+      translation 30.0 17.6 0
       rotation 0 0 1 0.6338799735009493
       name "plant_30_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 96 0
+      translation 30.0 19.2 0
       rotation 0 0 1 1.0656901932055483
       name "plant_30_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 150 104 0
+      translation 30.0 20.8 0
       rotation 0 0 1 2.5859408062496803
       name "plant_30_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 0 0
+      translation 31.0 0.0 0
       rotation 0 0 1 0.2544297510501504
       name "plant_31_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 8 0
+      translation 31.0 1.6 0
       rotation 0 0 1 2.3332115067987944
       name "plant_31_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 16 0
+      translation 31.0 3.2 0
       rotation 0 0 1 0.9546937213486485
       name "plant_31_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 24 0
+      translation 31.0 4.8 0
       rotation 0 0 1 1.4193488962797667
       name "plant_31_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 32 0
+      translation 31.0 6.4 0
       rotation 0 0 1 3.126632162316366
       name "plant_31_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 40 0
+      translation 31.0 8.0 0
       rotation 0 0 1 2.594688208253495
       name "plant_31_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 48 0
+      translation 31.0 9.6 0
       rotation 0 0 1 2.865466219236086
       name "plant_31_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 56 0
+      translation 31.0 11.2 0
       rotation 0 0 1 0.9834714067192696
       name "plant_31_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 64 0
+      translation 31.0 12.8 0
       rotation 0 0 1 0.7825450182574678
       name "plant_31_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 72 0
+      translation 31.0 14.4 0
       rotation 0 0 1 0.7673502061420564
       name "plant_31_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 80 0
+      translation 31.0 16.0 0
       rotation 0 0 1 0.10485216016793834
       name "plant_31_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 88 0
+      translation 31.0 17.6 0
       rotation 0 0 1 1.1858449482618478
       name "plant_31_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 96 0
+      translation 31.0 19.2 0
       rotation 0 0 1 1.80470037573223
       name "plant_31_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 155 104 0
+      translation 31.0 20.8 0
       rotation 0 0 1 3.095070278603999
       name "plant_31_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 0 0
+      translation 32.0 0.0 0
       rotation 0 0 1 2.6784348575595476
       name "plant_32_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 8 0
+      translation 32.0 1.6 0
       rotation 0 0 1 2.00365696717599
       name "plant_32_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 16 0
+      translation 32.0 3.2 0
       rotation 0 0 1 0.7510108935373493
       name "plant_32_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 24 0
+      translation 32.0 4.8 0
       rotation 0 0 1 1.6443980263876965
       name "plant_32_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 32 0
+      translation 32.0 6.4 0
       rotation 0 0 1 0.7980275340223218
       name "plant_32_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 40 0
+      translation 32.0 8.0 0
       rotation 0 0 1 2.8632719140835206
       name "plant_32_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 48 0
+      translation 32.0 9.6 0
       rotation 0 0 1 0.42877286016340216
       name "plant_32_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 56 0
+      translation 32.0 11.2 0
       rotation 0 0 1 2.29730180408037
       name "plant_32_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 64 0
+      translation 32.0 12.8 0
       rotation 0 0 1 0.2074437950953071
       name "plant_32_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 72 0
+      translation 32.0 14.4 0
       rotation 0 0 1 0.1340865952832583
       name "plant_32_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 80 0
+      translation 32.0 16.0 0
       rotation 0 0 1 2.9781967362329
       name "plant_32_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 88 0
+      translation 32.0 17.6 0
       rotation 0 0 1 0.8775111455307553
       name "plant_32_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 96 0
+      translation 32.0 19.2 0
       rotation 0 0 1 3.0112400597763127
       name "plant_32_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 160 104 0
+      translation 32.0 20.8 0
       rotation 0 0 1 2.4685548768292027
       name "plant_32_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 0 0
+      translation 33.0 0.0 0
       rotation 0 0 1 1.5393062225973413
       name "plant_33_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 8 0
+      translation 33.0 1.6 0
       rotation 0 0 1 1.9413712960699248
       name "plant_33_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 16 0
+      translation 33.0 3.2 0
       rotation 0 0 1 2.9767432286210638
       name "plant_33_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 24 0
+      translation 33.0 4.8 0
       rotation 0 0 1 2.8211804315807556
       name "plant_33_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 32 0
+      translation 33.0 6.4 0
       rotation 0 0 1 0.4035530637860495
       name "plant_33_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 40 0
+      translation 33.0 8.0 0
       rotation 0 0 1 1.0277112334363852
       name "plant_33_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 48 0
+      translation 33.0 9.6 0
       rotation 0 0 1 2.1292726182619823
       name "plant_33_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 56 0
+      translation 33.0 11.2 0
       rotation 0 0 1 0.3579800169085504
       name "plant_33_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 64 0
+      translation 33.0 12.8 0
       rotation 0 0 1 0.3626944723367783
       name "plant_33_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 72 0
+      translation 33.0 14.4 0
       rotation 0 0 1 1.464876562357337
       name "plant_33_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 80 0
+      translation 33.0 16.0 0
       rotation 0 0 1 0.17559142020863097
       name "plant_33_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 88 0
+      translation 33.0 17.6 0
       rotation 0 0 1 1.1141864051617554
       name "plant_33_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 96 0
+      translation 33.0 19.2 0
       rotation 0 0 1 0.4505442949273669
       name "plant_33_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 165 104 0
+      translation 33.0 20.8 0
       rotation 0 0 1 0.9601798688307007
       name "plant_33_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 0 0
+      translation 34.0 0.0 0
       rotation 0 0 1 0.9606102223279693
       name "plant_34_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 8 0
+      translation 34.0 1.6 0
       rotation 0 0 1 0.45189720043771253
       name "plant_34_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 16 0
+      translation 34.0 3.2 0
       rotation 0 0 1 0.8351868725021193
       name "plant_34_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 24 0
+      translation 34.0 4.8 0
       rotation 0 0 1 1.3991192100340677
       name "plant_34_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 32 0
+      translation 34.0 6.4 0
       rotation 0 0 1 2.299823276245033
       name "plant_34_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 40 0
+      translation 34.0 8.0 0
       rotation 0 0 1 0.26321420582601335
       name "plant_34_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 48 0
+      translation 34.0 9.6 0
       rotation 0 0 1 0.05551746615889452
       name "plant_34_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 56 0
+      translation 34.0 11.2 0
       rotation 0 0 1 0.16409202627120825
       name "plant_34_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 64 0
+      translation 34.0 12.8 0
       rotation 0 0 1 0.3665988019096405
       name "plant_34_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 72 0
+      translation 34.0 14.4 0
       rotation 0 0 1 1.9882951867233811
       name "plant_34_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 80 0
+      translation 34.0 16.0 0
       rotation 0 0 1 0.7968482635138535
       name "plant_34_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 88 0
+      translation 34.0 17.6 0
       rotation 0 0 1 2.0674860694620847
       name "plant_34_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 96 0
+      translation 34.0 19.2 0
       rotation 0 0 1 2.411561945830918
       name "plant_34_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 170 104 0
+      translation 34.0 20.8 0
       rotation 0 0 1 2.439400870902934
       name "plant_34_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 0 0
+      translation 35.0 0.0 0
       rotation 0 0 1 0.07159985816224926
       name "plant_35_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 8 0
+      translation 35.0 1.6 0
       rotation 0 0 1 2.341084696549991
       name "plant_35_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 16 0
+      translation 35.0 3.2 0
       rotation 0 0 1 0.44770031013416234
       name "plant_35_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 24 0
+      translation 35.0 4.8 0
       rotation 0 0 1 2.548570196932794
       name "plant_35_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 32 0
+      translation 35.0 6.4 0
       rotation 0 0 1 0.33192248569807387
       name "plant_35_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 40 0
+      translation 35.0 8.0 0
       rotation 0 0 1 0.09338999354480573
       name "plant_35_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 48 0
+      translation 35.0 9.6 0
       rotation 0 0 1 2.612608148981115
       name "plant_35_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 56 0
+      translation 35.0 11.2 0
       rotation 0 0 1 2.1459739012128423
       name "plant_35_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 64 0
+      translation 35.0 12.8 0
       rotation 0 0 1 0.5929046797801987
       name "plant_35_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 72 0
+      translation 35.0 14.4 0
       rotation 0 0 1 0.11363160896442204
       name "plant_35_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 80 0
+      translation 35.0 16.0 0
       rotation 0 0 1 1.3543326486799188
       name "plant_35_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 88 0
+      translation 35.0 17.6 0
       rotation 0 0 1 2.072596857477696
       name "plant_35_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 96 0
+      translation 35.0 19.2 0
       rotation 0 0 1 0.2852167885714741
       name "plant_35_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 175 104 0
+      translation 35.0 20.8 0
       rotation 0 0 1 0.8839398260435383
       name "plant_35_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 0 0
+      translation 36.0 0.0 0
       rotation 0 0 1 1.9950920584466214
       name "plant_36_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 8 0
+      translation 36.0 1.6 0
       rotation 0 0 1 2.386866234669056
       name "plant_36_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 16 0
+      translation 36.0 3.2 0
       rotation 0 0 1 1.0417407548045847
       name "plant_36_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 24 0
+      translation 36.0 4.8 0
       rotation 0 0 1 2.295878690921787
       name "plant_36_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 32 0
+      translation 36.0 6.4 0
       rotation 0 0 1 2.8912766537791583
       name "plant_36_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 40 0
+      translation 36.0 8.0 0
       rotation 0 0 1 1.6315243178275745
       name "plant_36_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 48 0
+      translation 36.0 9.6 0
       rotation 0 0 1 0.5365944924934434
       name "plant_36_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 56 0
+      translation 36.0 11.2 0
       rotation 0 0 1 2.2244890703841707
       name "plant_36_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 64 0
+      translation 36.0 12.8 0
       rotation 0 0 1 0.2768158105215387
       name "plant_36_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 72 0
+      translation 36.0 14.4 0
       rotation 0 0 1 3.131225554359146
       name "plant_36_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 80 0
+      translation 36.0 16.0 0
       rotation 0 0 1 2.6087603750966806
       name "plant_36_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 88 0
+      translation 36.0 17.6 0
       rotation 0 0 1 0.15798418993555063
       name "plant_36_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 96 0
+      translation 36.0 19.2 0
       rotation 0 0 1 0.9620558355461231
       name "plant_36_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 180 104 0
+      translation 36.0 20.8 0
       rotation 0 0 1 3.0613561134177103
       name "plant_36_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 0 0
+      translation 37.0 0.0 0
       rotation 0 0 1 2.5022195082818275
       name "plant_37_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 8 0
+      translation 37.0 1.6 0
       rotation 0 0 1 1.5569212262862395
       name "plant_37_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 16 0
+      translation 37.0 3.2 0
       rotation 0 0 1 0.30650886711635034
       name "plant_37_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 24 0
+      translation 37.0 4.8 0
       rotation 0 0 1 0.915140424729168
       name "plant_37_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 32 0
+      translation 37.0 6.4 0
       rotation 0 0 1 2.203303417495946
       name "plant_37_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 40 0
+      translation 37.0 8.0 0
       rotation 0 0 1 0.860597831406243
       name "plant_37_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 48 0
+      translation 37.0 9.6 0
       rotation 0 0 1 0.11869564548587747
       name "plant_37_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 56 0
+      translation 37.0 11.2 0
       rotation 0 0 1 0.19106827612617444
       name "plant_37_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 64 0
+      translation 37.0 12.8 0
       rotation 0 0 1 0.7889283960148631
       name "plant_37_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 72 0
+      translation 37.0 14.4 0
       rotation 0 0 1 2.147543743308094
       name "plant_37_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 80 0
+      translation 37.0 16.0 0
       rotation 0 0 1 3.082928278714539
       name "plant_37_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 88 0
+      translation 37.0 17.6 0
       rotation 0 0 1 1.5001390412670632
       name "plant_37_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 96 0
+      translation 37.0 19.2 0
       rotation 0 0 1 0.24073488975745164
       name "plant_37_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 185 104 0
+      translation 37.0 20.8 0
       rotation 0 0 1 1.4909330616281942
       name "plant_37_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 0 0
+      translation 38.0 0.0 0
       rotation 0 0 1 2.3960851203594147
       name "plant_38_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 8 0
+      translation 38.0 1.6 0
       rotation 0 0 1 1.0044627955777539
       name "plant_38_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 16 0
+      translation 38.0 3.2 0
       rotation 0 0 1 3.101691343047625
       name "plant_38_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 24 0
+      translation 38.0 4.8 0
       rotation 0 0 1 0.5453328006980933
       name "plant_38_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 32 0
+      translation 38.0 6.4 0
       rotation 0 0 1 1.6647023505262277
       name "plant_38_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 40 0
+      translation 38.0 8.0 0
       rotation 0 0 1 1.0364031717325375
       name "plant_38_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 48 0
+      translation 38.0 9.6 0
       rotation 0 0 1 2.441661184534418
       name "plant_38_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 56 0
+      translation 38.0 11.2 0
       rotation 0 0 1 2.282954746033846
       name "plant_38_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 64 0
+      translation 38.0 12.8 0
       rotation 0 0 1 1.1873863989243219
       name "plant_38_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 72 0
+      translation 38.0 14.4 0
       rotation 0 0 1 0.32754687329268106
       name "plant_38_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 80 0
+      translation 38.0 16.0 0
       rotation 0 0 1 0.8092192397385211
       name "plant_38_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 88 0
+      translation 38.0 17.6 0
       rotation 0 0 1 1.5789894288284239
       name "plant_38_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 96 0
+      translation 38.0 19.2 0
       rotation 0 0 1 0.1570980676097168
       name "plant_38_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 190 104 0
+      translation 38.0 20.8 0
       rotation 0 0 1 2.993446388065787
       name "plant_38_13"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 0 0
+      translation 39.0 0.0 0
       rotation 0 0 1 0.5016836645990097
       name "plant_39_0"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 8 0
+      translation 39.0 1.6 0
       rotation 0 0 1 0.8824664813612897
       name "plant_39_1"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 16 0
+      translation 39.0 3.2 0
       rotation 0 0 1 0.4647650041298604
       name "plant_39_2"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 24 0
+      translation 39.0 4.8 0
       rotation 0 0 1 3.064827005378745
       name "plant_39_3"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 32 0
+      translation 39.0 6.4 0
       rotation 0 0 1 0.3539385750262803
       name "plant_39_4"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 40 0
+      translation 39.0 8.0 0
       rotation 0 0 1 0.8257255015467797
       name "plant_39_5"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 48 0
+      translation 39.0 9.6 0
       rotation 0 0 1 2.4033703784065388
       name "plant_39_6"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 56 0
+      translation 39.0 11.2 0
       rotation 0 0 1 3.077054145210749
       name "plant_39_7"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 64 0
+      translation 39.0 12.8 0
       rotation 0 0 1 3.0457407254157114
       name "plant_39_8"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 72 0
+      translation 39.0 14.4 0
       rotation 0 0 1 0.47405643163470595
       name "plant_39_9"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 80 0
+      translation 39.0 16.0 0
       rotation 0 0 1 2.051224292294697
       name "plant_39_10"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 88 0
+      translation 39.0 17.6 0
       rotation 0 0 1 1.5159737197728902
       name "plant_39_11"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 96 0
+      translation 39.0 19.2 0
       rotation 0 0 1 0.6290049659936539
       name "plant_39_12"
       enableBoundingObject FALSE
     }
     CropPlant {
-      translation 195 104 0
+      translation 39.0 20.8 0
       rotation 0 0 1 1.9977327490667296
       name "plant_39_13"
       enableBoundingObject FALSE

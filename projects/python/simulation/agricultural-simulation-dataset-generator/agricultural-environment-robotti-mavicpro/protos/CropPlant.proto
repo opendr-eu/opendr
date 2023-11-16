@@ -24,8 +24,8 @@ PROTO CropPlant [
   field SFString{"random", "oak tree", "crab apple tree", "cherry tree", "birch tree", "palm tree", "spruce", "white pine", "hackberry tree", "hazel tree"}
                    type                 "cherry tree"   # Defines the texture to be used. If set to `random`, a type will be randomly selected in the list.
   field SFBool     withSnow             FALSE           # Defines if the texture used should have snow on top.
-  field SFFloat    height               4               # Defines the height of the tree.
-  field SFFloat    radius               2               # Defines the radius of the tree.
+  field SFFloat    height               0.4             # Defines the height of the tree.
+  field SFFloat    radius               0.4             # Defines the radius of the tree.
   field SFInt32    subdivision          2               # Defines the number of faces used to represent the tree.
   field SFBool     enableBoundingObject TRUE            # Defines if the tree should have a bounding object (the bounding object is made of a simple cylinder).
   field SFBool     locked               TRUE            # Is `Solid.locked`.

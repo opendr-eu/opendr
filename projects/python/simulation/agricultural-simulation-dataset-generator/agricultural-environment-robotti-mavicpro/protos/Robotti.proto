@@ -549,6 +549,12 @@ PROTO Robotti [
           }
         ]
         boundingObject USE ROLL_GROUP
+        %< if (fields.enablePhysics.value) { >%
+        physics Physics {
+          density -1
+          mass 10
+        }
+        %< } >%
       }
 
     ]
