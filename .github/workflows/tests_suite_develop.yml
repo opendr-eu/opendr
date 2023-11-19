@@ -490,6 +490,8 @@ jobs:
             python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-pose-estimation-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/heart_anomaly_detection" ]; then
             python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
+           elif [ ${{ matrix.package }} == "perception/gesture_recognition" ]; then
+            python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
           elif [ ${{ matrix.package }} == "perception/multimodal_human_centric" ]; then
             python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-compressive-learning-*.tar.gz
             python3 -m pip install --find-links ./artifact/wheel-artifact/ ./artifact/wheel-artifact/opendr-toolkit-object-detection-2d-*.tar.gz
