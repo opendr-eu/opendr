@@ -16,6 +16,7 @@ perception/object_detection_2d
 perception/object_tracking_2d
 perception/object_detection_3d
 perception/object_tracking_3d
+perception/gesture_recognition
 perception/panoptic_segmentation
 simulation/human_model_generation
 utils/hyperparameter_tuner
