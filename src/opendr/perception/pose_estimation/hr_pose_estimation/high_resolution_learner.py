@@ -1619,6 +1619,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "annotation.json"))
             # Download test image
             if image_resolution in (1080, 1440):
+                file_url = os.path.join(url, "dataset", "image", "000000000785_" + str(image_resolution) + ".jpg")
+                urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000000785_1080.jpg"))
                 file_url = os.path.join(url, "dataset", "image", "000000052591_" + str(image_resolution) + ".jpg")
                 urlretrieve(file_url, os.path.join(self.temp_path, "dataset", "image", "000000052591_1080.jpg"))
             else:
