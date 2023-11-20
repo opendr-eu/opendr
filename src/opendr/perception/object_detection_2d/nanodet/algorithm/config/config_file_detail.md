@@ -21,7 +21,7 @@ model:
         head: xxx
 ```
 
-Most detection model architecture can be devided into 3 parts: backbone, task head and connector between them (e.g., FPN, BiFPN, PAN).
+Most detection model architecture can be devided into 3 parts: backbone, task head and connector between them (e.g., FPN, PAN).
 
 ### Backbone
 
@@ -116,6 +116,7 @@ data:
     train:
         input_size: [320,320]
         keep_ratio: True
+        cache_images: _
         multi_scale: [0.6, 1.4]
         pipeline:
     val:
@@ -125,9 +126,14 @@ data:
 In `data` you need to set your train and validate dataset.
 
 `input_size`: [width, height]
-`keep_ratio`: whether to maintain the original image ratio when resizing to input size
+
+`keep_ratio`: whether to maintain the original image ratio when resizing to input size.
+
+`cache_images`: whether to cache images or not during training. "disk" option will cashe images as numpy files in disk, "ram" option will cashe dataset into ram.
+
 `multi_scale`: scaling range for multi-scale training. Set to None to turn off.
-`pipeline`: data preprocessing and augmentation pipeline
+
+`pipeline`: data preprocessing and augmentation pipeline.
 
 ## Device
 
@@ -136,14 +142,16 @@ device:
     gpu_ids: [0]
     workers_per_gpu: 12
     batchsize_per_gpu: 160
+    effective_batchsize: 1
 ```
 
-`gpu_ids`: CUDA device id. For multi-gpu training, set [0, 1, 2...].
+`gpu_ids`: CUDA device id.
 
 `workers_per_gpu`: how many dataloader processes for each gpu
 
-`batchsize_per_gpu`: amount of images in one batch for each gpu
+`batchsize_per_gpu`: amount of images in one batch for each gpu, if -1 autobach will determine the batchsize to be used.
 
+`effective_batchsize`: determines the effective batch size by accumulating losses, 1 will use only batchsize_per_gpu.
 ## schedule
 
 ```yaml

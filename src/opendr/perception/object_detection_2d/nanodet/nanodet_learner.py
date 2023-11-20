@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import math
 import os
 import datetime
 import json
@@ -35,6 +35,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
     load_config,
     load_model_weight,
     mkdir,
+    autobatch,
 )
 
 from opendr.engine.data import Image
@@ -114,7 +115,7 @@ class NanodetLearner(Learner):
         load_config(cfg, full_path[0])
         return cfg
 
-    def overwrite_config(self, lr=0.001, weight_decay=0.05, iters=10, batch_size=64, checkpoint_after_iter=0,
+    def overwrite_config(self, lr=0.001, weight_decay=0.05, iters=10, batch_size=-1, checkpoint_after_iter=0,
                          checkpoint_load_iter=0, temp_path=''):
         """
         Helping method for config file update to overwrite the cfg with arguments of OpenDR.
@@ -513,32 +514,48 @@ class NanodetLearner(Learner):
 
         mkdir(local_rank, self.cfg.save_dir)
 
-        if logging:
-            self.logger = NanoDetLightningLogger(self.temp_path + "/" + logging_path)
+        if logging or verbose:
+            self.logger = NanoDetLightningLogger(
+                save_dir=self.temp_path + "/" + logging_path if logging else "",
+                verbose_only=False if logging else True
+            )
             self.logger.dump_cfg(self.cfg)
 
         if seed != '' or seed is not None:
-            if logging:
-                self.logger.info("Set random seed to {}".format(seed))
+            self._info("Set random seed to {}".format(seed))
             pl.seed_everything(seed)
 
-        if logging:
-            self.logger.info("Setting up data...")
-        elif verbose:
-            print("Setting up data...")
+        self._info("Setting up data...", verbose)
 
-        train_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "train")
+        train_dataset = build_dataset(self.cfg.data.train, dataset, self.cfg.class_names, "train")
         val_dataset = train_dataset if val_dataset is None else \
             build_dataset(self.cfg.data.val, val_dataset, self.cfg.class_names, "val")
 
         evaluator = build_evaluator(self.cfg.evaluator, val_dataset)
+
+        if self.batch_size == -1:  # autobatch
+            batch_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512]
+            self.batch_size = autobatch(model=self.model, imgsz=self.cfg.data.train.input_size, batch_size=32,
+                                        divisible=32, batch_sizes=batch_sizes)
+
+            self.batch_size = ((self.batch_size + 32 - 1) // 32) * 32
+
+        nbs = self.cfg.device.effective_batchsize  # nominal batch size
+        accumulate = 1
+        if nbs > 1:
+            accumulate = max(math.ceil(nbs / self.batch_size), 1)
+            self.batch_size = round(nbs / accumulate)
+            self._info(f"After calculate accumulation\n"
+                       f"Batch size will be: {self.batch_size}\n"
+                       f"With accumulation: {accumulate}.", verbose)
 
         train_dataloader = torch.utils.data.DataLoader(
             train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=False,
+            pin_memory=True,
+            persistent_workers=True,
             collate_fn=naive_collate,
             drop_last=True,
         )
@@ -547,7 +564,8 @@ class NanodetLearner(Learner):
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=False,
+            pin_memory=True,
+            persistent_workers=True,
             collate_fn=naive_collate,
             drop_last=False,
         )
@@ -574,14 +592,15 @@ class NanodetLearner(Learner):
             max_epochs=self.iters,
             gpus=gpu_ids,
             check_val_every_n_epoch=self.checkpoint_after_iter,
-            accelerator=accelerator,
             accelerator=None,
+            accumulate_grad_batches=accumulate,
             log_every_n_steps=self.cfg.log.interval,
             num_sanity_val_steps=0,
             resume_from_checkpoint=model_resume_path,
             callbacks=[ProgressBar(refresh_rate=0)],
             logger=self.logger,
             benchmark=True,
+            precision=precision,
             gradient_clip_val=self.cfg.get("grad_clip", 0.0),
         )
 
@@ -615,12 +634,20 @@ class NanodetLearner(Learner):
 
         val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "val")
 
+        if self.batch_size == -1:  # autobatch
+            torch.backends.cudnn.benchmark = False
+            batch_sizes = [2, 4, 8, 16, 32, 64, 128, 256, 512]
+            self.batch_size = autobatch(model=self.model, imgsz=self.cfg.data.val.input_size, batch_size=32,
+                                        divisible=32, batch_sizes=batch_sizes)
+
+            self.batch_size = ((self.batch_size + 32 - 1) // 32) * 32
+
         val_dataloader = torch.utils.data.DataLoader(
             val_dataset,
             batch_size=self.batch_size,
             shuffle=False,
             num_workers=self.cfg.device.workers_per_gpu,
-            pin_memory=False,
+            pin_memory=True,
             collate_fn=naive_collate,
             drop_last=False,
         )
@@ -642,6 +669,7 @@ class NanodetLearner(Learner):
             log_every_n_steps=self.cfg.log.interval,
             num_sanity_val_steps=0,
             logger=self.logger,
+            precision=precision,
         )
         self._info("Starting testing...", verbose)
 

@@ -155,5 +155,5 @@ class NanoDetHead(GFLHead):
                 output = torch.cat([cls_score, bbox_pred], dim=1)
             outputs.append(output.flatten(start_dim=2))
 
-        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1).contiguous()
         return outputs

@@ -92,7 +92,7 @@ class CocoDetectionEvaluator:
             empty_eval_results = {}
             for key in self.metric_names:
                 empty_eval_results[key] = 0
-            return empty_eval_results
+            return empty_eval_results, ""
         if rank > 0:
             json_path = os.path.join(save_dir, "results{}.json".format(rank))
         else:
@@ -117,7 +117,7 @@ class CocoDetectionEvaluator:
 
         # print per class AP
         headers = ["class", "AP50", "mAP"]
-        colums = 6
+        colums = 3
         per_class_ap50s = []
         per_class_maps = []
         precisions = coco_eval.eval["precision"]
@@ -131,16 +131,27 @@ class CocoDetectionEvaluator:
             precision_50 = precisions[0, :, idx, 0, -1]
             precision_50 = precision_50[precision_50 > -1]
             ap50 = np.mean(precision_50) if precision_50.size else float("nan")
-            per_class_ap50s.append(float(ap50 * 100))
+            per_class_ap50s.append(float(ap50))
 
             precision = precisions[:, :, idx, 0, -1]
             precision = precision[precision > -1]
             ap = np.mean(precision) if precision.size else float("nan")
-            per_class_maps.append(float(ap * 100))
+            per_class_maps.append(float(ap))
 
-        num_cols = min(colums, len(self.class_names) * len(headers))
+        # Average of all classes
+        precision_50 = precisions[0, :, :, 0, -1]
+        precision_50 = precision_50[precision_50 > -1]
+        ap50 = np.mean(precision_50) if precision_50.size else float("nan")
+        per_class_ap50s.append(float(ap50))
+
+        precision = precisions[:, :, :, 0, -1]
+        precision = precision[precision > -1]
+        ap = np.mean(precision) if precision.size else float("nan")
+        per_class_maps.append(float(ap))
+
+        num_cols = min(colums, (len(self.class_names) + 1) * len(headers))
         flatten_results = []
-        for name, ap50, mAP in zip(self.class_names, per_class_ap50s, per_class_maps):
+        for name, ap50, mAP in zip(self.class_names + ["all"], per_class_ap50s, per_class_maps):
             flatten_results += [name, ap50, mAP]
 
         row_pair = itertools.zip_longest(
@@ -150,7 +161,7 @@ class CocoDetectionEvaluator:
         table = tabulate(
             row_pair,
             tablefmt="pipe",
-            floatfmt=".1f",
+            floatfmt=".3f",
             headers=table_headers,
             numalign="left",
         )
@@ -160,4 +171,4 @@ class CocoDetectionEvaluator:
         eval_results = {}
         for k, v in zip(self.metric_names, aps):
             eval_results[k] = v
-        return eval_results
+        return eval_results, table

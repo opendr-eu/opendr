@@ -143,7 +143,7 @@ class NanoDetPlusHead(nn.Module):
                 feat = conv(feat)
             output = gfl_cls(feat)
             outputs.append(output.flatten(start_dim=2))
-        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1).contiguous()
         return outputs
 
     def loss(self, preds, gt_meta, aux_preds=None):
@@ -311,7 +311,7 @@ class NanoDetPlusHead(nn.Module):
             return labels, label_scores, bbox_targets, dist_targets, 0
 
         assign_result = self.assigner.assign(
-            cls_preds.sigmoid(), center_priors, decoded_bboxes, gt_bboxes, gt_labels
+            cls_preds, center_priors, decoded_bboxes, gt_bboxes, gt_labels
         )
         pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
             assign_result, gt_bboxes

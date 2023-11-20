@@ -194,7 +194,7 @@ def scriptable_warp_boxes(boxes, M, width, height):
     n = boxes.shape[0]
     if n:
         # warp points
-        xy = torch.ones((n * 4, 3), dtype=torch.float32)
+        xy = torch.ones((n * 4, 3), dtype=torch.float32, device=boxes.device)
         xy[:, :2] = boxes[:, [0, 1, 2, 3, 0, 3, 2, 1]].reshape(
             n * 4, 2
         )  # x1y1, x2y2, x1y2, x2y1

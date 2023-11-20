@@ -106,6 +106,7 @@ class GFLHead(nn.Module):
         strides=[8, 16, 32],
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
+        ignore_iof_thr=-1,
         **kwargs
     ):
         super(GFLHead, self).__init__()
@@ -125,7 +126,7 @@ class GFLHead(nn.Module):
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9)
+        self.assigner = ATSSAssigner(topk=9, ignore_iof_thr=ignore_iof_thr)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
@@ -312,9 +313,9 @@ class GFLHead(nn.Module):
 
             weight_targets = cls_score.detach().sigmoid()
             weight_targets = weight_targets.max(dim=1)[0][pos_inds]
-            pos_bbox_pred_corners = self.distribution_project(pos_bbox_pred)
+            pos_bbox_pred_corners = self.distribution_project(pos_bbox_pred.unsqueeze(0))
             pos_decode_bbox_pred = distance2bbox(
-                pos_grid_cell_centers, pos_bbox_pred_corners
+                pos_grid_cell_centers, pos_bbox_pred_corners.squeeze(0)
             )
             pos_decode_bbox_targets = pos_bbox_targets / stride
             score[pos_inds] = bbox_overlaps(
