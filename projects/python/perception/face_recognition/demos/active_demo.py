@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import cv2
 import os
 import torch
@@ -29,7 +27,6 @@ facedetector.load("./retinaface_mnet")
 recognizer = FaceRecognitionLearner(device='cuda', backbone='mobilefacenet', mode='backbone_only')
 recognizer.download(path=".")
 recognizer.load(".")
-# recognizer.fit_reference('./cropped_images_path', save_path="./save_path", create_new=True)
 recognizer.fit_reference('./cropped_images_path', save_path="./save_path", create_new=True)
 
 new_data_path = recognizer.database_path
@@ -79,7 +76,8 @@ while True:
                     if result.description in features_to_keep:
                         for item in features_to_keep[result.description]:
                             features_sum += item
-                        recognizer.database[result.description] = features_sum / len(features_to_keep[result.description])
+                        recognizer.database[result.description] = \
+                            (features_sum / len(features_to_keep[result.description]))
 
             else:
                 color = (0, 0, 255)

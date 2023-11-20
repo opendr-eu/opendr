@@ -440,9 +440,6 @@ class FaceRecognitionLearner(Learner):
                             features = self.backbone_model(inputs)
                         features = l2_norm(features)
                         features_sum += features
-                    avg_features = features_sum / total
-                    subdir = subdir.split('/')
-                    subdir = subdir[-1]
                     database[subdir1] = features
             f = open(os.path.join(save_path, "reference.pkl"), "wb")
             pickle.dump(database, f)
@@ -564,7 +561,6 @@ class FaceRecognitionLearner(Learner):
             distance = 100.0
             if distance == 0:
                 distance = 10.0
-            person = None
             self.backbone_model.eval()
             with torch.no_grad():
                 img = PILImage.fromarray(
