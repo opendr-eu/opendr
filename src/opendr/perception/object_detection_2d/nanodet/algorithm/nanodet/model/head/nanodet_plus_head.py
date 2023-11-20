@@ -15,7 +15,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv \
     import ConvModule, DepthwiseConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms, batched_nms
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.dsl_assigner \
     import DynamicSoftLabelAssigner
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.gfl_head import Integral, reduce_mean
@@ -59,6 +59,7 @@ class NanoDetPlusHead(nn.Module):
         reg_max=7,
         activation="LeakyReLU",
         assigner_cfg=dict(topk=13),
+        legacy_post_process=True,
         **kwargs
     ):
         super(NanoDetPlusHead, self).__init__()
@@ -88,6 +89,14 @@ class NanoDetPlusHead(nn.Module):
         self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()
+
+        self.post_process = self._post_process
+        self.forward_infer = self.forward
+        if legacy_post_process is False:
+            self.dynamic = True
+            self.center_priors = [torch.empty(0) for _ in range(len(strides))]
+            self.forward_infer = self.graph_forward
+            self.post_process = self._post_process_fast
 
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()
@@ -134,6 +143,42 @@ class NanoDetPlusHead(nn.Module):
         for i in range(len(self.strides)):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
         print("Finish initialize NanoDet-Plus Head.")
+
+    def _apply(self, fn):
+        # Apply to(), cpu(), cuda(), half() to model tensors that are not parameters or registered buffers
+        self = super()._apply(fn)
+        if hasattr(self, "center_priors"):
+            self.center_priors = list(map(fn, self.center_priors))
+        return self
+
+    def graph_forward(self, feats: List[Tensor]):
+        outputs = []
+        for idx, (feat, cls_convs, gfl_cls, stride) in enumerate(
+                zip(feats, self.cls_convs, self.gfl_cls, self.strides)):
+            for conv in cls_convs:
+                feat = conv(feat)
+            output = gfl_cls(feat)
+
+            bs, _, ny, nx = output.shape
+            output = output.flatten(start_dim=2).permute(0, 2, 1).contiguous()
+
+            cls, reg = output.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+            )
+            project = self.distribution_project(reg)
+            if self.dynamic or self.center_priors[idx].shape != project.shape:
+                self.center_priors[idx] = (
+                    self.get_single_level_center_priors(
+                        bs, (ny, nx), stride, dtype=project.dtype, device=project.device
+                    )
+                )
+            dis_preds = project * self.center_priors[idx][..., 2, None]
+            decoded_bboxes = distance2bbox(self.center_priors[idx][..., :2], dis_preds)
+            output = torch.cat((cls.sigmoid(), decoded_bboxes), dim=2)
+            outputs.append(output)
+
+        outputs = torch.cat(outputs, dim=1)
+        return outputs
 
     def forward(self, feats: List[Tensor]):
         outputs = []
@@ -358,8 +403,8 @@ class NanoDetPlusHead(nn.Module):
             pos_gt_bboxes = gt_bboxes[pos_assigned_gt_inds, :]
         return pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds
 
-    def post_process(self, preds, meta: Dict[str, Tensor], mode: str = "infer", conf_thresh: float = 0.05,
-                     iou_thresh: float = 0.6, nms_max_num: int = 100):
+    def _post_process(self, preds, meta: Dict[str, Tensor], mode: str = "infer", conf_thresh: float = 0.05,
+                      iou_thresh: float = 0.6, nms_max_num: int = 100):
         """Prediction results postprocessing. Decode bboxes and rescale
         to original image size.
         Args:
@@ -439,6 +484,47 @@ class NanoDetPlusHead(nn.Module):
                 ).tolist()
             det_results[img_id] = det_result
         return det_results
+
+    def _post_process_fast(self, preds, meta: Dict[str, Tensor], mode: str = "infer", conf_thresh: float = 0.05,
+                           iou_thresh: float = 0.6, nms_max_num: int = 100):
+        """Prediction results postprocessing. Decode bboxes and rescale
+        to original image size.
+        Args:
+            preds (Tensor): Prediction output.
+            meta (dict): Meta info.
+            mode (str): Determines if it uses batches and numpy or tensors for scripting.
+            conf_thresh (float): Determines the confidence threshold.
+            iou_thresh (float): Determines the iou threshold.
+            nms_max_num (int): Determines the maximum number of bounding boxes that will be retained following the nms.
+        """
+        if mode == "eval" and not torch.jit.is_scripting():
+            # Inference do not use batches and tries to have
+            # tensors exclusively for better optimization during scripting.
+            return self._eval_post_process(preds, meta)
+
+        max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
+
+        valid_mask = (preds[..., :self.num_classes] > conf_thresh).any(dim=-1)
+
+        preds = preds[valid_mask]
+        if not preds.shape[0]:
+            return None
+
+        max_scores, labels = torch.max(preds[:, :self.num_classes], dim=1)
+        keep = max_scores.argsort(descending=True)[:max_nms]
+        pred = preds[keep]  # sort by confidence and remove excess boxes
+        labels = labels[keep]
+        bboxes = pred[:, self.num_classes:]
+        cls_scores = max_scores[keep]
+
+        det_bboxes, keep = batched_nms(bboxes, cls_scores, labels,
+                                       nms_cfg=dict(iou_threshold=iou_thresh, nms_max_num=float(nms_max_num)))
+        det_labels = labels[keep]
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["img_info"]["width"], meta["img_info"]["height"]
+        )
+        return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 
     def get_bboxes(self, cls_preds, reg_preds, input_img, mode: str = "infer", conf_threshold: float = 0.05,
                    iou_threshold: float = 0.6, nms_max_num: int = 100):

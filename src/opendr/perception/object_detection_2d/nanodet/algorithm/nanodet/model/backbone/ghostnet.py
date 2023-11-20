@@ -142,6 +142,7 @@ class GhostBottleneck(nn.Module):
         mid_chs,
         out_chs,
         dw_kernel_size=3,
+        kernel_size_shortcut=None,
         stride=1,
         activation="ReLU",
         se_ratio=0.0,
@@ -149,6 +150,7 @@ class GhostBottleneck(nn.Module):
         super(GhostBottleneck, self).__init__()
         has_se = se_ratio is not None and se_ratio > 0.0
         self.stride = stride
+        kernel_size_shortcut = dw_kernel_size if kernel_size_shortcut is None else kernel_size_shortcut
 
         # Point-wise expansion
         self.ghost1 = GhostModule(in_chs, mid_chs, activation=activation)
@@ -183,9 +185,9 @@ class GhostBottleneck(nn.Module):
                 nn.Conv2d(
                     in_chs,
                     in_chs,
-                    dw_kernel_size,
+                    kernel_size_shortcut,
                     stride=stride,
-                    padding=(dw_kernel_size - 1) // 2,
+                    padding=(kernel_size_shortcut - 1) // 2,
                     groups=in_chs,
                     bias=False,
                 ),

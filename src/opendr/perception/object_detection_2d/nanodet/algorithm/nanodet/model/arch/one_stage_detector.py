@@ -43,10 +43,28 @@ class OneStageDetector(nn.Module):
             x = self.head(x)
         return x
 
-    def inference(self, meta: Dict[str, torch.Tensor]):
+    def inference(self, x):
         with torch.no_grad():
-            preds = self(meta["img"])
-        return preds
+            x = self.backbone(x)
+            if hasattr(self, "fpn"):
+                x = self.fpn(x)
+            if hasattr(self, "head"):
+                if hasattr(self.head, "forward_infer"):
+                    x = self.head.forward_infer(x)
+                else:
+                    x = self.head(x)
+        return x
+
+    def set_dynamic(self, dynamic=False):
+        self.backbone.dynamic = dynamic
+        if hasattr(self, "fpn"):
+            self.fpn.dynamic = dynamic
+        if hasattr(self, "head"):
+            self.head.dynamic = dynamic
+        if hasattr(self, "aux_fpn"):
+            self.aux_fpn.dynamic = dynamic
+        if hasattr(self, "aux_head"):
+            self.aux_head.dynamic = dynamic
 
     def forward_train(self, gt_meta):
         preds = self(gt_meta["img"])

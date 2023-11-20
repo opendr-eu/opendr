@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import torch.jit
 import torch.nn as nn
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.util import MultiOutput

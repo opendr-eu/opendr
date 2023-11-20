@@ -49,7 +49,7 @@ import onnxruntime as ort
 
 _MODEL_NAMES = {"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512",
                 "RepVGG_A0_416", "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416",
-                "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "custom"}
+                "plus_m_320", "plus_m_1.5x_320", "plus_m_416", "plus_m_1.5x_416", "plus_fast", "custom"}
 
 
 class NanodetLearner(Learner):
@@ -91,8 +91,13 @@ class NanodetLearner(Learner):
 
         self.pipeline = None
         self.model = build_model(self.cfg.model)
+        self.model = self.model.to(device)
+
         self.logger = None
         self.task = None
+
+        #  warmup run if head use fast post processing
+        self.model(self.__dummy_input()[0])
 
     def _load_hparam(self, model: str):
         """ Load hyperparameters for nanodet models and training configuration
@@ -228,6 +233,7 @@ class NanodetLearner(Learner):
             if metadata['format'] == "onnx":
                 self._load_onnx(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
                 print("Loaded ONNX model.")
+                self._info("Loaded ONNX model.", True)
             else:
                 self._load_jit(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
                 self._info("Loaded JIT model.", True)

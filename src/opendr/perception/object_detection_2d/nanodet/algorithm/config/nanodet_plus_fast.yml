@@ -1,0 +1,129 @@
+# nanodet-plus-fast
+# RoboWeedMap mAP(0.5:0.95) = 0.421
+#                    AP_50  = 0.428
+save_dir: ./temp/nanodet_plus_fast
+check_point_name: plus_fast
+model:
+  weight_averager:
+    name: ExpMovingAverager
+    decay: 0.9998
+  arch:
+    name: NanoDetPlus
+    detach_epoch: 10
+    backbone:
+      name: Vgg
+      out_stages: [5, 6]
+      stages_outplanes: [8, 8, 16, 16, 32, 32, 64]
+      stages_strides:   [2, 1,  2,  1,  2,  1,  2]
+      stages_kernels:   [3, 3,  3,  3,  3,  3,  3]
+      stages_padding:   [1, 1,  1,  1,  1,  1,  1]
+      maxpool_kernels:  [0, 0,  0,  0,  0,  0,  0]
+      maxpool_strides:  [0, 0,  0,  0,  0,  0,  0]
+      activation: LeakyReLU
+      use_depthwise: False
+    fpn:
+      name: GhostPAN
+      in_channels: [32, 64]
+      out_channels: 32
+      use_depthwise: True
+      reduction_depthwise: True
+      kernel_size: 5
+      kernel_size_shortcut: 3
+      expand: 2
+      num_blocks: 1
+      use_res: False
+      num_extra_level: 0
+      upsample_cfg:
+        scale_factor: 2
+        mode: bilinear
+      activation: LeakyReLU
+    head:
+      name: NanoDetPlusHead
+      num_classes: 2
+      input_channel: 32
+      feat_channels: 32
+      stacked_convs: 3
+      kernel_size: 3
+      strides: [8, 16]
+      activation: LeakyReLU
+      reg_max: 7
+      legacy_post_process: False
+      norm_cfg:
+        type: BN
+      loss:
+        loss_qfl:
+          name: QualityFocalLoss
+          use_sigmoid: True
+          beta: 2.0
+          loss_weight: 1.0
+        loss_dfl:
+          name: DistributionFocalLoss
+          loss_weight: 0.25
+        loss_bbox:
+          name: GIoULoss
+          loss_weight: 2.0
+    # Auxiliary head, only use in training time.
+    aux_head:
+      name: SimpleConvHead
+      num_classes: 2
+      input_channel: 64
+      feat_channels: 64
+      stacked_convs: 4
+      strides: [8, 16]
+      activation: LeakyReLU
+      reg_max: 7
+data:
+  train:
+    input_size: [1536, 1312] #[w,h]
+    keep_ratio: False
+    cache_images: _
+    pipeline:
+      perspective: 0.0
+      scale: [0.9, 1.1]
+      stretch: [[0.9, 1.1], [0.9, 1.1]]
+      rotation: 0
+      shear: 0
+      translate: 0.0
+      flip: 0.5
+      jitter_box: 0.1
+      hard_pos: 0.0
+      hard_pos_ratio: 0.0
+      brightness: 0.2
+      contrast: [0.8, 1.2]
+      saturation: [0.8, 1.1]
+      normalize: [[98.454, 104.107, 98.173], [34.798, 31.223, 29.665]]
+  val:
+    input_size: [1536, 1312] #[w,h]
+    keep_ratio: False
+    cache_images: _
+    pipeline:
+      normalize: [[98.454, 104.107, 98.173], [34.798, 31.223, 29.665]]
+device:
+  gpu_ids: [0]
+  workers_per_gpu: 8
+  batchsize_per_gpu: 32
+  effective_batchsize: 1
+schedule:
+  resume: 0
+  optimizer:
+    name: AdamW
+    lr: 0.005
+    weight_decay: 0.05
+  warmup:
+    name: linear
+    steps: 3
+    ratio: 0.0001
+  total_epochs: 4000
+  lr_schedule:
+    name: CosineAnnealingLR
+    T_max: 300
+    eta_min: 0.00005
+  val_intervals: 10
+grad_clip: 35
+evaluator:
+  name: CocoDetectionEvaluator
+  save_key: mAP
+log:
+  interval: 5
+
+class_names: ["poaceae", "brassicaceae"]
