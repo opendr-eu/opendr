@@ -65,6 +65,10 @@ class Logger:
         if self.rank < 1:
             logging.info(string)
 
+    def warning(self, string):
+        if self.rank < 1:
+            logging.warning(string)
+
     def scalar_summary(self, tag, phase, value, step):
         if self.rank < 1:
             self.writer.add_scalars(tag, {phase: value}, step)
@@ -195,7 +199,7 @@ class NanoDetLightningLogger(LightningLoggerBase):
 
     @rank_zero_only
     def dump_cfg(self, cfg_node):
-        with open(os.path.join(self.log_dir, "train_cfg.yml"), "w") as f:
+        with open(os.path.join(self._save_dir, "train_cfg.yml"), "w") as f:
             cfg_node.dump(stream=f)
 
     @rank_zero_only

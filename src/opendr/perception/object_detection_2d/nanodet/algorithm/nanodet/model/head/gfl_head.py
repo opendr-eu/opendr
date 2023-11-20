@@ -23,7 +23,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.scale import Scale
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.util import Scale
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.atss_assigner\
     import ATSSAssigner
 
@@ -89,7 +89,6 @@ class GFLHead(nn.Module):
     :param stacked_convs: Number of conv layers in cls and reg tower. Default: 4.
     :param octave_base_scale: Scale factor of grid cells.
     :param strides: Down sample strides of all level feature map
-    :param conv_cfg: Dictionary to construct and config conv layer. Default: None.
     :param norm_cfg: Dictionary to construct and config norm layer.
     :param reg_max: Max value of integral set :math: `{0, ..., reg_max}`
                     in QFL setting. Default: 16.
@@ -105,7 +104,6 @@ class GFLHead(nn.Module):
         stacked_convs=4,
         octave_base_scale=4,
         strides=[8, 16, 32],
-        conv_cfg=None,
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
         **kwargs
@@ -120,7 +118,6 @@ class GFLHead(nn.Module):
         self.reg_max = reg_max
 
         self.loss_cfg = loss
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.use_sigmoid = self.loss_cfg.loss_qfl.use_sigmoid
         if self.use_sigmoid:
@@ -155,7 +152,6 @@ class GFLHead(nn.Module):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                 )
             )
@@ -166,7 +162,6 @@ class GFLHead(nn.Module):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                 )
             )
@@ -553,24 +548,14 @@ class GFLHead(nn.Module):
                                   iou_threshold=iou_thresh, nms_max_num=nms_max_num)
         (det_bboxes, det_labels) = results
 
-        det_result = []
-        labels = torch.arange(self.num_classes, device=det_bboxes.device).unsqueeze(1).unsqueeze(1)
-        for i in range(self.num_classes):
-            inds = det_labels == i
+        if det_bboxes.shape[0] == 0:
+            return None
 
-            class_det_bboxes = det_bboxes[inds]
-            class_det_bboxes[:, :4] = scriptable_warp_boxes(
-                class_det_bboxes[:, :4],
-                torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
-            )
-            if class_det_bboxes.shape[0] != 0:
-                det = torch.cat((
-                    class_det_bboxes,
-                    labels[i].repeat(class_det_bboxes.shape[0], 1)
-                ), dim=1)
-                det_result.append(det)
-
-        return det_result
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["img_info"]["width"], meta["img_info"]["height"]
+        )
+        return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 
     def _eval_post_process(self, preds, meta):
         cls_scores, bbox_preds = preds.split(

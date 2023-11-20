@@ -36,7 +36,6 @@ class NanoDetHead(GFLHead):
         stacked_convs=2,
         octave_base_scale=5,
         use_depthwise=True,
-        conv_cfg=None,
         norm_cfg=dict(type="BN"),
         reg_max=16,
         share_cls_reg=False,
@@ -56,7 +55,6 @@ class NanoDetHead(GFLHead):
             stacked_convs,
             octave_base_scale,
             strides,
-            conv_cfg,
             norm_cfg,
             reg_max,
             **kwargs

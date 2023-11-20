@@ -81,7 +81,6 @@ class GhostPAN(nn.Module):
     Args:
         in_channels (List[int]): Number of input channels per scale.
         out_channels (int): Number of output channels (used at each scale)
-        num_csp_blocks (int): Number of bottlenecks in CSPLayer. Default: 3
         use_depthwise (bool): Whether to depthwise separable convolution in
             blocks. Default: False
         kernel_size (int): Kernel size of depthwise convolution. Default: 5.

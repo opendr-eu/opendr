@@ -382,24 +382,14 @@ class NanoDetPlusHead(nn.Module):
                                   iou_threshold=iou_thresh, nms_max_num=nms_max_num)
         (det_bboxes, det_labels) = results
 
-        det_result = []
-        labels = torch.arange(self.num_classes, device=det_bboxes.device).unsqueeze(1).unsqueeze(1)
-        for i in range(self.num_classes):
-            inds = det_labels == i
+        if det_bboxes.shape[0] == 0:
+            return None
 
-            class_det_bboxes = det_bboxes[inds]
-            class_det_bboxes[:, :4] = scriptable_warp_boxes(
-                class_det_bboxes[:, :4],
-                torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
-            )
-            if class_det_bboxes.shape[0] != 0:
-                det = torch.cat((
-                    class_det_bboxes,
-                    labels[i].repeat(class_det_bboxes.shape[0], 1)
-                ), dim=1)
-                det_result.append(det)
-
-        return det_result
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["img_info"]["width"], meta["img_info"]["height"]
+        )
+        return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 
     def _eval_post_process(self, preds, meta):
         cls_scores, bbox_preds = preds.split(

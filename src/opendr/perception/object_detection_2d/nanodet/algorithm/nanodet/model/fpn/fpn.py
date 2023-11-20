@@ -33,7 +33,6 @@ class FPN(nn.Module):
                 build the feature pyramid. Default: 0.
             end_level (int): Index of the end input backbone level (exclusive) to
                 build the feature pyramid. Default: -1, which means the last level.
-            conv_cfg (dict): Config dict for convolution layer. Default: None.
             norm_cfg (dict): Config dict for normalization layer. Default: None.
             activation (str): Config dict for activation layer in ConvModule.
                 Default: None.
@@ -46,7 +45,6 @@ class FPN(nn.Module):
         num_outs,
         start_level=0,
         end_level=-1,
-        conv_cfg=None,
         norm_cfg=None,
         activation=None,
     ):
@@ -56,7 +54,6 @@ class FPN(nn.Module):
         self.out_channels = out_channels
         self.num_ins = len(in_channels)
         self.num_outs = num_outs
-        self.fp16_enabled = False
 
         if end_level == -1:
             self.backbone_end_level = self.num_ins
@@ -75,7 +72,6 @@ class FPN(nn.Module):
                 in_channels[i],
                 out_channels,
                 1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 activation=activation,
                 inplace=False,

@@ -296,7 +296,7 @@ class ShapeTransform:
         keep_ratio: bool,
         divisible: int = 0,
         perspective: float = 0.0,
-        scale: Tuple[int, int] = (1, 1),
+        scale: Tuple[int, int]=(1, 1),
         stretch: Tuple = ((1, 1), (1, 1)),
         rotation: float = 0.0,
         shear: float = 0.0,

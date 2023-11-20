@@ -21,12 +21,12 @@ class DynamicSoftLabelAssigner(BaseAssigner):
         self.iou_factor = iou_factor
 
     def assign(
-        self,
-        pred_scores,
-        priors,
-        decoded_bboxes,
-        gt_bboxes,
-        gt_labels,
+            self,
+            pred_scores,
+            priors,
+            decoded_bboxes,
+            gt_bboxes,
+            gt_labels,
     ):
         """Assign gt to priors with dynamic soft label assignment.
         Args:

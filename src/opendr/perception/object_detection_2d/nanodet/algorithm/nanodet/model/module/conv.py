@@ -28,7 +28,6 @@ class ConvModule(nn.Module):
         bias (bool or str): If specified as `auto`, it will be decided by the
             norm_cfg. Bias will be set as True if norm_cfg is None, otherwise
             False.
-        conv_cfg (dict): Config dict for convolution layer.
         norm_cfg (dict): Config dict for normalization layer.
         activation (str): activation layer, "ReLU" by default.
         inplace (bool): Whether to use inplace mode for activation.
@@ -47,14 +46,12 @@ class ConvModule(nn.Module):
         dilation=1,
         groups=1,
         bias="auto",
-        conv_cfg=None,
         norm_cfg=None,
         activation="ReLU",
         inplace=True,
         order=("conv", "norm", "act"),
     ):
         super(ConvModule, self).__init__()
-        assert conv_cfg is None or isinstance(conv_cfg, dict)
         assert norm_cfg is None or isinstance(norm_cfg, dict)
         assert activation is None or isinstance(activation, str)
         self.conv_cfg = conv_cfg
@@ -75,7 +72,7 @@ class ConvModule(nn.Module):
             warnings.warn("ConvModule has norm and bias at the same time")
 
         # build convolution layer
-        self.conv = nn.Conv2d(  #
+        self.conv = nn.Conv2d(
             in_channels,
             out_channels,
             kernel_size,
@@ -153,6 +150,7 @@ class DepthwiseConvModule(nn.Module):
         stride=1,
         padding=0,
         dilation=1,
+        groups=1,
         bias="auto",
         norm_cfg=dict(type="BN"),
         activation="ReLU",

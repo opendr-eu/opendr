@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import copy
-import json
 import os
 import warnings
 from typing import Any, Dict, List
@@ -117,9 +116,9 @@ class TrainingTask(LightningModule):
         if self.current_epoch % self.cfg.schedule.val_intervals == 0:
             checkpoint_save_path = os.path.join(self.cfg.save_dir, "checkpoints")
             mkdir(self.local_rank, checkpoint_save_path)
-            print("===" * 10)
-            print("checkpoint_save_path: {} \n epoch: {}".format(checkpoint_save_path, self.current_epoch))
-            print("===" * 10)
+            self.info("===" * 10)
+            self.info("checkpoint_save_path: {} \n epoch: {}".format(checkpoint_save_path, self.current_epoch))
+            self.info("===" * 10)
             self.trainer.save_checkpoint(
                 os.path.join(checkpoint_save_path, "model_iter_{}.ckpt".format(self.current_epoch))
             )
@@ -181,10 +180,7 @@ class TrainingTask(LightningModule):
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
-                verbose = True if self.logger is not None else False
-                # TODO: save only if local_rank is < 0
-                # self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
-                #                          verbose=verbose)
+                verbose = True if (self.logger is not None) else False
                 self.save_current_model(os.path.join(best_save_path, "nanodet_model_state_best.pth"), verbose=verbose)
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 with open(txt_path, "a") as f:
@@ -195,11 +191,9 @@ class TrainingTask(LightningModule):
                 warnings.warn(
                     "Warning! Save_key is not in eval results! Only save model last!"
                 )
-            if self.logger:
-                self.logger.log_metrics(eval_results, self.current_epoch + 1)
+            self.log_metrics(eval_results, (self.global_step + 1))
         else:
-            if self.logger:
-                self.logger.info("Skip val on rank {}".format(self.local_rank))
+            self.info("Skip val on rank {}".format(self.local_rank))
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -223,10 +217,9 @@ class TrainingTask(LightningModule):
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():
                         f.write("{}: {}\n".format(k, v))
-
         else:
-            if self.logger:
-                self.logger.info("Skip test on rank {}".format(self.local_rank))
+            self.info("Skip test on rank {}".format(self.local_rank))
+        return
 
     def configure_optimizers(self):
         """
@@ -322,6 +315,10 @@ class TrainingTask(LightningModule):
         if self.logger:
             self.logger.info(string)
 
+    def log_metrics(self, metrics, step):
+        if self.logger:
+            self.logger.log_metrics(metrics, step)
+
     # ------------Hooks-----------------
     def on_train_start(self) -> None:
         if self.current_epoch > 0:
@@ -329,8 +326,7 @@ class TrainingTask(LightningModule):
 
     def on_pretrain_routine_end(self) -> None:
         if "weight_averager" in self.cfg.model:
-            if self.logger:
-                self.logger.info("Weight Averaging is enabled")
+            self.info("Weight Averaging is enabled")
             if self.weight_averager and self.weight_averager.has_inited():
                 self.weight_averager.to(self.weight_averager.device)
                 return
@@ -359,15 +355,13 @@ class TrainingTask(LightningModule):
         if self.weight_averager:
             avg_params = convert_avg_params(checkpointed_state)
             if len(avg_params) != len(self.model.state_dict()):
-                if self.logger:
-                    self.logger.info(
-                        "Weight averaging is enabled but average state does not"
-                        "match the model"
-                    )
+                self.info(
+                    "Weight averaging is enabled but average state does not"
+                    "match the model"
+                )
             else:
                 self.weight_averager = build_weight_averager(
                     self.cfg.model.weight_averager, device=self.device
                 )
                 self.weight_averager.load_state_dict(avg_params)
-                if self.logger:
-                    self.logger.info("Loaded average state from checkpoint.")
+                self.info("Loaded average state from checkpoint.")

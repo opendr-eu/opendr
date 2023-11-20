@@ -147,7 +147,7 @@ class NanodetLearner(Learner):
                 )
             )
         if self.warmup_steps is not None:
-            self.cfg.schedule.warmup.warmup_steps = self.warmup_steps
+            self.cfg.schedule.warmup.steps = self.warmup_steps
         if self.warmup_ratio is not None:
             self.cfg.schedule.warmup.warmup_ratio = self.warmup_ratio
         if self.lr_schedule_T_max is not None:
@@ -189,13 +189,6 @@ class NanodetLearner(Learner):
 
         os.makedirs(path, exist_ok=True)
 
-        if self.ort_session:
-            self._save_onnx(path, verbose=verbose)
-            return
-        if self.jit_model:
-            self._save_jit(path, verbose=verbose)
-            return
-
         metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
                     "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes},
                     "optimized": False, "optimizer_info": {}}
@@ -203,15 +196,15 @@ class NanodetLearner(Learner):
         metadata["model_paths"].append("nanodet_{}.pth".format(model))
 
         if self.task is None:
-            print("You haven't called a task yet, only the state of the loaded or initialized model will be saved.")
+            self._info("You haven't called a task yet,"
+                       " only the state of the loaded or initialized model will be saved.", True)
             save_model_state(os.path.join(path, metadata["model_paths"][0]), self.model, None, verbose)
         else:
             self.task.save_current_model(os.path.join(path, metadata["model_paths"][0]), verbose)
 
         with open(os.path.join(path, "nanodet_{}.json".format(model)), 'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
-        if verbose:
-            print("Model metadata saved.")
+        self._info("Model metadata saved.", verbose)
         return
 
     def load(self, path=None, verbose=True):
@@ -226,8 +219,7 @@ class NanodetLearner(Learner):
         path = path if path is not None else self.cfg.save_dir
 
         model = self.cfg.check_point_name
-        if verbose:
-            print("Model name:", model, "-->", os.path.join(path, "nanodet_" + model + ".json"))
+        self._info(f"Model name: {model} --> {os.path.join(path, 'nanodet_' + model + '.json')}", verbose)
         with open(os.path.join(path, "nanodet_{}.json".format(model))) as f:
             metadata = json.load(f)
 
@@ -237,12 +229,11 @@ class NanodetLearner(Learner):
                 print("Loaded ONNX model.")
             else:
                 self._load_jit(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
-                print("Loaded JIT model.")
+                self._info("Loaded JIT model.", True)
         else:
             ckpt = torch.load(os.path.join(path, metadata["model_paths"][0]), map_location=torch.device(self.device))
             self.model = load_model_weight(self.model, ckpt, verbose)
-        if verbose:
-            print("Loaded model weights from {}".format(path))
+        self._info("Loaded model weights from {}".format(path), verbose)
         pass
 
     def download(self, path=None, mode="pretrained", verbose=True,
@@ -280,25 +271,28 @@ class NanodetLearner(Learner):
             if not os.path.exists(path):
                 os.makedirs(path)
 
-            if verbose:
-                print("Downloading pretrained checkpoint...")
+            checkpoint_file = os.path.join(path, f"nanodet_{model}.ckpt")
+            if os.path.isfile(checkpoint_file):
+                return
 
+            self._info("Downloading pretrained checkpoint...", verbose)
             file_url = os.path.join(url, "pretrained",
                                     "nanodet_{}".format(model),
                                     "nanodet_{}.ckpt".format(model))
 
-            urlretrieve(file_url, os.path.join(path, "nanodet_{}.ckpt".format(model)))
+            urlretrieve(file_url, checkpoint_file)
 
-            if verbose:
-                print("Downloading pretrain weights if provided...")
-
+            self._info("Downloading pretrain weights if provided...", verbose)
             file_url = os.path.join(url, "pretrained", "nanodet_{}".format(model),
                                     "nanodet_{}.pth".format(model))
             try:
-                urlretrieve(file_url, os.path.join(path, "nanodet_{}.pth".format(model)))
+                pytorch_save_file = os.path.join(path, f"nanodet_{model}.pth")
+                if os.path.isfile(pytorch_save_file):
+                    return
 
-                if verbose:
-                    print("Making metadata...")
+                urlretrieve(file_url, pytorch_save_file)
+
+                self._info("Making metadata...", verbose)
                 metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
                             "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes},
                             "optimized": False, "optimizer_info": {}}
@@ -309,11 +303,10 @@ class NanodetLearner(Learner):
                     json.dump(metadata, f, ensure_ascii=False, indent=4)
 
             except:
-                print("Pretrain weights for this model are not provided!!! \n"
-                      "Only the hole checkpoint will be download")
+                self._info("Pretrain weights for this model are not provided!!! \n"
+                           "Only the hole checkpoint will be download", True)
 
-                if verbose:
-                    print("Making metadata...")
+                self._info("Making metadata...", verbose)
                 metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
                             "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes},
                             "optimized": False, "optimizer_info": {}}
@@ -325,9 +318,12 @@ class NanodetLearner(Learner):
 
         elif mode == "images":
             file_url = os.path.join(url, "images", "000000000036.jpg")
-            if verbose:
-                print("Downloading example image...")
-            urlretrieve(file_url, os.path.join(path, "000000000036.jpg"))
+            image_file = os.path.join(path, "000000000036.jpg")
+            if os.path.isfile(image_file):
+                return
+
+            self._info("Downloading example image...", verbose)
+            urlretrieve(file_url, image_file)
 
         elif mode == "test_data":
             os.makedirs(os.path.join(path, "test_data"), exist_ok=True)
@@ -339,14 +335,14 @@ class NanodetLearner(Learner):
             os.makedirs(os.path.join(path, "test_data", "val", "Annotations"), exist_ok=True)
             # download image
             file_url = os.path.join(url, "images", "000000000036.jpg")
-            if verbose:
-                print("Downloading image...")
+
+            self._info("Downloading image...", verbose)
             urlretrieve(file_url, os.path.join(path, "test_data", "train", "JPEGImages", "000000000036.jpg"))
             urlretrieve(file_url, os.path.join(path, "test_data", "val", "JPEGImages", "000000000036.jpg"))
             # download annotations
             file_url = os.path.join(url, "annotations", "000000000036.xml")
-            if verbose:
-                print("Downloading annotations...")
+
+            self._info("Downloading annotations...", verbose)
             urlretrieve(file_url, os.path.join(path, "test_data", "train", "Annotations", "000000000036.xml"))
             urlretrieve(file_url, os.path.join(path, "test_data", "val", "Annotations", "000000000036.xml"))
 
@@ -375,6 +371,8 @@ class NanodetLearner(Learner):
 
         dummy_input = self.__dummy_input()
 
+        if verbose is False:
+            ort.set_default_logger_severity(3)
         torch.onnx.export(
             self.predictor,
             dummy_input[0],
@@ -398,32 +396,26 @@ class NanodetLearner(Learner):
                   'w', encoding='utf-8') as f:
             json.dump(metadata, f, ensure_ascii=False, indent=4)
 
-        if verbose:
-            print("Finished exporting ONNX model.")
-
+        self._info("Finished exporting ONNX model.", verbose)
         try:
             import onnxsim
         except:
-            print("For compression in optimized models, install onnxsim and rerun optimize.")
+            self._info("For compression in optimized models, install onnxsim and rerun optimize.", True)
             return
 
         import onnx
-        if verbose:
-            print("Simplifying ONNX model...")
+        self._info("Simplifying ONNX model...", verbose)
         input_data = {"data": dummy_input[0].detach().cpu().numpy()}
         model_sim, flag = onnxsim.simplify(export_path, input_data=input_data)
         if flag:
             onnx.save(model_sim, export_path)
-            if verbose:
-                print("ONNX simplified successfully.")
+            self._info("ONNX simplified successfully.", verbose)
         else:
-            if verbose:
-                print("ONNX simplified failed.")
+            self._info("ONNX simplified failed.", verbose)
 
     def _load_onnx(self, onnx_path, verbose=True):
-        if verbose:
-            print("Loading ONNX runtime inference session from {}".format(onnx_path))
-
+        onnx_path = onnx_path[0]
+        self._info("Loading ONNX runtime inference session from {}".format(onnx_path), verbose)
         self.ort_session = ort.InferenceSession(onnx_path)
 
     def _save_jit(self, jit_path, verbose=True, conf_threshold=0.35, iou_threshold=0.6,
@@ -452,13 +444,11 @@ class NanodetLearner(Learner):
                       'w', encoding='utf-8') as f:
                 json.dump(metadata, f, ensure_ascii=False, indent=4)
 
-            if verbose:
-                print("Finished export to TorchScript.")
+            self._info("Finished export to TorchScript.", verbose)
 
     def _load_jit(self, jit_path, verbose=True):
-        if verbose:
-            print("Loading JIT model from {}.".format(jit_path))
-
+        jit_path = jit_path[0]
+        self._info(f"Loading JIT model from {jit_path}.", verbose)
         self.jit_model = torch.jit.load(jit_path, map_location=self.device)
 
     def optimize(self, export_path, verbose=True, optimization="jit", conf_threshold=0.35, iou_threshold=0.6,
@@ -568,17 +558,16 @@ class NanodetLearner(Learner):
             if self.checkpoint_load_iter > 0 else None
         )
 
-        if logging:
-            self.logger.info("Creating task...")
-        elif verbose:
-            print("Creating task...")
+        self._info("Creating task...", verbose)
+
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
-        gpu_ids = None
-        accelerator = None
-        if self.device == "cuda":
-            gpu_ids = self.cfg.device.gpu_ids
-            accelerator = None if len(gpu_ids) <= 1 else "ddp"
+        if cfg.device.gpu_ids == -1 or self.device == "cpu":
+            gpu_ids, precision = (None, cfg.device.precision)
+        else:
+            gpu_ids, precision = (cfg.device.gpu_ids, cfg.device.precision)
+            assert len(gpu_ids) == 1, ("we do not have implementation for distribution learning please use only"
+                                       " one gpu device")
 
         trainer = pl.Trainer(
             default_root_dir=self.temp_path,
@@ -586,6 +575,7 @@ class NanodetLearner(Learner):
             gpus=gpu_ids,
             check_val_every_n_epoch=self.checkpoint_after_iter,
             accelerator=accelerator,
+            accelerator=None,
             log_every_n_steps=self.cfg.log.interval,
             num_sanity_val_steps=0,
             resume_from_checkpoint=model_resume_path,
@@ -614,15 +604,14 @@ class NanodetLearner(Learner):
         save_dir = os.path.join(self.cfg.save_dir, timestr)
         mkdir(local_rank, save_dir)
 
-        if logging:
-            self.logger = NanoDetLightningLogger(save_dir)
+        if logging or verbose:
+            self.logger = NanoDetLightningLogger(
+                save_dir=save_dir if logging else "",
+                verbose_only=False if logging else True
+            )
 
         self.cfg.update({"test_mode": "val"})
-
-        if logging:
-            self.logger.info("Setting up data...")
-        elif verbose:
-            print("Setting up data...")
+        self._info("Setting up data...", verbose)
 
         val_dataset = build_dataset(self.cfg.data.val, dataset, self.cfg.class_names, "val")
 
@@ -635,33 +624,26 @@ class NanodetLearner(Learner):
             collate_fn=naive_collate,
             drop_last=False,
         )
-        evaluator = build_evaluator(self.cfg.evaluator, val_dataset)
+        evaluator = build_evaluator(self.cfg.evaluator, val_dataset, logger=self.logger)
 
-        if logging:
-            self.logger.info("Creating task...")
-        elif verbose:
-            print("Creating task...")
+        self._info("Creating task...", verbose)
 
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
-        gpu_ids = None
-        accelerator = None
-        if self.device == "cuda":
-            gpu_ids = self.cfg.device.gpu_ids
-            accelerator = None if len(gpu_ids) <= 1 else "ddp"
+        if cfg.device.gpu_ids == -1:
+            gpu_ids, precision = (None, cfg.device.precision)
+        else:
+            gpu_ids, precision = (cfg.device.gpu_ids, cfg.device.precision)
 
         trainer = pl.Trainer(
             default_root_dir=save_dir,
             gpus=gpu_ids,
-            accelerator=accelerator,
+            accelerator=None,
             log_every_n_steps=self.cfg.log.interval,
             num_sanity_val_steps=0,
             logger=self.logger,
         )
-        if self.logger:
-            self.logger.info("Starting testing...")
-        elif verbose:
-            print("Starting testing...")
+        self._info("Starting testing...", verbose)
 
         test_results = (verbose or logging)
         return trainer.test(self.task, val_dataloader, verbose=test_results)
@@ -704,8 +686,8 @@ class NanodetLearner(Learner):
             res = self.predictor.postprocessing(preds, _input, *metadata)
 
         bounding_boxes = []
-        for label in res:
-            for box in label:
+        if res is not None:
+            for box in res:
                 box = box.to("cpu")
                 bbox = BoundingBox(left=box[0], top=box[1],
                                    width=box[2] - box[0],
@@ -717,3 +699,9 @@ class NanodetLearner(Learner):
         bounding_boxes.data.sort(key=lambda v: v.confidence)
 
         return bounding_boxes
+
+    def _info(self, msg, verbose=True):
+        if self.logger and verbose:
+            self.logger.info(msg)
+        elif verbose:
+            print(msg)
