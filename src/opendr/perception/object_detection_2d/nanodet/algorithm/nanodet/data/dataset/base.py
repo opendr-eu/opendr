@@ -11,14 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import random
+import psutil
+
 from abc import ABCMeta, abstractmethod
 from typing import Tuple
+from multiprocessing.pool import ThreadPool
+from pathlib import Path
+from tqdm import tqdm
 
 import numpy as np
 from torch.utils.data import Dataset
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform import Pipeline
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import get_size, mkdir
+
+
+TQDM_BAR_FORMAT = '{l_bar}{bar:10}{r_bar}'  # tqdm bar format
+NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLOv5 multiprocessing threads
 
 
 class BaseDataset(Dataset, metaclass=ABCMeta):
@@ -57,6 +68,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         load_mosaic=False,
         mode="train",
         multi_scale=None,
+        cache_images="_"
     ):
         assert mode in ["train", "val", "test"]
         self.img_path = img_path
@@ -73,6 +85,28 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         print(ann_path)
         self.data_info = self.get_data_info(ann_path)
+
+        # Cache images into RAM/disk for faster training
+        self.metas = [{}] * len(self)
+        self.npy_files = [None] * len(self)
+        cache_images = None if cache_images == "_" else cache_images
+        if cache_images == 'ram' and not self.check_cache_ram(prefix=mode):
+            cache_images = False
+
+        if cache_images:
+            b, gb = 0, 1 << 30  # bytes of cached images, bytes per gigabytes
+            fcn = self.cache_images_to_disk if cache_images == 'disk' else self.get_data
+            results = ThreadPool(NUM_THREADS).imap(fcn, range(len(self)))
+            pbar = tqdm(enumerate(results), total=len(self), bar_format=TQDM_BAR_FORMAT)
+            for i, x in pbar:
+                if cache_images == 'disk':
+                    b += self.npy_files[i].stat().st_size
+                else:  # 'ram'
+                    self.metas[i] = x  # meta = dict(img, height, width, id, file_name, gt_bboxes, gt_labels)
+                    b += get_size(self.metas[i])
+                pbar.desc = f'{mode}: Caching images ({b / gb:.1f}GB {cache_images})'
+            pbar.close()
+        return
 
     def __len__(self):
         return len(self.data_info)
@@ -141,3 +175,29 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
     def get_another_id(self):
         return np.random.random_integers(0, len(self.data_info) - 1)
+
+    def check_cache_ram(self, safety_margin=0.1, prefix=''):
+        # Check image caching requirements vs available memory
+        b, gb = 0, 1 << 30  # bytes of cached images, bytes per gigabytes
+        n = min(len(self), 30)  # extrapolate from 30 random images
+        for _ in range(n):
+            meta = self.get_train_data(random.choice(range(len(self))))
+            b += get_size(meta)
+        mem_required = b * len(self) / n  # GB required to cache dataset into RAM
+        mem = psutil.virtual_memory()
+        cache = mem_required * (1 + safety_margin) < mem.available  # to cache or not to cache, that is the question
+        if not cache:
+            print(f'{prefix}{mem_required / gb:.1f}GB RAM required, '
+                  f'{mem.available / gb:.1f}/{mem.total / gb:.1f}GB available, '
+                  f"{'caching images ✅' if cache else 'not caching images ⚠️'}")
+        return cache
+
+    def cache_images_to_disk(self, i):
+        # Saves an image as an *.npy file for faster loading
+        meta = self.get_per_img_info(i)
+        f = Path(os.path.join(self.img_path, "npys", meta["file_name"])).with_suffix(".npy")
+        if not f.exists():
+            mkdir(-1, os.path.join(self.img_path, "npys"), exist_ok=True)
+            meta = self.get_data(i)
+            np.save(f.as_posix(), meta["img"])
+        self.npy_files[i] = f

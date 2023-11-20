@@ -116,16 +116,25 @@ class CocoDataset(BaseDataset):
                 annotation["keypoints"] = np.zeros((0, 51), dtype=np.float32)
         return annotation
 
-    def get_train_data(self, idx):
+    def get_data(self, idx):
         """
         Load image and annotation
         :param idx:
         :return: meta-data (a dict containing image, annotation and other information)
         """
         img_info = self.get_per_img_info(idx)
+
+        fn = self.npy_files[idx]  # saved disk .npy files
+        if fn is not None:
+            if fn.exists():
+                img_info["file_name"] = fn
+
         file_name = img_info["file_name"]
         image_path = os.path.join(self.img_path, file_name)
-        img = cv2.imread(image_path)
+        if fn is not None:
+            img = np.load(image_path)
+        else:
+            img = cv2.imread(image_path)
         if img is None:
             print("image {} read failed.".format(image_path))
             raise FileNotFoundError("Cant load image! Please check image path!")
@@ -138,6 +147,17 @@ class CocoDataset(BaseDataset):
         if self.use_keypoint:
             meta["gt_keypoints"] = ann["keypoints"]
 
+        return meta
+
+    def get_train_data(self, idx):
+        """
+        Load image and annotation
+        :param idx:
+        :return: meta-data (a dict containing image, annotation and other information)
+        """
+        meta = self.metas[idx].copy()  # if cache is ram
+        if len(meta) == 0:
+            meta = self.get_data(idx)
         input_size = self.input_size
         if self.multi_scale:
             input_size = self.get_random_size(self.multi_scale, input_size)

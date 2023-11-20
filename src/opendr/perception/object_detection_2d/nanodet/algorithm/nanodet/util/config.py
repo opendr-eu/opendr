@@ -12,7 +12,9 @@ cfg.model.arch.head = CfgNode(new_allowed=True)
 # DATASET related params
 cfg.data = CfgNode(new_allowed=True)
 cfg.data.train = CfgNode(new_allowed=True)
+cfg.data.train.cache_images = "_"
 cfg.data.val = CfgNode(new_allowed=True)
+cfg.data.val.cache_images = "_"
 cfg.device = CfgNode(new_allowed=True)
 cfg.device.precision = 32
 cfg.device.batchsize_per_gpu = -1
