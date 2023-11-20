@@ -70,7 +70,6 @@ class GhostBlocks(nn.Module):
             )
         self.blocks = nn.Sequential(*blocks)
 
-    @torch.jit.unused
     def forward(self, x):
         out = self.blocks(x)
         if self.use_res:
@@ -217,7 +216,6 @@ class GhostPAN(nn.Module):
                 )
             )
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         """
         Args:

@@ -611,7 +611,10 @@ class NanoDetPlusHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device)) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device)) * stride
-        y, x = torch.meshgrid(y_range, x_range)
+        if torch.jit.is_scripting() or not torch.__version__[:4] == "1.13":
+            y, x = torch.meshgrid(y_range, x_range)
+        else:
+            y, x = torch.meshgrid(y_range, x_range, indexing="ij")
         if flatten:
             y = y.flatten()
             x = x.flatten()

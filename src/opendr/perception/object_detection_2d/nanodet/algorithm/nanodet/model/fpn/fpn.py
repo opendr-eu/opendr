@@ -1,6 +1,5 @@
 # Modification 2020 RangiLyu
 # Copyright 2018-2019 Open-MMLab.
-import torch.jit
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -86,7 +85,6 @@ class FPN(nn.Module):
             if isinstance(m, nn.Conv2d):
                 xavier_init(m, distribution="uniform")
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         assert len(inputs) == len(self.in_channels)
 

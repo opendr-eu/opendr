@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch.jit
 import torch.nn.functional as F
 from torch import Tensor
 from typing import List
@@ -61,7 +60,6 @@ class PAN(FPN):
         )
         self.init_weights()
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         """Forward function."""
         assert len(inputs) == len(self.in_channels)

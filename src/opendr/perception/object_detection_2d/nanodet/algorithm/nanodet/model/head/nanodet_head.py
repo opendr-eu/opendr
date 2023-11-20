@@ -135,7 +135,6 @@ class NanoDetHead(GFLHead):
             normal_init(self.gfl_reg[i], std=0.01)
         print("Finish initialize NanoDet Head.")
 
-    @torch.jit.unused
     def forward(self, feats: List[Tensor]):
         outputs = []
         for idx, (cls_convs, reg_convs, gfl_cls, gfl_reg) in enumerate(zip(

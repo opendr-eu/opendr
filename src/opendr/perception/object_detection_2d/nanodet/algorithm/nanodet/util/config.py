@@ -5,6 +5,7 @@ cfg.save_dir = "./"
 # common params for NETWORK
 cfg.model = CfgNode(new_allowed=True)
 cfg.model.arch = CfgNode(new_allowed=True)
+cfg.model.arch.ch_l = False
 cfg.model.arch.backbone = CfgNode(new_allowed=True)
 cfg.model.arch.fpn = CfgNode(new_allowed=True)
 cfg.model.arch.head = CfgNode(new_allowed=True)

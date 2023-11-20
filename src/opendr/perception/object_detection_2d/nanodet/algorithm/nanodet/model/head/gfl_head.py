@@ -183,7 +183,6 @@ class GFLHead(nn.Module):
         normal_init(self.gfl_cls, std=0.01, bias=bias_cls)
         normal_init(self.gfl_reg, std=0.01)
 
-    @torch.jit.unused
     def forward(self, feats: List[Tensor]):
         outputs = []
         for idx, scale in enumerate(self.scales):
@@ -197,7 +196,7 @@ class GFLHead(nn.Module):
             bbox_pred = scale(self.gfl_reg(reg_feat)).float()
             output = torch.cat([cls_score, bbox_pred], dim=1)
             outputs.append(output.flatten(start_dim=2))
-        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1).contiguous()
         return outputs
 
     def loss(self, preds, gt_meta):
@@ -715,7 +714,11 @@ class GFLHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
-        y, x = torch.meshgrid(y_range, x_range)
+        # enable embeded devices - TX2 to use JIT
+        if torch.jit.is_scripting() or not torch.__version__[:4] == "1.13":
+            y, x = torch.meshgrid(y_range, x_range)
+        else:
+            y, x = torch.meshgrid(y_range, x_range, indexing="ij")
         if flatten:
             y = y.flatten()
             x = x.flatten()

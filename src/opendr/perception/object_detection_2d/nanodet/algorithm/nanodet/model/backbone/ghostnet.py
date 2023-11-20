@@ -196,7 +196,6 @@ class GhostBottleneck(nn.Module):
                 nn.BatchNorm2d(out_chs),
             )
 
-    @torch.jit.unused
     def forward(self, x):
         residual = x
 
@@ -309,7 +308,7 @@ class GhostNet(nn.Module):
         x = self.bn1(x)
         x = self.act1(x)
         output = []
-        for i in range(10):
+        for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
             x = self.blocks[i](x)
             if i in self.out_stages:
                 output.append(x)

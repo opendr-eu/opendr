@@ -246,7 +246,6 @@ class EfficientNetLite(nn.Module):
             self.blocks.append(stage)
         self._initialize_weights(pretrain)
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.stem(x)
         output = []
