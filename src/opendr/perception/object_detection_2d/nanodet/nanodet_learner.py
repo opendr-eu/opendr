@@ -498,7 +498,6 @@ class NanodetLearner(Learner):
         with open(export_path_trt, 'wb') as f:
             f.write(engine.serialize())
 
-        with torch.no_grad():
         metadata = {
             "model_paths": [f"nanodet_{self.cfg.check_point_name}.trt"],
             "framework": "pytorch", "format": "TensorRT", "has_data": False, "optimized": True, "optimizer_info": {},
