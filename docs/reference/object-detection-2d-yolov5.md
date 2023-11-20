@@ -70,15 +70,14 @@ Parameters:
 
 - **path**: *str, default=None*\
   Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
-- **mode**: *{'pretrained', 'images', 'test_data'}, default='pretrained'*\
-  If *'pretrained'*, downloads a pretrained detector model. If *'images'*, downloads an image to perform inference on. If
-  *'test_data'* downloads a dummy dataset for testing purposes.
-- **verbose**: *bool default=True*\
+- **mode**: *{'pretrained', 'images'}, default='pretrained'*\
+  If *'pretrained'*, downloads a pretrained detector model. If *'images'*, downloads an image to perform inference on.
+- **verbose**: *bool default=False*\
   If True, enables maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\
   URL of the FTP server.
-- **model_name**: name of model ftp server, *default = 'yolov5_finetuned_in_trucks.pt'.*\
-- **image_name**: name of image in ftp server, *default = 'truck1.png'.*\
+- **model_name**: name of model ftp server, currently only supports `yolov5s_finetuned_in_trucks.pt`, *default = 'yolov5s_finetuned_in_trucks.pt'.*\
+- **image_name**: name of image in ftp server, available files are `truckX.jpg` for `X=1 to 10`, *default = 'truck7.jpg'.*\
   
 #### Examples
 
