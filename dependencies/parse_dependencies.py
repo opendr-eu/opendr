@@ -88,3 +88,35 @@ if not global_dependencies:
                     read_ini(os.path.join(subdir, filename))
 with open(python_file, "a") as f:
     f.write(os.path.expandvars(flag_efficientNet) + '\n')
+
+# Filter python dependencies
+python_dependencies = []
+with open(python_file, "r") as f:
+    for line in f:
+        # Grab line and remove newline char
+        python_dependencies.append(line.replace("\n", ""))
+
+python_dependencies = python_dependencies[0:-1]  # Remove last new line
+# Eliminate duplicates
+python_dependencies_filtered = []
+[python_dependencies_filtered.append(x) for x in python_dependencies if x not in python_dependencies_filtered]
+
+python_dependencies_temp = python_dependencies_filtered.copy()
+for pd in python_dependencies_filtered:
+    if "==" in pd:
+        # Found strict dependency
+        pd_ver = pd.split("==")[1]
+        pd = pd.split("==")[0]
+        python_dependencies_temp = [pdt for pdt in python_dependencies_temp if pd not in pdt]
+        python_dependencies_temp.append(pd + "==" + pd_ver)
+
+# # Make igibson last in the installation order
+# python_dependencies_temp.remove("igibson==2.0.3")
+# python_dependencies_temp.append("igibson==2.0.3")
+
+with open(python_file, "w") as f:
+    for i in range(len(python_dependencies_filtered)):
+        if i < len(python_dependencies_filtered) - 1:
+            f.write(python_dependencies_filtered[i] + "\n")
+        else:
+            f.write(python_dependencies_filtered[i])
