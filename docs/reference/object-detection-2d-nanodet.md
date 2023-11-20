@@ -22,7 +22,7 @@ Constructor parameters:
 
 - **model_to_use**: *{"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512", "RepVGG_A0_416",
   "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416", "plus_m_320", "plus_m_1.5x_320", "plus_m_416",
-  "plus_m_1.5x_416", "custom"}, default=m*\
+  "plus_m_1.5x_416", "plus_fast", """custom"}, default=m*\
   Specifies the model to use and the config file that contains all hyperparameters for training, evaluation and inference as the original
   [Nanodet implementation](https://github.com/RangiLyu/nanodet). If you want to overwrite some of the parameters you can
   put them as parameters in the learner.
@@ -98,7 +98,7 @@ Parameters:
 
 #### `NanodetLearner.infer`
 ```python
-NanodetLearner.infer(self, input, conf_threshold, iou_threshold, nms_max_num)
+NanodetLearner.infer(self, input, conf_threshold, iou_threshold, nms_max_num, hf, dynamic, ch_l)
 ```
 
 This method is used to perform object detection on an image.
@@ -116,21 +116,24 @@ Parameters:
   Specifies the IOU threshold for NMS in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
+- **hf**: *bool, default=False*\
+  Determines if model precision.
+- **dynamic**: *bool, default=False*\
+  Determines if the model runs with dynamic input, it can be used in Nanodet Plus head with legacy_post_process=False.
+- **ch_l**: *bool, default=False*\
+  Determines if inference will run in channel last format.
 
 #### `NanodetLearner.optimize`
 ```python
-NanodetLearner.optimize(self, export_path, verbose, optimization, conf_threshold, iou_threshold, nms_max_num)
+NanodetLearner.optimize(self, export_path, verbose, optimization, conf_threshold, iou_threshold, nms_max_num,
+                        hf, dynamic, ch_l, lazy_load)
 ```
 
-This method is used to perform JIT or ONNX optimizations and save a trained model with its metadata.
+This method is used to perform JIT ,ONNX or TensorRT optimizations and save a trained model with its metadata.
 If a model is not present in the location specified by *export_path*, the optimizer will save it there.
-If a model is already present, it will load it instead.
-Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models or *nanodet_{model_name}.onnx* for ONNX and a metadata file *nanodet_{model_name}.json*.
-
-Note: In ONNX optimization, the output model executes the original model's feed forward method.
-The user must create their own pre- and post-processes in order to use the ONNX model in the C API.
-In JIT optimization the output model performs the feed forward pass and post-processing.
-To use the C API, it is recommended to use JIT optimization as shown in the [example of OpenDR's C API](../../projects/c_api/samples/object_detection/nanodet/nanodet_jit_demo.c).
+If a model is already present and *lazy_load=True*, it will load it instead.
+Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models, *nanodet_{model_name}.onnx* for ONNX or *nanodet_{model_name}.onnx* for TensorRT
+and a metadata file *nanodet_{model_name}.json*.
 
 Parameters:
 
@@ -139,7 +142,7 @@ Parameters:
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity.
 - **optimization**: *str, default="jit"*\
-  It determines what kind of optimization is used, possible values are *jit* or *onnx*.
+  It determines what kind of optimization is used, possible values are *jit*, *onnx* or *trt*.
 - **conf_threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
@@ -147,6 +150,15 @@ Parameters:
   Specifies the IOU threshold for NMS in inference.
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
+- **hf**: *bool, default=False*\
+  Determines model's floating point precision.
+- **dynamic**: *bool, default=False*\
+  Determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
+  legacy_post_process=False.
+- **ch_l**: *bool, default=False*\
+  Determines if inference will run in channel last format. 
+- **lazy_load**: *bool, default=True*\
+  Enables loading optimized model from predetermine path without export it each time.
 
 #### `NanodetLearner.save`
 ```python
@@ -157,7 +169,6 @@ This method is used to save a trained model with its metadata.
 Provided with the path, it creates the *path* directory, if it does not already exist.
 Inside this folder, the model is saved as *nanodet_{model_name}.pth* and a metadata file *nanodet_{model_name}.json*.
 If the directory already exists, the *nanodet_{model_name}.pth* and *nanodet_{model_name}.json* files are overwritten.
-If optimization is performed, the optimized model is saved instead.
 
 Parameters:
 
@@ -313,8 +324,8 @@ Furthermore, demos on performing [training](../../projects/python/perception/obj
 * **Optimization framework with Inference and result drawing example on a test image**
 
   This example shows how to perform optimization on a pretrained model, then run inference on an image and finally draw the resulting bounding boxes, using a nanodet model that is pretrained on the COCO dataset.
-  In this example we use ONNX optimization, but JIT can also be used by changing *optimization* to *jit*.
-  The optimized model will be saved in the `./optimization_models` folder
+  In this example we use ONNX optimization, but JIT or TensorRT can also be used by changing *optimization* option.
+  The optimized model will be saved in the `./onnx` folder
   ```python
   from opendr.engine.data import Image
   from opendr.perception.object_detection_2d import NanodetLearner, draw_bounding_boxes
@@ -358,6 +369,7 @@ For PyTorch inference:
 | Nanodet-plus m 1.5x {320}   | 52.11    | 11.54 | 17.05 |
 | Nanodet-plus m      {416}   | 59.25    | 11.48 | 17.14 |
 | Nanodet-plus m 1.5x {416}   | 52.35    | 9.34  | 16.78 |
+| Nanodet-plus-fast   {1080}  | 291.68   | 14.93 |  -    |
 
 For JIT optimization inference:
 
@@ -375,9 +387,10 @@ For JIT optimization inference:
 | Nanodet-m           {416}   | 100.61   | 12.08 | 22.34 |
 | Nanodet-m 1.5x      {416}   | 92.37    | 18.45 | 22.89 |
 | Nanodet-plus m      {320}   | 75.52    | 16.70 | 23.12 |
-| Nanodet-plus m 1.5x {320}   |  86.23   | 16.83 | 21.64 |
+| Nanodet-plus m 1.5x {320}   | 86.23    | 16.83 | 21.64 |
 | Nanodet-plus m      {416}   | 96.01    | 16.78 | 21.28 |
 | Nanodet-plus m 1.5x {416}   | 86.97    | 14.42 | 21.53 |
+| Nanodet-plus-fast   {1080}  | 308      | 15.4  | -     |
 
 For ONNX optimization inference:
 
@@ -398,6 +411,14 @@ For ONNX optimization inference:
 | Nanodet-plus m 1.5x {320}   | 63.19  | 9.55  | 11.69 |
 | Nanodet-plus m      {416}   | 64.18  | 9.63  | 11.34 |
 | Nanodet-plus m 1.5x {416}   | 52.36  | 6.98  | 8.59  |
+| Nanodet-plus-fast   {1080}  | 52.35  | 9.34  | 16.78 |
+
+For TensorRT optimization inference:
+
+| Method              {input} | RTX 2070 | TX2  |
+|-----------------------------|----------|------|
+| Nanodet-plus-fast   {1080}  | 476.96   | 18.1 |
+
 Note that in embedded systems the standard deviation is around 0.2 - 0.3 seconds in larger networks cases.
 
 Finally, we measure the performance on the COCO dataset, using the corresponding metrics:
@@ -418,4 +439,7 @@ Finally, we measure the performance on the COCO dataset, using the corresponding
 | Nanodet-plus m 1.5x {320}   | 29.9         |
 | Nanodet-plus m      {416}   | 30.3         |
 | Nanodet-plus m 1.5x {416}   | 34.1         |
- 
+
+| Method              {input} | RoboWeedMap mAP |
+|-----------------------------|-----------------|
+| Nanodet-plus-fast   {1080}  | 42.1            |
