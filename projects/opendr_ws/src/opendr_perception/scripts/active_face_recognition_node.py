@@ -150,9 +150,8 @@ class FaceRecognitionNode:
                     (startX, startY, endX, endY) = int(box[0]), int(box[1]), int(box[2]), int(box[3])
                     frame = image[startY:endY, startX:endX]
                     result = self.recognizer.infer(frame)
-                    rospy.loginfo("result.confidence:"
-                                  " " + str(result.confidence) + ", abs(endX-startX): " + str(abs(endX - startX)) +
-                                  ", abs(endY-startY): " + str(abs(endY - startY)))
+                    rospy.loginfo("result.confidence:" + str(result.confidence) + ", abs(endX-startX): " + str(
+                        abs(endX - startX)) + ", abs(endY-startY): " + str(abs(endY - startY)))
                     current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                     if abs(endX - startX) >= 40 and abs(startY - endY) >= 40:
                         self.avg_counter += 1
@@ -164,9 +163,8 @@ class FaceRecognitionNode:
                                     path = os.path.join(self.new_path, 'New', str(result.description))
                                     if not os.path.exists(path):
                                         os.makedirs(path)
-                                    cv2.imwrite(os.path.join(path, current_datetime +
-                                                             '_' + str(result.description) + '_'
-                                                             + str(self.img_counter) + '.jpg'), frame)
+                                    cv2.imwrite(os.path.join(path, current_datetime + '_' + str(
+                                        result.description) + '_' + str(self.img_counter) + '.jpg'), frame)
                                     features, closest_id, distance = self.recognizer.feature_extraction(frame)
                                     if result.description not in self.features_to_keep:
                                         self.features_to_keep[result.description] = [features]
@@ -201,8 +199,7 @@ class FaceRecognitionNode:
                                 self.id_counter += 1
                             if not os.path.exists(path):
                                 os.makedirs(path)
-                            cv2.imwrite(os.path.join(path, str(self.img_counter) +
-                                                     '.jpg'), frame)
+                            cv2.imwrite(os.path.join(path, str(self.img_counter) + '.jpg'), frame)
                             features, closest_id, distance = self.recognizer.feature_extraction(frame)
                             self.recognizer.database[self.new_person_name] = [features]
                             self.add_new_person = False
