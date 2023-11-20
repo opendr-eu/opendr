@@ -817,6 +817,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                                         pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
                                 pose = Pose(pose_keypoints, pose_entries[n][18])
                                 current_poses.append(pose)
+
                             coco_keypoints, scores = convert_to_coco_format(pose_entries, all_keypoints)
 
                             image_id = int(file_name[0:file_name.rfind('.')])
@@ -919,17 +920,17 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                         pose = Pose(pose_keypoints, pose_entries[n][18])
                         current_poses.append(pose)
 
-                        coco_keypoints, scores = convert_to_coco_format(pose_entries, all_keypoints)
+                    coco_keypoints, scores = convert_to_coco_format(pose_entries, all_keypoints)
 
-                        image_id = int(file_name[0:file_name.rfind('.')])
+                    image_id = int(file_name[0:file_name.rfind('.')])
 
-                        for idx in range(len(coco_keypoints)):
-                            coco_result.append({
-                                'image_id': image_id,
-                                'category_id': 1,  # person
-                                'keypoints': coco_keypoints[idx],
-                                'score': scores[idx]
-                            })
+                    for idx in range(len(coco_keypoints)):
+                        coco_result.append({
+                            'image_id': image_id,
+                            'category_id': 1,  # person
+                            'keypoints': coco_keypoints[idx],
+                            'score': scores[idx]
+                        })
 
                     if self.visualize:
                         for keypoints in coco_keypoints:
@@ -1369,6 +1370,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                                         pose_keypoints[kpt_id, 1] = int(all_keypoints[int(pose_entries[n][kpt_id]), 1])
                                 pose = Pose(pose_keypoints, pose_entries[n][18])
                                 current_poses.append(pose)
+
                 else:
                     xmin = heatmap_dims[0]
                     xmax = heatmap_dims[1]

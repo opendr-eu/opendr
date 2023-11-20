@@ -27,7 +27,7 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-    parser.add_argument("--method", help="Choose between primary or adaptive ROI selection methodology defaults to primary",
+    parser.add_argument("--method", help="Choose between primary or adaptive ROI selection methodology defaults to adaptive",
                         default="adaptive")
     args = parser.parse_args()
 
