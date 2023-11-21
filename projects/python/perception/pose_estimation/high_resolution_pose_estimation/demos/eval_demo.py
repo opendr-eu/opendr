@@ -55,11 +55,11 @@ if __name__ == '__main__':
     # Download a sample dataset
     pose_estimator.download(path=".", mode="test_data")
 
-    eval_dataset = ExternalDataset(path=join("temp", "dataset", 'hr'), dataset_type="COCO")
+    eval_dataset = ExternalDataset(path=join("temp", "dataset"), dataset_type="COCO")
 
     t0 = time.time()
     if method == "primary":
-        results_dict = pose_estimator.eval(eval_dataset, use_subset=True, verbose=True, silent=False,
+        results_dict = pose_estimator.eval(eval_dataset, use_subset=False, verbose=True, silent=False,
                                            images_folder_name="image", annotations_filename="annotation.json")
     if method == "adaptive":
         results_dict = pose_estimator.eval_adaptive(eval_dataset, use_subset=False, verbose=True, silent=False,
