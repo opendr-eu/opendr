@@ -324,7 +324,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             xmin, xmax, ymin, ymax = 0, 0, 0, 0
         return xmin, xmax, ymin, ymax
 
-    def __crop_image_func(self, xmin, xmax, ymin, ymax, pool_img, original_image, heatmap, perc, detection):
+    def __crop_image_func(self, xmin, xmax, ymin, ymax, pool_img, original_image, heatmap, perc):
         """ This function crops the region of interst(ROI) from the original image to use it in next steps
         Args:
             xmin, ymin: top left corner dimensions of the split part in the original heatmap
@@ -748,7 +748,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                             ymax += crop_params[3]
 
                             crop_img, xmin, xmax, ymin, ymax = self.__crop_image_func(xmin, xmax, ymin, ymax, pool_img, img,
-                                                                                      heatmap, self.perc, detection)
+                                                                                      heatmap, self.perc)
 
                             if crop_part == 1:
                                 if self.x1min is None:
@@ -1303,7 +1303,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                             ymax += heatmap_dims[2]
 
                             crop_img, xmin, xmax, ymin, ymax = self.__crop_image_func(xmin, xmax, ymin, ymax, pool_img, img,
-                                                                                      heatmap, self.perc, detection)
+                                                                                      heatmap, self.perc)
 
                             if crop_part == 1:
                                 if self.x1min is None:
