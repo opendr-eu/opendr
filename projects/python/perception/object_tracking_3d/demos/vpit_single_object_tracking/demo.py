@@ -207,7 +207,10 @@ def vpit_single_object_detection_3d(params="best", model_name=None):
                 augment=None,
             )
         else:
-            tracking_learner = ObjectTracking3DVpitLearner()
+            model_config_path = params
+            tracking_learner = ObjectTracking3DVpitLearner(
+                model_config_path=model_config_path
+            )
 
         if model_name is not None and not os.path.exists(
             "./models/" + model_name
@@ -474,7 +477,7 @@ if __name__ == "__main__":
         "--model_params",
         type=str,
         default="best",
-        help="Model params preset",
+        help="Model params preset. If 'best', the best model will be used, otherwise it is treated as the path to the backbone config.",
     )
     ap.add_argument(
         "-s", "--source", type=str, default="disk", help="Data source",
