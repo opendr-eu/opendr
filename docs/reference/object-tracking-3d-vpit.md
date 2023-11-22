@@ -22,8 +22,6 @@ Constructor parameters:
   Specifies the path to the [proto](#proto) file describing the backbone model structure and training procedure.
 - **lr**: *float, default=0.0001*\
   Specifies the initial learning rate to be used during training.
-- **batch_size**: *int, default=64*\
-  Specifies
 - **optimizer**: *str {'rms_prop_optimizer', 'momentum_optimizer', 'adam_optimizer'}, default=adam_optimizer*\
   Specifies the optimizer type that should be used.
 - **lr_schedule**: *str {'constant_learning_rate', 'exponential_decay_learning_rate', 'manual_step_learning_rate', 'cosine_decay_learning_rate'}, default='exponential_decay_learning_rate'*\
@@ -76,7 +74,7 @@ Constructor parameters:
   Specifies the size of the target region based on the object size.
 - **bof_mode**: *object, default='none'*\
   Experimental. Specifies how to use neural bag of features. Disabled by default. 
-- **bof_training_steps**: *, default=*\
+- **bof_training_steps**: *, default=2000*\
   Experimental. Specifies the amount of training steps for neural bag of features
 - **extrapolation_mode**: *{'none', 'linear', 'linear+'}, default='linear+'*\
   Specifies the extrapolation algorithm for future search region position.
@@ -104,9 +102,7 @@ Constructor parameters:
   Skipped. The number of training iterations is described in a [proto](#proto) file.
 - **batch_size**: *int, default=64*\
   Skipped. The batch size is described in a [proto](#proto) file.
-- **backbone**: *str, default='tanet_16'*\
-  Skipped. The structure of a model is described in a [proto](#proto) file.
-- **network_head**: *str, default='tanet_16'*\
+- **backbone**: *str, default='pp'*\
   Skipped. The structure of a model is described in a [proto](#proto) file.
 - **threshold**: *float, default=0.0*\
   Skipped. The structure of a model is described in a [proto](#proto) file.
@@ -129,7 +125,7 @@ Parameters:
     How many steps to train. Zero means all the steps described in the config file.
   - **val_dataset**: *object, default=None*\
     Object that holds the validation dataset. If None, and the dataset is an `ExternalDataset`, dataset will be used to sample evaluation inputs. Can be of type `ExternalDataset` (with type="kitti") or a custom dataset inheriting from `DatasetIterator`.
-  - **refine_weight**: *float, default=2***\
+  - **refine_weight**: *float, default=2*\
     Defines the weight for the refinement part in the loss (for TANet).
   - **ground_truth_annotations**: *list of BoundingBox3DList, default=None*\
     Can be used to provide modified ground truth annotations.
@@ -139,13 +135,13 @@ Parameters:
     If set to True, disables all printing of training progress reports and other information to STDOUT.
   - **verbose**: *bool, default=False*\
     If set to True, enables maximum verbosity.
-  - **model_dir**: *str, default=None***\
+  - **model_dir**: *str, default=None*\
     Can be used for storing and loading checkpoints.
-  - **image_shape**: *(int, int), default=(1224, 370)***\
+  - **image_shape**: *(int, int), default=(1224, 370)*\
     Camera image shape for KITTI evaluation.
-  - **evaluate**: *bool, default=True*\
+  - **evaluate**: *bool, default=False*\
     Should the evaluation be run during training.
-  - **debug**: *bool, default=True*\
+  - **debug**: *bool, default=False*\
     Should the debug plots and logs be created.
   - **load_optimizer**: *bool, default=True*\
     Should the optimizer be loaded from the checkpoint.
@@ -170,9 +166,9 @@ Parameters:
   If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
 - **verbose**: *bool, default=False*\
   If set to True, enables the maximum verbosity.
-- **image_shape**: *(int, int), default=(1224, 370)***\
+- **image_shape**: *(int, int), default=(1224, 370)*\
   Camera image shape for KITTI evaluation.
-- **count**: *int, default=None***\
+- **count**: *int, default=None*\
   Specifies the number of frames to be used for evaluation. If None, the full dataset is used.
 
 
@@ -232,7 +228,7 @@ Parameters:
 
 #### `ObjectTracking3DVpitLearner.load`
 ```python
-ObjectTracking3DVpitLearner.load(self, path, verbose)
+ObjectTracking3DVpitLearner.load(self, path, verbose, backbone, full)
 ```
 
 This method is used to load a previously saved model from its saved folder.
