@@ -296,7 +296,7 @@ Returns average fps from all runs since last clear_metrics init.
       [dataset.calib_path],
       classes=["Van", "Pedestrian", "Cyclist"],
   )
-  learner = ObjectTracking3DAb3dmotLearner()
+  learner = ObjectTracking3DVpitLearner()
   learner.init(self.dataset[0][0], self.dataset[0][2])
   result = learner.infer(self.dataset[0][1])
 
