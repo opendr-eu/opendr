@@ -920,8 +920,7 @@ void SlamGMapping::updateMap(const sensor_msgs::LaserScan &scan) {
   double alpha = publishFullPosterior_ ? smap.getAlpha() : 1.0;
   // clang-format off
   // Ignore clang-format due to it going back-and-forth with the line breaks
-  double beta = publishFullPosterior_ ? smap.getBeta() : mapModel_ == GMapping::ScanMatcherMap::MapModel::ExpDecayModel ? 0.0 :
-                                                                                                                          1.0;
+  double beta = publishFullPosterior_ ? smap.getBeta() : mapModel_ == gmapping::mapModel::DECAY_MODEL ? 0.0 : 1.0;
   // clang-format on
 
   double d = smap.getDelta() * sqrt(2);
@@ -943,7 +942,7 @@ void SlamGMapping::updateMap(const sensor_msgs::LaserScan &scan) {
       assert(occ <= 1.0);
 
       if (publishRawMap_) {
-        if (mapModel_ == GMapping::ScanMatcherMap::MapModel::ExpDecayModel)
+        if (mapModel_ == gmapping::mapModel::DECAY_MODEL)
           raw_map_.data[MAP_IDX(map_.map.info.width, x, y)] = (cell.n + alpha - 1) / (cell.R + beta);
         else
           raw_map_.data[MAP_IDX(map_.map.info.width, x, y)] = (cell.n + alpha - 1) / (cell.visits + alpha + beta - 2);

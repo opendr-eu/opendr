@@ -58,6 +58,26 @@ Parameters:
 - **size**: *int, default=640*\
   Size of image for inference.
   The image is resized to this in both sides before being fed to the model.
+
+#### `YOLOv5DetectorLearner.download`
+```python
+YOLOv5DetectorLearner.download(self, path, mode, verbose, url, model_name, img_name)
+```
+
+Downloads the pretrained weights of a YOLOv5s model fine-tuned for truck detection, along with sample truck images for inference, stored in .pt and image files respectively.
+
+Parameters:
+
+- **path**: *str, default=None*\
+  Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
+- **mode**: *{'pretrained', 'images'}, default='pretrained'*\
+  If *'pretrained'*, downloads a pretrained detector model. If *'images'*, downloads an image to perform inference on.
+- **verbose**: *bool default=False*\
+  If True, enables maximum verbosity.
+- **url**: *str, default=OpenDR FTP URL*\
+  URL of the FTP server.
+- **model_name**: name of model ftp server, currently only supports `yolov5s_finetuned_in_trucks.pt`, *default = 'yolov5s_finetuned_in_trucks.pt'.*\
+- **image_name**: name of image in ftp server, available files are `truckX.jpg` for `X=1 to 10`, *default = 'truck7.jpg'.*\
   
 #### Examples
 
