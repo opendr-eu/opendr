@@ -368,7 +368,7 @@ class BoundingBox(Target):
         if with_confidence:
             result = np.array(
                 [
-                    self.frame,
+                    frame,
                     self.left,
                     self.top,
                     self.width,
@@ -379,7 +379,7 @@ class BoundingBox(Target):
             )
         else:
             result = np.array(
-                [self.frame, self.left, self.top, self.width, self.height],
+                [frame, self.left, self.top, self.width, self.height],
                 dtype=np.float32,
             )
 
