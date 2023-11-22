@@ -212,8 +212,10 @@ def label_to_AABB(label):
 
 def test_rotated_pp_siamese_eval(draw=True, iou_min=0.0, classes=["Car", "Van", "Truck"]):
     print("Eval", name, "start", file=sys.stderr)
-    import pygifsicle
-    import imageio
+
+    if draw:
+        import pygifsicle
+        import imageio
 
     learner = ObjectTracking3DVpitLearner(
         model_config_path=config,
