@@ -47,7 +47,7 @@ Constructor parameters:
   Specifies the height of the image on the second inference for pose estimation procedure.
 - **method**: *str, default='adaptive'
 - Determines which method (*adaptive* or *primary*) is used for ROI extraction. 
-- **percentage_arround_crop**: *float, default=0.3*\
+- **percentage_around_crop**: *float, default=0.3*\
   Specifies the percentage of an extra pad arround the cropped image
 - **heatmap_threshold**: *float, default=0.1*\
   Specifies the threshold value that the heatmap elements should have during the first pass in order to trigger the second pass
@@ -79,7 +79,7 @@ Constructor parameters:
 #### High Resolution Pose estimation using Adaptive ROI selection method
 #### `HighResolutionPoseEstimationLearner.eval_adaptive`
 ```python
-HighResolutionPoseEstimationLearner.eval_adaptive(self, dataset, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)
+HighResolutionPoseEstimationLearner.eval_adaptive(self, dataset, silent, verbose, use_subset, subset_size, upsample_ratio, images_folder_name, annotations_filename)
 ```
 
 This method is used to evaluate a trained model on an evaluation dataset.
@@ -406,13 +406,12 @@ As it is shown in the previous tables, OpenDR Lightweight OpenPose achieves high
 It is easier to process that image, but as it is shown in the next tables the method falls apart when it comes to accuracy and there are no detections.
 
 We have evaluated the effect of using different inference settings, namely:
-- *HRPoseEstim - Baseline*, which refers to directly using the High Resolution Pose Estimation method,which is based in Lightweight OpenPose,
+- *HRPoseEstim - Baseline*, which refers to directly using the High Resolution Pose Estimation method, which is based on Lightweight OpenPose,
 - *HRPoseEstim - Half*, which refers to enabling inference in half (FP) precision,
 - *HRPoseEstim - Stride*, which refers to increasing stride by two in the input layer of the model,
 - *HRPoseEstim - Stages*, which refers to removing the refinement stages,
 - *HRPoseEstim - H+S*, which uses both half precision and increased stride, and
-- *HRPoseEstim - Full*, which refers to combining all three available optimization.
-was used as input to the models.
+- *HRPoseEstim - Full*, which refers to combining all three available optimization and were used as input to the models.
 
 
 #### Lightweight OpenPose with resizing
