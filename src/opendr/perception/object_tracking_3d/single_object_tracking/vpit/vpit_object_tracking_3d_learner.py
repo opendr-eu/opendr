@@ -531,60 +531,6 @@ class ObjectTracking3DVpitLearner(Learner):
 
         return result
 
-        t = time.time()
-
-        if self.infer_point_cloud_mapper is None:
-            prep_func = create_prep_func(
-                self.input_config,
-                self.model_config,
-                False,
-                self.voxel_generator,
-                self.target_assigner,
-                use_sampler=False,
-                max_number_of_voxels=2000,
-            )
-
-            def infer_point_cloud_mapper(x, pc_range):
-                return _prep_v9_infer(x, prep_func, pc_range)
-
-            self.infer_point_cloud_mapper = infer_point_cloud_mapper
-            self.model.eval()
-
-        t1 = time.time()
-        self.times["pseudo_image/create_prep_func"].append(t1 - t)
-
-        input_data = None
-
-        if isinstance(point_clouds, PointCloud):
-
-            pc_mapped = self.infer_point_cloud_mapper(point_clouds.data, pc_range)
-
-            t2 = time.time()
-            self.times["pseudo_image/infer_point_cloud_mapper"].append(t2 - t1)
-
-            input_data = merge_second_batch([pc_mapped])
-            t21 = time.time()
-            self.times["pseudo_image/merge_second_batch"].append(t21 - t2)
-        elif isinstance(point_clouds, list):
-            raise Exception()
-            input_data = merge_second_batch(
-                [self.infer_point_cloud_mapper(x.data) for x in point_clouds]
-            )
-        else:
-            raise ValueError(
-                "point_clouds should be a PointCloud or a list of PointCloud"
-            )
-
-        pseudo_image = self.model.branch.create_pseudo_image(
-            example_convert_to_torch(input_data, self.float_dtype, device=self.device),
-            pc_range,
-        )
-
-        t3 = time.time()
-        self.times["pseudo_image/branch.create_pseudo_image"].append(t3 - t21)
-
-        return pseudo_image
-
     def __add_image(self, image, group):
         if group not in self._images:
             self._images[group] = []
