@@ -27,7 +27,6 @@ from opendr.engine.datasets import (
     ExternalDataset,
     MappedDatasetIterator,
 )
-from opendr.engine.data import PointCloud
 from opendr.perception.object_tracking_3d.datasets.kitti_siamese_tracking import (
     SiameseTrackingDatasetIterator,
     SiameseTripletTrackingDatasetIterator,
@@ -51,7 +50,6 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
     displacement_score_to_image_coordinates,
     draw_pseudo_image,
     evaluate,
-    example_convert_to_torch,
     image_to_lidar_coordinates,
     infer_create_pseudo_image,
     original_search_size_by_target_size,
@@ -76,9 +74,6 @@ from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_det
 )
 from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.builder.dataset_builder import (
     create_prep_func,
-)
-from opendr.perception.object_tracking_3d.single_object_tracking.vpit.second_detector.data.preprocess import (
-    merge_second_batch,
 )
 from opendr.engine.target import (
     TrackingAnnotation3D,

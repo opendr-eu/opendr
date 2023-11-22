@@ -477,7 +477,10 @@ if __name__ == "__main__":
         "--model_params",
         type=str,
         default="best",
-        help="Model params preset. If 'best', the best model will be used, otherwise it is treated as the path to the backbone config.",
+        help=(
+            "Model params preset. If 'best', the best model will be used, " +
+            "otherwise it is treated as the path to the backbone config."
+        )
     )
     ap.add_argument(
         "-s", "--source", type=str, default="disk", help="Data source",
