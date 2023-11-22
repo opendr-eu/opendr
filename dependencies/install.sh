@@ -20,11 +20,11 @@ if [ -f "linux_dependencies.txt" ]; then
        rm linux_dependencies.txt
 fi
 if [ -f "python_prerequisites.txt" ]; then
-       pip install -r python_prerequisites.txt
+       cat python_prerequisites.txt | while read PACKAGE; do pip install $PACKAGE; done
        rm python_prerequisites.txt
 fi
 if [ -f "python_dependencies.txt" ]; then
-       pip install -r python_dependencies.txt
+       cat python_dependencies.txt | while read PACKAGE; do pip install $PACKAGE; done
        rm python_dependencies.txt
 fi
 
@@ -35,10 +35,10 @@ if [ -f "linux_dependencies.txt" ]; then
        rm linux_dependencies.txt
 fi
 if [ -f "python_prerequisites.txt" ]; then
-       pip install -r python_prerequisites.txt
+       cat python_prerequisites.txt | while read PACKAGE; do pip install $PACKAGE; done
        rm python_prerequisites.txt
 fi
 if [ -f "python_dependencies.txt" ]; then
-       pip install -r python_dependencies.txt
+       cat python_dependencies.txt | while read PACKAGE; do pip install $PACKAGE; done
        rm python_dependencies.txt
 fi
