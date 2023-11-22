@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2020-2023 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,18 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 import argparse
 import os
+import torch
 from time import perf_counter
-import rclpy
-from rclpy.node import Node
+import rospy
 from vision_msgs.msg import Detection3DArray
 from std_msgs.msg import Int32MultiArray, Float32
 from sensor_msgs.msg import PointCloud as ROS_PointCloud
-from opendr_bridge import ROS2Bridge
+from opendr_bridge import ROSBridge
 from opendr.perception.object_tracking_3d import ObjectTracking3DVpitLearner
 from opendr.engine.target import TrackingAnnotation3D
+
 
 config_root = "./src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector/configs"
 
@@ -45,7 +45,7 @@ backbone_configs = {
 }
 
 
-class ObjectTracking3DVpitNode(Node):
+class ObjectTracking3DVpitNode:
     def __init__(
         self,
         backbone="pp",
@@ -58,7 +58,7 @@ class ObjectTracking3DVpitNode(Node):
         device="cuda:0",
     ):
         """
-        Creates a ROS2 Node for 3D object tracking
+        Creates a ROS Node for 3D object tracking
         :param detector: Learner that provides 3D object detections
         :type detector: Learner
         :param input_point_cloud_topic: Topic from which we are reading the input point cloud
@@ -73,7 +73,6 @@ class ObjectTracking3DVpitNode(Node):
         :param device: device on which we are running inference ('cpu' or 'cuda')
         :type device: str
         """
-        super().__init__("opendr_object_tracking_3d_vpit_node")
 
         self.learner = ObjectTracking3DVpitLearner(
             model_config_path=backbone_configs[backbone],
@@ -103,34 +102,29 @@ class ObjectTracking3DVpitNode(Node):
             self.learner.download(model_name, "./")
         self.learner.load("./" + model_name, full=True, verbose=True)
         print("Learner created")
-        # Initialize OpenDR ROSBridge object
-        self.bridge = ROS2Bridge()
+
+        self.bridge = ROSBridge()
+        self.input_point_cloud_topic = input_point_cloud_topic
+        self.input_detection3d_topic = input_detection3d_topic
 
         if output_detection3d_topic is not None:
-            self.detection_publisher = self.create_publisher(
-                Detection3DArray, output_detection3d_topic, 1
+            self.detection_publisher = rospy.Publisher(
+                output_detection3d_topic, Detection3DArray, queue_size=10
             )
 
         if output_tracking3d_id_topic is not None:
-            self.tracking_id_publisher = self.create_publisher(
-                Int32MultiArray, output_tracking3d_id_topic, 1
+            self.tracking_id_publisher = rospy.Publisher(
+                output_tracking3d_id_topic, Int32MultiArray, queue_size=10
             )
 
         if performance_topic is not None:
-            self.performance_publisher = self.create_subscription(
-                Float32, performance_topic, 1
-            )
+            self.performance_publisher = rospy.Publisher(performance_topic, Float32, queue_size=1)
         else:
             self.performance_publisher = None
 
-        self.create_subscription(
-            ROS_PointCloud, input_point_cloud_topic, self.callback_pc, 1
-        )
-        self.create_subscription(
-            Detection3DArray, input_detection3d_topic, self.callback_det, 1
-        )
+        rospy.Subscriber(input_point_cloud_topic, ROS_PointCloud, self.callback)
+        rospy.Subscriber(input_detection3d_topic, Detection3DArray, self.callback)
 
-        self.get_logger().info("Object Tracking 3D Vpit Node initialized.")
         self.last_point_cloud = None
         self.last_input_detection = None
         self.waiting_for_init = True
@@ -158,9 +152,9 @@ class ObjectTracking3DVpitNode(Node):
 
     def callback_pc(self, data):
         """
-        Callback that processes the input data and publishes to the corresponding topics.
+        Callback that process the input data and publishes to the corresponding topics
         :param data: input message
-        :type data: sensor_msgs.msg.Image
+        :type data: sensor_msgs.msg.PointCloud
         """
         if self.performance_publisher:
             start_time = perf_counter()
@@ -186,21 +180,14 @@ class ObjectTracking3DVpitNode(Node):
         if self.detection_publisher is not None:
             # Convert detected boxes to ROS type and publish
             detection_boxes = tracking_boxes.bounding_box_3d_list()
-            self.detection_publisher.publish(
-                self.bridge.to_ros_boxes_3d(detection_boxes)
-            )
-            self.get_logger().info(
-                "Published " + str(len(detection_boxes)) + " detection boxes"
-            )
+            ros_boxes = self.bridge.to_ros_boxes_3d(detection_boxes, classes=["Car", "Van", "Truck", "Pedestrian", "Cyclist"])
+            self.detection_publisher.publish(ros_boxes)
 
         if self.tracking_id_publisher is not None:
             ids = [tracking_box.id for tracking_box in tracking_boxes]
             ros_ids = Int32MultiArray()
             ros_ids.data = ids
             self.tracking_id_publisher.publish(ros_ids)
-            self.get_logger().info("Published " + str(len(ids)) + " tracking ids")
-
-        self.frame += 1
 
     def callback_det(self, data):
         """
@@ -208,15 +195,24 @@ class ObjectTracking3DVpitNode(Node):
         :param data: input message
         :type data: vision_msgs.msg.Detection3DArray
         """
-
         self.last_input_detection = self.bridge.from_ros_boxes_3d(data)[0]
 
         if self.last_point_cloud is not None:
             self.init()
 
+    def listen(self):
+        """
+        Start the node and begin processing input data.
+        """
+        rospy.init_node('opendr_object_vpit_tracking_3d_node', anonymous=True)
+        rospy.Subscriber(self.input_point_cloud_topic, ROS_PointCloud, self.callback, queue_size=1, buff_size=10000000)
+        rospy.Subscriber(self.input_detection3d_topic, Detection3DArray, self.callback, queue_size=1, buff_size=10000000)
 
-def main(args=None):
-    rclpy.init(args=args)
+        rospy.loginfo("Object Tracking 3D Vpit Node started.")
+        rospy.spin()
+
+
+def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -309,13 +305,8 @@ def main(args=None):
         performance_topic=args.performance_topic,
     )
 
-    rclpy.spin(vpit_node)
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
-    vpit_node.destroy_node()
-    rclpy.shutdown()
+    vpit_node.listen()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
