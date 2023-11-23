@@ -240,6 +240,10 @@ Parameters:
   Path of the model to be loaded.
 - **verbose**: *bool, default=False*\
   If set to True, prints a message on success.
+- **backbone**: *bool, default=False*\
+  Whether the loaded model is a backbone save file (PointPillars, TANet), not a VPIT save file.
+- **full**: *bool, default=False*\
+  Whether the loaded model is a full save, or a checkpoint.
 
 #### `ObjectTracking3DVpitLearner.download`
 ```python

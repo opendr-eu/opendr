@@ -307,6 +307,10 @@ class ObjectTracking3DVpitLearner(Learner):
         :type path: str
         :param verbose: whether to print success message or not, defaults to 'False'
         :type verbose: bool, optional
+        :param backbone: whether the loaded model is a backbone save file (PointPillars, TANet), not a VPIT save file.
+        :type backbone: bool, optional
+        :param full: whether the loaded model is a full save, or a checkpoint.
+        :type full: bool, optional
         """
 
         target = self.model.branch if backbone else self.model
