@@ -122,10 +122,6 @@ if __name__ == '__main__':
 
     else:
         hr_avg_fps = 0
-        lw_avg_fps = 0
-
-        lw_pose_estimator = LightweightOpenPoseLearner(device=device, num_refinement_stages=stages,
-                                                       mobilenet_use_stride=stride, half_precision=half_precision)
 
         hr_pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
                                                                 mobilenet_use_stride=stride, half_precision=half_precision,
@@ -134,19 +130,15 @@ if __name__ == '__main__':
                                                                 percentage_around_crop=0.1,
                                                                 method=method)
 
-        lw_pose_estimator.download(path=".", verbose=True)
-
         hr_pose_estimator.load("openpose_default")
-        lw_pose_estimator.load("openpose_default")
 
         if onnx:
             hr_pose_estimator.optimize()
-            lw_pose_estimator.optimize()
 
         if width / height == 16 / 9:
-            size = (1280, int(720 / 2))
+            size = (1280, int(720))
         elif width / height == 4 / 3:
-            size = (1024, int(768 / 2))
+            size = (1024, int(768))
         else:
             size = (width, int(height / 2))
 
@@ -191,7 +183,7 @@ if __name__ == '__main__':
 
             cv2.putText(img=img, text="OpenDR High Resolution", org=(20, int(height / 10)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
             cv2.putText(img=img, text="Pose Estimation Primary ROI selection", org=(20, int(height / 10) + 50),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
@@ -199,22 +191,22 @@ if __name__ == '__main__':
                         thickness=int(np.ceil(height / 600)))
             cv2.putText(img=img, text='FPS:' + str(int(prim_hr_avg_fps)), org=(20, int(height / 4)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
 
             cv2.putText(img=img_copy, text='Lightweight OpenPose ', org=(20, int(height / 10)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
 
             cv2.putText(img=img_copy, text='FPS: ' + str(int(lw_avg_fps)), org=(20, int(height / 4)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
 
             cv2.putText(img=adapt_img, text="OpenDR High Resolution", org=(20, int(height / 10)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
             cv2.putText(img=adapt_img, text="Pose Estimation Adaptive ROI selection", org=(20, int(height / 10) + 50),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
@@ -222,7 +214,7 @@ if __name__ == '__main__':
                         thickness=int(np.ceil(height / 600)))
             cv2.putText(img=adapt_img, text='FPS:' + str(int(adapt_hr_avg_fps)), org=(20, int(height / 4)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
 
             heatmap = heatmap * 5
@@ -250,47 +242,24 @@ if __name__ == '__main__':
             start_time = time.perf_counter()
             hr_poses, heatmap, _ = hr_pose_estimator.infer(img)
             hr_time = time.perf_counter() - start_time
-
-            # Perform inference
-            start_time = time.perf_counter()
-            lw_poses = lw_pose_estimator.infer(img_copy)
-            lw_time = time.perf_counter() - start_time
-
             total_time = time.time() - total_time0
 
             for hr_pose in hr_poses:
                 draw(img, hr_pose)
-            for lw_pose in lw_poses:
-                draw(img_copy, lw_pose)
 
-            lw_fps = 1 / (total_time - hr_time)
-            hr_fps = 1 / (total_time - lw_time)
+            hr_fps = 1 / total_time
 
             # Calculate a running average on FPS
             hr_avg_fps = 0.95 * hr_avg_fps + 0.05 * hr_fps
-            lw_avg_fps = 0.95 * lw_avg_fps + 0.05 * lw_fps
 
-            cv2.putText(img=img, text="OpenDR High Resolution", org=(20, int(height / 10)),
+            cv2.putText(img=img, text="OpenDR High Resolution Pose Estimation", org=(20, int(height / 10)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
-            cv2.putText(img=img, text="Pose Estimation", org=(20, int(height / 10) + 50),
-                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
-                        thickness=int(np.ceil(height / 600)))
+
             cv2.putText(img=img, text='FPS:' + str(int(hr_avg_fps)), org=(20, int(height / 4)),
                         fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
-                        thickness=int(np.ceil(height / 600)))
-
-            cv2.putText(img=img_copy, text='Lightweight OpenPose ', org=(20, int(height / 10)),
-                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
-                        thickness=int(np.ceil(height / 600)))
-
-            cv2.putText(img=img_copy, text='FPS: ' + str(int(lw_avg_fps)), org=(20, int(height / 4)),
-                        fontFace=cv2.FONT_HERSHEY_TRIPLEX,
-                        fontScale=int(np.ceil(height / 600)), color=(0, 0, 200),
+                        fontScale=int(np.ceil(height / 800)), color=(0, 0, 200),
                         thickness=int(np.ceil(height / 600)))
 
             heatmap = heatmap * 5
@@ -298,9 +267,8 @@ if __name__ == '__main__':
             heatmap = cv2.resize(heatmap, (int(img.shape[1] / 4), int(img.shape[0] / 4)))
             img[(img.shape[0] - heatmap.shape[0]):img.shape[0], 0:heatmap.shape[1]] = heatmap
 
-            output_image = cv2.hconcat([img_copy, img])
-            output_image = cv2.resize(output_image, size)
-            cv2.imshow('Result', output_image)
+            img = cv2.resize(img, size)
+            cv2.imshow('Result', img)
 
             key = cv2.waitKey(1)
             if key == 27:
