@@ -195,8 +195,9 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         pool_img = pool_img.squeeze(0).permute(1, 2, 0).cpu().float().numpy()
         return pool_img
 
-    def __crop_heatmap(self, heatmap):
-        """ This method takes the generated heatmap and crops it arround the desirable ROI using its nonzero values.
+    @staticmethod
+    def __crop_heatmap(heatmap):
+        """ This method takes the generated heatmap and crops it around the desirable ROI using its nonzero values.
         Parameters
         ----------
         :param heatmap: the heatmap that generated from __first_pass function
@@ -622,33 +623,33 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
     def eval_adaptive(self, dataset, silent=False, verbose=True, use_subset=True, subset_size=250, upsample_ratio=4,
                       images_folder_name="val2017", annotations_filename="person_keypoints_val2017.json"):
         """
-                This method is used to evaluate a trained model on an evaluation dataset.
+        This method is used to evaluate a trained model on an evaluation dataset.
 
-                :param dataset: object that holds the evaluation dataset.
-                :type dataset: ExternalDataset class object or DatasetIterator class object
-                :param silent: if set to True, disables all printing of evaluation progress reports and other
-                    information to STDOUT, defaults to 'False'
-                :type silent: bool, optional
-                :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
-                :type verbose: bool, optional
-                :param use_subset: If set to True, a subset of the validation dataset is created and used in
-                    evaluation, defaults to 'True'
-                :type use_subset: bool, optional
-                :param subset_size: Controls the size of the validation subset, defaults to '250'
-                :type subset_size: int, optional
-                param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs
-                    when resizing,defaults to 4
-                :type upsample_ratio: int, optional
-                :param images_folder_name: Folder name that contains the dataset images. This folder should be contained
-                in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
-                :type images_folder_name: str, optional
-                :param annotations_filename: Filename of the annotations json file. This file should be contained in the
-                    dataset path provided, defaults to 'person_keypoints_val2017.json'
-                :type annotations_filename: str, optional
+        :param dataset: object that holds the evaluation dataset.
+        :type dataset: ExternalDataset class object or DatasetIterator class object
+        :param silent: if set to True, disables all printing of evaluation progress reports and other
+            information to STDOUT, defaults to 'False'
+        :type silent: bool, optional
+        :param verbose: if set to True, enables the maximum verbosity, defaults to 'True'
+        :type verbose: bool, optional
+        :param use_subset: If set to True, a subset of the validation dataset is created and used in
+            evaluation, defaults to 'True'
+        :type use_subset: bool, optional
+        :param subset_size: Controls the size of the validation subset, defaults to '250'
+        :type subset_size: int, optional
+        param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs
+            when resizing,defaults to 4
+        :type upsample_ratio: int, optional
+        :param images_folder_name: Folder name that contains the dataset images. This folder should be contained
+        in the dataset path provided. Note that this is a folder name, not a path, defaults to 'val2017'
+        :type images_folder_name: str, optional
+        :param annotations_filename: Filename of the annotations json file. This file should be contained in the
+            dataset path provided, defaults to 'person_keypoints_val2017.json'
+        :type annotations_filename: str, optional
 
-                :returns: returns stats regarding evaluation
-                :rtype: dict
-                """
+        :returns: returns stats regarding evaluation
+        :rtype: dict
+        """
 
         data = super(HighResolutionPoseEstimationLearner,  # NOQA
                      self)._LightweightOpenPoseLearner__prepare_val_dataset(dataset, use_subset=use_subset,
@@ -1218,7 +1219,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         bounds = ([self.xmin, self.xmax, self.ymin, self.ymax],)
         return current_poses, heatmap, bounds
 
-    def infer_adaptive(self, img, upsample_ratio=4, stride=8, track=True, smooth=True, multiscale=False):
+    def infer_adaptive(self, img, upsample_ratio=4, stride=8):
         """
             This method is used to perform pose estimation on an image.
 
