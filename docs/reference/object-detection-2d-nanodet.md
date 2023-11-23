@@ -160,6 +160,34 @@ Parameters:
 - **lazy_load**: *bool, default=True*\
   Enables loading optimized model from predetermine path without export it each time.
 
+#### `NanodetLearner.optimize_c_model`
+```python
+NanodetLearner.optimize_c_model(self, export_path, conf_threshold, iou_threshold, nms_max_num, hf, dynamic, verbose)
+```
+
+This method is used to export a JIT optimized model with its metadata compatible with the C API.
+If a model is already present in the *export_path* it will be replaced.
+Inside this folder, the model is saved as *nanodet_{model_name}.pth*
+and a metadata file *nanodet_{model_name}.json*.
+
+Parameters:
+
+- **export_path**: *str*\
+  Path to save the optimized model.
+- **conf_threshold**: *float, default=0.35*\
+  Specifies the threshold for object detection inference.
+  An object is detected if the confidence of the output is higher than the specified threshold.
+- **iou_threshold**: *float, default=0.6*\
+  Specifies the IOU threshold for NMS in inference.
+- **nms_max_num**: *int, default=100*\
+  Determines the maximum number of bounding boxes that will be retained following the nms.
+- **hf**: *bool, default=False*\
+  Determines model's floating point precision.
+- **dynamic**: *bool, default=False*\
+  Determines if the model runs with dynamic input.
+- **verbose**: *bool, default=True*\
+  Enables the maximum verbosity.
+
 #### `NanodetLearner.save`
 ```python
 NanodetLearner.save(self, path, verbose)

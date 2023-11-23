@@ -517,6 +517,28 @@ class NanodetLearner(Learner):
         self.trt_model = trt_dep.trt_model(engine, self.device)
         return
 
+    def optimize_c_model(self, export_path, conf_threshold, iou_threshold, nms_max_num, hf=False, dynamic=False, verbose=True):
+        os.makedirs(export_path, exist_ok=True)
+        jit_path = os.path.join(export_path, "nanodet_{}.pth".format(self.cfg.check_point_name))
+
+        predictor = Predictor(self.cfg, self.model, device=self.device, conf_thresh=conf_threshold,
+                              iou_thresh=iou_threshold, nms_max_num=nms_max_num, hf=hf, dynamic=dynamic)
+
+        model_jit_forward = predictor.c_script(self.__dummy_input(hf=predictor.hf))
+
+        metadata = {"model_paths": ["nanodet_{}.pth".format(self.cfg.check_point_name)], "framework": "pytorch",
+                    "format": "pth", "has_data": False, "optimized": True, "optimizer_info": {},
+                    "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
+                                         "conf_threshold": predictor.conf_thresh,
+                                         "iou_threshold": predictor.iou_thresh}}
+        model_jit_forward.save(jit_path)
+
+        with open(os.path.join(export_path, "nanodet_{}.json".format(self.cfg.check_point_name)),
+                  'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
+
+        self._info("Finished export to TorchScript.", verbose)
+
     def _save_jit(self, jit_path, predictor, verbose=True):
         os.makedirs(jit_path, exist_ok=True)
         export_path = os.path.join(jit_path, "nanodet_{}.pth".format(self.cfg.check_point_name))
@@ -823,7 +845,6 @@ class NanodetLearner(Learner):
                     "To run in a specific optimization please delete the self.ort_session, self.jit_model or "
                     "self.trt_model like: detector.ort_session = None.")
             preds = self.trt_model(_input)
-            res = self.predictor.postprocessing(preds, _input, *metadata)
         elif self.jit_model:
             if self.ort_session:
                 warnings.warn(
@@ -831,19 +852,17 @@ class NanodetLearner(Learner):
                     "To run in JIT please delete the self.jit_model like: detector.ort_session = None.")
             self.jit_model = self.jit_model.half() if hf else self.jit_model.float()
 
-            preds = self.jit_model(_input)
-            res = self.predictor.postprocessing(preds, _input, *metadata)
+            preds = self.jit_model(_input, *metadata)
         elif self.ort_session:
             preds = self.ort_session.run(['output'], {'data': _input.cpu().numpy()})
             preds = torch.from_numpy(preds[0]).to(self.device, torch.half if hf else torch.float32)
-            res = self.predictor.postprocessing(preds, _input, *metadata)
         else:
             self.predictor.model = self.predictor.model.half() if hf else self.predictor.model.float()
             preds = self.predictor(_input)
-            res = self.predictor.postprocessing(preds, _input, *metadata)
+        res = self.predictor.postprocessing(preds, _input, *metadata)
 
         bounding_boxes = []
-        if res is not None:
+        if res.numel() != 0:
             for box in res:
                 box = box.to("cpu")
                 bbox = BoundingBox(left=box[0], top=box[1],

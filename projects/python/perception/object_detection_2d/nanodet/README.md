@@ -24,4 +24,7 @@ provided by OpenDR. Specifically the following examples are provided:
     Example usage:
    `python3 train_demo.py --model m --dataset coco --data-root /path/to/coco_dataset`
 
-5. inference_tutorial.ipynb: A simple tutorial in jupyter for using the Nanodet tool for inference.
+5. export_c_compatible_network.py: A simple example to export any model to be used with C API of OpenDR.
+   Noted that this export will not be the same as the JIT optimization model used for inference in Python API, but it will perform the same.
+
+6. inference_tutorial.ipynb: A simple tutorial in jupyter for using the Nanodet tool for inference.

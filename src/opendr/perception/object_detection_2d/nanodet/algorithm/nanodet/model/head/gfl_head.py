@@ -549,11 +549,11 @@ class GFLHead(nn.Module):
         (det_bboxes, det_labels) = results
 
         if det_bboxes.shape[0] == 0:
-            return None
+            return torch.zeros((0, 6), device=preds.device, dtype=preds.dtype)
 
         det_bboxes[:, :4] = scriptable_warp_boxes(
             det_bboxes[:, :4],
-            torch.linalg.inv(meta["warp_matrix"]), meta["img_info"]["width"], meta["img_info"]["height"]
+            torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
         )
         return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 

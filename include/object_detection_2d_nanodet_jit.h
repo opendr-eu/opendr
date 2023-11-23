@@ -52,10 +52,11 @@ typedef struct NanodetModel NanodetModelT;
  * @param scoreThreshold confidence threshold
  * @param height the height of model input, if set to zero the trained height will be used instead
  * @param width the width of model input, if set to zero the trained width will be used instead
+ * @param keepRatio flag to determine if the original aspect ratio of the image will be preserved during preprocessing
  * @param model the model to be loaded
  */
 void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height,
-                      int width, NanodetModelT *model);
+                      int width, int keepRatio, NanodetModelT *model);
 
 /**
  * This function performs inference using a nanodet object detection model and an input image.

@@ -89,6 +89,9 @@ class MBConvBlock(nn.Module):
             self._bn0 = nn.BatchNorm2d(
                 num_features=oup, momentum=self._momentum, eps=self._epsilon
             )
+        else:
+            self._expand_conv = nn.Identity()
+            self._bn0 = nn.Identity()
 
         # Depthwise convolution phase
         self._depthwise_conv = nn.Conv2d(
@@ -113,6 +116,9 @@ class MBConvBlock(nn.Module):
             self._se_expand = nn.Conv2d(
                 in_channels=num_squeezed_channels, out_channels=oup, kernel_size=1
             )
+        else:
+            self._se_reduce = nn.Identity()
+            self._se_expand = nn.Identity()
 
         # Output phase
         self._project_conv = nn.Conv2d(
@@ -147,8 +153,19 @@ class MBConvBlock(nn.Module):
         # Skip connection and drop connect
         if self.id_skip and self.stride == 1 and self.input_filters == self.output_filters:
             if drop_connect_rate > 0:
-                x = drop_connect(x, drop_connect_rate, training=self.training)
+                x = self.drop_connect(x, drop_connect_rate)
             x = x + identity  # skip connection
+        return x
+
+    def drop_connect(self, x, drop_connect_rate: float):
+        if not self.training:
+            return x
+        keep_prob = 1.0 - drop_connect_rate
+        batch_size = x.shape[0]
+        random_tensor = keep_prob
+        random_tensor += torch.rand([batch_size, 1, 1, 1], dtype=x.dtype, device=x.device)
+        binary_mask = torch.floor(random_tensor)
+        x = (x / keep_prob) * binary_mask
         return x
 
 
@@ -251,9 +268,9 @@ class EfficientNetLite(nn.Module):
         output = []
         idx = 0
         for j, stage in enumerate(self.blocks):
-            for block in stage:
+            for k, block in enumerate(stage):
                 drop_connect_rate = self.drop_connect_rate
-                if drop_connect_rate:
+                if drop_connect_rate > 0:
                     drop_connect_rate *= float(idx) / len(self.blocks)
                 x = block(x, drop_connect_rate)
                 idx += 1

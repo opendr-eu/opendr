@@ -31,7 +31,7 @@ class BasicBlock(nn.Module):
         self.act = act_layers(activation)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.downsample = downsample
+        self.downsample = nn.Identity() if downsample is None else downsample
         self.stride = stride
 
     def forward(self, x):
@@ -44,7 +44,7 @@ class BasicBlock(nn.Module):
         out = self.conv2(out)
         out = self.bn2(out)
 
-        if self.downsample is not None:
+        if not isinstance(self.downsample, nn.Identity):
             residual = self.downsample(x)
 
         out += residual

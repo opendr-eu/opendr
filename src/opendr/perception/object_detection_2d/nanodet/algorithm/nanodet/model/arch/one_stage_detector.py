@@ -66,6 +66,13 @@ class OneStageDetector(nn.Module):
         if hasattr(self, "aux_head"):
             self.aux_head.dynamic = dynamic
 
+    def set_inference_mode(self, inference_mode=False):
+        self.backbone.inference_mode = inference_mode
+        if hasattr(self, "fpn"):
+            self.fpn.inference_mode = inference_mode
+        if hasattr(self, "head"):
+            self.head.inference_mode = inference_mode
+
     def forward_train(self, gt_meta):
         preds = self(gt_meta["img"])
         loss, loss_states = self.head.loss(preds, gt_meta)
