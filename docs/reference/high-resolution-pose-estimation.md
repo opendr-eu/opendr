@@ -98,6 +98,8 @@ Parameters:
   If set to True, a subset of the validation dataset is created and used in evaluation.
 - **subset_size**: *int, default=250*\
   Controls the size of the validation subset.
+- **upsample_ratio**: *int, default=4*\
+  Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing,defaults to 4
 - **images_folder_name**: *str, default='val2017'*\
   Folder name that contains the dataset images.
   This folder should be contained in the dataset path provided.
@@ -108,11 +110,13 @@ Parameters:
 
 #### `HighResolutionPoseEstimation.infer_adaptive`
 ```python
-HighResolutionPoseEstimation.infer_adaptive(self, img, upsample_ratio, stride, track, smooth, multiscale, visualize)
+HighResolutionPoseEstimation.infer_adaptive(self, img, upsample_ratio, stride)
 ```
-
 This method is used to perform pose estimation on an image.
-Returns a list of engine.target.Pose objects, where each holds a pose 
+The predicted poses are estimated through an adaptive ROI selection method that is applied on the high-resolution images.
+The difference between the `HighResolutionPoseEstimation.infer` method is that the adaptive technique tries to separate the
+detected ROI's instead of using the minimum enclosing bounding box of them as the `infer` does. 
+Returns a list of engine.target. Pose objects, where each holds a pose 
 and a heatmap that contains human silhouettes of the input image. 
 If no detections were made it returns an empty list for poses and a black frame for heatmap.
 Parameters:
@@ -123,12 +127,6 @@ Parameters:
   Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
 - **stride**: *int, default=8*\
   Defines the stride value for creating a padded image.
-- **track**: *bool, default=True*\
-  If True, infer propagates poses ids from previous frame results to track poses.
-- **smooth**: *bool, default=True*\
-  If True, smoothing is performed on pose keypoints between frames.
-- **multiscale**: *bool, default=False*\
-  Specifies whether evaluation will run in the predefined multiple scales setup or not.
 
 
 
@@ -227,58 +225,6 @@ Parameters:
   Specifies the mean based on which the images are normalized.
 - **img_scale**: *float, default=1/256*\
   Specifies the scale based on which the images are normalized.
-
-#### `HighResolutionPoseEstimationLearner.__crop_heatmap`
-```python
-HighResolutionPoseEstimationLearner.__crop_heatmap(self, heatmap )
-```
-This method takes the generated heatmap and crops it arround the desirable ROI using its nonzero values.
-
-Parameters:
-
-- **heatmap**: *numpy.array* Describes the extracted heatmap from the `HighResolutionPoseEstimationLearner.__first_pass` function.
-
-#### `HighResolutionPoseEstimationLearner.__check_for_split`
-```python
-HighResolutionPoseEstimationLearner.__check_for_split(self, cropped_heatmap )
-```
-This function checks weather or not the cropped heatmap needs further proccessing for extra cropping.
-More specifically, returns a boolean for the decision for further crop, the decision depends on the distance between the target subjects.
-
-Parameters:
-- **cropped_heatmap**: *numpy.array* Describes the cropped heatmap from the `HighResolutionPoseEstimationLearner.__crop_heatmap` function.
-
-#### `HighResolutionPoseEstimationLearner.__split_process`
-```python
-HighResolutionPoseEstimationLearner.__split_process(self, cropped_heatmap )
-```
-This function uses the cropped heatmap that crated from `__crop_heatmap` function and splits it in parts.
-
-Parameters:
-- **cropped_heatmap**: *numpy.array* Describes the cropped heatmap from the `HighResolutionPoseEstimationLearner.__crop_heatmap` function.
-
-#### `HighResolutionPoseEstimationLearner.__crop_ecnclosing_bbox`
-```python
-HighResolutionPoseEstimationLearner.__crop_enclosing_bbox(self, crop )
-```
-This function creates the bounding box for each split part
-Parameters:
-- **crop**: *numpy.array* Describes the cropped part of the heatmap.
-
-#### `HighResolutionPoseEstimationLearner.__crop_img_func`
-```python
-HighResolutionPoseEstimationLearner.__crop_img_func(self, xmin, xmax, ymin, ymax, pool_img, original_image, heatmap, perc )
-```
-This function crops the region of interst(ROI) from the original image to use it in next steps.
-
-Parameters:
-
-
-- **xmin, xmax, ymin, ymax**: *int* Describe the boundaries of the bounding box.
-- **pool_img**: *numpy.array* The pooled image that resized to be used in `__first_pass`
-- **original_img**: *numpy.array* The input High-Resolution image
-- **heatmap**: *numpy.array* The extracted heatmap
-- **perc**: *float* The percentage is used for adding an extra pad on the cropped image.
 
 #### `HighResolutionPoseEstimation.download`
 ```python
