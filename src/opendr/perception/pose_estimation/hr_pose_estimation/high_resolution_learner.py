@@ -221,7 +221,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         return heatmap_dims, detection
 
     @staticmethod
-    def __check_for_split(self, cropped_heatmap):
+    def __check_for_split(cropped_heatmap):
         """
         This function checks weather or not the cropped heatmap needs further proccessing for extra cropping.
         More specifically, returns a boolean for the decision for further crop, the decision depends on the distance between the
@@ -250,7 +250,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             return False
 
     @staticmethod
-    def __split_process(self, cropped_heatmap):
+    def __split_process(cropped_heatmap):
         """
         This function uses the cropped heatmap that crated from __crop_heatmap function and splits it in parts.
 
@@ -315,7 +315,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         return crops
 
     @staticmethod
-    def __crop_enclosing_bbox(self, crop):
+    def __crop_enclosing_bbox(crop):
         """
         This function creates the bounding box for each split part
 
@@ -335,7 +335,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         return xmin, xmax, ymin, ymax
 
     @staticmethod
-    def __crop_image_func(self, xmin, xmax, ymin, ymax, pool_img, original_image, heatmap, perc):
+    def __crop_image_func(xmin, xmax, ymin, ymax, pool_img, original_image, heatmap, perc):
         """
         This function crops the region of interst(ROI) from the original image to use it in next steps
 
@@ -351,8 +351,6 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         :type heatmap: np.array
         :param perc: percentage of the image that is needed for adding extra pad
         :type perc: float
-        :param detection: boolean that describes if any subject detection is made
-        :type detection: bool
 
         :returns: Returns the cropped image part from the original image and the dimensions of the cropped part in the
         original image coordinate system
@@ -743,8 +741,8 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             if detection:
                 cropped_heatmap = heatmap[heatmap_dims[2]:heatmap_dims[3], heatmap_dims[0]:heatmap_dims[1]]
                 if self.__check_for_split(cropped_heatmap):
-                    # Split horizontal or vertical
-                    crops = self.__split_process(cropped_heatmap)
+                    crops = self.__split_process(cropped_heatmap)   # Split horizontal or vertical
+
                     crop_part = 0
                     for crop_params in crops:
                         crop = crop_params[0]
@@ -847,15 +845,15 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                                     'score': scores[idx]
                                 })
 
-                        if self.visualize:
-                            for keypoints in coco_keypoints:
-                                for idx in range(len(keypoints) // 3):
-                                    cv2.circle(img, (int(keypoints[idx * 3]), int(keypoints[idx * 3 + 1])),
-                                               3, (255, 0, 255), -1)
-                            cv2.imshow('keypoints', img)
-                            key = cv2.waitKey()
-                            if key == 27:  # esc
-                                return
+                            if self.visualize:
+                                for keypoints in coco_keypoints:
+                                    for idx in range(len(keypoints) // 3):
+                                        cv2.circle(img, (int(keypoints[idx * 3]), int(keypoints[idx * 3 + 1])),
+                                                   3, (255, 0, 255), -1)
+                                cv2.imshow('keypoints', img)
+                                key = cv2.waitKey()
+                                if key == 27:  # esc
+                                    return
                 else:
                     xmin = heatmap_dims[0]
                     xmax = heatmap_dims[1]
