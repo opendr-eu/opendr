@@ -197,14 +197,14 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
     @staticmethod
     def __crop_heatmap(heatmap):
-        """ This method takes the generated heatmap and crops it around the desirable ROI using its nonzero values.
-        Parameters
-        ----------
+        """
+        This method takes the generated heatmap and crops it around the desirable ROI using its nonzero values.
+
         :param heatmap: the heatmap that generated from __first_pass function
-        :type heatmap numpy.array
-        Returns
-        -------
-        heatmap_dims: It is an array that contains the boundaries of the cropped image
+        :type heatmap: numpy.array
+
+        :returns An array that contains the boundaries of the cropped image
+        :rtype: np.array
         """
         detection = False
 
@@ -220,14 +220,18 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         heatmap_dims = (int(xmin), int(xmax), int(ymin), int(ymax))
         return heatmap_dims, detection
 
+    @staticmethod
     def __check_for_split(self, cropped_heatmap):
-        """ This function checks weather or not the cropped heatmap needs further proccessing for extra cropping.
+        """
+        This function checks weather or not the cropped heatmap needs further proccessing for extra cropping.
         More specifically, returns a boolean for the decision for further crop, the decision depends on the distance between the
         target subjects.
+
         :param cropped_heatmap: the cropped area from the original heatmap
+        :type cropped_heatmap: np.array
 
-        Returns: boolean
-
+        :returns: A boolean that describes weather is needed to proceed on further cropping
+        :rtype: bool
         """
         sum_rows = cropped_heatmap.sum(axis=1)
         sum_col = cropped_heatmap.sum(axis=0)
@@ -245,13 +249,16 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         else:
             return False
 
+    @staticmethod
     def __split_process(self, cropped_heatmap):
-        """ This function uses the cropped heatmap that crated from __crop_heatmap function and splits it in parts.
-        :param cropped_heatmap: the cropped area from the original heatmap
+        """
+        This function uses the cropped heatmap that crated from __crop_heatmap function and splits it in parts.
 
-        Returns:
-        crops: A list with the new dimensions of the split parts
-        :type: list
+        :param cropped_heatmap: the cropped area from the original heatmap
+        :type cropped_heatmap: np.array
+
+        :returns: Returns a list with the new dimensions of the split parts
+        :rtype: list
         """
         max_diff_c, max_diff_r = 0, 0
         y_crop_l = cropped_heatmap.shape[1]
@@ -307,14 +314,16 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
         crops = [[crop1, x1_i, x1_f, y1_i, y1_f], [crop2, x2_i, x2_f, y2_i, y2_f]]
         return crops
 
-    def __crop_ecclosing_bbox(self, crop):
-        """ This function creates the bounding box for each split part
+    @staticmethod
+    def __crop_enclosing_bbox(self, crop):
+        """
+        This function creates the bounding box for each split part
 
-        Args:
-            crop: A split part from the original heatmap
+        :param crop: A split part from the original heatmap
+        :type crop: np.array
 
-        Returns:
-            xmin, xmax, ymin, ymax : Dimensions for enclosing bounding box
+        :returns:  the dimensions (xmin, xmax, ymin, ymax) for enclosing bounding box
+        :rtype: int
         """
         if crop.nonzero()[0].size > 0 and crop.nonzero()[1].size > 0:
             xmin = min(np.unique(crop.nonzero()[1]))
@@ -325,23 +334,29 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
             xmin, xmax, ymin, ymax = 0, 0, 0, 0
         return xmin, xmax, ymin, ymax
 
+    @staticmethod
     def __crop_image_func(self, xmin, xmax, ymin, ymax, pool_img, original_image, heatmap, perc):
-        """ This function crops the region of interst(ROI) from the original image to use it in next steps
-        Args:
-            xmin, ymin: top left corner dimensions of the split part in the original heatmap
-            xamx, ymax: bottom right dimensions of the split part in the original heatmap
-            pool_img: the resized pooled input image
-            original_image: the original input image
-            heatmap: the heatmap generated from __first_pass function
-            perc: percentage of the image that is needed for adding extra pad
-            :type perc: float
-            detection: boolean that describes if any subject detection is made
-            :type detection: boolean
+        """
+        This function crops the region of interst(ROI) from the original image to use it in next steps
 
-        Returns:
-        :crop_img: the cropped image part from the original image
-        :type :numpy.array
-        :xmin, xmax, ymin, ymax: the dimensions of the cropped part in the original image coordinate system
+        :param xmin, ymin: top left corner dimensions of the split part in the original heatmap
+        :type xmin,ymin: int
+        :param xmax, ymax: bottom right dimensions of the split part in the original heatmap
+        :type xmin,ymin: int
+        :param pool_img: the resized pooled input image
+        :type pool_img: np.array
+        :param original_image: the original input image
+        :type original_image: np.array
+        :param heatmap: the heatmap generated from __first_pass function
+        :type heatmap: np.array
+        :param perc: percentage of the image that is needed for adding extra pad
+        :type perc: float
+        :param detection: boolean that describes if any subject detection is made
+        :type detection: bool
+
+        :returns: Returns the cropped image part from the original image and the dimensions of the cropped part in the
+        original image coordinate system
+        :rtype :numpy.array, int, int, int, int
         """
         upscale_factor_x = pool_img.shape[0] / heatmap.shape[0]
         upscale_factor_y = pool_img.shape[1] / heatmap.shape[1]
@@ -736,7 +751,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                         if crop.size > 0:
                             crop_part += 1
 
-                            xmin, xmax, ymin, ymax = self.__crop_ecclosing_bbox(crop)
+                            xmin, xmax, ymin, ymax = self.__crop_enclosing_bbox(crop)
 
                             xmin += heatmap_dims[0]
                             xmax += heatmap_dims[0]
@@ -964,29 +979,29 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
 
     def infer(self, img, upsample_ratio=4, stride=8, track=True, smooth=True, multiscale=False):
         """
-            This method is used to perform pose estimation on an image.
+        This method is used to perform pose estimation on an image.
 
-            :param img: image to run inference on
-            :rtype img: engine.data.Image class object
-            :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs
-                when resizing,defaults to 4
-            :type upsample_ratio: int, optional
-            :param stride: Defines the stride value for creating a padded image
-            :type stride: int,optional
-            :param track: If True, infer propagates poses ids from previous frame results to track poses,
-                defaults to 'True'
-            :type track: bool, optional
-            :param smooth: If True, smoothing is performed on pose keypoints between frames, defaults to 'True'
-            :type smooth: bool, optional
-            :param multiscale: Specifies whether evaluation will run in the predefined multiple scales setup or not.
-            :type multiscale: bool,optional
+        :param img: image to run inference on
+        :rtype img: engine.data.Image class object
+        :param upsample_ratio: Defines the amount of upsampling to be performed on the heatmaps and PAFs
+            when resizing,defaults to 4
+        :type upsample_ratio: int, optional
+        :param stride: Defines the stride value for creating a padded image
+        :type stride: int,optional
+        :param track: If True, infer propagates poses ids from previous frame results to track poses,
+            defaults to 'True'
+        :type track: bool, optional
+        :param smooth: If True, smoothing is performed on pose keypoints between frames, defaults to 'True'
+        :type smooth: bool, optional
+        :param multiscale: Specifies whether evaluation will run in the predefined multiple scales setup or not.
+        :type multiscale: bool,optional
 
-            :return: Returns a list of engine.target.Pose objects, where each holds a pose
-            and a heatmap that contains human silhouettes of the input image.
-            If no detections were made returns an empty list for poses and a black frame for heatmap.
+        :return: Returns a list of engine.target.Pose objects, where each holds a pose
+        and a heatmap that contains human silhouettes of the input image.
+        If no detections were made returns an empty list for poses and a black frame for heatmap.
 
-            :rtype: poses -> list of engine.target.Pose objects
-                    heatmap -> np.array()
+        :rtype: poses -> list of engine.target.Pose objects
+                heatmap -> np.array()
         """
         current_poses = []
         num_keypoints = Pose.num_kpts
@@ -1291,7 +1306,7 @@ class HighResolutionPoseEstimationLearner(LightweightOpenPoseLearner):
                         if crop.size > 0:
                             crop_part += 1
 
-                            xmin, xmax, ymin, ymax = self.__crop_ecclosing_bbox(crop)
+                            xmin, xmax, ymin, ymax = self.__crop_enclosing_bbox(crop)
 
                             xmin += crop_params[1]
                             xmax += crop_params[1]
