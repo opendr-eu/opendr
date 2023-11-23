@@ -32,7 +32,6 @@ class Predictor(nn.Module):
         self.iou_thresh = iou_thresh
         self.nms_max_num = nms_max_num
         self.hf = hf
-        self.fuse = self.cfg.model.arch.fuse
         self.ch_l = ch_l
         self.dynamic = dynamic
         self.traced_model = None
@@ -47,8 +46,6 @@ class Predictor(nn.Module):
         for para in model.parameters():
             para.requires_grad = False
 
-        if self.fuse:
-            model.fuse()
         if self.ch_l:
             model = model.to(memory_format=torch.channels_last)
         if self.hf:

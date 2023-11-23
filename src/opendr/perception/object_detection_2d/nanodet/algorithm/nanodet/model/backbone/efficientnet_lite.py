@@ -1,7 +1,7 @@
 import math
 
 import torch
-import torch.functional as F
+import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from torch import nn
 

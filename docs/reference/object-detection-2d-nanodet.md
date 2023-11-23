@@ -22,7 +22,7 @@ Constructor parameters:
 
 - **model_to_use**: *{"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512", "RepVGG_A0_416",
   "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416", "plus_m_320", "plus_m_1.5x_320", "plus_m_416",
-  "plus_m_1.5x_416", "plus_fast", """custom"}, default=m*\
+  "plus_m_1.5x_416", "plus_fast", "custom"}, default=m*\
   Specifies the model to use and the config file that contains all hyperparameters for training, evaluation and inference as the original
   [Nanodet implementation](https://github.com/RangiLyu/nanodet). If you want to overwrite some of the parameters you can
   put them as parameters in the learner.

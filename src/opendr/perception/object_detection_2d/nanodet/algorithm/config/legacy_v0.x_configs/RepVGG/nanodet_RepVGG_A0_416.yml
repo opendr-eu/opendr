@@ -19,7 +19,7 @@ model:
     head:
       name: NanoDetHead
       num_classes: 80
-      conv_type: Conv
+      use_depthwise: False
       input_channel: 128
       feat_channels: 128
       stacked_convs: 2

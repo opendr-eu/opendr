@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import torch.nn as nn
 
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.util import MultiOutput
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import (
     ConvModule,
     DepthwiseConvModule)
@@ -42,20 +41,13 @@ class Vgg(nn.Module):
             pool = nn.MaxPool2d(kernel_size=mpk, stride=mps, padding=mpk // 2) if mpk != 0 else None
             self.backbone.append(conv(inch, ouch, kernel_size=k, stride=s, padding=p, norm_cfg=norm_cfg,
                                       activation=activation, pool=pool))
-            self.backbone[-1].i = idx
-            self.backbone[-1].f = -1
-
-        self.backbone.append(MultiOutput())
-        self.backbone[-1].i = -1
-        self.backbone[-1].f = self.out_stages
 
         self.backbone = nn.Sequential(*self.backbone)
 
     def forward(self, x):
         y = []
-        for layer in self.backbone:
-            if layer.f != -1:
-                x = y[layer.f] if isinstance(layer.f, int) else [x if j == -1 else y[j] for j in layer.f]
+        for idx, layer in enumerate(self.backbone):
             x = layer(x)
-            y.append(x if layer.i in self.out_stages else None)
-        return x
+            if idx in self.out_stages:
+                y.append(x)
+        return y

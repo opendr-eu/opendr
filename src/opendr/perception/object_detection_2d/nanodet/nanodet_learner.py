@@ -31,8 +31,9 @@ try:
 
     import tensorrt as trt
     from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.inferencer import trt_dep
-except ImportError as e:
-    warnings.warn(f"{e}, No TensorRT is installed")
+except ImportError:
+    TENSORRT_WARNING = ("TensorRT can be implemented only in gpu installation of opendr toolkit, please install"
+                        "the toolkit with gpu capabilities first or install pycuda and TensorRT.")
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.check_point import save_model_state
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch import build_model
@@ -108,9 +109,6 @@ class NanodetLearner(Learner):
 
         self.logger = None
         self.task = None
-
-        #  warmup run if head use fast post processing
-        self.model(self.__dummy_input()[0])
 
     def _load_hparam(self, model: str):
         """ Load hyperparameters for nanodet models and training configuration
@@ -448,7 +446,7 @@ class NanodetLearner(Learner):
         self.ort_session = ort.InferenceSession(onnx_path)
 
     def _save_trt(self, trt_path, predictor, verbose=True):
-
+        assert TENSORRT_WARNING is not None, TENSORRT_WARNING
         os.makedirs(trt_path, exist_ok=True)
 
         export_path_onnx = os.path.join(trt_path, f"nanodet_{self.cfg.check_point_name}.onnx")
@@ -458,7 +456,7 @@ class NanodetLearner(Learner):
         if not os.path.exists(export_path_onnx):
             assert torch.__version__[2:4] == "13", \
                 f"tensorRT onnx parser is not compatible with resize implementations of pytorch before version 1.13.0." \
-                f" Please update your pytorch and try again, or provide a onnx file into {export_path_onnx}"
+                f" Please update your pytorch and try again, or provide a valid onnx file into {export_path_onnx}"
             self._save_onnx(trt_path, predictor, verbose=verbose)
 
         trt_logger_level = trt.Logger.INFO if verbose else trt.Logger.ERROR
@@ -520,25 +518,24 @@ class NanodetLearner(Learner):
         return
 
     def _save_jit(self, jit_path, predictor, verbose=True):
-        with (torch.no_grad()):
-            export_path = os.path.join(jit_path, "nanodet_{}.pth".format(self.cfg.check_point_name))
+        os.makedirs(jit_path, exist_ok=True)
+        export_path = os.path.join(jit_path, "nanodet_{}.pth".format(self.cfg.check_point_name))
 
-            model_traced = predictor.script_model() if predictor.dynamic else \
-                predictor.trace_model(self.__dummy_input(hf=predictor.hf))
+        model_traced = predictor.script_model() if predictor.dynamic else \
+            predictor.trace_model(self.__dummy_input(hf=predictor.hf))
 
-            metadata = {"model_paths": ["nanodet_{}.pth".format(self.cfg.check_point_name)], "framework": "pytorch",
-                        "format": "pth", "has_data": False, "optimized": True, "optimizer_info": {},
-                        "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
-                                             "conf_threshold": predictor.conf_thresh,
-                                             "iou_threshold": predictor.iou_thresh}}
-            model_traced.save(export_path)
-            os.makedirs(jit_path, exist_ok=True)
+        metadata = {"model_paths": ["nanodet_{}.pth".format(self.cfg.check_point_name)], "framework": "pytorch",
+                    "format": "pth", "has_data": False, "optimized": True, "optimizer_info": {},
+                    "inference_params": {"input_size": self.cfg.data.val.input_size, "classes": self.classes,
+                                         "conf_threshold": predictor.conf_thresh,
+                                         "iou_threshold": predictor.iou_thresh}}
+        model_traced.save(export_path)
 
-            with open(os.path.join(jit_path, "nanodet_{}.json".format(self.cfg.check_point_name)),
-                      'w', encoding='utf-8') as f:
-                json.dump(metadata, f, ensure_ascii=False, indent=4)
+        with open(os.path.join(jit_path, "nanodet_{}.json".format(self.cfg.check_point_name)),
+                  'w', encoding='utf-8') as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=4)
 
-            self._info("Finished export to TorchScript.", verbose)
+        self._info("Finished export to TorchScript.", verbose)
 
     def _load_jit(self, jit_path, verbose=True):
         jit_path = jit_path[0]

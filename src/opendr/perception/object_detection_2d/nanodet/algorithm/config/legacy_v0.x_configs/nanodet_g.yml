@@ -27,7 +27,7 @@ model:
     head:
       name: NanoDetHead
       num_classes: 80
-      conv_type: Conv
+      use_depthwise: False
       activation: LeakyReLU
       input_channel: 128
       feat_channels: 128

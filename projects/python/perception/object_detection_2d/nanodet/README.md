@@ -4,13 +4,10 @@ This folder contains minimal code usage examples that showcase the basic functio
 provided by OpenDR. Specifically the following examples are provided:
 1. inference_demo.py: Perform inference on a single image in a directory. Setting `--device cpu` performs inference on CPU.
    Setting the config file for the specific model is done with `--model "model name"`.
-   Inference will use optimization [ONNX or JIT] if specified in `--optimize onnx` or `--optimize jit`.
+   Inference will use optimization [ONNX, JIT or TensorRT] if specified in `--optimize onnx`, `--optimize jit` or `--optimize trt`.
    If optimization is used, first an optimized model will be exported and then inference will be performed.
 
    In ONNX it is recommended to install `onnxsim` dependencies with `pip install onnxsim` on OpenDR's virtual environment, for smaller and better optimized models.
-   
-   If user is planning on using the C API, JIT optimization is preferred, so it can be used for the same postprocessing of the output
-   and have exactly the same detection as the python API.
 
 2. webcam_demo.py: A simple tool that performs live object detection using a webcam.
 
