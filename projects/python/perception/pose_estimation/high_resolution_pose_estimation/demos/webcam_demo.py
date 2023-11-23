@@ -56,7 +56,7 @@ if __name__ == '__main__':
                         help="Base height of resizing in second inference, defaults to 360", default=360)
     parser.add_argument("--method",
                         help="Choose between primary or adaptive ROI selection methodology defaults to adaptive",
-                        default="adaptive")
+                        default="adaptive", choices=["primary", "adaptive"])
     parser.add_argument("--run-comparison",
                         help="Enables comparison with all HR-pose-estimation methods and Lw-OpenPose",
                         action="store_true")
