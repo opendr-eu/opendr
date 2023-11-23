@@ -233,7 +233,8 @@ if __name__ == '__main__':
             adapt_heatmap = adapt_heatmap * 5
             adapt_heatmap = cv2.cvtColor(adapt_heatmap, cv2.COLOR_GRAY2BGR)
             adapt_heatmap = cv2.resize(adapt_heatmap, (int(img.shape[1] / 4), int(img.shape[0] / 4)))
-            adapt_img[(adapt_img.shape[0] - adapt_heatmap.shape[0]):adapt_img.shape[0], 0:adapt_heatmap.shape[1]] = adapt_heatmap
+            adapt_img[(adapt_img.shape[0] - adapt_heatmap.shape[0]):adapt_img.shape[0], 0:adapt_heatmap.shape[1]]\
+                = adapt_heatmap
 
             output_image = cv2.hconcat([img_copy, img, adapt_img])
             output_image = cv2.resize(output_image, size)
