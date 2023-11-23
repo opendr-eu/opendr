@@ -708,10 +708,10 @@ class NanodetLearner(Learner):
 
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
-        if cfg.device.gpu_ids == -1 or self.device == "cpu":
-            gpu_ids, precision = (None, cfg.device.precision)
+        if self.cfg.device.gpu_ids == -1 or self.device == "cpu":
+            gpu_ids, precision = (None, self.cfg.device.precision)
         else:
-            gpu_ids, precision = (cfg.device.gpu_ids, cfg.device.precision)
+            gpu_ids, precision = (self.cfg.device.gpu_ids, self.cfg.device.precision)
             assert len(gpu_ids) == 1, ("we do not have implementation for distribution learning please use only"
                                        " one gpu device")
 
@@ -785,10 +785,12 @@ class NanodetLearner(Learner):
 
         self.task = TrainingTask(self.cfg, self.model, evaluator)
 
-        if cfg.device.gpu_ids == -1:
-            gpu_ids, precision = (None, cfg.device.precision)
+        if self.cfg.device.gpu_ids == -1 or self.device == "cpu":
+            gpu_ids, precision = (None, self.cfg.device.precision)
         else:
-            gpu_ids, precision = (cfg.device.gpu_ids, cfg.device.precision)
+            gpu_ids, precision = (self.cfg.device.gpu_ids, self.cfg.device.precision)
+            assert len(gpu_ids) == 1, ("we do not have implementation for distribution learning please use only"
+                                       " one gpu device")
 
         trainer = pl.Trainer(
             default_root_dir=save_dir,
