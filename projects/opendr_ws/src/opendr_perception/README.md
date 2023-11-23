@@ -1140,7 +1140,7 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
 
 
 
-### 3D Object Tracking VPIT ROS2 Node
+### 3D Object Tracking VPIT ROS Node
 
 A ROS node for performing 3D single object tracking using VPIT method.
 This method need to be initialized with a 3D bounding box for an object that should be tracked. For this reasone, the initial detection3d box should be sent, as well as the corresponding point cloud. After the initialization, only point cloud data is required for inference. If a new object needs to be tracked, then the same `input_detection3d_topic` can be used to send a bounding box and the last send point cloud will be used for initialization.
