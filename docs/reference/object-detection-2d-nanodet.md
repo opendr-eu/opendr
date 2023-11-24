@@ -174,12 +174,12 @@ Parameters:
 
 - **export_path**: *str*\
   Specifies the path to save the optimized model.
-- **conf_threshold**: *float, default=0.35*\
+- **conf_threshold**: *float*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
-- **iou_threshold**: *float, default=0.6*\
+- **iou_threshold**: *float*\
   Specifies the IOU threshold for NMS in inference.
-- **nms_max_num**: *int, default=100*\
+- **nms_max_num**: *int*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 - **hf**: *bool, default=False*\
   Determines model's floating point precision.

@@ -20,7 +20,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
-    parser.add_argument("--dynamic", help="Determines if model run with dynamic shape input or not",
+    parser.add_argument("--dynamic", help="Determines if the model runs with dynamic shape input or not",
                         action="store_true")
 
     args = parser.parse_args()
