@@ -305,6 +305,7 @@ Returns average fps from all runs since last clear_metrics init.
   ```
 
 #### References
-<a name="#object-tracking-3d-1" href="https://arxiv.org/abs/2008.08063">[1]</a> AB3DMOT: A Baseline for 3D Multi-Object Tracking and New Evaluation Metrics,
-[arXiv](https://arxiv.org/abs/2008.08063).
+<a name="#object-tracking-3d-1" href="https://arxiv.org/abs/2206.02619">[1]</a> VPIT: Real-time Embedded Single Object 3D Tracking Using Voxel Pseudo Images,
+[arXiv](https://arxiv.org/abs/2206.02619).
+
 <a name="#object-tracking-3d-2" href="http://www.cvlibs.net/datasets/kitti/eval_tracking.php">[2]</a> KITTI evaluation development kit.
