@@ -235,12 +235,28 @@ class Pose(Target):
     This target is used for pose estimation. It contains a list of Keypoints.
     Refer to kpt_names for keypoint naming.
     """
+
     num_kpts = 18
-    kpt_names = ['nose', 'neck',
-                 'r_sho', 'r_elb', 'r_wri', 'l_sho', 'l_elb', 'l_wri',
-                 'r_hip', 'r_knee', 'r_ank', 'l_hip', 'l_knee', 'l_ank',
-                 'r_eye', 'l_eye',
-                 'r_ear', 'l_ear']
+    kpt_names = [
+        "nose",
+        "neck",
+        "r_sho",
+        "r_elb",
+        "r_wri",
+        "l_sho",
+        "l_elb",
+        "l_wri",
+        "r_hip",
+        "r_knee",
+        "r_ank",
+        "l_hip",
+        "l_knee",
+        "l_ank",
+        "r_eye",
+        "l_eye",
+        "r_ear",
+        "l_ear",
+    ]
     last_id = -1
 
     def __init__(self, keypoints, confidence):
@@ -293,7 +309,9 @@ class Pose(Target):
         if isinstance(data, np.ndarray) or isinstance(data, list):
             self._data = data
         else:
-            raise ValueError("Pose expects either NumPy arrays or lists as data")
+            raise ValueError(
+                "Pose expects either NumPy arrays or lists as data"
+            )
 
     def __str__(self):
         """
@@ -321,9 +339,11 @@ class Pose(Target):
                 position = Pose.kpt_names.index(key)
                 return self.data[position]
             except:
-                raise ValueError('Keypoint ' + key + ' not supported.')
+                raise ValueError("Keypoint " + key + " not supported.")
         else:
-            raise ValueError('Only string and integers are supported for retrieving keypoints.')
+            raise ValueError(
+                "Only string and integers are supported for retrieving keypoints."
+            )
 
 
 class BoundingBox(Target):
@@ -331,14 +351,9 @@ class BoundingBox(Target):
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
     """
+
     def __init__(
-        self,
-        name,
-        left,
-        top,
-        width,
-        height,
-        score=0,
+        self, name, left, top, width, height, score=0,
     ):
         super().__init__()
         self.name = name
@@ -351,30 +366,30 @@ class BoundingBox(Target):
     def mot(self, with_confidence=True, frame=-1):
 
         if with_confidence:
-            result = np.array([
-                frame,
-                self.left,
-                self.top,
-                self.width,
-                self.height,
-                self.confidence,
-            ], dtype=np.float32)
+            result = np.array(
+                [
+                    frame,
+                    self.left,
+                    self.top,
+                    self.width,
+                    self.height,
+                    self.confidence,
+                ],
+                dtype=np.float32,
+            )
         else:
-            result = np.array([
-                frame,
-                self.left,
-                self.top,
-                self.width,
-                self.height,
-            ], dtype=np.float32)
+            result = np.array(
+                [frame, self.left, self.top, self.width, self.height],
+                dtype=np.float32,
+            )
 
         return result
 
     def coco(self, with_confidence=True):
         result = {}
-        result['bbox'] = [self.left, self.top, self.width, self.height]
-        result['category_id'] = self.name
-        result['area'] = self.width * self.height
+        result["bbox"] = [self.left, self.top, self.width, self.height]
+        result["category_id"] = self.name
+        result["area"] = self.width * self.height
         return result
 
     def __repr__(self):
@@ -403,24 +418,30 @@ class CocoBoundingBox(BoundingBox):
         iscrowd=0,
         score=0,
     ):
-        super().__init__(name=name, left=left, top=top, width=width,
-                         height=height, score=score)
+        super().__init__(
+            name=name,
+            left=left,
+            top=top,
+            width=width,
+            height=height,
+            score=score,
+        )
         self.segmentation = segmentation
         self.iscrowd = iscrowd
         self.area = area
 
     def coco(self, with_confidence=True):
         result = {}
-        result['bbox'] = [self.left, self.top, self.width, self.height]
-        result['category_id'] = self.name
+        result["bbox"] = [self.left, self.top, self.width, self.height]
+        result["category_id"] = self.name
         if len(self.segmentation) > 0:
-            result['area'] = self.area
-            result['segmentation'] = self.segmentation
-            result['iscrowd'] = self.iscrowd
+            result["area"] = self.area
+            result["segmentation"] = self.segmentation
+            result["iscrowd"] = self.iscrowd
         else:
-            result['area'] = self.width * self.height
+            result["area"] = self.width * self.height
         if with_confidence:
-            result['confidence'] = self.confidence
+            result["confidence"] = self.confidence
         return result
 
     def __repr__(self):
@@ -435,6 +456,7 @@ class BoundingBoxList(Target):
     This target is used for 2D Object Detection.
     A bounding box is described by the left-top corner and its width and height.
     """
+
     def __init__(
         self,
         boxes=None,
@@ -459,16 +481,16 @@ class BoundingBoxList(Target):
                 iscrowd = boxes_coco[i]['iscrowd']
             else:
                 iscrowd = 0
-            if 'area' in boxes_coco[i]:
-                area = boxes_coco[i]['area']
+            if "area" in boxes_coco[i]:
+                area = boxes_coco[i]["area"]
             else:
-                area = boxes_coco[i]['bbox'][2] * boxes_coco[i]['bbox'][3]
+                area = boxes_coco[i]["bbox"][2] * boxes_coco[i]["bbox"][3]
             box = CocoBoundingBox(
-                boxes_coco[i]['category_id'],
-                boxes_coco[i]['bbox'][0],
-                boxes_coco[i]['bbox'][1],
-                boxes_coco[i]['bbox'][2],
-                boxes_coco[i]['bbox'][3],
+                boxes_coco[i]["category_id"],
+                boxes_coco[i]["bbox"][0],
+                boxes_coco[i]["bbox"][1],
+                boxes_coco[i]["bbox"][2],
+                boxes_coco[i]["bbox"][3],
                 segmentation=segmentation,
                 iscrowd=iscrowd,
                 area=area,
@@ -479,9 +501,7 @@ class BoundingBoxList(Target):
 
     def mot(self, with_confidence=True):
 
-        result = np.array([
-            box.mot(with_confidence) for box in self.data
-        ])
+        result = np.array([box.mot(with_confidence) for box in self.data])
 
         return result
 
@@ -514,16 +534,9 @@ class TrackingAnnotation(Target):
     This target is used for 2D Object Tracking.
     A tracking bounding box is described by id, the left-top corner and its width and height.
     """
+
     def __init__(
-        self,
-        name,
-        left,
-        top,
-        width,
-        height,
-        id,
-        score=0,
-        frame=-1,
+        self, name, left, top, width, height, id, score=0, frame=-1,
     ):
         super().__init__()
         self.name = name
@@ -551,29 +564,42 @@ class TrackingAnnotation(Target):
     def mot(self, with_confidence=True):
 
         if with_confidence:
-            result = np.array([
-                self.frame,
-                self.id,
-                self.left,
-                self.top,
-                self.width,
-                self.height,
-                self.confidence,
-            ], dtype=np.float32)
+            result = np.array(
+                [
+                    self.frame,
+                    self.id,
+                    self.left,
+                    self.top,
+                    self.width,
+                    self.height,
+                    self.confidence,
+                ],
+                dtype=np.float32,
+            )
         else:
-            result = np.array([
-                self.frame,
-                self.id,
-                self.left,
-                self.top,
-                self.width,
-                self.height,
-            ], dtype=np.float32)
+            result = np.array(
+                [
+                    self.frame,
+                    self.id,
+                    self.left,
+                    self.top,
+                    self.width,
+                    self.height,
+                ],
+                dtype=np.float32,
+            )
 
         return result
 
     def bounding_box(self):
-        return BoundingBox(self.name, self.left, self.top, self.width, self.height, self.confidence)
+        return BoundingBox(
+            self.name,
+            self.left,
+            self.top,
+            self.width,
+            self.height,
+            self.confidence,
+        )
 
     def __repr__(self):
         return "TrackingAnnotation " + str(self)
@@ -587,6 +613,7 @@ class TrackingAnnotationList(Target):
     This target is used for 2D Object Tracking.
     A bounding box is described by the left and top corners and its width and height.
     """
+
     def __init__(
         self,
         annotations=None,
@@ -605,9 +632,7 @@ class TrackingAnnotationList(Target):
 
     def mot(self, with_confidence=True):
 
-        result = np.array([
-            box.mot(with_confidence) for box in self.data
-        ])
+        result = np.array([box.mot(with_confidence) for box in self.data])
 
         return result
 
@@ -648,16 +673,16 @@ class BoundingBox3D(Target):
     """
 
     def __init__(
-            self,
-            name,
-            truncated,
-            occluded,
-            alpha,
-            bbox2d,
-            dimensions,
-            location,
-            rotation_y,
-            score=0,
+        self,
+        name,
+        truncated,
+        occluded,
+        alpha,
+        bbox2d,
+        dimensions,
+        location,
+        rotation_y,
+        score=0,
     ):
         super().__init__()
         self.data = {
@@ -686,7 +711,9 @@ class BoundingBox3D(Target):
         result["score"] = np.array([self.confidence])
         num_ground_truths = 1
         num_objects = 1
-        index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+        index = list(range(num_objects)) + [-1] * (
+            num_ground_truths - num_objects
+        )
         result["index"] = np.array(index, dtype=np.int32)
         result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
@@ -815,7 +842,9 @@ class BoundingBox3DList(Target):
 
             num_ground_truths = len(result["name"])
             num_objects = len([x for x in result["name"] if x != "DontCare"])
-            index = list(range(num_objects)) + [-1] * (num_ground_truths - num_objects)
+            index = list(range(num_objects)) + [-1] * (
+                num_ground_truths - num_objects
+            )
             result["index"] = np.array(index, dtype=np.int32)
             result["group_ids"] = np.arange(num_ground_truths, dtype=np.int32)
 
@@ -854,6 +883,7 @@ class TrackingAnnotation3D(BoundingBox3D):
     truncation (truncated) and occlusion (occluded) levels, the name of an object (name) and
     observation angle of an object (alpha).
     """
+
     def __init__(
         self,
         name,
@@ -912,9 +942,15 @@ class TrackingAnnotation3D(BoundingBox3D):
 
     def bounding_box_3d(self):
         return BoundingBox3D(
-            self.name, self.truncated, self.occluded, self.alpha,
-            self.bbox2d, self.dimensions, self.location, self.rotation_y,
-            self.confidence
+            self.name,
+            self.truncated,
+            self.occluded,
+            self.alpha,
+            self.bbox2d,
+            self.dimensions,
+            self.location,
+            self.rotation_y,
+            self.confidence,
         )
 
     def __repr__(self):
@@ -961,9 +997,9 @@ class TrackingAnnotation3DList(Target):
                 boxes_kitti["dimensions"][i],
                 boxes_kitti["location"][i],
                 boxes_kitti["rotation_y"][i],
-                ids[count],
+                ids[i],
                 boxes_kitti["score"][i],
-                frames[count],
+                frames[i],
             )
 
             tracking_boxes_3d.append(box3d)
@@ -989,7 +1025,17 @@ class TrackingAnnotation3DList(Target):
             result["frame"] = []
 
         if len(self.data) == 0:
-            return result
+            return {
+                "name": np.array([]),
+                "truncated": np.array([]),
+                "occluded": np.array([]),
+                "alpha": np.array([]),
+                "bbox": np.array([]),
+                "dimensions": np.array([]),
+                "location": np.array([]),
+                "rotation_y": np.array([]),
+                "score": np.array([]),
+            }
         elif len(self.data) == 1:
             return self.data[0].kitti()
         else:
@@ -1060,9 +1106,9 @@ class Heatmap(Target):
     The attribute 'class_names' can be used to store a mapping from the numerical labels to string representations.
     """
 
-    def __init__(self,
-                 data: np.ndarray,
-                 class_names: Optional[Dict[Any, str]]=None):
+    def __init__(
+        self, data: np.ndarray, class_names: Optional[Dict[Any, str]]=None
+    ):
         super().__init__()
         self._class_names = None
 
@@ -1073,13 +1119,13 @@ class Heatmap(Target):
     @property
     def data(self) -> np.ndarray:
         if self._data is None:
-            raise ValueError('Data is empty.')
+            raise ValueError("Data is empty.")
         return self._data
 
     @data.setter
     def data(self, data):
         if not isinstance(data, np.ndarray):
-            raise TypeError('Data must be a numpy array.')
+            raise TypeError("Data must be a numpy array.")
         self._data = data
 
     @property
@@ -1089,10 +1135,10 @@ class Heatmap(Target):
     @class_names.setter
     def class_names(self, class_names: Dict[Any, str]):
         if not isinstance(class_names, dict):
-            raise TypeError('Class_names must be a dictionary.')
+            raise TypeError("Class_names must be a dictionary.")
         for key, value in class_names.items():
             if not isinstance(value, str):
-                raise TypeError('Values of class_names must be string.')
+                raise TypeError("Values of class_names must be string.")
         self._class_names = class_names
 
     def numpy(self):
