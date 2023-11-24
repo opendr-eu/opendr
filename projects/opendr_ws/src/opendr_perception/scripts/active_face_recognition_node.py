@@ -195,7 +195,7 @@ class FaceRecognitionNode:
                             if self.add_new_person:
                                 path = os.path.join(self.new_path, self.new_person_name)
                             else:
-                                path = os.path.join(self.new_path, 'New_ID', self.id_counter)
+                                path = os.path.join(self.new_path, 'New_ID', str(self.id_counter))
                                 self.id_counter += 1
                             if not os.path.exists(path):
                                 os.makedirs(path)
