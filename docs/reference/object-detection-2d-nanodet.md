@@ -173,7 +173,7 @@ and a metadata file *nanodet_{model_name}.json*.
 Parameters:
 
 - **export_path**: *str*\
-  Path to save the optimized model.
+  Specifies the path to save the optimized model.
 - **conf_threshold**: *float, default=0.35*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
