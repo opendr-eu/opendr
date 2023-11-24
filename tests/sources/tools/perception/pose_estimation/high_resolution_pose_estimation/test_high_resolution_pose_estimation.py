@@ -81,13 +81,39 @@ class TestLightweightOpenPoseLearner(unittest.TestCase):
         warnings.simplefilter("default", ResourceWarning)
         warnings.simplefilter("default", DeprecationWarning)
 
+    def test_eval_adaptive(self):
+        # Test eval will issue resource warnings due to some files left open in pycoco tools,
+        # as well as a deprecation warning due to a cast of a float to integer (hopefully they will be fixed in a future
+        # version)
+        warnings.simplefilter("ignore", ResourceWarning)
+        warnings.simplefilter("ignore", DeprecationWarning)
+
+        eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "dataset"), dataset_type="COCO")
+        results_dict = self.pose_estimator.eval_adaptive(eval_dataset, use_subset=False, verbose=True, silent=True,
+                                                         images_folder_name="image", annotations_filename="annotation.json")
+        self.assertNotEqual(len(results_dict['average_precision']), 0,
+                            msg="Eval results dictionary contains empty list.")
+        self.assertNotEqual(len(results_dict['average_recall']), 0,
+                            msg="Eval results dictionary contains empty list.")
+        # Cleanup
+        rmfile(os.path.join(self.temp_dir, "detections.json"))
+        warnings.simplefilter("default", ResourceWarning)
+        warnings.simplefilter("default", DeprecationWarning)
+
     def test_infer(self):
         self.pose_estimator.model = None
         self.pose_estimator.load(os.path.join(self.temp_dir, "openpose_default"))
-
-        img = Image.open(os.path.join(self.temp_dir, "dataset", "image", "000000000785_1080.jpg"))
+        img = Image.open(os.path.join(self.temp_dir, "dataset", "image", "000000052591_1080.jpg"))
         # Default pretrained mobilenet model detects 18 keypoints on img with id 785
         self.assertGreater(len(self.pose_estimator.infer(img)[0][0].data), 0,
+                           msg="Returned pose must have non-zero number of keypoints.")
+
+    def test_infer_adaptive(self):
+        self.pose_estimator.model = None
+        self.pose_estimator.load(os.path.join(self.temp_dir, "openpose_default"))
+        img = Image.open(os.path.join(self.temp_dir, "dataset", "image", "000000052591_1080.jpg"))
+        # Default pretrained mobilenet model detects 18 keypoints on img with id 785
+        self.assertGreater(len(self.pose_estimator.infer_adaptive(img)[0][0].data), 0,
                            msg="Returned pose must have non-zero number of keypoints.")
 
 
