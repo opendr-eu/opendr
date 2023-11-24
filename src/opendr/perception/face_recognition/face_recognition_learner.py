@@ -540,7 +540,7 @@ class FaceRecognitionLearner(Learner):
         This method is used to perform face recognition on an image.
 
         :param img: image to run inference on
-        :rtype img: engine.data.Image class object
+        :type img: engine.data.Image class object
         :return: Returns an engine.target.Category object, which holds an ID and the distance between
                  the embedding of the input image and the closest embedding existing in the reference database.
         :rtype: engine.target.Category object
