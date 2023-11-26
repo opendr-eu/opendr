@@ -27,11 +27,12 @@ if __name__ == '__main__':
                         action="store_true")
     parser.add_argument("--height1", help="Base height of resizing in first inference", default=360)
     parser.add_argument("--height2", help="Base height of resizing in second inference", default=540)
-
+    parser.add_argument("--method", help="Choose between primary or adaptive ROI selection methodology defaults to adaptive",
+                        default="adaptive", choices=["primary", "adaptive"])
     args = parser.parse_args()
 
-    device, accelerate, base_height1, base_height2 = args.device, args.accelerate,\
-        args.height1, args.height2
+    device, accelerate, base_height1, base_height2, method = args.device, args.accelerate, \
+        args.height1, args.height2, args.method
 
     if accelerate:
         stride = True
@@ -45,21 +46,29 @@ if __name__ == '__main__':
     pose_estimator = HighResolutionPoseEstimationLearner(device=device, num_refinement_stages=stages,
                                                          mobilenet_use_stride=stride, half_precision=half_precision,
                                                          first_pass_height=int(base_height1),
-                                                         second_pass_height=int(base_height2))
+                                                         second_pass_height=int(base_height2),
+                                                         method=method)
     pose_estimator.download(path=".", verbose=True)
     pose_estimator.load("openpose_default")
 
     # Download one sample image
     pose_estimator.download(path=".", mode="test_data")
 
-    image_path = join("temp", "dataset", "image", "000000000785_1080.jpg")
-
+    image_path = join("temp", "dataset", "image", "000000052591_1080.jpg")
     img = Image.open(image_path)
 
-    poses, _ = pose_estimator.infer(img)
-
+    if method == 'primary':
+        poses, _, bounds = pose_estimator.infer(img)
+    if method == 'adaptive':
+        poses, _, bounds = pose_estimator.infer_adaptive(img)
     img_cv = img.opencv()
     for pose in poses:
         draw(img_cv, pose)
+
+    for i in range(len(bounds)):
+        if bounds[i][0] is not None:
+            cv2.rectangle(img_cv, (int(bounds[i][0]), int(bounds[i][2])),
+                          (int(bounds[i][1]), int(bounds[i][3])), (0, 0, 255), thickness=2)
+    img_cv = cv2.resize(img_cv, (1280, 720), interpolation=cv2.INTER_CUBIC)
     cv2.imshow('Results', img_cv)
     cv2.waitKey(0)

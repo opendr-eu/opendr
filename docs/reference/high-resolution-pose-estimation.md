@@ -45,7 +45,9 @@ Constructor parameters:
   Specifies the height that the input image will be resized during the heatmap generation procedure.
 - **second_pass_height**: *int, default=540*\
   Specifies the height of the image on the second inference for pose estimation procedure.
-- **percentage_arround_crop**: *float, default=0.3*\
+- **method**: *str, default='adaptive'
+- Determines which method (*adaptive* or *primary*) is used for ROI extraction. 
+- **percentage_around_crop**: *float, default=0.3*\
   Specifies the percentage of an extra pad arround the cropped image
 - **heatmap_threshold**: *float, default=0.1*\
   Specifies the threshold value that the heatmap elements should have during the first pass in order to trigger the second pass
@@ -74,7 +76,61 @@ Constructor parameters:
 - **half_precision**: *bool, default=False*\
   Enables inference using half (fp16) precision instead of single (fp32) precision. Valid only for GPU-based inference.
 
+#### High Resolution Pose estimation using Adaptive ROI selection method
+#### `HighResolutionPoseEstimationLearner.eval_adaptive`
+```python
+HighResolutionPoseEstimationLearner.eval_adaptive(self, dataset, silent, verbose, use_subset, subset_size, upsample_ratio, images_folder_name, annotations_filename)
+```
 
+This method is used to evaluate a trained model on an evaluation dataset.
+Returns a dictionary containing statistics regarding evaluation.
+
+Parameters:
+
+- **dataset**: *object*\
+  Object that holds the evaluation dataset.
+  Can be of type `ExternalDataset` or a custom dataset inheriting from `DatasetIterator`.
+- **silent**: *bool, default=False*\
+  If set to True, disables all printing of evaluation progress reports and other information to STDOUT.
+- **verbose**: *bool, default=True*\
+  If set to True, enables the maximum verbosity.
+- **use_subset**: *bool, default=True*\
+  If set to True, a subset of the validation dataset is created and used in evaluation.
+- **subset_size**: *int, default=250*\
+  Controls the size of the validation subset.
+- **upsample_ratio**: *int, default=4*\
+  Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing,defaults to 4
+- **images_folder_name**: *str, default='val2017'*\
+  Folder name that contains the dataset images.
+  This folder should be contained in the dataset path provided.
+  Note that this is a folder name, not a path.
+- **annotations_filename**: *str, default='person_keypoints_val2017.json'*\
+  Filename of the annotations JSON file.
+  This file should be contained in the dataset path provided.
+
+#### `HighResolutionPoseEstimation.infer_adaptive`
+```python
+HighResolutionPoseEstimation.infer_adaptive(self, img, upsample_ratio, stride)
+```
+This method is used to perform pose estimation on an image.
+The predicted poses are estimated through an adaptive ROI selection method that is applied on the high-resolution images.
+The difference between the `HighResolutionPoseEstimation.infer` method is that the adaptive technique tries to separate the
+detected ROI's instead of using the minimum enclosing bounding box of them as the `infer` does. 
+Returns a list of engine.target. Pose objects, where each holds a pose 
+and a heatmap that contains human silhouettes of the input image. 
+If no detections were made it returns an empty list for poses and a black frame for heatmap.
+Parameters:
+
+- **img**: *object***\
+  Object of type engine.data.Image.
+- **upsample_ratio**: *int, default=4*\
+  Defines the amount of upsampling to be performed on the heatmaps and PAFs when resizing.
+- **stride**: *int, default=8*\
+  Defines the stride value for creating a padded image.
+
+
+
+#### High Resolution Pose estimation using Primary ROI selection method
 #### `HighResolutionPoseEstimationLearner.eval`
 ```python
 HighResolutionPoseEstimationLearner.eval(self, dataset, silent, verbose, use_subset, subset_size, images_folder_name, annotations_filename)
@@ -170,7 +226,6 @@ Parameters:
 - **img_scale**: *float, default=1/256*\
   Specifies the scale based on which the images are normalized.
 
-
 #### `HighResolutionPoseEstimation.download`
 ```python
 HighResolutionPoseEstimation.download(self, path, mode, verbose, url)
@@ -258,7 +313,7 @@ The experiments are conducted on a 1080p image.
 | OpenDR - Full     | 0.2                | 10.8            | 1.4              | 3.1             |
 
 
-#### High-Resolution Pose Estimation
+#### High-Resolution Pose Estimation (Primary ROI Selection)
 | Method                 | CPU i7-9700K (FPS) | RTX 2070 (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) |
 |------------------------|--------------------|----------------|------------------|-----------------|
 | HRPoseEstim - Baseline | 2.3                | 13.6           | 1.4              | 1.8             |
@@ -283,6 +338,28 @@ was used as input to the models.
 The average precision and average recall on the COCO evaluation split is also reported in the tables below:
 
 
+#### High-Resolution Pose Estimation (Adaptive ROI Selection)
+| Method                 | CPU i7-9700K (FPS) | RTX 2070 (FPS) | Jetson TX2 (FPS) | Xavier NX (FPS) |
+|------------------------|--------------------|----------------|------------------|-----------------|
+| HRPoseEstim - Baseline | 2.4                | 10.5           | 2.1              | 1.5             |
+| HRPoseEstim - Half     | 2.5                | 11.3           | 2.6              | 1.9             |
+| HRPoseEstim - Stride   | 11.3               | 38.1           | 6.8              | 5.2             |
+| HRPoseEstim - Stages   | 2.8                | 10             | 2.3              | 1.9             |
+| HRPoseEstim - H+S      | 11.4               | 38             | 6.5              | 4.5             |
+| HRPoseEstim - Full     | 11.6               | 48.3           | 7.7              | 6.4             |
+
+As it is shown in the previous tables, OpenDR Lightweight OpenPose achieves higher FPS when it is resizing the input image into 256 pixels.
+It is easier to process that image, but as it is shown in the next tables the method falls apart when it comes to accuracy and there are no detections.
+
+We have evaluated the effect of using different inference settings, namely:
+- *HRPoseEstim - Baseline*, which refers to directly using the High Resolution Pose Estimation method, which is based on Lightweight OpenPose,
+- *HRPoseEstim - Half*, which refers to enabling inference in half (FP) precision,
+- *HRPoseEstim - Stride*, which refers to increasing stride by two in the input layer of the model,
+- *HRPoseEstim - Stages*, which refers to removing the refinement stages,
+- *HRPoseEstim - H+S*, which uses both half precision and increased stride, and
+- *HRPoseEstim - Full*, which refers to combining all three available optimization and were used as input to the models.
+
+
 #### Lightweight OpenPose with resizing
 | Method            | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
 |-------------------|------------------------------|---------------------------|
@@ -300,7 +377,7 @@ The average precision and average recall on the COCO evaluation split is also re
 
 
 
-#### High Resolution Pose Estimation
+#### High Resolution Pose Estimation (Primary ROI Selection)
 | Method                 | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
 |------------------------|------------------------------|---------------------------|
 | HRPoseEstim - Baseline | 0.615                        | 0.637                     |
@@ -320,6 +397,21 @@ The average precision and the average recall have been calculated on a 1080p ver
 | HRPoseEstim - Stages   | 0.474                        | 0.496                     |
 | HRPoseEstim - H+S      | 0.134                        | 0.139                     |
 | HRPoseEstim - Full     | 0.141                        | 0.150                     |
+
+For measuring the precision and recall we used the standard approach proposed for COCO, using an Intersection of Union (IoU) metric at 0.5.
+
+#### High Resolution Pose Estimation (Adaptive ROI Selection)
+
+The average precision and the average recall have been calculated on a 1080p version of COCO2017 validation dataset and the results are reported in the table below:
+
+| Method | Average Precision (IoU=0.50) | Average Recall (IoU=0.50) |
+|-------------------|------------------------------|---------------------------|
+| HRPoseEstim - Baseline | 0.594                        | 0.617                     |
+| HRPoseEstim - Half     | 0.586                        | 0.606                     |
+| HRPoseEstim - Stride   | 0.251                        | 0.271                     |
+| HRPoseEstim - Stages   | 0.511                        | 0.534                     |
+| HRPoseEstim - H+S      | 0.251                        | 0.263                     |
+| HRPoseEstim - Full     | 0.229                        | 0.247                     |
 
 For measuring the precision and recall we used the standard approach proposed for COCO, using an Intersection of Union (IoU) metric at 0.5.
 
