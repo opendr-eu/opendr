@@ -177,10 +177,15 @@ Parameters:
 - **conf_threshold**: *float*\
   Specifies the threshold for object detection inference.
   An object is detected if the confidence of the output is higher than the specified threshold.
+  The value needs to be set between 0.0 and 1.0, modify to achieve best results.
 - **iou_threshold**: *float*\
   Specifies the IOU threshold for NMS in inference.
+  The value needs to be set between 0.0 and 1.0, modify to achieve best results.
 - **nms_max_num**: *int*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
+  The value needs to be set higher than 0.
+  Adjust the value based on the specific needs of your application.
+  Bigger number will make the model to run slower.
 - **hf**: *bool, default=False*\
   Determines model's floating point precision.
 - **dynamic**: *bool, default=False*\
