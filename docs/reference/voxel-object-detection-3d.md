@@ -84,7 +84,7 @@ Parameters:
     Can be used for storing and loading checkpoints.
   - **image_shape**: *(int, int), default=(1224, 370)***\
     Camera image shape for KITTI evaluation.
-  - **evaluate**: *str, default=True*\
+  - **evaluate**: *bool, default=True*\
     Should the evaluation be run during training.
 
 #### `VoxelObjectDetection3DLearner.eval`
@@ -175,7 +175,7 @@ Parameters:
 #### `VoxelObjectDetection3DLearner.download`
 ```python
 @staticmethod
-VoxelObjectDetection3DLearner.download(model_name, path, server_url)
+VoxelObjectDetection3DLearner.download(self, model_name, path, server_url)
 ```
 
 Download utility for pretrained models.

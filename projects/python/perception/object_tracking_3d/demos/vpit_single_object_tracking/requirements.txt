@@ -1,0 +1,8 @@
+flask
+numpy
+opencv-contrib-python
+imutils
+pandas
+rplidar-roboticia
+fire
+plotnine
