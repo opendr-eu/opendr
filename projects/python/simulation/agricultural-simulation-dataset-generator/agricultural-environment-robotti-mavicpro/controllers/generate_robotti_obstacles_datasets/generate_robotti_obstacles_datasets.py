@@ -13,15 +13,24 @@
 # limitations under the License.
 
 from controller import Supervisor, Camera, Lidar, GPS
+import sys
+import os
 
-useRobotti = True
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from parameters import useRobotti
+from parameters import FIELD_SIZE
+from parameters import DATASET_DIR_ROBOTTI
+from parameters import STOP_ON
+from parameters import MAX_RECORDS_PER_SCENARIO
+from parameters import OBSTACLES_PER_SCENARIO
+from parameters import WEBOTS_VERSION
 
 if (useRobotti):
 
     import math
     import random
     import pathlib
-    import os
     import json
     from datetime import date
 
@@ -31,12 +40,6 @@ if (useRobotti):
     epoch = time.asctime(obj)
     # print("The epoch is:",epoch)
 
-    FIELD_SIZE = [40, 14]
-    DATASET_NAME = 'dataset_location/UGV'
-
-    MAX_RECORDS_PER_SCENARIO = 19300
-    OBSTACLES_PER_SCENARIO = 12
-    STOP_ON = 193
 
     # set lighting conditions
     backgrounds = [
@@ -50,10 +53,10 @@ if (useRobotti):
 
     def save_datasets_info(count, categories):
         print(count)
-        with open(os.path.join(DATASET_NAME, "data.json"), 'w') as f:
+        with open(os.path.join(DATASET_DIR_ROBOTTI, "data.json"), 'w') as f:
             data = {
                 'version': '1.0',
-                'source': 'Webots R2023a',
+                'source': WEBOTS_VERSION,
                 'updated': str(date.today()),
                 'categories': categories,
                 'size': index - 1
@@ -64,11 +67,11 @@ if (useRobotti):
         index = index.zfill(6)
         # RGB Camera images
         for device in cameras:
-            dir_name = os.path.join(DATASET_NAME, device.getName())
+            dir_name = os.path.join(DATASET_DIR_ROBOTTI, device.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             device.saveImage(os.path.join(dir_name, index + ".jpg"), 100)
 
-            dir_name = os.path.join(DATASET_NAME, 'annotations', device.getName())
+            dir_name = os.path.join(DATASET_DIR_ROBOTTI, 'annotations', device.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             device.saveRecognitionSegmentationImage(os.path.join(dir_name, index + "_segmented.jpg"), 100)
 
@@ -80,7 +83,7 @@ if (useRobotti):
                     f.write('"{}" {} {} {} {}\n'.format(object.getModel(), position[0], position[1], size[0], size[1]))
 
         # Lidar Point Cloud
-        dir_name = os.path.join(DATASET_NAME, lidar.getName())
+        dir_name = os.path.join(DATASET_DIR_ROBOTTI, lidar.getName())
         pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(dir_name, index + ".pcd"), 'w') as f:
             f.write('VERSION .7\n')
@@ -97,14 +100,14 @@ if (useRobotti):
                 f.write(f'{point.x} {point.y} {point.z}\n')
 
         # GPS
-        dir_name = os.path.join(DATASET_NAME, gps.getName())
+        dir_name = os.path.join(DATASET_DIR_ROBOTTI, gps.getName())
         pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
             value = gps.getValues()
             f.write(f'{value[0]} {value[1]} {value[2]}')
 
         # Objects position
-        dir_name = os.path.join(DATASET_NAME, 'annotations', 'scene')
+        dir_name = os.path.join(DATASET_DIR_ROBOTTI, 'annotations', 'scene')
         pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
             for object in objects:
@@ -126,11 +129,11 @@ if (useRobotti):
 
             # RGB Camera images
             for device in cameras:
-                dir_name = os.path.join(DATASET_NAME, device.getName())
+                dir_name = os.path.join(DATASET_DIR_ROBOTTI, device.getName())
                 pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
                 device.saveImage(os.path.join(dir_name, index + ".jpg"), 100)
 
-                dir_name = os.path.join(DATASET_NAME, 'annotations', device.getName())
+                dir_name = os.path.join(DATASET_DIR_ROBOTTI, 'annotations', device.getName())
                 pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
                 device.saveRecognitionSegmentationImage(os.path.join(dir_name, index + "_segmented.jpg"), 100)
 
@@ -145,7 +148,7 @@ if (useRobotti):
         if (number % 5 == 0):
 
             # Lidar Point Cloud
-            dir_name = os.path.join(DATASET_NAME, lidar.getName())
+            dir_name = os.path.join(DATASET_DIR_ROBOTTI, lidar.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".pcd"), 'w') as f:
                 f.write('VERSION .7\n')
@@ -163,14 +166,14 @@ if (useRobotti):
 
         if (number % 20 == 0):
             # GPS
-            dir_name = os.path.join(DATASET_NAME, gps.getName())
+            dir_name = os.path.join(DATASET_DIR_ROBOTTI, gps.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
                 value = gps.getValues()
                 f.write(f'{value[0]} {value[1]} {value[2]}')
 
         # IMU
-        dir_name = os.path.join(DATASET_NAME, IMUx.getName())
+        dir_name = os.path.join(DATASET_DIR_ROBOTTI, IMUx.getName())
         pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
             value = IMUx.getRollPitchYaw()
@@ -179,7 +182,7 @@ if (useRobotti):
         if (number % 3 == 0):
 
             # Objects position
-            dir_name = os.path.join(DATASET_NAME, 'annotations', 'scene')
+            dir_name = os.path.join(DATASET_DIR_ROBOTTI, 'annotations', 'scene')
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
                 for object in objects:

@@ -17,6 +17,12 @@ import pathlib
 import os
 import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from parameters import useMavic
+from parameters import DATASET_DIR_UAV
+from parameters import STOP_ON
+
 try:
     import numpy as np
 except ImportError:
@@ -25,13 +31,6 @@ except ImportError:
 
 def clamp(value, value_min, value_max):
     return min(max(value, value_min), value_max)
-
-
-DATASET_NAME = 'dataset_location/UAV'
-STOP_ON = 193
-
-useMavic = True
-
 
 class Mavic(Robot):
     # Constants, empirically found.
@@ -169,11 +168,11 @@ class Mavic(Robot):
         if (number % 3 == 0):
 
             # RGB Camera images
-            dir_name = os.path.join(DATASET_NAME, self.camera.getName())
+            dir_name = os.path.join(DATASET_DIR_UAV, self.camera.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             self.camera.saveImage(os.path.join(dir_name, index + ".jpg"), 100)
 
-            dir_name = os.path.join(DATASET_NAME, 'annotations', self.camera.getName())
+            dir_name = os.path.join(DATASET_DIR_UAV, 'annotations', self.camera.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             self.camera.saveRecognitionSegmentationImage(os.path.join(dir_name, index + "_segmented.jpg"), 100)
 
@@ -188,14 +187,14 @@ class Mavic(Robot):
 
         if (number % 20 == 0):
             # GPS
-            dir_name = os.path.join(DATASET_NAME, self.gps.getName())
+            dir_name = os.path.join(DATASET_DIR_UAV, self.gps.getName())
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
                 value = self.gps.getValues()
                 f.write(f'{value[0]} {value[1]} {value[2]}')
 
         # IMU
-        dir_name = os.path.join(DATASET_NAME, self.imu.getName())
+        dir_name = os.path.join(DATASET_DIR_UAV, self.imu.getName())
         pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
         with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
             value = self.imu.getRollPitchYaw()
@@ -204,7 +203,7 @@ class Mavic(Robot):
         if (number % 3 == 0):
 
             # Objects position
-            dir_name = os.path.join(DATASET_NAME, 'annotations', 'scene')
+            dir_name = os.path.join(DATASET_DIR_UAV, 'annotations', 'scene')
             pathlib.Path(dir_name).mkdir(parents=True, exist_ok=True)
             with open(os.path.join(dir_name, index + ".txt"), 'w') as f:
                 for object in objects:

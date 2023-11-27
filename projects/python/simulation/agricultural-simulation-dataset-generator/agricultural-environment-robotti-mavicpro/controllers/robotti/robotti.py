@@ -13,8 +13,12 @@
 # limitations under the License.
 
 from controller import Robot, Camera, Lidar
+import os
+import sys
 
-MAX_SPEED = 6.28
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from parameters import ROBOTTI_MAX_SPEED
 
 # create the instances.
 
@@ -58,10 +62,10 @@ leftMotorFront.setPosition(float('inf'))
 leftMotorRear.setPosition(float('inf'))
 rightMotorFront.setPosition(float('inf'))
 rightMotorRear.setPosition(float('inf'))
-leftMotorFront.setVelocity(0.1 * MAX_SPEED)
-leftMotorRear.setVelocity(0.1 * MAX_SPEED)
-rightMotorFront.setVelocity(0.1 * MAX_SPEED)
-rightMotorRear.setVelocity(0.1 * MAX_SPEED)
+leftMotorFront.setVelocity(0.1 * ROBOTTI_MAX_SPEED)
+leftMotorRear.setVelocity(0.1 * ROBOTTI_MAX_SPEED)
+rightMotorFront.setVelocity(0.1 * ROBOTTI_MAX_SPEED)
+rightMotorRear.setVelocity(0.1 * ROBOTTI_MAX_SPEED)
 
 while robot.step(timestep) != -1:
     pass
