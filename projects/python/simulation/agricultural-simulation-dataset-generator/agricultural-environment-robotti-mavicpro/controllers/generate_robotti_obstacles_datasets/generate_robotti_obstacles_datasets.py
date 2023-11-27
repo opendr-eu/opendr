@@ -40,8 +40,6 @@ if (useRobotti):
 
     obj = time.gmtime(0)
     epoch = time.asctime(obj)
-    # print("The epoch is:",epoch)
-
 
     # set lighting conditions
     backgrounds = [
