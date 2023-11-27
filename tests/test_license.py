@@ -108,6 +108,8 @@ class TestLicense(unittest.TestCase):
             'src/opendr/perception/object_detection_2d/detr/algorithm',
             'src/opendr/perception/object_detection_2d/nanodet/algorithm',
             'src/opendr/perception/panoptic_segmentation/efficient_ps/algorithm/EfficientPS',
+            'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition',
+            'src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/second_detector',
             'src/opendr/perception/panoptic_segmentation/efficient_lps/algorithm/EfficientLPS',
             'src/opendr/perception/continual_slam/algorithm',
             'src/opendr/perception/facial_expression_recognition/landmark_based_facial_expression_recognition/algorithm',
