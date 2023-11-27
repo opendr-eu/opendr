@@ -16,15 +16,17 @@ from controller import Supervisor, Camera, Lidar, GPS
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from parameters import useRobotti
-from parameters import FIELD_SIZE
-from parameters import DATASET_DIR_ROBOTTI
-from parameters import STOP_ON
-from parameters import MAX_RECORDS_PER_SCENARIO
-from parameters import OBSTACLES_PER_SCENARIO
-from parameters import WEBOTS_VERSION
+try:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    from parameters import useRobotti
+    from parameters import FIELD_SIZE
+    from parameters import DATASET_DIR_ROBOTTI
+    from parameters import STOP_ON
+    from parameters import MAX_RECORDS_PER_SCENARIO
+    from parameters import OBSTACLES_PER_SCENARIO
+    from parameters import WEBOTS_VERSION
+except ImportError:
+    sys.exit("Warning: parameters cannot be imported.")
 
 if (useRobotti):
 

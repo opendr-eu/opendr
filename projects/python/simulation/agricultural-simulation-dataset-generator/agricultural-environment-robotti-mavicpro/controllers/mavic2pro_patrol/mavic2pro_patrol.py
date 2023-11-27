@@ -17,11 +17,13 @@ import pathlib
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from parameters import useMavic
-from parameters import DATASET_DIR_UAV
-from parameters import STOP_ON
+try:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    from parameters import useMavic
+    from parameters import DATASET_DIR_UAV
+    from parameters import STOP_ON
+except ImportError:
+    sys.exit("Warning: parameters cannot be imported.")
 
 try:
     import numpy as np
