@@ -34,6 +34,7 @@ except ImportError:
 def clamp(value, value_min, value_max):
     return min(max(value, value_min), value_max)
 
+
 class Mavic(Robot):
     # Constants, empirically found.
     K_VERTICAL_THRUST = 68.5  # 68.5  # with this thrust, the drone lifts.
