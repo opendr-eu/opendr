@@ -189,7 +189,7 @@ Parameters:
 - **hf**: *bool, default=False*\
   Determines model's floating point precision.
 - **dynamic**: *bool, default=False*\
-  Determines if the model runs with dynamic input.
+  Determines if the optimized model runs with dynamic input. Dynamic input leads to slower inference times.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity.
 
