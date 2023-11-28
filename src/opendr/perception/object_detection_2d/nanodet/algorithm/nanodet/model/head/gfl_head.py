@@ -714,7 +714,7 @@ class GFLHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
-        # enable embeded devices - TX2 to use JIT
+        # enable embedded devices - TX2 to use JIT
         if torch.jit.is_scripting() or not torch.__version__[:4] == "1.13":
             y, x = torch.meshgrid(y_range, x_range)
         else:

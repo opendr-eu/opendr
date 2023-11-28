@@ -29,7 +29,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
 
 
 TQDM_BAR_FORMAT = '{l_bar}{bar:10}{r_bar}'  # tqdm bar format
-NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLOv5 multiprocessing threads
+NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of multiprocessing threads
 
 
 class BaseDataset(Dataset, metaclass=ABCMeta):

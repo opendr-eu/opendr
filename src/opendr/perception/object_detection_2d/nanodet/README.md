@@ -8,7 +8,7 @@ Sources
 Large parts of the implementation are taken from [Nanodet Github](https://github.com/RangiLyu/nanodet) with modifications to make it compatible with OpenDR specifications.
 
 Some enhancements were implemented, drawing inspiration from the [YOLOv5 GitHub](https://github.com/ultralytics/yolov5).
-The primary scripts involved are `autobach.py` and `torch_utils.py`, along with the dataset caching capabilities during training.
+The primary scripts involved are `autobatch.py` and `torch_utils.py`, along with the dataset caching capabilities during training.
 
 Usage
 ------
