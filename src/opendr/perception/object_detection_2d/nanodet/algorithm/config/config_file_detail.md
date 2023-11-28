@@ -21,7 +21,7 @@ model:
         head: xxx
 ```
 
-Most detection model architecture can be devided into 3 parts: backbone, task head and connector between them (e.g., FPN, PAN).
+Most detection model architecture can be divided into 3 parts: backbone, task head and connector between them (e.g., FPN, PAN).
 
 ### Backbone
 
@@ -64,7 +64,6 @@ head:
     stacked_convs: 2
     share_cls_reg: True
     octave_base_scale: 8
-    scales_per_octave: 1
     strides: [8, 16, 32]
     reg_max: 7
     norm_cfg:
@@ -82,12 +81,6 @@ head:
 
 `stacked_convs`: how many conv blocks use in one task head
 
-`share_cls_reg`: use same conv blocks for classification and box regression
-
-`octave_base_scale`: base box scale
-
-`scales_per_octave`: anchor free model only have one base box, default value 1
-
 `strides`: down sample stride of each feature map level
 
 `reg_max`: max value of per-level l-r-t-b distance
@@ -95,6 +88,22 @@ head:
 `norm_cfg`: normalization layer setting
 
 `loss`: adjust loss functions and weights
+
+`assigner_cfg`: config dictionary of the assigner.
+
+`share_cls_reg`: use same conv blocks for classification and box regression. Used in GFLHead and NanoDetHead.
+
+`octave_base_scale`: base box scale. Used in GFLHead and NanoDetHead.
+
+`use_depthwise`: whether to use PointWise-DepthWise or Base convolutions modules. Used in NanoDetHead and NanoDetPlusHead
+
+`kernel_size`: size of the convolving kernel. Used in NanoDetPlusHead
+
+`activation`: type of activation function. Used in NanoDetHead and NanoDetPlusHead
+
+`legacy_post_process`: whether to use legacy post-processing or not.
+If set to False, a faster implementation of post-processing will be used with respect to dynamic input.
+Most applications will run the same with either post-processing implementations. Used in NanoDetPlusHead.
 
 ## Weight averaging
 
@@ -129,7 +138,7 @@ In `data` you need to set your train and validate dataset.
 
 `keep_ratio`: whether to maintain the original image ratio when resizing to input size.
 
-`cache_images`: whether to cache images or not during training. "disk" option will cashe images as numpy files in disk, "ram" option will cashe dataset into ram.
+`cache_images`: whether to cache images or not during training. "disk" option will cache images as numpy files in disk, "ram" option will cache dataset into ram.
 
 `multi_scale`: scaling range for multi-scale training. Set to None to turn off.
 
@@ -149,7 +158,7 @@ device:
 
 `workers_per_gpu`: how many dataloader processes for each gpu
 
-`batchsize_per_gpu`: amount of images in one batch for each gpu, if -1 autobach will determine the batchsize to be used.
+`batchsize_per_gpu`: amount of images in one batch for each gpu, if -1 autobatch will determine the batchsize to be used.
 
 `effective_batchsize`: determines the effective batch size by accumulating losses, 1 will use only batchsize_per_gpu.
 ## schedule

@@ -92,6 +92,7 @@ class GFLHead(nn.Module):
     :param norm_cfg: Dictionary to construct and config norm layer.
     :param reg_max: Max value of integral set :math: `{0, ..., reg_max}`
                     in QFL setting. Default: 16.
+    :param assigner_cfg: Config dict of the assigner. Default: dict(topk=9, ignore_iof_thr=-1).
     :param kwargs:
     """
 
@@ -106,7 +107,7 @@ class GFLHead(nn.Module):
         strides=[8, 16, 32],
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
-        ignore_iof_thr=-1,
+        assigner_cfg=dict(topk=9, ignore_iof_thr=-1),
         **kwargs
     ):
         super(GFLHead, self).__init__()
@@ -126,7 +127,7 @@ class GFLHead(nn.Module):
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9, ignore_iof_thr=ignore_iof_thr)
+        self.assigner = ATSSAssigner(**assigner_cfg)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
@@ -714,7 +715,7 @@ class GFLHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
-        # enable embeded devices - TX2 to use JIT
+        # enable embedded devices - TX2 to use JIT
         if torch.jit.is_scripting() or not torch.__version__[:4] == "1.13":
             y, x = torch.meshgrid(y_range, x_range)
         else:

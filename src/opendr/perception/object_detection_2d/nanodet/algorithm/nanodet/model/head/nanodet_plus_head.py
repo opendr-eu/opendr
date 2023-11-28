@@ -36,13 +36,16 @@ class NanoDetPlusHead(nn.Module):
         kernel_size (int): Size of the convolving kernel. Default: 5.
         strides (list[int]): Strides of input multi-level feature maps.
             Default: [8, 16, 32].
-        conv_type (str): Type of the convolution.
-            Default: "DWConv".
+        use_depthwise (bool): Whether to use PointWise-DepthWise or Base convolutions modules.
+            Default: True.
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN').
         reg_max (int): The maximal value of the discrete set. Default: 7.
         activation (str): Type of activation function. Default: "LeakyReLU".
         assigner_cfg (dict): Config dict of the assigner. Default: dict(topk=13).
+        legacy_post_process (bool): Whether to use legacy post-processing or not. If set to False, a faster
+            implementation of post-processing will be used with respect to dynamic input.
+            Most applications will run the same with either post-processing implementations. Default: True.
     """
 
     def __init__(
@@ -54,7 +57,7 @@ class NanoDetPlusHead(nn.Module):
         stacked_convs=2,
         kernel_size=5,
         strides=[8, 16, 32],
-        conv_type="DWConv",
+        use_depthwise=True,
         norm_cfg=dict(type="BN"),
         reg_max=7,
         activation="LeakyReLU",
@@ -71,7 +74,7 @@ class NanoDetPlusHead(nn.Module):
         self.strides = strides
         self.reg_max = reg_max
         self.activation = activation
-        self.ConvModule = ConvModule if conv_type == "Conv" else DepthwiseConvModule
+        self.ConvModule = DepthwiseConvModule if use_depthwise else ConvModule
 
         self.loss_cfg = loss
         self.norm_cfg = norm_cfg

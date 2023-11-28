@@ -32,8 +32,8 @@ try:
     import tensorrt as trt
     from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.inferencer import trt_dep
 except ImportError:
-    TENSORRT_WARNING = ("TensorRT can be implemented only in gpu installation of opendr toolkit, please install"
-                        "the toolkit with gpu capabilities first or install pycuda and TensorRT.")
+    TENSORRT_WARNING = ("TensorRT can be implemented only in GPU installation of OpenDR toolkit, please install"
+                        "the toolkit with GPU capabilities first or install pycuda and TensorRT.")
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.check_point import save_model_state
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch import build_model
@@ -246,7 +246,7 @@ class NanodetLearner(Learner):
                 self._info("Loaded ONNX model.", True)
             elif metadata['format'] == "TensorRT":
                 self._load_trt(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
-                self._info("Loaded ONNX model.", True)
+                self._info("Loaded TensorRT model.", True)
             else:
                 self._load_jit(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
                 self._info("Loaded JIT model.", True)
@@ -302,7 +302,7 @@ class NanodetLearner(Learner):
 
             urlretrieve(file_url, checkpoint_file)
 
-            self._info("Downloading pretrain weights if provided...", verbose)
+            self._info("Downloading pretrained weights if provided...", verbose)
             file_url = os.path.join(url, "pretrained", "nanodet_{}".format(model),
                                     "nanodet_{}.pth".format(model))
             try:
@@ -323,8 +323,8 @@ class NanodetLearner(Learner):
                     json.dump(metadata, f, ensure_ascii=False, indent=4)
 
             except:
-                self._info("Pretrain weights for this model are not provided!!! \n"
-                           "Only the hole checkpoint will be download", True)
+                self._info("Pretrained weights for this model are not provided. \n"
+                           "Only the whole checkpoint will be downloaded", True)
 
                 self._info("Making metadata...", verbose)
                 metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
@@ -476,9 +476,9 @@ class NanodetLearner(Learner):
         inputs = [network.get_input(i) for i in range(network.num_inputs)]
         outputs = [network.get_output(i) for i in range(network.num_outputs)]
         for inp in inputs:
-            self._info(f'TensorRT: input "{inp.name}" with shape{inp.shape} {inp.dtype}', verbose)
+            self._info(f'TensorRT: input "{inp.name}" with shape {inp.shape} {inp.dtype}', verbose)
         for out in outputs:
-            self._info(f'TensorRT: output "{out.name}" with shape{out.shape} {out.dtype}', verbose)
+            self._info(f'TensorRT: output "{out.name}" with shape {out.shape} {out.dtype}', verbose)
 
         im = self.__dummy_input(hf=predictor.hf)[0]
         if predictor.dynamic:
@@ -581,14 +581,13 @@ class NanodetLearner(Learner):
         :type iou_threshold: float, optional
         :param nms_max_num: determines the maximum number of bounding boxes that will be retained following the nms.
         :type nms_max_num: int, optional
-        :param hf: determines model's floating point precision.
+        :param hf: determines if half precision is used.
         :type hf: bool, optional
-        :param dynamic: determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
-         legacy_post_process=False.
+        :param dynamic: determines if the model runs with dynamic input. Dynamic input leads to slower inference times.
         :type dynamic: bool, optional
-        :param ch_l: determines if inference will run in channel last format.
+        :param ch_l: determines if inference will run in channel-last format.
         :type ch_l: bool, optional
-        :param lazy_load: enables loading optimized model from predetermine path without export it each time.
+        :param lazy_load: enables loading optimized model from predetermined path without exporting it each time.
         :type lazy_load: bool, optional
         """
 
@@ -673,7 +672,7 @@ class NanodetLearner(Learner):
         if nbs > 1:
             accumulate = max(math.ceil(nbs / self.batch_size), 1)
             self.batch_size = round(nbs / accumulate)
-            self._info(f"After calculate accumulation\n"
+            self._info(f"After calculating accumulation\n"
                        f"Batch size will be: {self.batch_size}\n"
                        f"With accumulation: {accumulate}.", verbose)
 
@@ -712,8 +711,8 @@ class NanodetLearner(Learner):
             gpu_ids, precision = (None, self.cfg.device.precision)
         else:
             gpu_ids, precision = (self.cfg.device.gpu_ids, self.cfg.device.precision)
-            assert len(gpu_ids) == 1, ("we do not have implementation for distribution learning please use only"
-                                       " one gpu device")
+            assert len(gpu_ids) == 1, ("Distributed learning is not implemented, please use only"
+                                       " one gpu device.")
 
         trainer = pl.Trainer(
             default_root_dir=self.temp_path,
@@ -789,8 +788,8 @@ class NanodetLearner(Learner):
             gpu_ids, precision = (None, self.cfg.device.precision)
         else:
             gpu_ids, precision = (self.cfg.device.gpu_ids, self.cfg.device.precision)
-            assert len(gpu_ids) == 1, ("we do not have implementation for distribution learning please use only"
-                                       " one gpu device")
+            assert len(gpu_ids) == 1, ("Distributed learning is not implemented, please use only"
+                                       " one gpu device.")
 
         trainer = pl.Trainer(
             default_root_dir=save_dir,
@@ -817,13 +816,13 @@ class NanodetLearner(Learner):
         :type iou_threshold: float, optional
         :param nms_max_num: determines the maximum number of bounding boxes that will be retained following the nms.
         :type nms_max_num: int, optional
-        :param hf: determines if model precision.
+        :param hf: determines if half precision is used.
         :type hf: bool, optional
-        :param dynamic: determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
-         legacy_post_process=False.
+        :param dynamic: determines if the model runs with dynamic input. If it is set to False, Nanodet Plus head with
+         legacy_post_process=False runs faster. Otherwise, the inference is not affected.
         :type dynamic: bool, optional
-        :param ch_l: determines if inference will run in channel last format.
-        :type ch_l: bool, optional, optional
+        :param ch_l: determines if inference will run in channel-last format.
+        :type ch_l: bool, optional
         :return: list of bounding boxes of last image of input or last frame of the video
         :rtype: opendr.engine.target.BoundingBoxList
         """
@@ -843,7 +842,8 @@ class NanodetLearner(Learner):
         if self.trt_model:
             if self.jit_model or self.ort_session:
                 warnings.warn(
-                    "Warning: More than one optimizations are initialized, inference will run in TensorRT mode by default.\n"
+                    "Warning: More than one optimization types are initialized, "
+                    "inference will run in TensorRT mode by default.\n"
                     "To run in a specific optimization please delete the self.ort_session, self.jit_model or "
                     "self.trt_model like: detector.ort_session = None.")
             preds = self.trt_model(_input)
@@ -851,7 +851,7 @@ class NanodetLearner(Learner):
             if self.ort_session:
                 warnings.warn(
                     "Warning: Both JIT and ONNX models are initialized, inference will run in JIT mode by default.\n"
-                    "To run in JIT please delete the self.jit_model like: detector.ort_session = None.")
+                    "To run in JIT please delete the self.ort_session like: detector.ort_session = None.")
             self.jit_model = self.jit_model.half() if hf else self.jit_model.float()
 
             preds = self.jit_model(_input, *metadata)

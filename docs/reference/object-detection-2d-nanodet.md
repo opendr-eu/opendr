@@ -117,11 +117,12 @@ Parameters:
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 - **hf**: *bool, default=False*\
-  Determines if model precision.
+  Determines if half precision is used.
 - **dynamic**: *bool, default=False*\
-  Determines if the model runs with dynamic input, it can be used in Nanodet Plus head with legacy_post_process=False.
+  Determines if the model runs with dynamic input. If it is set to False, Nanodet Plus head with legacy_post_process=False runs faster.
+  Otherwise, the inference is not affected.
 - **ch_l**: *bool, default=False*\
-  Determines if inference will run in channel last format.
+  Determines if inference will run in channel-last format.
 
 #### `NanodetLearner.optimize`
 ```python
@@ -129,10 +130,10 @@ NanodetLearner.optimize(self, export_path, verbose, optimization, conf_threshold
                         hf, dynamic, ch_l, lazy_load)
 ```
 
-This method is used to perform JIT ,ONNX or TensorRT optimizations and save a trained model with its metadata.
+This method is used to perform JIT, ONNX or TensorRT optimizations and save a trained model with its metadata.
 If a model is not present in the location specified by *export_path*, the optimizer will save it there.
 If a model is already present and *lazy_load=True*, it will load it instead.
-Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models, *nanodet_{model_name}.onnx* for ONNX or *nanodet_{model_name}.onnx* for TensorRT
+Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models, *nanodet_{model_name}.onnx* for ONNX or *nanodet_{model_name}.trt* for TensorRT
 and a metadata file *nanodet_{model_name}.json*.
 
 Parameters:
@@ -151,14 +152,13 @@ Parameters:
 - **nms_max_num**: *int, default=100*\
   Determines the maximum number of bounding boxes that will be retained following the nms.
 - **hf**: *bool, default=False*\
-  Determines model's floating point precision.
+  Determines if half precision is used.
 - **dynamic**: *bool, default=False*\
-  Determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
-  legacy_post_process=False.
+  Determines if the optimized model runs with dynamic input. Dynamic input leads to slower inference times.
 - **ch_l**: *bool, default=False*\
-  Determines if inference will run in channel last format. 
+  Determines if inference will run in channel-last format. 
 - **lazy_load**: *bool, default=True*\
-  Enables loading optimized model from predetermine path without export it each time.
+  Enables loading optimized model from predetermined path without exporting it each time.
 
 #### `NanodetLearner.optimize_c_model`
 ```python
@@ -357,7 +357,7 @@ Furthermore, demos on performing [training](../../projects/python/perception/obj
 * **Optimization framework with Inference and result drawing example on a test image**
 
   This example shows how to perform optimization on a pretrained model, then run inference on an image and finally draw the resulting bounding boxes, using a nanodet model that is pretrained on the COCO dataset.
-  In this example we use ONNX optimization, but JIT or TensorRT can also be used by changing *optimization* option.
+  In this example we use ONNX optimization, but JIT or TensorRT can also be used by changing the *optimization* option.
   The optimized model will be saved in the `./onnx` folder
   ```python
   from opendr.engine.data import Image
