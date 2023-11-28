@@ -133,7 +133,7 @@ NanodetLearner.optimize(self, export_path, verbose, optimization, conf_threshold
 This method is used to perform JIT, ONNX or TensorRT optimizations and save a trained model with its metadata.
 If a model is not present in the location specified by *export_path*, the optimizer will save it there.
 If a model is already present and *lazy_load=True*, it will load it instead.
-Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models, *nanodet_{model_name}.onnx* for ONNX or *nanodet_{model_name}.onnx* for TensorRT
+Inside this folder, the model is saved as *nanodet_{model_name}.pth* for JIT models, *nanodet_{model_name}.onnx* for ONNX or *nanodet_{model_name}.trt* for TensorRT
 and a metadata file *nanodet_{model_name}.json*.
 
 Parameters:

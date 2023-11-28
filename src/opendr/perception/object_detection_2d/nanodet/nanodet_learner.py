@@ -246,7 +246,7 @@ class NanodetLearner(Learner):
                 self._info("Loaded ONNX model.", True)
             elif metadata['format'] == "TensorRT":
                 self._load_trt(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
-                self._info("Loaded ONNX model.", True)
+                self._info("Loaded TensorRT model.", True)
             else:
                 self._load_jit(os.path.join(path, metadata["model_paths"][0]), verbose=verbose)
                 self._info("Loaded JIT model.", True)
@@ -820,7 +820,8 @@ class NanodetLearner(Learner):
         if self.trt_model:
             if self.jit_model or self.ort_session:
                 warnings.warn(
-                    "Warning: More than one optimization types are initialized, inference will run in TensorRT mode by default.\n"
+                    "Warning: More than one optimization types are initialized, "
+                    "inference will run in TensorRT mode by default.\n"
                     "To run in a specific optimization please delete the self.ort_session, self.jit_model or "
                     "self.trt_model like: detector.ort_session = None.")
             preds = self.trt_model(_input)
