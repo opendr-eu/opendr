@@ -561,8 +561,7 @@ class NanodetLearner(Learner):
         :type nms_max_num: int, optional
         :param hf: determines if half precision is used.
         :type hf: bool, optional
-        :param dynamic: determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
-         legacy_post_process=False.
+        :param dynamic: determines if the model runs with dynamic input. Dynamic input leads to slower inference times.
         :type dynamic: bool, optional
         :param ch_l: determines if inference will run in channel-last format.
         :type ch_l: bool, optional
@@ -797,8 +796,8 @@ class NanodetLearner(Learner):
         :type nms_max_num: int, optional
         :param hf: determines if half precision is used.
         :type hf: bool, optional
-        :param dynamic: determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
-         legacy_post_process=False.
+        :param dynamic: determines if the model runs with dynamic input. If it is set to False, Nanodet Plus head with
+         legacy_post_process=False runs faster. Otherwise, the inference is not affected.
         :type dynamic: bool, optional
         :param ch_l: determines if inference will run in channel-last format.
         :type ch_l: bool, optional

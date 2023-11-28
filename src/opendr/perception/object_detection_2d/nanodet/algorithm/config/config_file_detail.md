@@ -64,7 +64,6 @@ head:
     stacked_convs: 2
     share_cls_reg: True
     octave_base_scale: 8
-    scales_per_octave: 1
     strides: [8, 16, 32]
     reg_max: 7
     norm_cfg:
@@ -82,12 +81,6 @@ head:
 
 `stacked_convs`: how many conv blocks use in one task head
 
-`share_cls_reg`: use same conv blocks for classification and box regression
-
-`octave_base_scale`: base box scale
-
-`scales_per_octave`: anchor free model only have one base box, default value 1
-
 `strides`: down sample stride of each feature map level
 
 `reg_max`: max value of per-level l-r-t-b distance
@@ -95,6 +88,22 @@ head:
 `norm_cfg`: normalization layer setting
 
 `loss`: adjust loss functions and weights
+
+`assigner_cfg`: config dictionary of the assigner.
+
+`share_cls_reg`: use same conv blocks for classification and box regression. Used in GFLHead and NanoDetHead.
+
+`octave_base_scale`: base box scale. Used in GFLHead and NanoDetHead.
+
+`use_depthwise`: whether to use PointWise-DepthWise or Base convolutions modules. Used in NanoDetHead and NanoDetPlusHead
+
+`kernel_size`: size of the convolving kernel. Used in NanoDetPlusHead
+
+`activation`: type of activation function. Used in NanoDetHead and NanoDetPlusHead
+
+`legacy_post_process`: whether to use legacy post-processing or not.
+If set to False, a faster implementation of post-processing will be used with respect to dynamic input.
+Most applications will run the same with either post-processing implementations. Used in NanoDetPlusHead.
 
 ## Weight averaging
 

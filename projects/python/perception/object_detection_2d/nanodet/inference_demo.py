@@ -22,11 +22,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--device", help="Device to use (cpu, cuda)", type=str, default="cuda", choices=["cuda", "cpu"])
     parser.add_argument("--model", help="Model for which a config file will be used", type=str, default="m")
-    parser.add_argument("--dynamic", help="Determines if model run with dynamic shape input or not",
-                        action="store_true")
+    parser.add_argument("--dynamic", help="Determines if the model run with dynamic input. If dynamic input"
+                                          " is not enabled Nanodet Plus head with legacy_post_process=False or the"
+                                          " optimized models have faster inference times.", action="store_true")
     parser.add_argument("--path", help="Path to the image that is used for inference", type=str,
                         default="./predefined_examples/000000000036.jpg")
-    parser.add_argument("--optimize", help="If specified will determine the optimization to be used (onnx, jit)",
+    parser.add_argument("--optimize", help="If specified will determine the optimization to be used (onnx, jit, trt)",
                         type=str, default="", choices=["", "onnx", "jit", "trt"])
     args = parser.parse_args()
 

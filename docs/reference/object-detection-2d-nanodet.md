@@ -119,7 +119,8 @@ Parameters:
 - **hf**: *bool, default=False*\
   Determines if half precision is used.
 - **dynamic**: *bool, default=False*\
-  Determines if the model runs with dynamic input, it can be used in Nanodet Plus head with legacy_post_process=False.
+  Determines if the model runs with dynamic input. If it is set to False, Nanodet Plus head with legacy_post_process=False runs faster.
+  Otherwise, the inference is not affected.
 - **ch_l**: *bool, default=False*\
   Determines if inference will run in channel-last format.
 
@@ -153,8 +154,7 @@ Parameters:
 - **hf**: *bool, default=False*\
   Determines if half precision is used.
 - **dynamic**: *bool, default=False*\
-  Determines if the model runs with dynamic input, it can be used in Nanodet Plus head with
-  legacy_post_process=False.
+  Determines if the optimized model runs with dynamic input. Dynamic input leads to slower inference times.
 - **ch_l**: *bool, default=False*\
   Determines if inference will run in channel-last format. 
 - **lazy_load**: *bool, default=True*\

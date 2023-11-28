@@ -92,6 +92,7 @@ class GFLHead(nn.Module):
     :param norm_cfg: Dictionary to construct and config norm layer.
     :param reg_max: Max value of integral set :math: `{0, ..., reg_max}`
                     in QFL setting. Default: 16.
+    :param assigner_cfg: Config dict of the assigner. Default: dict(topk=9, ignore_iof_thr=-1).
     :param kwargs:
     """
 
@@ -106,7 +107,7 @@ class GFLHead(nn.Module):
         strides=[8, 16, 32],
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
-        ignore_iof_thr=-1,
+        assigner_cfg=dict(topk=9, ignore_iof_thr=-1),
         **kwargs
     ):
         super(GFLHead, self).__init__()
@@ -126,7 +127,7 @@ class GFLHead(nn.Module):
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9, ignore_iof_thr=ignore_iof_thr)
+        self.assigner = ATSSAssigner(**assigner_cfg)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
