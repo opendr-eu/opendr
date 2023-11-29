@@ -112,6 +112,7 @@ jobs:
           - perception/binary_high_resolution
           - perception/object_tracking_2d
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
+          - perception/object_tracking_3d/single_object_tracking
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
           - perception/object_detection_2d/gem
