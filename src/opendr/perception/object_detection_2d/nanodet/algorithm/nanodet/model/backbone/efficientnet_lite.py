@@ -45,18 +45,6 @@ def round_repeats(repeats, multiplier):
     return int(math.ceil(multiplier * repeats))
 
 
-def drop_connect(x, drop_connect_rate, training):
-    if not training:
-        return x
-    keep_prob = 1.0 - drop_connect_rate
-    batch_size = x.shape[0]
-    random_tensor = keep_prob
-    random_tensor += torch.rand([batch_size, 1, 1, 1], dtype=x.dtype, device=x.device)
-    binary_mask = torch.floor(random_tensor)
-    x = (x / keep_prob) * binary_mask
-    return x
-
-
 class MBConvBlock(nn.Module):
     def __init__(
         self,
