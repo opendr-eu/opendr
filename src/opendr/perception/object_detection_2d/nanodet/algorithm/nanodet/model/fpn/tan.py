@@ -94,7 +94,6 @@ class TAN(nn.Module):
             elif isinstance(m, nn.Conv2d):
                 normal_init(m, 0.01)
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         assert len(inputs) == len(self.in_channels)
 

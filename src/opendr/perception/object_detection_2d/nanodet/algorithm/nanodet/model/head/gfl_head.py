@@ -17,13 +17,13 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util import
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp import warp_boxes,\
     scriptable_warp_boxes
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss\
-    import DistributionFocalLoss, QualityFocalLoss
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import GIoULoss, bbox_overlaps
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss import DistributionFocalLoss,\
+    QualityFocalLoss, GIoULoss
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import bbox_overlaps
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.scale import Scale
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.util import Scale
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.atss_assigner\
     import ATSSAssigner
 
@@ -64,14 +64,9 @@ class Integral(nn.Module):
             x (Tensor): Integral result of box locations, i.e., distance
                 offsets from the box center in four directions, shape (N, 4).
         """
-        shape = x.size()
-        if torch.jit.is_scripting():
-            x = F.softmax(x.reshape(shape[0], shape[1], 4, self.reg_max + 1), dim=-1)
-            x = F.linear(x, self.project.type_as(x)).reshape(shape[0], shape[1], 4)
-            return x
-
-        x = F.softmax(x.reshape(*shape[:-1], 4, self.reg_max + 1), dim=-1)
-        x = F.linear(x, self.project.type_as(x)).reshape(*shape[:-1], 4)
+        bs, fmap, regs = x.shape
+        x = F.softmax(x.view(bs, fmap, 4, self.reg_max + 1), dim=-1)
+        x = F.linear(x, self.project.unsqueeze(0)).view(bs, fmap, 4)
         return x
 
 
@@ -90,14 +85,14 @@ class GFLHead(nn.Module):
     :param num_classes: Number of categories excluding the background category.
     :param loss: Config of all loss functions.
     :param input_channel: Number of channels in the input feature map.
-    :param feat_channels: Number of conv layers in cls and reg tower. Default: 4.
+    :param feat_channels: Number of channels in the intermediate feature maps.
     :param stacked_convs: Number of conv layers in cls and reg tower. Default: 4.
     :param octave_base_scale: Scale factor of grid cells.
     :param strides: Down sample strides of all level feature map
-    :param conv_cfg: Dictionary to construct and config conv layer. Default: None.
     :param norm_cfg: Dictionary to construct and config norm layer.
     :param reg_max: Max value of integral set :math: `{0, ..., reg_max}`
                     in QFL setting. Default: 16.
+    :param assigner_cfg: Config dict of the assigner. Default: dict(topk=9, ignore_iof_thr=-1).
     :param kwargs:
     """
 
@@ -110,9 +105,9 @@ class GFLHead(nn.Module):
         stacked_convs=4,
         octave_base_scale=4,
         strides=[8, 16, 32],
-        conv_cfg=None,
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         reg_max=16,
+        assigner_cfg=dict(topk=9, ignore_iof_thr=-1),
         **kwargs
     ):
         super(GFLHead, self).__init__()
@@ -125,7 +120,6 @@ class GFLHead(nn.Module):
         self.reg_max = reg_max
 
         self.loss_cfg = loss
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.use_sigmoid = self.loss_cfg.loss_qfl.use_sigmoid
         if self.use_sigmoid:
@@ -133,11 +127,10 @@ class GFLHead(nn.Module):
         else:
             self.cls_out_channels = num_classes + 1
 
-        self.assigner = ATSSAssigner(topk=9)
+        self.assigner = ATSSAssigner(**assigner_cfg)
         self.distribution_project = Integral(self.reg_max)
 
         self.loss_qfl = QualityFocalLoss(
-            use_sigmoid=self.use_sigmoid,
             beta=self.loss_cfg.loss_qfl.beta,
             loss_weight=self.loss_cfg.loss_qfl.loss_weight,
         )
@@ -161,7 +154,6 @@ class GFLHead(nn.Module):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                 )
             )
@@ -172,7 +164,6 @@ class GFLHead(nn.Module):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                 )
             )
@@ -206,7 +197,7 @@ class GFLHead(nn.Module):
             bbox_pred = scale(self.gfl_reg(reg_feat)).float()
             output = torch.cat([cls_score, bbox_pred], dim=1)
             outputs.append(output.flatten(start_dim=2))
-        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1).contiguous()
         return outputs
 
     def loss(self, preds, gt_meta):
@@ -322,9 +313,9 @@ class GFLHead(nn.Module):
 
             weight_targets = cls_score.detach().sigmoid()
             weight_targets = weight_targets.max(dim=1)[0][pos_inds]
-            pos_bbox_pred_corners = self.distribution_project(pos_bbox_pred)
+            pos_bbox_pred_corners = self.distribution_project(pos_bbox_pred.unsqueeze(0))
             pos_decode_bbox_pred = distance2bbox(
-                pos_grid_cell_centers, pos_bbox_pred_corners
+                pos_grid_cell_centers, pos_bbox_pred_corners.squeeze(0)
             )
             pos_decode_bbox_targets = pos_bbox_targets / stride
             score[pos_inds] = bbox_overlaps(
@@ -558,29 +549,14 @@ class GFLHead(nn.Module):
                                   iou_threshold=iou_thresh, nms_max_num=nms_max_num)
         (det_bboxes, det_labels) = results
 
-        det_result = []
-        labels = torch.arange(self.num_classes, device=det_bboxes.device).unsqueeze(1).unsqueeze(1)
-        for i in range(self.num_classes):
-            inds = det_labels == i
+        if det_bboxes.shape[0] == 0:
+            return None
 
-            class_det_bboxes = det_bboxes[inds]
-            class_det_bboxes[:, :4] = scriptable_warp_boxes(
-                class_det_bboxes[:, :4],
-                torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
-            )
-            if class_det_bboxes.shape[0] != 0:
-                det = torch.cat((
-                    class_det_bboxes,
-                    labels[i].repeat(class_det_bboxes.shape[0], 1)
-                ), dim=1)
-                det_result.append(det)
-
-        return det_result
-
-    def most_common_tensor(self, tensor):
-        _, frequencies = torch.unique(tensor, return_counts=True)
-        max_count = frequencies[torch.argmax(frequencies)].item()
-        return max_count
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["img_info"]["width"], meta["img_info"]["height"]
+        )
+        return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 
     def _eval_post_process(self, preds, meta):
         cls_scores, bbox_preds = preds.split(
@@ -657,10 +633,10 @@ class GFLHead(nn.Module):
         # get grid cells of one image
         mlvl_center_priors = []
         for i, stride in enumerate(self.strides):
-            proiors = self.get_single_level_center_priors(
-                b, featmap_sizes[i], stride, torch.float32, device
+            priors = self.get_single_level_center_priors(
+                b, featmap_sizes[i], stride, cls_preds.dtype, device
             )
-            mlvl_center_priors.append(proiors)
+            mlvl_center_priors.append(priors)
 
         center_priors = torch.cat(mlvl_center_priors, dim=1)
         dis_preds = self.distribution_project(reg_preds) * center_priors[..., 2, None]
@@ -715,8 +691,8 @@ class GFLHead(nn.Module):
         """
         x, y = self.get_single_level_center_point(featmap_size, stride, dtype, device, flatten)
         strides = x.new_full((x.shape[0],), stride)
-        proiors = torch.stack([x, y, strides, strides], dim=-1)
-        return proiors.unsqueeze(0).repeat(batch_size, 1, 1)
+        priors = torch.stack([x, y, strides, strides], dim=-1)
+        return priors.unsqueeze(0).repeat(batch_size, 1, 1)
 
     def get_single_level_center_point(
         self,
@@ -739,7 +715,11 @@ class GFLHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device) + 0.5) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device) + 0.5) * stride
-        y, x = torch.meshgrid(y_range, x_range)
+        # enable embedded devices - TX2 to use JIT
+        if torch.jit.is_scripting() or not torch.__version__[:4] == "1.13":
+            y, x = torch.meshgrid(y_range, x_range)
+        else:
+            y, x = torch.meshgrid(y_range, x_range, indexing="ij")
         if flatten:
             y = y.flatten()
             x = x.flatten()

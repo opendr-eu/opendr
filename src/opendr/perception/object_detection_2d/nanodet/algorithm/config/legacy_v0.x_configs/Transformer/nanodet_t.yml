@@ -34,7 +34,6 @@ model:
       stacked_convs: 2
       share_cls_reg: True
       octave_base_scale: 5
-      scales_per_octave: 1
       strides: [8, 16, 32]
       reg_max: 7
       norm_cfg:

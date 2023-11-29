@@ -1,7 +1,7 @@
 import math
 
 import torch
-import torch.functional as F
+import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from torch import nn
 
@@ -123,8 +123,7 @@ class MBConvBlock(nn.Module):
         )
         self._relu = act_layers(activation)
 
-    @torch.jit.unused
-    def forward(self, x, drop_connect_rate: bool = None):
+    def forward(self, x, drop_connect_rate: float = 0):
         """
         :param x: input tensor
         :param drop_connect_rate: drop connect rate (float, between 0 and 1)
@@ -147,7 +146,7 @@ class MBConvBlock(nn.Module):
 
         # Skip connection and drop connect
         if self.id_skip and self.stride == 1 and self.input_filters == self.output_filters:
-            if drop_connect_rate:
+            if drop_connect_rate > 0:
                 x = drop_connect(x, drop_connect_rate, training=self.training)
             x = x + identity  # skip connection
         return x
@@ -247,7 +246,6 @@ class EfficientNetLite(nn.Module):
             self.blocks.append(stage)
         self._initialize_weights(pretrain)
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.stem(x)
         output = []

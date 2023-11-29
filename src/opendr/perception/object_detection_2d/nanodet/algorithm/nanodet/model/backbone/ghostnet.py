@@ -142,6 +142,7 @@ class GhostBottleneck(nn.Module):
         mid_chs,
         out_chs,
         dw_kernel_size=3,
+        kernel_size_shortcut=None,
         stride=1,
         activation="ReLU",
         se_ratio=0.0,
@@ -149,6 +150,7 @@ class GhostBottleneck(nn.Module):
         super(GhostBottleneck, self).__init__()
         has_se = se_ratio is not None and se_ratio > 0.0
         self.stride = stride
+        kernel_size_shortcut = dw_kernel_size if kernel_size_shortcut is None else kernel_size_shortcut
 
         # Point-wise expansion
         self.ghost1 = GhostModule(in_chs, mid_chs, activation=activation)
@@ -183,9 +185,9 @@ class GhostBottleneck(nn.Module):
                 nn.Conv2d(
                     in_chs,
                     in_chs,
-                    dw_kernel_size,
+                    kernel_size_shortcut,
                     stride=stride,
-                    padding=(dw_kernel_size - 1) // 2,
+                    padding=(kernel_size_shortcut - 1) // 2,
                     groups=in_chs,
                     bias=False,
                 ),
@@ -194,7 +196,6 @@ class GhostBottleneck(nn.Module):
                 nn.BatchNorm2d(out_chs),
             )
 
-    @torch.jit.unused
     def forward(self, x):
         residual = x
 
@@ -307,7 +308,7 @@ class GhostNet(nn.Module):
         x = self.bn1(x)
         x = self.act1(x)
         output = []
-        for i in range(10):
+        for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
             x = self.blocks[i](x)
             if i in self.out_stages:
                 output.append(x)

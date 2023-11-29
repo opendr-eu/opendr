@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch.jit
 import torch.nn.functional as F
 from torch import Tensor
 from typing import List
@@ -35,7 +34,6 @@ class PAN(FPN):
             build the feature pyramid. Default: 0.
         end_level (int): Index of the end input backbone level (exclusive) to
             build the feature pyramid. Default: -1, which means the last level.
-        conv_cfg (dict): Config dict for convolution layer. Default: None.
         norm_cfg (dict): Config dict for normalization layer. Default: None.
         activation (str): Config dict for activation layer in ConvModule.
             Default: None.
@@ -48,7 +46,6 @@ class PAN(FPN):
         num_outs,
         start_level=0,
         end_level=-1,
-        conv_cfg=None,
         norm_cfg=None,
         activation=None,
     ):
@@ -58,13 +55,11 @@ class PAN(FPN):
             num_outs,
             start_level,
             end_level,
-            conv_cfg,
             norm_cfg,
             activation,
         )
         self.init_weights()
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         """Forward function."""
         assert len(inputs) == len(self.in_channels)
