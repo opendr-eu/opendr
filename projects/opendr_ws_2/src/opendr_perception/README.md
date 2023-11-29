@@ -1147,6 +1147,44 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
    For viewing the output, refer to the [notes above.](#notes)
 
 
+### 3D Object Tracking VPIT ROS2 Node
+
+A ROS2 node for performing 3D single object tracking using VPIT method.
+This method need to be initialized with a 3D bounding box for an object that should be tracked. For this reasone, the initial detection3d box should be sent, as well as the corresponding point cloud. After the initialization, only point cloud data is required for inference. If a new object needs to be tracked, then the same `input_detection3d_topic` can be used to send a bounding box and the last send point cloud will be used for initialization.
+The predicted tracking annotations are split into two topics with detections and tracking IDs.
+
+You can find the 3D object tracking VPIT ROS2 node python script [here](./opendr_perception/object_tracking_3d_vpit_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [3D object tracking VPIT tool](../../../../src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/vpit_object_tracking_3d_learner.py)
+whose documentation can be found [here](../../../../docs/reference/object-tracking-3d-vpit.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing point clouds. OpenDR provides a [point cloud dataset node](#point-cloud-dataset-ros2-node) for convenience.
+
+2. Provide an initial bounding box from either a [3D detector](#3d-object-detection-voxel-ros2-node), a dataset or a hand-crafted detection 3D box.
+
+3. You are then ready to start the 3D object tracking node:
+
+    ```shell
+    ros2 run opendr_perception object_tracking_3d_vpit
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-ipc or --input_point_cloud_topic INPUT_POINT_CLOUD_TOPIC`: point cloud topic provided by either a point_cloud_dataset_node or any other 3D point cloud node (default=`/opendr/dataset_point_cloud`)
+   - `-idet or --input_detection3d_topic INPUT_DETECTION3D_TOPIC`: by either a 3D detector or a dataset (default=`/opendr/dataset_detection3d`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects3d`)
+   - `-t or --tracking3d_id_topic TRACKING3D_ID_TOPIC`: topic name for output tracking IDs with the same element count as in detection topic, `None` to stop the node from publishing on this topic (default=`/opendr/objects_tracking_id`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `-bb or --backbone BACKBONE`: Name of the backbone model (default=`pp`, choices=`pp, spp, spps, tanet, stanet, stanets`)
+   - `-mn or --model_name MODEL_NAME`: Name of the trained model to load (default=`vpit`)
+
+4. Default output topics:
+   - Detection messages: `/opendr/objects3d`
+   - Tracking ID messages: `/opendr/objects_tracking_id`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
 ### LiDAR Based Panoptic Segmentation ROS2 Node
 A ROS node for performing panoptic segmentation on a specified pointcloud stream using the [EfficientLPS](../../../../src/opendr/perception/panoptic_segmentation/README.md#efficientlps-efficient-lidar-panoptic-segmentation) network.
 
