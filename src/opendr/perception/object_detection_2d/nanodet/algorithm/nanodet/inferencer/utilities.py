@@ -23,13 +23,18 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch 
 
 
 class Predictor(nn.Module):
-    def __init__(self, cfg, model, device="cuda", conf_thresh=0.35, iou_thresh=0.6, nms_max_num=100):
+    def __init__(self, cfg, model, device="cuda", conf_thresh=0.35, iou_thresh=0.6, nms_max_num=100,
+                 hf=False, dynamic=False, ch_l=False):
         super(Predictor, self).__init__()
         self.cfg = cfg
         self.device = device
         self.conf_thresh = conf_thresh
         self.iou_thresh = iou_thresh
         self.nms_max_num = nms_max_num
+        self.hf = hf
+        self.ch_l = ch_l
+        self.dynamic = dynamic
+        self.traced_model = None
         if self.cfg.model.arch.backbone.name == "RepVGG":
             deploy_config = self.cfg.model
             deploy_config.arch.backbone.update({"deploy": True})
@@ -38,33 +43,29 @@ class Predictor(nn.Module):
                 import repvgg_det_model_convert
             model = repvgg_det_model_convert(model, deploy_model)
 
-        self.model = model.to(device).eval()
-
-        for para in self.model.parameters():
+        for para in model.parameters():
             para.requires_grad = False
 
+        if self.ch_l:
+            model = model.to(memory_format=torch.channels_last)
+        if self.hf:
+            model = model.half()
+        model.set_dynamic(self.dynamic)
+
+        self.model = model.to(device).eval()
+
         self.pipeline = Pipeline(self.cfg.data.val.pipeline, self.cfg.data.val.keep_ratio)
-        self.traced_model = None
 
     def trace_model(self, dummy_input):
-        self.traced_model = torch.jit.trace(self, dummy_input)
-        return True
+        self.traced_model = torch.jit.trace(self, dummy_input[0])
+        return self.traced_model
 
-    def script_model(self, img, height, width, warp_matrix):
-        preds = self.traced_model(img, height, width, warp_matrix)
-        scripted_model = self.postprocessing(preds, img, height, width, warp_matrix)
-        return scripted_model
+    def script_model(self):
+        self.traced_model = torch.jit.script(self)
+        return self.traced_model
 
-    def forward(self, img, height=torch.tensor(0), width=torch.tensor(0), warp_matrix=torch.tensor(0)):
-        if torch.jit.is_scripting():
-            return self.script_model(img, height, width, warp_matrix)
-        # In tracing (Jit and Onnx optimizations) we must first run the pipeline before the graf,
-        # cv2 is needed, and it is installed with abi cxx11 but torch is in cxx<11
-        meta = {"img": img}
-        meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
-        with torch.no_grad():
-            results = self.model.inference(meta)
-        return results
+    def forward(self, img):
+        return self.model.inference(img)
 
     def preprocessing(self, img):
         img_info = {"id": 0}
@@ -75,16 +76,22 @@ class Predictor(nn.Module):
         meta = self.pipeline(None, meta, self.cfg.data.val.input_size)
         meta["img"] = torch.from_numpy(meta["img"].transpose(2, 0, 1)).to(self.device)
 
-        _input = meta["img"]
-        _height = torch.tensor(height)
-        _width = torch.tensor(width)
-        _warp_matrix = torch.from_numpy(meta["warp_matrix"])
+        meta["img"] = divisible_padding(
+            meta["img"],
+            divisible=torch.tensor(32, device=self.device)
+        )
+
+        _input = meta["img"].to(torch.half if self.hf else torch.float32)
+        _input = _input.to(memory_format=torch.channels_last) if self.ch_l else _input
+        _height = torch.as_tensor(height, device=self.device)
+        _width = torch.as_tensor(width, device=self.device)
+        _warp_matrix = torch.from_numpy(meta["warp_matrix"]).to(self.device)
 
         return _input, _height, _width, _warp_matrix
 
     def postprocessing(self, preds, input, height, width, warp_matrix):
-        meta = {"height": height, "width": width, 'img': input, 'warp_matrix': warp_matrix}
-        meta["img"] = divisible_padding(meta["img"], divisible=torch.tensor(32))
+        img_info = dict(height=height, width=width, id=torch.zeros(1))
+        meta = dict(img_info=img_info, warp_matrix=warp_matrix, img=input)
         res = self.model.head.post_process(preds, meta, conf_thresh=self.conf_thresh, iou_thresh=self.iou_thresh,
                                            nms_max_num=self.nms_max_num)
         return res

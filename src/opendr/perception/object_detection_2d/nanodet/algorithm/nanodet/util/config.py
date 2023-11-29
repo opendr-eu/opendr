@@ -5,6 +5,7 @@ cfg.save_dir = "./"
 # common params for NETWORK
 cfg.model = CfgNode(new_allowed=True)
 cfg.model.arch = CfgNode(new_allowed=True)
+cfg.model.arch.ch_l = False
 cfg.model.arch.backbone = CfgNode(new_allowed=True)
 cfg.model.arch.fpn = CfgNode(new_allowed=True)
 cfg.model.arch.head = CfgNode(new_allowed=True)
@@ -12,8 +13,13 @@ cfg.model.arch.head = CfgNode(new_allowed=True)
 # DATASET related params
 cfg.data = CfgNode(new_allowed=True)
 cfg.data.train = CfgNode(new_allowed=True)
+cfg.data.train.cache_images = "_"
 cfg.data.val = CfgNode(new_allowed=True)
+cfg.data.val.cache_images = "_"
 cfg.device = CfgNode(new_allowed=True)
+cfg.device.precision = 32
+cfg.device.batchsize_per_gpu = -1
+cfg.device.effective_batchsize = 1
 # train
 cfg.schedule = CfgNode(new_allowed=True)
 

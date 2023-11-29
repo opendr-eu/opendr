@@ -15,7 +15,8 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.rank_f
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.scatter_gather \
     import gather_results, scatter_kwargs
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.util_mixins import NiceRepr
-
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.autobatch import autobatch
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.common import get_size
 
 __all__ = [
     "distance2bbox",
@@ -38,4 +39,6 @@ __all__ = [
     "collect_files",
     "NanoDetLightningLogger",
     "convert_avg_params",
+    "autobatch",
+    "get_size"
 ]

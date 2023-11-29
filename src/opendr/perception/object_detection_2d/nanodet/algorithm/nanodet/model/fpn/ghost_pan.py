@@ -39,12 +39,14 @@ class GhostBlocks(nn.Module):
         out_channels,
         expand=1,
         kernel_size=5,
+        kernel_size_shortcut=None,
         num_blocks=1,
         use_res=False,
         activation="LeakyReLU",
     ):
         super(GhostBlocks, self).__init__()
         self.use_res = use_res
+        kernel_size_shortcut = kernel_size if kernel_size_shortcut is None else kernel_size_shortcut
         if use_res:
             self.reduce_conv = ConvModule(
                 in_channels,
@@ -62,12 +64,12 @@ class GhostBlocks(nn.Module):
                     int(out_channels * expand),
                     out_channels,
                     dw_kernel_size=kernel_size,
+                    kernel_size_shortcut=kernel_size_shortcut,
                     activation=activation,
                 )
             )
         self.blocks = nn.Sequential(*blocks)
 
-    @torch.jit.unused
     def forward(self, x):
         out = self.blocks(x)
         if self.use_res:
@@ -81,10 +83,12 @@ class GhostPAN(nn.Module):
     Args:
         in_channels (List[int]): Number of input channels per scale.
         out_channels (int): Number of output channels (used at each scale)
-        num_csp_blocks (int): Number of bottlenecks in CSPLayer. Default: 3
         use_depthwise (bool): Whether to depthwise separable convolution in
             blocks. Default: False
+        reduction_depthwise (bool): Whether to depthwise separable convolution in
+            reduction module. Default: False
         kernel_size (int): Kernel size of depthwise convolution. Default: 5.
+        kernel_size_shortcut (int): Kernel size of shortcut module. Default: None, if None equal to kernel_size
         expand (int): Expand ratio of GhostBottleneck. Default: 1.
         num_blocks (int): Number of GhostBottlecneck blocks. Default: 1.
         use_res (bool): Whether to use residual connection. Default: False.
@@ -103,7 +107,9 @@ class GhostPAN(nn.Module):
         in_channels,
         out_channels,
         use_depthwise=False,
+        reduction_depthwise=False,
         kernel_size=5,
+        kernel_size_shortcut=None,
         expand=1,
         num_blocks=1,
         use_res=False,
@@ -115,17 +121,24 @@ class GhostPAN(nn.Module):
         super(GhostPAN, self).__init__()
         assert num_extra_level >= 0
         assert num_blocks >= 1
+        kernel_size_shortcut = kernel_size if kernel_size_shortcut is None else kernel_size_shortcut
         self.in_channels = in_channels
         self.out_channels = out_channels
 
         conv = DepthwiseConvModule if use_depthwise else ConvModule
+        reduction_conv = DepthwiseConvModule if reduction_depthwise else ConvModule
 
         # build top-down blocks
-        self.upsample = nn.Upsample(**upsample_cfg, align_corners=False)
+        modes = ["linear", "bilinear", "bicubic", "trilinear"]
+        try:
+            self.upsample = nn.Upsample(**upsample_cfg, align_corners=False if upsample_cfg.mode in modes else None)
+        except:
+            self.upsample = nn.Upsample(**upsample_cfg, align_corners=False if upsample_cfg["mode"] in modes else None)
+
         self.reduce_layers = nn.ModuleList()
         for idx in range(len(in_channels)):
             self.reduce_layers.append(
-                ConvModule(
+                reduction_conv(
                     in_channels[idx],
                     out_channels,
                     1,
@@ -141,6 +154,7 @@ class GhostPAN(nn.Module):
                     out_channels,
                     expand,
                     kernel_size=kernel_size,
+                    kernel_size_shortcut=kernel_size_shortcut,
                     num_blocks=num_blocks,
                     use_res=use_res,
                     activation=activation,
@@ -168,6 +182,7 @@ class GhostPAN(nn.Module):
                     out_channels,
                     expand,
                     kernel_size=kernel_size,
+                    kernel_size_shortcut=kernel_size_shortcut,
                     num_blocks=num_blocks,
                     use_res=use_res,
                     activation=activation,
@@ -201,7 +216,6 @@ class GhostPAN(nn.Module):
                 )
             )
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         """
         Args:
@@ -218,8 +232,6 @@ class GhostPAN(nn.Module):
         for idx in range(len(self.in_channels) - 1, 0, -1):
             feat_heigh = inner_outs[0]
             feat_low = inputs[idx - 1]
-
-            inner_outs[0] = feat_heigh
 
             upsample_feat = self.upsample(feat_heigh)
 

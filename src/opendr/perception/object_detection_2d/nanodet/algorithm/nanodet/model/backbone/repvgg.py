@@ -132,7 +132,7 @@ class RepVGG(nn.Module):
         assert 0 not in self.override_groups_map
 
         self.in_planes = min(64, int(64 * width_multiplier[0]))
-
+        self.stages = nn.ModuleList()
         self.stage0 = RepVGGConvModule(
             in_channels=3,
             out_channels=self.in_planes,
@@ -155,6 +155,12 @@ class RepVGG(nn.Module):
         out_planes = last_channel if last_channel else int(512 * width_multiplier[3])
         self.stage4 = self._make_stage(out_planes, num_blocks[3], stride=2)
 
+        self.stages.append(self.stage0)
+        self.stages.append(self.stage1)
+        self.stages.append(self.stage2)
+        self.stages.append(self.stage3)
+        self.stages.append(self.stage4)
+
     def _make_stage(self, planes, num_blocks, stride):
         strides = [stride] + [1] * (num_blocks - 1)
         blocks = []
@@ -176,15 +182,14 @@ class RepVGG(nn.Module):
             self.cur_layer_idx += 1
         return nn.Sequential(*blocks)
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.stage0(x)
         output = []
-        for i in range(1, 5):
-            stage = getattr(self, "stage{}".format(i))
-            x = stage(x)
-            if i in self.out_stages:
-                output.append(x)
+        for i, stage in enumerate(self.stages):
+            if i in [1, 2, 3, 4]:
+                x = stage(x)
+                if i in self.out_stages:
+                    output.append(x)
         return output
 
 
