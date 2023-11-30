@@ -212,7 +212,6 @@ class YOLOv8SegLearner(Learner):
                     # Need to modify the class name dictionary too
                     class_names[mask_class] = 'person'
                     class_names[0] = 'background'
-                    # TODO Add note to docs
 
                 mask[mask == 1] = mask_class  # Replace 1s with actual class indices
                 np.putmask(heatmap_img, mask.astype(bool), mask)  # Add this detection's mask on the heatmap
