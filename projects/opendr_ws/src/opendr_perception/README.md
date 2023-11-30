@@ -632,10 +632,11 @@ This node can perform both object detection 2D and semantic segmentation of the 
    - `-h or --help`: show a help message and exit
    - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
    - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap`)
-   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image and a class legend for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
-   - `-d or --detections_topic DETECTIONS_TOPIC`: Topic name for object detection/bounding box messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for object detection/bounding box messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
    - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
    - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--model_name MODEL_NAME`: Network architecture, can be one of `yolov8n-seg`, `yolov8s-seg`, `yolov8m-seg`, `yolov8l-seg`, `yolov8n-segx`, `custom` (default=`yolov8s-seg`)
 
 3. Default output topics:
    - Output images: `/opendr/heatmap`, `/opendr/heatmap_visualization`
