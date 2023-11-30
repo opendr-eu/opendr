@@ -42,17 +42,16 @@ class TinyResBlock(nn.Module):
             norm_cfg=norm_cfg,
             activation=activation,
         )
-        if res_type == "add":
-            self.out_conv = ConvModule(
-                in_channels // 2,
-                in_channels,
-                kernel_size,
-                padding=(kernel_size - 1) // 2,
-                norm_cfg=norm_cfg,
-                activation=activation,
-            )
 
-    @torch.jit.unused
+        self.out_conv = ConvModule(
+            in_channels // 2,
+            in_channels,
+            kernel_size,
+            padding=(kernel_size - 1) // 2,
+            norm_cfg=norm_cfg,
+            activation=activation,
+        ) if res_type == "add" else nn.Identity()
+
     def forward(self, x):
         x = self.in_conv(x)
         x1 = self.mid_conv(x)
@@ -97,7 +96,6 @@ class CspBlock(nn.Module):
             activation=activation,
         )
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.in_conv(x)
         x1 = self.res_blocks(x)
@@ -147,7 +145,6 @@ class CustomCspNet(nn.Module):
             self.stages.append(stage)
         self._init_weight()
 
-    @torch.jit.unused
     def forward(self, x):
         output = []
         for i, stage in enumerate(self.stages):

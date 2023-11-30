@@ -71,6 +71,9 @@ if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   python3 -m pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
   echo "[INFO] Reinstalling detectronv2."
   python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
+  echo "[INFO] Installing TensorRT dependencies."
+  python -m pip install tensorrt==8.6.1
+  python -m pip install pycuda==2023.1
 fi
 
 make libopendr

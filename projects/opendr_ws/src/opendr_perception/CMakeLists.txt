@@ -29,6 +29,7 @@ include_directories(
 
 catkin_install_python(PROGRAMS
    scripts/performance_node.py
+   scripts/active_face_recognition_node.py
    scripts/pose_estimation_node.py
    scripts/hr_pose_estimation_node.py
    scripts/fall_detection_node.py

@@ -21,6 +21,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backb
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.repvgg import RepVGG
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.resnet import ResNet
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.shufflenetv2 import ShuffleNetV2
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.backbone.vgg import Vgg
 
 
 def build_backbone(cfg):
@@ -40,5 +41,7 @@ def build_backbone(cfg):
         return CustomCspNet(**backbone_cfg)
     elif name == "RepVGG":
         return RepVGG(**backbone_cfg)
+    elif name == "Vgg":
+        return Vgg(**backbone_cfg)
     else:
         raise NotImplementedError
