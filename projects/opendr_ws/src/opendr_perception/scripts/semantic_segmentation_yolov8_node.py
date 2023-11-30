@@ -149,7 +149,7 @@ def main():
                         type=str, default=None)
     parser.add_argument("--device", help="Device to use, either \"cpu\" or \"cuda\", defaults to \"cuda\"",
                         type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--model_name", help="Network architecture, defaults to \"yolov5s\"",
+    parser.add_argument("--model_name", help="Network architecture, defaults to \"yolov8s-seg\"",
                         type=str, default="yolov8s-seg", choices=["yolov8n-seg", "yolov8s-seg", "yolov8m-seg", "yolov8l-seg",
                                                                   "yolov8x-seg", "custom"])
     args = parser.parse_args(rospy.myargv()[1:])
