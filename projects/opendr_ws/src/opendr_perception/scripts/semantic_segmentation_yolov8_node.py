@@ -167,13 +167,13 @@ def main():
         print("Using CPU.")
         device = "cpu"
 
-    object_detection_yolov5_node = SemanticSegmantationYOLOV8Node(device=device, model_name=args.model_name,
-                                                                  input_rgb_image_topic=args.input_rgb_image_topic,
-                                                                  output_heatmap_topic=args.output_heatmap_topic,
-                                                                  output_rgb_image_topic=args.output_rgb_image_topic,
-                                                                  detections_topic=args.detections_topic,
-                                                                  performance_topic=args.performance_topic)
-    object_detection_yolov5_node.listen()
+    semantic_segmentation_yolov8_node = SemanticSegmantationYOLOV8Node(device=device, model_name=args.model_name,
+                                                                       input_rgb_image_topic=args.input_rgb_image_topic,
+                                                                       output_heatmap_topic=args.output_heatmap_topic,
+                                                                       output_rgb_image_topic=args.output_rgb_image_topic,
+                                                                       detections_topic=args.detections_topic,
+                                                                       performance_topic=args.performance_topic)
+    semantic_segmentation_yolov8_node.listen()
 
 
 if __name__ == '__main__':
