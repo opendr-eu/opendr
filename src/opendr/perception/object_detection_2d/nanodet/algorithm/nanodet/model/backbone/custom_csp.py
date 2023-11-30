@@ -42,15 +42,15 @@ class TinyResBlock(nn.Module):
             norm_cfg=norm_cfg,
             activation=activation,
         )
-        if res_type == "add":
-            self.out_conv = ConvModule(
-                in_channels // 2,
-                in_channels,
-                kernel_size,
-                padding=(kernel_size - 1) // 2,
-                norm_cfg=norm_cfg,
-                activation=activation,
-            )
+
+        self.out_conv = ConvModule(
+            in_channels // 2,
+            in_channels,
+            kernel_size,
+            padding=(kernel_size - 1) // 2,
+            norm_cfg=norm_cfg,
+            activation=activation,
+        ) if res_type == "add" else nn.Identity()
 
     def forward(self, x):
         x = self.in_conv(x)

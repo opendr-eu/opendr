@@ -104,8 +104,10 @@ class ConvModule(nn.Module):
                 norm_channels = in_channels
             self.norm_name, norm = build_norm_layer(norm_cfg, norm_channels)
             self.add_module(self.norm_name, norm)
+            self.norm = getattr(self, self.norm_name)
         else:
             self.norm_name = None
+            self.norm = nn.Identity()
 
         # set pool layer
         self.pool = pool
@@ -116,13 +118,6 @@ class ConvModule(nn.Module):
 
         # Use msra init by default
         self.init_weights()
-
-    @property
-    def norm(self):
-        if self.norm_name is not None:
-            return getattr(self, self.norm_name)
-        else:
-            return None
 
     def init_weights(self):
         if self.activation == "LeakyReLU":
@@ -137,7 +132,7 @@ class ConvModule(nn.Module):
         for layer in self.order:
             if layer == "conv":
                 x = self.conv(x)
-            elif layer == "norm" and (self.with_norm is not None) and (self.norm is not None):
+            elif layer == "norm" and self.with_norm:
                 x = self.norm(x)
             elif layer == "pool" and self.pool is not None:
                 x = self.pool(x)

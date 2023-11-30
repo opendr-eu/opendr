@@ -22,6 +22,23 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transf
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch import build_model
 
 
+class ScriptedPredictor(nn.Module):
+    def __init__(self, model, dummy_input, conf_thresh=0.35, iou_thresh=0.6, nms_max_num=100, dynamic=False):
+        super(ScriptedPredictor, self).__init__()
+        model.forward = model.inference
+        self.model = model
+        self.conf_thresh = conf_thresh
+        self.iou_thresh = iou_thresh
+        self.nms_max_num = nms_max_num
+        self.jit_model = torch.jit.script(self.model) if dynamic else torch.jit.trace(self.model, dummy_input[0])
+
+    def forward(self, input, height, width, warp_matrix):
+        preds = self.jit_model(input)
+        meta = dict(height=height, width=width, warp_matrix=warp_matrix, img=input)
+        return self.model.head.post_process(preds, meta, conf_thresh=self.conf_thresh, iou_thresh=self.iou_thresh,
+                                            nms_max_num=self.nms_max_num)
+
+
 class Predictor(nn.Module):
     def __init__(self, cfg, model, device="cuda", conf_thresh=0.35, iou_thresh=0.6, nms_max_num=100,
                  hf=False, dynamic=False, ch_l=False):
@@ -33,8 +50,7 @@ class Predictor(nn.Module):
         self.nms_max_num = nms_max_num
         self.hf = hf
         self.ch_l = ch_l
-        self.dynamic = dynamic
-        self.traced_model = None
+        self.dynamic = dynamic and self.cfg.data.val.keep_ratio
         if self.cfg.model.arch.backbone.name == "RepVGG":
             deploy_config = self.cfg.model
             deploy_config.arch.backbone.update({"deploy": True})
@@ -51,18 +67,23 @@ class Predictor(nn.Module):
         if self.hf:
             model = model.half()
         model.set_dynamic(self.dynamic)
+        model.set_inference_mode(True)
 
         self.model = model.to(device).eval()
 
         self.pipeline = Pipeline(self.cfg.data.val.pipeline, self.cfg.data.val.keep_ratio)
 
     def trace_model(self, dummy_input):
-        self.traced_model = torch.jit.trace(self, dummy_input[0])
-        return self.traced_model
+        return torch.jit.trace(self, dummy_input[0])
 
     def script_model(self):
-        self.traced_model = torch.jit.script(self)
-        return self.traced_model
+        return torch.jit.script(self)
+
+    def c_script(self, dummy_input):
+        import copy
+        jit_ready_predictor = ScriptedPredictor(copy.deepcopy(self.model), dummy_input, self.conf_thresh,
+                                                self.iou_thresh, self.nms_max_num, dynamic=self.dynamic)
+        return torch.jit.script(jit_ready_predictor)
 
     def forward(self, img):
         return self.model.inference(img)
@@ -90,8 +111,7 @@ class Predictor(nn.Module):
         return _input, _height, _width, _warp_matrix
 
     def postprocessing(self, preds, input, height, width, warp_matrix):
-        img_info = dict(height=height, width=width, id=torch.zeros(1))
-        meta = dict(img_info=img_info, warp_matrix=warp_matrix, img=input)
+        meta = dict(height=height, width=width, warp_matrix=warp_matrix, img=input)
         res = self.model.head.post_process(preds, meta, conf_thresh=self.conf_thresh, iou_thresh=self.iou_thresh,
                                            nms_max_num=self.nms_max_num)
         return res

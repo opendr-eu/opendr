@@ -47,15 +47,14 @@ class GhostBlocks(nn.Module):
         super(GhostBlocks, self).__init__()
         self.use_res = use_res
         kernel_size_shortcut = kernel_size if kernel_size_shortcut is None else kernel_size_shortcut
-        if use_res:
-            self.reduce_conv = ConvModule(
-                in_channels,
-                out_channels,
-                kernel_size=1,
-                stride=1,
-                padding=0,
-                activation=activation,
-            )
+        self.reduce_conv = ConvModule(
+            in_channels,
+            out_channels,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            activation=activation,
+        ) if use_res else nn.Identity()
         blocks = []
         for _ in range(num_blocks):
             blocks.append(
@@ -192,6 +191,7 @@ class GhostPAN(nn.Module):
         # extra layers
         self.extra_lvl_in_conv = nn.ModuleList()
         self.extra_lvl_out_conv = nn.ModuleList()
+        self.num_extra_level = num_extra_level
         for i in range(num_extra_level):
             self.extra_lvl_in_conv.append(
                 conv(
@@ -225,36 +225,37 @@ class GhostPAN(nn.Module):
         """
         assert len(inputs) == len(self.in_channels)
         inputs = [
-            reduce(input_x) for input_x, reduce in zip(inputs, self.reduce_layers)
+            reduce(inputs[indx]) for indx, (reduce) in enumerate(self.reduce_layers)
         ]
         # top-down path
         inner_outs = [inputs[-1]]
-        for idx in range(len(self.in_channels) - 1, 0, -1):
-            feat_heigh = inner_outs[0]
-            feat_low = inputs[idx - 1]
+        for idx, top_down_block in enumerate(self.top_down_blocks):
+            reversed_idx = len(self.in_channels) - 1 - idx
+            if reversed_idx != 0:
+                feat_heigh = inner_outs[0]
+                feat_low = inputs[reversed_idx - 1]
 
-            upsample_feat = self.upsample(feat_heigh)
+                upsample_feat = self.upsample(feat_heigh)
 
-            inner_out = self.top_down_blocks[len(self.in_channels) - 1 - idx](
-                torch.cat([upsample_feat, feat_low], 1)
-            )
-            inner_outs.insert(0, inner_out)
+                inner_out = top_down_block(
+                    torch.cat([upsample_feat, feat_low], 1)
+                )
+                inner_outs.insert(0, inner_out)
 
         # bottom-up path
         outs = [inner_outs[0]]
-        for idx in range(len(self.in_channels) - 1):
-            feat_low = outs[-1]
-            feat_height = inner_outs[idx + 1]
-            downsample_feat = self.downsamples[idx](feat_low)
-            out = self.bottom_up_blocks[idx](
-                torch.cat([downsample_feat, feat_height], 1)
-            )
-            outs.append(out)
+        for idx, (downsample, bottom_up_block) in enumerate(zip(self.downsamples, self.bottom_up_blocks)):
+            if idx != len(self.in_channels) - 1:
+                feat_low = outs[-1]
+                feat_height = inner_outs[idx + 1]
+                downsample_feat = downsample(feat_low)
+                out = bottom_up_block(
+                    torch.cat([downsample_feat, feat_height], 1)
+                )
+                outs.append(out)
 
         # extra layers
-        for extra_in_layer, extra_out_layer in zip(
-            self.extra_lvl_in_conv, self.extra_lvl_out_conv
-        ):
+        for indx, (extra_in_layer, extra_out_layer) in enumerate(zip(self.extra_lvl_in_conv, self.extra_lvl_out_conv)):
             outs.append(extra_in_layer(inputs[-1]) + extra_out_layer(outs[-1]))
 
         return outs

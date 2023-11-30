@@ -167,6 +167,9 @@ class GhostBottleneck(nn.Module):
                 bias=False,
             )
             self.bn_dw = nn.BatchNorm2d(mid_chs)
+        else:
+            self.conv_dw = nn.Identity()
+            self.bn_dw = nn.Identity()
 
         # Squeeze-and-excitation
         if has_se:
