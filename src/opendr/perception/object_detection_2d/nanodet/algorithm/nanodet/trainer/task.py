@@ -28,6 +28,7 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
     import convert_avg_params, gather_results, mkdir, rank_filter
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.check_point import save_model_state
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.weight_averager import build_weight_averager
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.optim import build_optimizer
 
 
 class TrainingTask(LightningModule):
@@ -35,7 +36,8 @@ class TrainingTask(LightningModule):
     Pytorch Lightning module of a general training task.
     Including training, evaluating and testing.
     Args:
-        cfg: Training configurations
+        cfg: Training configurations.
+        model: Model to be used.
         evaluator: Evaluator for evaluating the model performance.
     """
 
@@ -84,40 +86,50 @@ class TrainingTask(LightningModule):
         batch = self._preprocess_batch_input(batch)
         preds, loss, loss_states = self.model.forward_train(batch)
 
+        if batch_idx == 0:
+            self.train_losses = {}
+            for loss_name in loss_states:
+                if not (loss_name in self.train_losses):
+                    self.train_losses[loss_name] = 0
+        for loss_name in loss_states:
+            self.train_losses[loss_name] += loss_states[loss_name].mean().item()
+
         # log train losses
-        if self.global_step % self.cfg.log.interval == 0:
-            lr = self.optimizers().param_groups[0]["lr"]
-            log_msg = "Train|Epoch{}/{}|Iter{}({})| lr:{:.2e}| ".format(
-                self.current_epoch + 1,
+        if (self.global_step + 1) % self.cfg.log.interval == 0 or (batch_idx + 1) == self.trainer.num_training_batches:
+            memory = (torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0)
+            lr = self.trainer.optimizers[0].param_groups[0]["lr"]
+            log_msg = "Train|Epoch{}/{}|Iter{}({}/{})| mem:{:.3g}G| lr:{:.2e}| ".format(
+                self.current_epoch,
                 self.cfg.schedule.total_epochs,
-                self.global_step,
-                batch_idx,
+                (self.global_step + 1),
+                batch_idx + 1,
+                self.trainer.num_training_batches,
+                memory,
                 lr,
             )
-            self.scalar_summary("Train_loss/lr", "Train", lr, self.global_step)
-            for loss_name in loss_states:
+            self.scalar_summary("Experimen_Variables/Learning Rate", lr, (self.global_step + 1))
+            self.scalar_summary("Experimen_Variables/Epoch", self.current_epoch, (self.global_step + 1))
+            for loss_name in self.train_losses:
                 log_msg += "{}:{:.4f}| ".format(
                     loss_name, loss_states[loss_name].mean().item()
                 )
                 self.scalar_summary(
                     "Train_loss/" + loss_name,
-                    "Train",
-                    loss_states[loss_name].mean().item(),
-                    self.global_step,
+                    self.train_losses[loss_name] / (batch_idx + 1),
+                    (self.global_step + 1),
                 )
-            if self.logger:
-                self.logger.info(log_msg)
+            self.info(log_msg)
 
         return loss
 
     def training_epoch_end(self, outputs: List[Any]) -> None:
         # save models in schedule epoches
-        if self.current_epoch % self.cfg.schedule.val_intervals == 0:
+        if (self.current_epoch + 1) % self.cfg.schedule.val_intervals == 0:
             checkpoint_save_path = os.path.join(self.cfg.save_dir, "checkpoints")
             mkdir(self.local_rank, checkpoint_save_path)
-            print("===" * 10)
-            print("checkpoint_save_path: {} \n epoch: {}".format(checkpoint_save_path, self.current_epoch))
-            print("===" * 10)
+            self.info("===" * 10)
+            self.info("checkpoint_save_path: {} \n epoch: {}".format(checkpoint_save_path, self.current_epoch))
+            self.info("===" * 10)
             self.trainer.save_checkpoint(
                 os.path.join(checkpoint_save_path, "model_iter_{}.ckpt".format(self.current_epoch))
             )
@@ -127,25 +139,40 @@ class TrainingTask(LightningModule):
     def validation_step(self, batch, batch_idx):
         batch = self._preprocess_batch_input(batch)
         if self.weight_averager is not None:
-            preds, loss, loss_states = self.avg_model.forward_train(batch)
+            preds, _, loss_states = self.avg_model.forward_train(batch)
         else:
-            preds, loss, loss_states = self.model.forward_train(batch)
+            preds, _, loss_states = self.model.forward_train(batch)
 
-        if batch_idx % self.cfg.log.interval == 0:
-            lr = self.optimizers().param_groups[0]["lr"]
-            log_msg = "Val|Epoch{}/{}|Iter{}({})| lr:{:.2e}| ".format(
-                self.current_epoch + 1,
+        # zero all losses
+        if batch_idx == 0:
+            self.val_losses = {}
+            for loss_name in loss_states:
+                if not (loss_name in self.val_losses):
+                    self.val_losses[loss_name] = 0
+        # update losses
+        for loss_name in loss_states:
+            self.val_losses[loss_name] += loss_states[loss_name].mean().item()
+
+        if (batch_idx + 1) % self.cfg.log.interval == 0 or (batch_idx + 1) == sum(self.trainer.num_val_batches):
+            memory = (torch.cuda.memory_reserved() / 1e9 if torch.cuda.is_available() else 0)
+            log_msg = "Val|Epoch{}/{}|Iter{}| mem:{:.3g}G| ".format(
+                self.current_epoch,
                 self.cfg.schedule.total_epochs,
                 self.global_step,
-                batch_idx,
-                lr,
+                memory,
             )
-            for loss_name in loss_states:
-                log_msg += "{}:{:.4f}| ".format(
-                    loss_name, loss_states[loss_name].mean().item()
-                )
-            if self.logger:
-                self.logger.info(log_msg)
+            if (batch_idx + 1) == sum(self.trainer.num_val_batches):
+                for loss_name in self.val_losses:
+                    log_msg += "{}:{:.4f}| ".format(
+                        loss_name, loss_states[loss_name]
+                    )
+                    self.scalar_summary(
+                        "Val_loss/" + loss_name,
+                        self.val_losses[loss_name] / sum(self.trainer.num_val_batches),
+                        (self.global_step + 1),
+                    )
+
+            self.info(log_msg)
 
         dets = self.model.head.post_process(preds, batch, "eval")
         return dets
@@ -168,7 +195,7 @@ class TrainingTask(LightningModule):
             else results
         )
         if all_results:
-            eval_results = self.evaluator.evaluate(
+            eval_results, _ = self.evaluator.evaluate(
                 all_results, self.cfg.save_dir)
             metric = eval_results[self.cfg.evaluator.save_key]
             # save best model
@@ -179,10 +206,7 @@ class TrainingTask(LightningModule):
                 self.trainer.save_checkpoint(
                     os.path.join(best_save_path, "model_best.ckpt")
                 )
-                verbose = True if self.logger is not None else False
-                # TODO: save only if local_rank is < 0
-                # self._save_current_model(self.local_rank, os.path.join(best_save_path, "nanodet_model_state_best.pth"),
-                #                          verbose=verbose)
+                verbose = True if (self.logger is not None) else False
                 self.save_current_model(os.path.join(best_save_path, "nanodet_model_state_best.pth"), verbose=verbose)
                 txt_path = os.path.join(best_save_path, "eval_results.txt")
                 with open(txt_path, "a") as f:
@@ -193,11 +217,9 @@ class TrainingTask(LightningModule):
                 warnings.warn(
                     "Warning! Save_key is not in eval results! Only save model last!"
                 )
-            if self.logger:
-                self.logger.log_metrics(eval_results, self.current_epoch + 1)
+            self.log_metrics(eval_results, (self.global_step + 1))
         else:
-            if self.logger:
-                self.logger.info("Skip val on rank {}".format(self.local_rank))
+            self.info("Skip val on rank {}".format(self.local_rank))
 
     def test_step(self, batch, batch_idx):
         dets = self.predict(batch, batch_idx)
@@ -214,17 +236,16 @@ class TrainingTask(LightningModule):
         )
         if all_results:
             if self.cfg.test_mode == "val":
-                eval_results = self.evaluator.evaluate(
+                eval_results, per_clas_results = self.evaluator.evaluate(
                     all_results, self.cfg.save_dir, rank=self.local_rank
                 )
                 txt_path = os.path.join(self.cfg.save_dir, "eval_results.txt")
                 with open(txt_path, "a") as f:
                     for k, v in eval_results.items():
                         f.write("{}: {}\n".format(k, v))
-
         else:
-            if self.logger:
-                self.logger.info("Skip test on rank {}".format(self.local_rank))
+            self.info("Skip test on rank {}".format(self.local_rank))
+        return
 
     def configure_optimizers(self):
         """
@@ -236,9 +257,7 @@ class TrainingTask(LightningModule):
         """
 
         optimizer_cfg = copy.deepcopy(self.cfg.schedule.optimizer)
-        name = optimizer_cfg.pop("name")
-        build_optimizer = getattr(torch.optim, name)
-        optimizer = build_optimizer(params=self.parameters(), **optimizer_cfg)
+        optimizer = build_optimizer(self.model, optimizer_cfg)
 
         schedule_cfg = copy.deepcopy(self.cfg.schedule.lr_schedule)
         name = schedule_cfg.pop("name")
@@ -271,25 +290,19 @@ class TrainingTask(LightningModule):
             using_lbfgs: True if the matching optimizer is lbfgs
         """
         # warm up lr
-        if self.trainer.global_step <= self.cfg.schedule.warmup.steps:
+        if self.trainer.current_epoch < self.cfg.schedule.warmup.steps:
+            warmup_batches = (self.cfg.schedule.warmup.steps * self.trainer.num_training_batches)
             if self.cfg.schedule.warmup.name == "constant":
-                warmup_lr = (
-                    self.cfg.schedule.optimizer.lr * self.cfg.schedule.warmup.ratio
-                )
+                k = self.cfg.schedule.warmup.ratio
             elif self.cfg.schedule.warmup.name == "linear":
-                k = (1 - self.trainer.global_step / self.cfg.schedule.warmup.steps) * (
-                    1 - self.cfg.schedule.warmup.ratio
-                )
-                warmup_lr = self.cfg.schedule.optimizer.lr * (1 - k)
+                k = 1 - (1 - self.trainer.global_step / warmup_batches) * \
+                    (1 - self.cfg.schedule.warmup.ratio)
             elif self.cfg.schedule.warmup.name == "exp":
-                k = self.cfg.schedule.warmup.ratio ** (
-                    1 - self.trainer.global_step / self.cfg.schedule.warmup.steps
-                )
-                warmup_lr = self.cfg.schedule.optimizer.lr * k
+                k = self.cfg.schedule.warmup.ratio ** (1 - self.trainer.current_epoch / warmup_batches)
             else:
                 raise Exception("Unsupported warm up type!")
             for pg in optimizer.param_groups:
-                pg["lr"] = warmup_lr
+                pg["lr"] = pg["initial_lr"] * k
 
         # update params
         optimizer.step(closure=optimizer_closure)
@@ -302,23 +315,26 @@ class TrainingTask(LightningModule):
         items.pop("loss", None)
         return items
 
-    def scalar_summary(self, tag, phase, value, step):
+    def scalar_summary(self, tag, value, step):
         """
         Write Tensorboard scalar summary log.
         Args:
             tag: Name for the tag
-            phase: 'Train' or 'Val'
             value: Value to record
             step: Step value to record
 
         """
         # if self.local_rank < 1:
         if self.logger:
-            self.logger.experiment.add_scalars(tag, {phase: value}, step)
+            self.logger.experiment.add_scalar(tag, value, global_step=step)
 
     def info(self, string):
         if self.logger:
             self.logger.info(string)
+
+    def log_metrics(self, metrics, step):
+        if self.logger:
+            self.logger.log_metrics(metrics, step)
 
     # ------------Hooks-----------------
     def on_train_start(self) -> None:
@@ -327,8 +343,7 @@ class TrainingTask(LightningModule):
 
     def on_pretrain_routine_end(self) -> None:
         if "weight_averager" in self.cfg.model:
-            if self.logger:
-                self.logger.info("Weight Averaging is enabled")
+            self.info("Weight Averaging is enabled")
             if self.weight_averager and self.weight_averager.has_inited():
                 self.weight_averager.to(self.weight_averager.device)
                 return
@@ -357,15 +372,13 @@ class TrainingTask(LightningModule):
         if self.weight_averager:
             avg_params = convert_avg_params(checkpointed_state)
             if len(avg_params) != len(self.model.state_dict()):
-                if self.logger:
-                    self.logger.info(
-                        "Weight averaging is enabled but average state does not"
-                        "match the model"
-                    )
+                self.info(
+                    "Weight averaging is enabled but average state does not"
+                    "match the model"
+                )
             else:
                 self.weight_averager = build_weight_averager(
                     self.cfg.model.weight_averager, device=self.device
                 )
                 self.weight_averager.load_state_dict(avg_params)
-                if self.logger:
-                    self.logger.info("Loaded average state from checkpoint.")
+                self.info("Loaded average state from checkpoint.")

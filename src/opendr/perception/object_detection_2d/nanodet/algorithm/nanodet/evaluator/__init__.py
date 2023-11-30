@@ -16,10 +16,10 @@ import copy
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.evaluator.coco_detection import CocoDetectionEvaluator
 
 
-def build_evaluator(cfg, dataset):
+def build_evaluator(cfg, dataset, logger=None):
     evaluator_cfg = copy.deepcopy(cfg)
     name = evaluator_cfg.pop("name")
     if name == "CocoDetectionEvaluator":
-        return CocoDetectionEvaluator(dataset)
+        return CocoDetectionEvaluator(dataset, logger=logger)
     else:
         raise NotImplementedError

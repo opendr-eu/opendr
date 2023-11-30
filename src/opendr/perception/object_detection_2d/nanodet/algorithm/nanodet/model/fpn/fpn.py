@@ -1,6 +1,5 @@
 # Modification 2020 RangiLyu
 # Copyright 2018-2019 Open-MMLab.
-import torch.jit
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -23,6 +22,21 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.modul
 
 
 class FPN(nn.Module):
+    """Feature proposal network
+
+        Args:
+            in_channels (List[int]): Number of input channels per scale.
+            out_channels (int): Number of output channels (used at each scale)
+            num_outs (int): Number of output scales.
+            start_level (int): Index of the start input backbone level used to
+                build the feature pyramid. Default: 0.
+            end_level (int): Index of the end input backbone level (exclusive) to
+                build the feature pyramid. Default: -1, which means the last level.
+            norm_cfg (dict): Config dict for normalization layer. Default: None.
+            activation (str): Config dict for activation layer in ConvModule.
+                Default: None.
+    """
+
     def __init__(
         self,
         in_channels,
@@ -30,7 +44,6 @@ class FPN(nn.Module):
         num_outs,
         start_level=0,
         end_level=-1,
-        conv_cfg=None,
         norm_cfg=None,
         activation=None,
     ):
@@ -40,7 +53,6 @@ class FPN(nn.Module):
         self.out_channels = out_channels
         self.num_ins = len(in_channels)
         self.num_outs = num_outs
-        self.fp16_enabled = False
 
         if end_level == -1:
             self.backbone_end_level = self.num_ins
@@ -59,7 +71,6 @@ class FPN(nn.Module):
                 in_channels[i],
                 out_channels,
                 1,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 activation=activation,
                 inplace=False,
@@ -74,7 +85,6 @@ class FPN(nn.Module):
             if isinstance(m, nn.Conv2d):
                 xavier_init(m, distribution="uniform")
 
-    @torch.jit.unused
     def forward(self, inputs: List[Tensor]):
         assert len(inputs) == len(self.in_channels)
 
@@ -88,7 +98,7 @@ class FPN(nn.Module):
         used_backbone_levels = len(laterals)
         for i in range(used_backbone_levels - 1, 0, -1):
             laterals[i - 1] = laterals[i - 1] + F.interpolate(
-                laterals[i], scale_factor=2, mode="bilinear"
+                laterals[i], scale_factor=2.0, mode="bilinear"
             )
 
         # build outputs

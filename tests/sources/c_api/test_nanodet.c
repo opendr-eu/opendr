@@ -24,14 +24,14 @@ START_TEST(model_creation_test) {
   // Create a nanodet model
   NanodetModelT model;
   // Load a pretrained model
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, 0, &model);
   ck_assert(model.network);
 
   // Release the resources
   freeNanodetModel(&model);
 
   // Load a model that does not exist
-  loadNanodetModel("./data/optimized_model_not_existant", "m", "cpu", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/optimized_model_not_existant", "m", "cpu", 0.35, 0, 0, 0, &model);
 
   // Check if memory steel exist
   ck_assert(!model.network);
@@ -43,7 +43,7 @@ START_TEST(inference_creation_test) {
   NanodetModelT model;
 
   // Load a pretrained model
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cpu", 0.35, 0, 0, 0, &model);
 
   // Load an image and performance inference
   OpenDRImageT image;

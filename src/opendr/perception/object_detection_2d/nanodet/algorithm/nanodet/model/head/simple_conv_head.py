@@ -6,10 +6,26 @@ from typing import List
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.scale import Scale
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.util import Scale
 
 
 class SimpleConvHead(nn.Module):
+    """Detection head used in NanoDet-Plus.
+
+    Args:
+        num_classes (int): Number of categories excluding the background
+            category.
+        input_channel (int): Number of channels of the input feature.
+        feat_channels (int): Number of channels in the intermediate feature maps.
+        stacked_convs (int): Number of conv layers in the stacked convs.
+            Default: 4.
+        strides (list[int]): Strides of input multi-level feature maps.
+            Default: [8, 16, 32].
+        norm_cfg (dict): Dictionary to construct and config norm layer.
+        reg_max (int): The maximal value of the discrete set. Default: 16.
+        activation (str): Type of activation function. Default: "LeakyReLU".
+    """
+
     def __init__(
         self,
         num_classes,
@@ -17,7 +33,6 @@ class SimpleConvHead(nn.Module):
         feat_channels=256,
         stacked_convs=4,
         strides=[8, 16, 32],
-        conv_cfg=None,
         norm_cfg=dict(type="GN", num_groups=32, requires_grad=True),
         activation="LeakyReLU",
         reg_max=16,
@@ -31,7 +46,6 @@ class SimpleConvHead(nn.Module):
         self.strides = strides
         self.reg_max = reg_max
 
-        self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.activation = activation
         self.cls_out_channels = num_classes
@@ -52,7 +66,6 @@ class SimpleConvHead(nn.Module):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     activation=self.activation,
                 )
@@ -64,7 +77,6 @@ class SimpleConvHead(nn.Module):
                     3,
                     stride=1,
                     padding=1,
-                    conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     activation=self.activation,
                 )

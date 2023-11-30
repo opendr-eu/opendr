@@ -10,13 +10,12 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util\
     import bbox2distance, distance2bbox, multi_apply
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.transform.warp \
     import warp_boxes, scriptable_warp_boxes
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.gfocal_loss \
-    import DistributionFocalLoss, QualityFocalLoss
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss.iou_loss import GIoULoss
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.loss import DistributionFocalLoss,\
+    QualityFocalLoss, GIoULoss
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv \
     import ConvModule, DepthwiseConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.nms import multiclass_nms, batched_nms
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.assigner.dsl_assigner \
     import DynamicSoftLabelAssigner
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.gfl_head import Integral, reduce_mean
@@ -37,13 +36,16 @@ class NanoDetPlusHead(nn.Module):
         kernel_size (int): Size of the convolving kernel. Default: 5.
         strides (list[int]): Strides of input multi-level feature maps.
             Default: [8, 16, 32].
-        conv_type (str): Type of the convolution.
-            Default: "DWConv".
+        use_depthwise (bool): Whether to use PointWise-DepthWise or Base convolutions modules.
+            Default: True.
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN').
         reg_max (int): The maximal value of the discrete set. Default: 7.
         activation (str): Type of activation function. Default: "LeakyReLU".
         assigner_cfg (dict): Config dict of the assigner. Default: dict(topk=13).
+        legacy_post_process (bool): Whether to use legacy post-processing or not. If set to False, a faster
+            implementation of post-processing will be used with respect to dynamic input.
+            Most applications will run the same with either post-processing implementations. Default: True.
     """
 
     def __init__(
@@ -55,11 +57,12 @@ class NanoDetPlusHead(nn.Module):
         stacked_convs=2,
         kernel_size=5,
         strides=[8, 16, 32],
-        conv_type="DWConv",
+        use_depthwise=True,
         norm_cfg=dict(type="BN"),
         reg_max=7,
         activation="LeakyReLU",
         assigner_cfg=dict(topk=13),
+        legacy_post_process=True,
         **kwargs
     ):
         super(NanoDetPlusHead, self).__init__()
@@ -71,7 +74,7 @@ class NanoDetPlusHead(nn.Module):
         self.strides = strides
         self.reg_max = reg_max
         self.activation = activation
-        self.ConvModule = ConvModule if conv_type == "Conv" else DepthwiseConvModule
+        self.ConvModule = DepthwiseConvModule if use_depthwise else ConvModule
 
         self.loss_cfg = loss
         self.norm_cfg = norm_cfg
@@ -89,6 +92,11 @@ class NanoDetPlusHead(nn.Module):
         self.loss_bbox = GIoULoss(loss_weight=self.loss_cfg.loss_bbox.loss_weight)
         self._init_layers()
         self.init_weights()
+
+        self.legacy_post_process = legacy_post_process
+        self.center_priors = [torch.empty(0) for _ in range(len(strides))]
+        self.inference_mode = False
+        self.dynamic = True
 
     def _init_layers(self):
         self.cls_convs = nn.ModuleList()
@@ -136,7 +144,45 @@ class NanoDetPlusHead(nn.Module):
             normal_init(self.gfl_cls[i], std=0.01, bias=bias_cls)
         print("Finish initialize NanoDet-Plus Head.")
 
+    def _apply(self, fn):
+        # Apply to(), cpu(), cuda(), half() to model tensors that are not parameters or registered buffers
+        self = super()._apply(fn)
+        if hasattr(self, "center_priors"):
+            self.center_priors = list(map(fn, self.center_priors))
+        return self
+
+    def graph_forward(self, feats: List[Tensor]):
+        outputs = []
+        for idx, (cls_convs, gfl_cls) in enumerate(
+                zip(self.cls_convs, self.gfl_cls)):
+            for conv in cls_convs:
+                feats[idx] = conv(feats[idx])
+            output = gfl_cls(feats[idx])
+
+            bs, _, ny, nx = output.shape
+            output = output.flatten(start_dim=2).permute(0, 2, 1).contiguous()
+
+            cls, reg = output.split(
+                [self.num_classes, 4 * (self.reg_max + 1)], dim=-1
+            )
+            project = self.distribution_project(reg)
+            if self.dynamic or self.center_priors[idx].shape != project.shape:
+                self.center_priors[idx] = (
+                    self.get_single_level_center_priors(
+                        bs, (ny, nx), self.strides[idx], dtype=project.dtype, device=project.device
+                    )
+                )
+            dis_preds = project * self.center_priors[idx][..., 2, None]
+            decoded_bboxes = distance2bbox(self.center_priors[idx][..., :2], dis_preds)
+            output = torch.cat((cls.sigmoid(), decoded_bboxes), dim=2)
+            outputs.append(output)
+
+        outputs = torch.cat(outputs, dim=1)
+        return outputs
+
     def forward(self, feats: List[Tensor]):
+        if self.inference_mode and not self.legacy_post_process:
+            return self.graph_forward(feats)
         outputs = []
         for idx, (cls_convs, gfl_cls) in enumerate(zip(self.cls_convs, self.gfl_cls)):
             feat = feats[idx]
@@ -144,7 +190,7 @@ class NanoDetPlusHead(nn.Module):
                 feat = conv(feat)
             output = gfl_cls(feat)
             outputs.append(output.flatten(start_dim=2))
-        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1).contiguous()
         return outputs
 
     def loss(self, preds, gt_meta, aux_preds=None):
@@ -312,7 +358,7 @@ class NanoDetPlusHead(nn.Module):
             return labels, label_scores, bbox_targets, dist_targets, 0
 
         assign_result = self.assigner.assign(
-            cls_preds.sigmoid(), center_priors, decoded_bboxes, gt_bboxes, gt_labels
+            cls_preds, center_priors, decoded_bboxes, gt_bboxes, gt_labels
         )
         pos_inds, neg_inds, pos_gt_bboxes, pos_assigned_gt_inds = self.sample(
             assign_result, gt_bboxes
@@ -371,6 +417,9 @@ class NanoDetPlusHead(nn.Module):
             iou_thresh (float): Determines the iou threshold.
             nms_max_num (int): Determines the maximum number of bounding boxes that will be retained following the nms.
         """
+        if self.inference_mode and not self.legacy_post_process:
+            return self._post_process_fast(preds, meta, mode, conf_thresh, iou_thresh, nms_max_num)
+
         if mode == "eval" and not torch.jit.is_scripting():
             # Inference do not use batches and tries to have
             # tensors exclusively for better optimization during scripting.
@@ -383,24 +432,14 @@ class NanoDetPlusHead(nn.Module):
                                   iou_threshold=iou_thresh, nms_max_num=nms_max_num)
         (det_bboxes, det_labels) = results
 
-        det_result = []
-        labels = torch.arange(self.num_classes, device=det_bboxes.device).unsqueeze(1).unsqueeze(1)
-        for i in range(self.num_classes):
-            inds = det_labels == i
+        if det_bboxes.shape[0] == 0:
+            return torch.zeros((0, 6), device=preds.device, dtype=preds.dtype)
 
-            class_det_bboxes = det_bboxes[inds]
-            class_det_bboxes[:, :4] = scriptable_warp_boxes(
-                class_det_bboxes[:, :4],
-                torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
-            )
-            if class_det_bboxes.shape[0] != 0:
-                det = torch.cat((
-                    class_det_bboxes,
-                    labels[i].repeat(class_det_bboxes.shape[0], 1)
-                ), dim=1)
-                det_result.append(det)
-
-        return det_result
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
+        )
+        return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 
     def _eval_post_process(self, preds, meta):
         cls_scores, bbox_preds = preds.split(
@@ -450,6 +489,47 @@ class NanoDetPlusHead(nn.Module):
                 ).tolist()
             det_results[img_id] = det_result
         return det_results
+
+    def _post_process_fast(self, preds, meta: Dict[str, Tensor], mode: str = "infer", conf_thresh: float = 0.05,
+                           iou_thresh: float = 0.6, nms_max_num: int = 100):
+        """Prediction results postprocessing. Decode bboxes and rescale
+        to original image size.
+        Args:
+            preds (Tensor): Prediction output.
+            meta (dict): Meta info.
+            mode (str): Determines if it uses batches and numpy or tensors for scripting.
+            conf_thresh (float): Determines the confidence threshold.
+            iou_thresh (float): Determines the iou threshold.
+            nms_max_num (int): Determines the maximum number of bounding boxes that will be retained following the nms.
+        """
+        if mode == "eval" and not torch.jit.is_scripting():
+            # Inference do not use batches and tries to have
+            # tensors exclusively for better optimization during scripting.
+            return self._eval_post_process(preds, meta)
+
+        max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
+
+        valid_mask = (preds[..., :self.num_classes] > conf_thresh).any(dim=-1)
+
+        preds = preds[valid_mask]
+        if not preds.shape[0]:
+            return torch.zeros((0, 6), device=preds.device, dtype=preds.dtype)
+
+        max_scores, labels = torch.max(preds[:, :self.num_classes], dim=1)
+        keep = max_scores.argsort(descending=True)[:max_nms]
+        pred = preds[keep]  # sort by confidence and remove excess boxes
+        labels = labels[keep]
+        bboxes = pred[:, self.num_classes:]
+        cls_scores = max_scores[keep]
+
+        det_bboxes, keep = batched_nms(bboxes, cls_scores, labels,
+                                       nms_cfg=dict(iou_threshold=iou_thresh, nms_max_num=float(nms_max_num)))
+        det_labels = labels[keep]
+        det_bboxes[:, :4] = scriptable_warp_boxes(
+            det_bboxes[:, :4],
+            torch.linalg.inv(meta["warp_matrix"]), meta["width"], meta["height"]
+        )
+        return torch.cat((det_bboxes, det_labels[:, None]), dim=1)
 
     def get_bboxes(self, cls_preds, reg_preds, input_img, mode: str = "infer", conf_threshold: float = 0.05,
                    iou_threshold: float = 0.6, nms_max_num: int = 100):
@@ -536,7 +616,10 @@ class NanoDetPlusHead(nn.Module):
         h, w = featmap_size
         x_range = (torch.arange(w, dtype=dtype, device=device)) * stride
         y_range = (torch.arange(h, dtype=dtype, device=device)) * stride
-        y, x = torch.meshgrid(y_range, x_range)
+        if torch.jit.is_scripting() or not torch.__version__[:4] == "1.13":
+            y, x = torch.meshgrid(y_range, x_range)
+        else:
+            y, x = torch.meshgrid(y_range, x_range, indexing="ij")
         if flatten:
             y = y.flatten()
             x = x.flatten()

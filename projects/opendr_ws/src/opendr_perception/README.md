@@ -324,6 +324,64 @@ The default dataset path is `./database`. Please use the `--database_path ./your
 The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
 under `/opendr/face_recognition_id`.
 
+### Active Face Recognition ROS Node
+
+You can find the active face recognition ROS node python script [here](./scripts/active_face_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [face recognition tool](../../../../src/opendr/perception/face_recognition/face_recognition_learner.py) whose documentation can be found [here](../../../../docs/reference/face-recognition.md).
+The node will update existing features in the database when the system's confidence is low, and add new persons in database when a face is not found.
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the active face recognition node:
+
+    ```shell
+    rosrun opendr_perception active_face_recognition_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_face_reco_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition`)
+   - `-id or --detections_id_topic DETECTIONS_ID_TOPIC`: topic name for detection ID messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition_id`)
+   - `-new_id or --new_id_publisher NEW_ID_PUBLISHER`: topic name for input String for new ID's, `None` to input new ID's in database as `NewID_X` (default=`none`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--backbone BACKBONE`: backbone network (default=`mobilefacenet`)
+   - `--dataset_path DATASET_PATH`: path of the directory where the images of the faces to be recognized are stored (default=`./database`)
+
+3. Default output topics:
+   - Output images: `/opendr/image_face_reco_annotated`
+   - Detection messages: `/opendr/face_recognition` and `/opendr/face_recognition_id`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+Reference images should be placed in a defined structure like:
+- imgs
+    - ID1
+      - image1
+      - image2
+    - ID2
+    - ID3
+    - ...
+
+The default dataset path is `./database`. Please use the `--database_path ./your/path/` argument to define a custom one.
+Τhe name of the sub-folder, e.g. ID1, will be published under `/opendr/face_recognition_id`.
+
+The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
+under `/opendr/face_recognition_id`.
+
+New ID's face images are saved in dataset path provided like:
+- imgs
+    - NEW_ID1
+      - image1
+      - image2
+    - NEW_ID2
+    - ...
+
 ### 2D Object Detection ROS Nodes
 
 For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet, Nanodet and DETR.
@@ -1133,6 +1191,46 @@ whose documentation can be found [here](../../../../docs/reference/object-tracki
    - `-dc or --detector_model_config_path DETECTOR_MODEL_CONFIG_PATH`: path to a model .proto config (default=`../../src/opendr/perception/object_detection3d/voxel_object_detection_3d/second_detector/configs/tanet/car/xyres_16.proto`)
 
 3. Default output topics:
+   - Detection messages: `/opendr/objects3d`
+   - Tracking ID messages: `/opendr/objects_tracking_id`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+
+
+### 3D Object Tracking VPIT ROS Node
+
+A ROS node for performing 3D single object tracking using VPIT method.
+This method need to be initialized with a 3D bounding box for an object that should be tracked. For this reasone, the initial detection3d box should be sent, as well as the corresponding point cloud. After the initialization, only point cloud data is required for inference. If a new object needs to be tracked, then the same `input_detection3d_topic` can be used to send a bounding box and the last send point cloud will be used for initialization.
+The predicted tracking annotations are split into two topics with detections and tracking IDs.
+
+You can find the 3D object tracking VPIT ROS node python script [here](./scripts/object_tracking_3d_vpit_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [3D object tracking VPIT tool](../../../../src/opendr/perception/object_tracking_3d/single_object_tracking/vpit/vpit_object_tracking_3d_learner.py)
+whose documentation can be found [here](../../../../docs/reference/object-tracking-3d-vpit.md).
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing point clouds. OpenDR provides a [point cloud dataset node](#point-cloud-dataset-ros-node) for convenience.
+
+2. Provide an initial bounding box from either a [3D detector](#3d-object-detection-voxel-ros-node), a dataset or a hand-crafted detection 3D box.
+
+3. You are then ready to start the 3D object tracking node:
+
+    ```shell
+    rosrun opendr_perception object_tracking_3d_vpit
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-ipc or --input_point_cloud_topic INPUT_POINT_CLOUD_TOPIC`: point cloud topic provided by either a point_cloud_dataset_node or any other 3D point cloud node (default=`/opendr/dataset_point_cloud`)
+   - `-idet or --input_detection3d_topic INPUT_DETECTION3D_TOPIC`: by either a 3D detector or a dataset (default=`/opendr/dataset_detection3d`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects3d`)
+   - `-t or --tracking3d_id_topic TRACKING3D_ID_TOPIC`: topic name for output tracking IDs with the same element count as in detection topic, `None` to stop the node from publishing on this topic (default=`/opendr/objects_tracking_id`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `-bb or --backbone BACKBONE`: Name of the backbone model (default=`pp`, choices=`pp, spp, spps, tanet, stanet, stanets`)
+   - `-mn or --model_name MODEL_NAME`: Name of the trained model to load (default=`vpit`)
+
+4. Default output topics:
    - Detection messages: `/opendr/objects3d`
    - Tracking ID messages: `/opendr/objects_tracking_id`
 
