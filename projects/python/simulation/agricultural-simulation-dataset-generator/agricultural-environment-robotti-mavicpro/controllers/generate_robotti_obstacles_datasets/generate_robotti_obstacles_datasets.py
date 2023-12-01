@@ -25,6 +25,8 @@ try:
     from parameters import MAX_RECORDS_PER_SCENARIO
     from parameters import OBSTACLES_PER_SCENARIO
     from parameters import WEBOTS_VERSION
+    from parameters import weather_condition
+    from parameters import enable_fog
 except ImportError:
     sys.exit("Warning: parameters cannot be imported.")
 
@@ -40,13 +42,6 @@ if (useRobotti):
 
     obj = time.gmtime(0)
     epoch = time.asctime(obj)
-
-    # set lighting conditions
-    backgrounds = [
-        'noon_cloudy_countryside']  # options: noon_cloudy_countryside, dawn_cloudy_empty, noon_stormy_empty, dusk
-
-    # enable_fog = bool(random.getrandbits(1))
-    enable_fog = False  # options: False, True
 
     global already_set_the_velocity
     already_set_the_velocity = False
@@ -204,9 +199,9 @@ if (useRobotti):
             fog_node.getField('visibilityRange').setSFFloat(visibility_range)
 
         bkg_index = 0
-        print(backgrounds[bkg_index])
-        supervisor.getFromDef('BACKGROUND').getField('texture').setSFString(backgrounds[bkg_index])
-        supervisor.getFromDef('BACKGROUND_LIGHT').getField('texture').setSFString(backgrounds[bkg_index])
+        print(weather_condition[bkg_index])
+        supervisor.getFromDef('BACKGROUND').getField('texture').setSFString(weather_condition[bkg_index])
+        supervisor.getFromDef('BACKGROUND_LIGHT').getField('texture').setSFString(weather_condition[bkg_index])
 
         # add plants
         new_field_node_string = ''

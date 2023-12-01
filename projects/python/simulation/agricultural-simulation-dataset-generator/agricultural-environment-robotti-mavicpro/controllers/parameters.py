@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-useRobotti = True
-useMavic = True
-FIELD_SIZE = [40, 14]
-DATASET_DIR_UAV = 'dataset_location/UAV'
-DATASET_DIR_ROBOTTI = 'dataset_location/UGV'
+useRobotti = True  # options: False, True
+useMavic = True  # options: False, True
+weather_condition = [
+        'noon_cloudy_countryside']  # options: noon_cloudy_countryside, dawn_cloudy_empty, noon_stormy_empty, dusk
+enable_fog = False  # options: False, True
+DATASET_DIR_UAV = '../dataset_location/{}/UAV'.format(backgrounds[0])
+DATASET_DIR_ROBOTTI = '../dataset_location/{}/UGV'.format(backgrounds[0])
 STOP_ON = 193
 MAX_RECORDS_PER_SCENARIO = 19300
 OBSTACLES_PER_SCENARIO = 12
 WEBOTS_VERSION = "Webots 2023b"
 ROBOTTI_MAX_SPEED = 6.28
+FIELD_SIZE = [40, 14]

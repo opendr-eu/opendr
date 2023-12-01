@@ -13,7 +13,10 @@ This folder contains source for:
 </p>
 
 # How to use
-To use and generate the datasets open the Webots world file ./agricultural-environment-robotti-mavicpro/worlds/agricultural-environment-robotti-mavicpro.wbt using Webots version from this link: https://github.com/cyberbotics/webots/releases/tag/CameraRecognition
+To use and generate the datasets open the Webots world [file](./agricultural-environment-robotti-mavicpro/worlds/agricultural-environment-robotti-mavicpro.wbt) using Webots and run the simulation. 
+This will initiate the dataset collection using the controller for UAV ([link](./agricultural-environment-robotti-mavicpro/controllers/mavic2pro_patrol/mavic2pro_patrol.py)) and UGV ([link](./agricultural-environment-robotti-mavicpro/controllers/generate_robotti_obstacles_datasets/generate_robotti_obstacles_datasets.py)) robots.
+The collection can be customized updating the parameters [file](./agricultural-environment-robotti-mavicpro/controllers/parameters.py)  to enable UAV or UGV recording, change weather condition, set dataset location, number of obstacles the total recording duration.
+The dataset contains around 60 megabytes for 1 second of recording with both UAV and UGV.
 
 # Dataset structure
 Each dataset comprises of simultaneous data gathered from a UGV and a UAV.
