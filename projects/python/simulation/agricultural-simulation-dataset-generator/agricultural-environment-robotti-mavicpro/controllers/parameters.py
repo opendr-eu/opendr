@@ -17,8 +17,8 @@ useMavic = True  # options: False, True
 weather_condition = [
         'noon_cloudy_countryside']  # options: noon_cloudy_countryside, dawn_cloudy_empty, noon_stormy_empty, dusk
 enable_fog = False  # options: False, True
-DATASET_DIR_UAV = '../dataset_location/{}/UAV'.format(backgrounds[0])
-DATASET_DIR_ROBOTTI = '../dataset_location/{}/UGV'.format(backgrounds[0])
+DATASET_DIR_UAV = '../dataset_location/{}/UAV'.format(weather_condition[0])
+DATASET_DIR_ROBOTTI = '../dataset_location/{}/UGV'.format(weather_condition[0])
 STOP_ON = 193
 MAX_RECORDS_PER_SCENARIO = 19300
 OBSTACLES_PER_SCENARIO = 12
