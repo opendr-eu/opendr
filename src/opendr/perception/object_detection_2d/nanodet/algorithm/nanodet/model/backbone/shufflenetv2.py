@@ -12,9 +12,8 @@ model_urls = {
 }
 
 
-def channel_shuffle(x, groups):
-    # type: (torch.Tensor, int) -> torch.Tensor
-    batchsize, num_channels, height, width = x.size()
+def channel_shuffle(x, groups: int):
+    batchsize, num_channels, height, width = x.shape
     channels_per_group = int(num_channels/groups)
 
     # reshape
@@ -146,6 +145,9 @@ class ShuffleNetV2(nn.Module):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
+        self.stages = nn.ModuleList()
+        self.stages.append(nn.Identity())  # stage0
+        self.stages.append(nn.Identity())  # stage1
         stage_names = ["stage{}".format(i) for i in [2, 3, 4]]
         for name, repeats, output_channels in zip(
             stage_names, self.stage_repeats, self._stage_out_channels[1:]
@@ -162,6 +164,7 @@ class ShuffleNetV2(nn.Module):
                     )
                 )
             setattr(self, name, nn.Sequential(*seq))
+            self.stages.append(getattr(self, name))
             input_channels = output_channels
         output_channels = self._stage_out_channels[-1]
         if self.with_last_conv:
@@ -171,18 +174,18 @@ class ShuffleNetV2(nn.Module):
                 act_layers(activation),
             )
             self.stage4.add_module("conv5", conv5)
+            self.stages.append(self.stage4)
         self._initialize_weights(pretrain)
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
         output = []
-        for i in range(2, 5):
-            stage = getattr(self, "stage{}".format(i))
-            x = stage(x)
-            if i in self.out_stages:
-                output.append(x)
+        for i, stage in enumerate(self.stages):
+            if i in [2, 3, 4]:
+                x = stage(x)
+                if i in self.out_stages:
+                    output.append(x)
         return output
 
     def _initialize_weights(self, pretrain=True):
