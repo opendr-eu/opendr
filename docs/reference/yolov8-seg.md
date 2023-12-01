@@ -8,11 +8,12 @@ Bases: `engine.learners.Learner`
 The *YOLOv8SegLearner* class is a wrapper of the YOLOv8 detector[[1]](#yolo-1)
 [Ultralytics implementation](https://github.com/ultralytics/ultralytics), for its semantic segmentation variant.
 It can be used to perform semantic segmentation on images (inference only). The tool can also return bounding boxes.
-The detected classes can be seen 
+The detected classes can be found 
 [here](https://github.com/ultralytics/ultralytics/blob/9aaa5d5ed0e5a0c1f053069dd73f12b845c4f282/ultralytics/cfg/datasets/coco.yaml#L17).
 
 Note that to be compatible with the OpenDR Heatmap format, we modify the `person` class to be index `80` instead of `0`, with
-`0` being the background (pixels with no detections).
+`0` being the background (pixels with no detections). Keep in mind that this affects the heatmap output only and not the 
+default YOLOv8 visualization.
 
 The [YOLOv8SegLearner](/src/opendr/perception/semantic_segmentation/yolov8_seg/yolov8_seg_learner.py) class has the following
 public methods:

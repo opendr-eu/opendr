@@ -347,6 +347,8 @@ whose documentation can be found here:
 [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [YOLOv5 docs](../../../../docs/reference/object-detection-2d-yolov5.md),
 [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [Nanodet docs](../../../../docs/reference/nanodet.md), [DETR docs](../../../../docs/reference/detr.md).
 
+Note that the [semantic segmentation YOLOv8 node](#semantic-segmentation-yolov8-ros-node) can also perform 2D object detection.
+
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
@@ -527,16 +529,16 @@ and additional information about EfficientPS [here](../../../../src/opendr/perce
 
    For viewing the output, refer to the [notes above.](#notes)
 
-### Semantic Segmentation ROS2 Node
+### Semantic Segmentation BiSeNet ROS2 Node
 
-You can find the semantic segmentation ROS2 node python script [here](./opendr_perception/semantic_segmentation_bisenet_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [semantic segmentation tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
+You can find the semantic segmentation BiSeNet ROS2 node python script [here](./opendr_perception/semantic_segmentation_bisenet_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [semantic segmentation BiSeNet tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
 
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the semantic segmentation node:
+2. You are then ready to start the semantic segmentation BiSeNet node:
 
     ```shell
     ros2 run opendr_perception semantic_segmentation_bisenet
@@ -562,6 +564,43 @@ On the table below you can find the detectable classes and their corresponding I
 | Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
+
+### Semantic Segmentation YOLOv8 ROS2 Node
+
+You can find the semantic segmentation YOLOv8 ROS2 node python script [here](./opendr_perception/semantic_segmentation_yolov8_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [semantic segmentation YOLOv8 tool](../../../../src/opendr/perception/semantic_segmentation/yolov8_seg/yolov8_seg_learner.py) whose documentation can be found [here](../../../../docs/reference/yolov8-seg.md).
+
+This node can perform both object detection 2D and semantic segmentation of the objects detected within the bounding boxes.
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the semantic segmentation YOLOv8 node:
+
+    ```shell
+    ros2 run opendr_perception semantic_segmentation_yolov8
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/image_raw`)
+   - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS2 image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for object detection/bounding box messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--model_name MODEL_NAME`: Network architecture, can be one of `yolov8n-seg`, `yolov8s-seg`, `yolov8m-seg`, `yolov8l-seg`, `yolov8n-segx`, `custom` (default=`yolov8s-seg`)
+
+3. Default output topics:
+   - Output images: `/opendr/heatmap`, `/opendr/heatmap_visualization`
+   - Detection messages: `/opendr/heatmap`, `/opendr/objects`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+The detected classes can be found 
+[here](https://github.com/ultralytics/ultralytics/blob/9aaa5d5ed0e5a0c1f053069dd73f12b845c4f282/ultralytics/cfg/datasets/coco.yaml#L17).
 
 ### Binary High Resolution ROS2 Node
 
