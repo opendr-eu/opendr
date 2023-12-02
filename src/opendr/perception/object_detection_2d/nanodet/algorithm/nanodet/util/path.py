@@ -18,9 +18,9 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.util.rank_f
 
 
 @rank_filter
-def mkdir(path):
+def mkdir(path, exist_ok=False):
     if not os.path.exists(path):
-        os.makedirs(path)
+        os.makedirs(path, exist_ok=exist_ok)
 
 
 def collect_files(path, exts):

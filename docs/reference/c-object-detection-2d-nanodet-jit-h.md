@@ -16,11 +16,12 @@ The *NanodetModelT* structure keeps all the necessary information that are requi
 
 ### Function *loadNanodetModel()*
 ```C
-void loadNanodetModel(char *modelPath, char *modelName, char *device, float scoreThreshold, int height, int width, NanodetModelT *model);
+void loadNanodetModel(char *modelPath, char *modelName, char *device, float scoreThreshold, int height, int width, int keepRatio, NanodetModelT *model);
 ```
 Loads a Nanodet object detection model of type (*modelName*) saved in the local filesystem (*modelPath*) in OpenDR format.
 This function also initializes a (*device*) JIT network for performing inference using this model.
 If *width* or *height* is equal to zero, the model will reshape the images in the size that the model was trained.
+If *keepRatio* is equal to zero, the input image will keep its original aspect ratio during preprocessing.
 The pre-trained models should follow the OpenDR conventions.
 The Python API can be used to train and export an optimized OpenDR model that can be used for inference using the C API.
 

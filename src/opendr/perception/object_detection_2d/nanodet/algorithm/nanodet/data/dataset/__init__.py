@@ -23,40 +23,42 @@ from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.data.datase
 
 
 def build_dataset(cfg, dataset, class_names, mode, verbose=True):
-        dataset_cfg = copy.deepcopy(cfg)
-        supported_datasets = ['coco', 'voc']
-        if isinstance(dataset, ExternalDataset):
-            if dataset.dataset_type.lower() not in supported_datasets:
-                raise UserWarning("ExternalDataset dataset_type must be one of: ", supported_datasets)
+    dataset_cfg = copy.deepcopy(cfg)
+    supported_datasets = ['coco', 'voc']
+    if isinstance(dataset, ExternalDataset):
+        if dataset.dataset_type.lower() not in supported_datasets:
+            raise UserWarning("ExternalDataset dataset_type must be one of: ", supported_datasets)
 
-            if verbose:
-                print("Loading {} type dataset...".format(dataset.dataset_type))
-                print("From {}".format(dataset.path))
+        if verbose:
+            print("Loading {} type dataset...".format(dataset.dataset_type))
+            print("From {}".format(dataset.path))
 
-            if dataset.dataset_type.lower() == 'voc':
-                if mode == "train":
-                    img_path = "{}/train/JPEGImages".format(dataset.path)
-                    ann_path = "{}/train/Annotations".format(dataset.path)
-                else:
-                    img_path = "{}/val/JPEGImages".format(dataset.path)
-                    ann_path = "{}/val/Annotations".format(dataset.path)
-                dataset = XMLDataset(img_path=img_path, ann_path=ann_path, mode=mode,
-                                     class_names=class_names, **dataset_cfg)
+        if dataset.dataset_type.lower() == 'voc':
+            if mode == "train":
+                img_path = "{}/train/JPEGImages".format(dataset.path)
+                ann_path = "{}/train/Annotations".format(dataset.path)
+            else:
+                img_path = "{}/val/JPEGImages".format(dataset.path)
+                ann_path = "{}/val/Annotations".format(dataset.path)
+            dataset = XMLDataset(img_path=img_path, ann_path=ann_path, mode=mode,
+                                 class_names=class_names, **dataset_cfg)
 
-            elif dataset.dataset_type.lower() == 'coco':
-                if mode == "train":
-                    img_path = "{}/train2017".format(dataset.path)
-                    ann_path = "{}/annotations/instances_train2017.json".format(dataset.path)
-                else:
-                    img_path = "{}/val2017".format(dataset.path)
-                    ann_path = "{}/annotations/instances_val2017.json".format(dataset.path)
-                dataset = CocoDataset(img_path=img_path, ann_path=ann_path, mode=mode, **dataset_cfg)
-            if verbose:
-                print("ExternalDataset loaded.")
-            return dataset
-        elif isinstance(dataset, XMLBasedDataset):
-            dataset = XMLDataset(img_path=dataset.abs_images_dir, ann_path=dataset.abs_annot_dir, mode=mode,
-                                 class_names=dataset.classes, **dataset_cfg)
-            return dataset
-        else:
-            raise ValueError("Dataset type {} not supported".format(type(dataset)))
+        elif dataset.dataset_type.lower() == 'coco':
+            if mode == "train":
+                img_path = "{}/train2017".format(dataset.path)
+                ann_path = "{}/annotations/instances_train2017.json".format(dataset.path)
+            else:
+                img_path = "{}/val2017".format(dataset.path)
+                ann_path = "{}/annotations/instances_val2017.json".format(dataset.path)
+            dataset = CocoDataset(img_path=img_path, ann_path=ann_path, mode=mode, **dataset_cfg)
+        if verbose:
+            print("ExternalDataset loaded.")
+        return dataset
+    elif isinstance(dataset, XMLBasedDataset):
+        dataset = XMLDataset(img_path=dataset.abs_images_dir, ann_path=dataset.abs_annot_dir, mode=mode,
+                             class_names=dataset.classes, **dataset_cfg)
+        return dataset
+    elif isinstance(dataset, XMLDataset) or isinstance(dataset, CocoDataset):
+        return dataset
+    else:
+        raise ValueError("Dataset type {} not supported".format(type(dataset)))

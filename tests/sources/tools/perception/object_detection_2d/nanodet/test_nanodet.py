@@ -46,6 +46,7 @@ class TestNanodetLearner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        warnings.simplefilter("ignore", ResourceWarning)
         print("\n\n**********************************\nTEST Nanodet Learner\n"
               "**********************************")
 
@@ -71,6 +72,7 @@ class TestNanodetLearner(unittest.TestCase):
         print('Finished cleaning for Nanodet...')
 
     def test_fit(self):
+        warnings.simplefilter("ignore", UserWarning)
         print('Starting training test for Nanodet...')
         training_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
         m = list(self.detector._model.parameters())[0].clone().detach().clone().to(device)
@@ -88,6 +90,7 @@ class TestNanodetLearner(unittest.TestCase):
         print('Finished training test for Nanodet...')
 
     def test_eval(self):
+        warnings.simplefilter("ignore", UserWarning)
         print('Starting evaluation test for Nanodet...')
         eval_dataset = ExternalDataset(path=os.path.join(self.temp_dir, "test_data"), dataset_type="voc")
         self.detector.load(path=os.path.join(self.temp_dir, "nanodet_{}".format(_DEFAULT_MODEL)), verbose=False)
@@ -102,6 +105,7 @@ class TestNanodetLearner(unittest.TestCase):
         print('Finished evaluation test for Nanodet...')
 
     def test_infer(self):
+        warnings.simplefilter("ignore", UserWarning)
         print('Starting inference test for Nanodet...')
         self.detector.load(os.path.join(self.temp_dir, "nanodet_{}".format(_DEFAULT_MODEL)), verbose=False)
         img = cv2.imread(os.path.join(self.temp_dir, "000000000036.jpg"))

@@ -59,6 +59,6 @@ def divisible_padding(
         img_heights = torch.div((img_heights + divisible - 1), divisible, rounding_mode='trunc') * divisible
         img_widths = torch.div((img_widths + divisible - 1), divisible, rounding_mode='trunc') * divisible
 
-    padding_size = [0, img_widths - img_tensor.shape[-1], 0, img_heights - img_tensor.shape[-2]]
+    padding_size = [0, int(img_widths - img_tensor.shape[-1]), 0, int(img_heights - img_tensor.shape[-2])]
     batch_img = F.pad(img_tensor, padding_size, value=pad_value)
-    return batch_img.unsqueeze(0)
+    return batch_img.unsqueeze(0).contiguous()

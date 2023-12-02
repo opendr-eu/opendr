@@ -31,7 +31,6 @@ model:
       activation: ReLU6
       share_cls_reg: True
       octave_base_scale: 5
-      scales_per_octave: 1
       strides: [8, 16, 32]
       reg_max: 10
       norm_cfg:

@@ -72,7 +72,8 @@ Neither the copyright holder nor any applicable licensor will be liable for any 
         - compressive learning:
             - [multilinear_compressive_learning Module](multilinear-compressive-learning.md)
         - semantic segmentation:
-            - [semantic_segmentation Module](semantic-segmentation.md)
+            - [semantic_segmentation bisenet Module](semantic-segmentation.md)
+            - [semantic segmentation yolov8 Module](yolov8-seg.md)
         - panoptic segmentation:
             - [efficient_ps Module](efficient-ps.md)
             - [efficient_lps Module](efficient-lps.md)

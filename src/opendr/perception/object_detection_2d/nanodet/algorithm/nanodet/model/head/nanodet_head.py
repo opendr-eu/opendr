@@ -17,7 +17,8 @@ import torch.nn as nn
 from torch import Tensor
 from typing import List
 
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule, DepthwiseConvModule
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.conv import ConvModule, \
+    DepthwiseConvModule
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.init_weights import normal_init
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head.gfl_head import GFLHead
 
@@ -34,8 +35,7 @@ class NanoDetHead(GFLHead):
         input_channel,
         stacked_convs=2,
         octave_base_scale=5,
-        conv_type="DWConv",
-        conv_cfg=None,
+        use_depthwise=True,
         norm_cfg=dict(type="BN"),
         reg_max=16,
         share_cls_reg=False,
@@ -46,7 +46,7 @@ class NanoDetHead(GFLHead):
     ):
         self.share_cls_reg = share_cls_reg
         self.activation = activation
-        self.ConvModule = ConvModule if conv_type == "Conv" else DepthwiseConvModule
+        self.ConvModule = DepthwiseConvModule if use_depthwise else ConvModule
         super(NanoDetHead, self).__init__(
             num_classes,
             loss,
@@ -55,7 +55,6 @@ class NanoDetHead(GFLHead):
             stacked_convs,
             octave_base_scale,
             strides,
-            conv_cfg,
             norm_cfg,
             reg_max,
             **kwargs
@@ -82,7 +81,6 @@ class NanoDetHead(GFLHead):
                 for _ in self.strides
             ]
         )
-        # TODO: if
         self.gfl_reg = nn.ModuleList(
             [
                 nn.Conv2d(self.feat_channels, 4 * (self.reg_max + 1), 1, padding=0)
@@ -137,7 +135,6 @@ class NanoDetHead(GFLHead):
             normal_init(self.gfl_reg[i], std=0.01)
         print("Finish initialize NanoDet Head.")
 
-    @torch.jit.unused
     def forward(self, feats: List[Tensor]):
         outputs = []
         for idx, (cls_convs, reg_convs, gfl_cls, gfl_reg) in enumerate(zip(
@@ -157,5 +154,5 @@ class NanoDetHead(GFLHead):
                 output = torch.cat([cls_score, bbox_pred], dim=1)
             outputs.append(output.flatten(start_dim=2))
 
-        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1)
+        outputs = torch.cat(outputs, dim=2).permute(0, 2, 1).contiguous()
         return outputs

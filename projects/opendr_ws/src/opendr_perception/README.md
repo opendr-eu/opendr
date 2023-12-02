@@ -324,6 +324,64 @@ The default dataset path is `./database`. Please use the `--database_path ./your
 The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
 under `/opendr/face_recognition_id`.
 
+### Active Face Recognition ROS Node
+
+You can find the active face recognition ROS node python script [here](./scripts/active_face_recognition_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [face recognition tool](../../../../src/opendr/perception/face_recognition/face_recognition_learner.py) whose documentation can be found [here](../../../../docs/reference/face-recognition.md).
+The node will update existing features in the database when the system's confidence is low, and add new persons in database when a face is not found.
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the active face recognition node:
+
+    ```shell
+    rosrun opendr_perception active_face_recognition_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic name for output annotated RGB image, `None` to stop the node from publishing on this topic (default=`/opendr/image_face_reco_annotated`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for detection messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition`)
+   - `-id or --detections_id_topic DETECTIONS_ID_TOPIC`: topic name for detection ID messages, `None` to stop the node from publishing on this topic (default=`/opendr/face_recognition_id`)
+   - `-new_id or --new_id_publisher NEW_ID_PUBLISHER`: topic name for input String for new ID's, `None` to input new ID's in database as `NewID_X` (default=`none`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--backbone BACKBONE`: backbone network (default=`mobilefacenet`)
+   - `--dataset_path DATASET_PATH`: path of the directory where the images of the faces to be recognized are stored (default=`./database`)
+
+3. Default output topics:
+   - Output images: `/opendr/image_face_reco_annotated`
+   - Detection messages: `/opendr/face_recognition` and `/opendr/face_recognition_id`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+Reference images should be placed in a defined structure like:
+- imgs
+    - ID1
+      - image1
+      - image2
+    - ID2
+    - ID3
+    - ...
+
+The default dataset path is `./database`. Please use the `--database_path ./your/path/` argument to define a custom one.
+Τhe name of the sub-folder, e.g. ID1, will be published under `/opendr/face_recognition_id`.
+
+The database entry and the returned confidence is published under the topic name `/opendr/face_recognition`, and the human-readable ID
+under `/opendr/face_recognition_id`.
+
+New ID's face images are saved in dataset path provided like:
+- imgs
+    - NEW_ID1
+      - image1
+      - image2
+    - NEW_ID2
+    - ...
+
 ### 2D Object Detection ROS Nodes
 
 For 2D object detection, there are several ROS nodes implemented using various algorithms. The generic object detectors are SSD, YOLOv3, YOLOv5, CenterNet, Nanodet and DETR.
@@ -337,6 +395,8 @@ The nodes makes use of the toolkit's various 2D object detection tools:
 whose documentation can be found here:
 [SSD docs](../../../../docs/reference/object-detection-2d-ssd.md), [YOLOv3 docs](../../../../docs/reference/object-detection-2d-yolov3.md), [YOLOv5 docs](../../../../docs/reference/object-detection-2d-yolov5.md),
 [CenterNet docs](../../../../docs/reference/object-detection-2d-centernet.md), [Nanodet docs](../../../../docs/reference/nanodet.md), [DETR docs](../../../../docs/reference/detr.md).
+
+Note that the [semantic segmentation YOLOv8 node](#semantic-segmentation-yolov8-ros-node) can also perform 2D object detection.
 
 #### Instructions for basic usage:
 
@@ -439,7 +499,7 @@ Feel free to modify the node to initialize it in a different way that matches yo
 For 2D object tracking, there two ROS nodes provided, one using Deep Sort and one using FairMOT which use either pretrained models, or custom trained models.
 The predicted tracking annotations are split into two topics with detections and tracking IDs. Additionally, an annotated image is generated.
 
-You can find the 2D object detection ROS node python scripts here: [Deep Sort node](./scripts/object_tracking_2d_deep_sort_node.py) and [FairMOT node](./scripts/object_tracking_2d_fair_mot_node.py)
+You can find the 2D object tracking ROS node python scripts here: [Deep Sort node](./scripts/object_tracking_2d_deep_sort_node.py) and [FairMOT node](./scripts/object_tracking_2d_fair_mot_node.py)
 where you can inspect the code and modify it as you wish to fit your needs.
 The nodes makes use of the toolkit's [object tracking 2D - Deep Sort tool](../../../../src/opendr/perception/object_tracking_2d/deep_sort/object_tracking_2d_deep_sort_learner.py)
 and [object tracking 2D - FairMOT tool](../../../../src/opendr/perception/object_tracking_2d/fair_mot/object_tracking_2d_fair_mot_learner.py)
@@ -515,16 +575,16 @@ and additional information about EfficientPS [here](../../../../src/opendr/perce
    - Output images: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`, `/opendr/panoptic/rgb_visualization`
    - Detection messages: `/opendr/panoptic/semantic`, `/opendr/panoptic/instance`
 
-### Semantic Segmentation ROS Node
+### Semantic Segmentation BiSeNet ROS Node
 
-You can find the semantic segmentation ROS node python script [here](./scripts/semantic_segmentation_bisenet_node.py) to inspect the code and modify it as you wish to fit your needs.
-The node makes use of the toolkit's [semantic segmentation tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
+You can find the semantic segmentation BiSeNet ROS node python script [here](./scripts/semantic_segmentation_bisenet_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [semantic segmentation BiSeNet tool](../../../../src/opendr/perception/semantic_segmentation/bisenet/bisenet_learner.py) whose documentation can be found [here](../../../../docs/reference/semantic-segmentation.md).
 
 #### Instructions for basic usage:
 
 1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
 
-2. You are then ready to start the semantic segmentation node:
+2. You are then ready to start the semantic segmentation BiSeNet node:
 
     ```shell
     rosrun opendr_perception semantic_segmentation_bisenet_node.py
@@ -550,6 +610,44 @@ On the table below you can find the detectable classes and their corresponding I
 | Class  | Bicyclist | Building | Car | Column Pole | Fence | Pedestrian | Road | Sidewalk | Sign Symbol | Sky | Tree | Unknown |
 |--------|-----------|----------|-----|-------------|-------|------------|------|----------|-------------|-----|------|---------|
 | **ID** | 0         | 1        | 2   | 3           | 4     | 5          | 6    | 7        | 8           | 9   | 10   | 11      |
+
+### Semantic Segmentation YOLOv8 ROS Node
+
+You can find the semantic segmentation YOLOv8 ROS node python script [here](./scripts/semantic_segmentation_yolov8_node.py) to inspect the code and modify it as you wish to fit your needs.
+The node makes use of the toolkit's [semantic segmentation YOLOv8 tool](../../../../src/opendr/perception/semantic_segmentation/yolov8_seg/yolov8_seg_learner.py) 
+whose documentation can be found [here](../../../../docs/reference/yolov8-seg.md).
+
+This node can perform both object detection 2D and semantic segmentation of the objects detected within the bounding boxes.
+
+#### Instructions for basic usage:
+
+1. Start the node responsible for publishing images. If you have a USB camera, then you can use the `usb_cam_node` as explained in the [prerequisites above](#prerequisites).
+
+2. You are then ready to start the semantic segmentation YOLOv8 node:
+
+    ```shell
+    rosrun opendr_perception semantic_segmentation_yolov8_node.py
+    ```
+    The following optional arguments are available:
+   - `-h or --help`: show a help message and exit
+   - `-i or --input_rgb_image_topic INPUT_RGB_IMAGE_TOPIC`: topic name for input RGB image (default=`/usb_cam/image_raw`)
+   - `-o or --output_heatmap_topic OUTPUT_HEATMAP_TOPIC`: topic to which we are publishing the heatmap in the form of a ROS image containing class IDs, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap`)
+   - `-ov or --output_rgb_image_topic OUTPUT_RGB_IMAGE_TOPIC`: topic to which we are publishing the heatmap image blended with the input image for visualization purposes, `None` to stop the node from publishing on this topic (default=`/opendr/heatmap_visualization`)
+   - `-d or --detections_topic DETECTIONS_TOPIC`: topic name for object detection/bounding box messages, `None` to stop the node from publishing on this topic (default=`/opendr/objects`)
+   - `--performance_topic PERFORMANCE_TOPIC`: topic name for performance messages (default=`None`, disabled)
+   - `--device DEVICE`: device to use, either `cpu` or `cuda`, falls back to `cpu` if GPU or CUDA is not found (default=`cuda`)
+   - `--model_name MODEL_NAME`: Network architecture, can be one of `yolov8n-seg`, `yolov8s-seg`, `yolov8m-seg`, `yolov8l-seg`, `yolov8n-segx`, `custom` (default=`yolov8s-seg`)
+
+3. Default output topics:
+   - Output images: `/opendr/heatmap`, `/opendr/heatmap_visualization`
+   - Detection messages: `/opendr/heatmap`, `/opendr/objects`
+
+   For viewing the output, refer to the [notes above.](#notes)
+
+**Notes**
+
+The detected classes can be found 
+[here](https://github.com/ultralytics/ultralytics/blob/9aaa5d5ed0e5a0c1f053069dd73f12b845c4f282/ultralytics/cfg/datasets/coco.yaml#L17).
 
 ### Binary High Resolution ROS Node
 

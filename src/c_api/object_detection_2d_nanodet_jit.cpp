@@ -16,6 +16,7 @@
 
 #include <document.h>
 #include <torch/script.h>
+#include <torch/torch.h>
 #include <torchvision/vision.h>
 #include <iostream>
 #include <opencv2/highgui/highgui.hpp>
@@ -71,6 +72,12 @@ torch::Tensor NanoDet::preProcess(cv::Mat *image) {
   tensorImage = tensorImage.add(this->mMeanTensor);
   tensorImage = tensorImage.mul(this->mStdTensor);
 
+  // divisible padding
+  int pad_width = (int((image->cols + 32 - 1) / 32) * 32) - image->cols;
+  int pad_height = (int((image->rows + 32 - 1) / 32) * 32) - image->rows;
+  torch::nn::functional::PadFuncOptions padding({0, pad_width, 0, pad_height});  // left, right, top, bottom,
+  tensorImage = torch::nn::functional::pad(tensorImage, padding);
+  tensorImage.unsqueeze_(0);
   return tensorImage;
 }
 
@@ -267,11 +274,11 @@ torch::DeviceType torchDevice(const char *deviceName, int verbose = 0) {
 }
 
 void loadNanodetModel(const char *modelPath, const char *modelName, const char *device, float scoreThreshold, int height,
-                      int width, NanodetModelT *model) {
+                      int width, int keepRatio, NanodetModelT *model) {
   // Initialize model
   model->network = NULL;
   model->scoreThreshold = scoreThreshold;
-  model->keepRatio = 0;
+  model->keepRatio = keepRatio;
 
   // Parse the model JSON file
   std::string basePath(modelPath);
@@ -338,14 +345,14 @@ void loadNanodetModel(const char *modelPath, const char *modelName, const char *
 }
 
 void ffNanodet(NanoDet *model, torch::Tensor *inputTensor, cv::Mat *warpMatrix, cv::Size *originalSize,
-               std::vector<torch::Tensor> *outputs) {
+               torch::Tensor *outputs) {
   // Make all the inputs as tensors to use in jit model
   torch::Tensor srcHeight = torch::tensor(originalSize->height);
   torch::Tensor srcWidth = torch::tensor(originalSize->width);
   torch::Tensor warpMat = torch::from_blob(warpMatrix->data, {3, 3});
 
   // Model inference
-  *outputs = (model->network()).forward({*inputTensor, srcHeight, srcWidth, warpMat}).toTensorVector();
+  *outputs = (model->network()).forward({*inputTensor, srcHeight, srcWidth, warpMat}).toTensor();
 }
 
 OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *image) {
@@ -369,23 +376,24 @@ OpenDRDetectionVectorTargetT inferNanodet(NanodetModelT *model, OpenDRImageT *im
   torch::Tensor input = networkPTR->preProcess(&resizedImg);
   cv::Size originalSize(opencvImage->cols, opencvImage->rows);
 
-  std::vector<torch::Tensor> outputs;
+  torch::Tensor outputs;
 
   ffNanodet(networkPTR, &input, &warpMatrix, &originalSize, &outputs);
 
   std::vector<OpenDRDetectionTarget> detections;
 
-  for (int label = 0; label < outputs.size(); label++) {
-    for (int box = 0; box < outputs[label].size(0); box++) {
-      OpenDRDetectionTargetT detection;
-      detection.name = outputs[label][box][5].item<int>();
-      detection.left = outputs[label][box][0].item<float>();
-      detection.top = outputs[label][box][1].item<float>();
-      detection.width = outputs[label][box][2].item<float>() - outputs[label][box][0].item<float>();
-      detection.height = outputs[label][box][3].item<float>() - outputs[label][box][1].item<float>();
-      detection.score = outputs[label][box][4].item<float>();
-      detections.push_back(detection);
-    }
+  if (outputs.numel() == 0)
+    return detectionsVector;
+
+  for (int box = 0; box < outputs.size(0); box++) {
+    OpenDRDetectionTargetT detection;
+    detection.name = outputs[box][5].item<int>();
+    detection.left = outputs[box][0].item<float>();
+    detection.top = outputs[box][1].item<float>();
+    detection.width = outputs[box][2].item<float>() - outputs[box][0].item<float>();
+    detection.height = outputs[box][3].item<float>() - outputs[box][1].item<float>();
+    detection.score = outputs[box][4].item<float>();
+    detections.push_back(detection);
   }
   // Put vector detection as C pointer and size
   if (static_cast<int>(detections.size()) > 0)
