@@ -32,6 +32,7 @@ setup(
             'object_tracking_2d_siamrpn = opendr_perception.object_tracking_2d_siamrpn_node:main',
             'face_detection_retinaface = opendr_perception.face_detection_retinaface_node:main',
             'semantic_segmentation_bisenet = opendr_perception.semantic_segmentation_bisenet_node:main',
+            'semantic_segmentation_yolov8 = opendr_perception.semantic_segmentation_yolov8_node:main',
             'panoptic_segmentation_efficient_ps = opendr_perception.panoptic_segmentation_efficient_ps_node:main',
             'panoptic_segmentation_efficient_lps = opendr_perception.panoptic_segmentation_efficient_lps_node:main',
             'face_recognition = opendr_perception.face_recognition_node:main',
