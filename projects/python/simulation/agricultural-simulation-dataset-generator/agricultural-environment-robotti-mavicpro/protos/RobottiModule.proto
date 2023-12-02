@@ -1,0 +1,118 @@
+#VRML_SIM R2022b utf8
+# template language: javascript
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Robotti side module.
+
+EXTERNPROTO "RobottiModuleWheel.proto"
+
+PROTO RobottiModule [
+  field  SFVec3f                   translation   0 0 0
+  field  SFRotation                rotation      0 0 1 0
+  field  SFString{"left", "right"} side          "left"
+  field  SFBool                    enablePhysics TRUE        # Defines whether the table should have physics.
+]
+{
+  %<
+    let offset = fields.side.value == 'left' ? 0.726 : 0;
+    let rotation = fields.side.value == 'left' ? 0.726 : 0;
+  >%
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    children [
+      %< if (fields.side.value == 'left') { >%
+      Transform {
+        translation 0 0.726 0
+        children [
+      %< } >%
+          CadShape {
+            url [
+              "meshes/module.dae"
+            ]
+          }
+      %< if (fields.side.value == 'left') { >%
+        ]
+      }
+      %< } >%
+      Transform {
+      %< if (fields.side.value == 'left') { >%
+        translation -1.706 0.7855 -0.025
+        rotation 1 0 0 3.14159
+      %< } else { >%
+        translation -1.706 -0.7855 -0.025
+      %< } >%
+        children [
+          CadShape {
+            url [
+              "meshes/module_bumper.dae"
+            ]
+          }
+        ]
+      }
+      RobottiModuleWheel {
+      %< if (fields.side.value == 'left') { >%
+        translation 0.29 0.13 -0.075
+        rotation 0 0 1 3.14159
+      %< } else { >%
+        translation 0.29 -0.13 -0.075
+      %< } >%
+        name %<= '"' + fields.side.value + '_front_wheel"' >%
+        enablePhysics IS enablePhysics
+      }
+      RobottiModuleWheel {
+      %< if (fields.side.value == 'left') { >%
+        translation -1.26 0.13 -0.075
+        rotation 0 0 1 3.14159
+      %< } else { >%
+        translation -1.26 -0.13 -0.075
+      %< } >%
+        name %<= '"' + fields.side.value + '_rear_wheel"' >%
+        enablePhysics IS enablePhysics
+      }
+    ]
+    name %<= '"' + fields.side.value + '_module"' >%
+    boundingObject Group {
+      children [
+        Transform {
+        %< if (fields.side.value == 'left') { >%
+          translation -0.53225 0.372545 0.417
+        %< } else { >%
+          translation -0.53225 -0.353111 0.417
+        %< } >%
+          children [
+            Box {
+              size 2.359 0.756777 0.984
+            }
+          ]
+        }
+        Transform {
+        %< if (fields.side.value == 'left') { >%
+          translation -0.48625 0.39325 -0.025
+        %< } else { >%
+          translation -0.48625 -0.39325 -0.025
+        %< } >%
+          children [
+            Box {
+              size 2.4395 0.7845 0.05
+            }
+          ]
+        }
+      ]
+    }
+    %< if (fields.enablePhysics.value) { >%
+      physics Physics {
+        density -1
+        mass 452
+        centerOfMass [
+          -0.57 -0.36 0.3
+        ]
+        inertiaMatrix [
+          0.3660412 6.028122 6.39087
+          0.8561765 7.804295e-14 -1.107559e-14
+        ]
+      }
+    %< } >%
+  }
+}
