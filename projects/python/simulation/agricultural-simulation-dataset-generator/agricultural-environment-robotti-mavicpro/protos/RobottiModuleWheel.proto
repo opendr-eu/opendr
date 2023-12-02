@@ -1,0 +1,177 @@
+#VRML_SIM R2022b utf8
+# template language: javascript
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# tags: hidden
+# Wheel of Robotti module.
+
+PROTO RobottiModuleWheel [
+  field SFVec3f                   translation   0 0 0
+  field SFRotation                rotation      0 0 1 0
+  field SFString                  name          "wheel"
+  field  SFBool                   enablePhysics TRUE        # Defines whether the table should have physics.
+]
+{
+  %<
+    let rear = fields.name.value.includes("rear")
+    let left = fields.name.value.includes("left")
+  >%
+  HingeJoint {
+    jointParameters HingeJointParameters {
+      axis 0 0 1
+      anchor IS translation
+      dampingConstant 15
+      staticFriction 15
+    }
+    device [
+      RotationalMotor {
+        name %<= '"' + fields.name.value + '_mount_joint_motor"' >%
+        minPosition -0.959931
+        maxPosition 1.13446
+        maxTorque 10000
+      }
+      PositionSensor {
+        name %<= '"' + fields.name.value + '_mount_joint_sensor"' >%
+      }
+    ]
+    endPoint Solid {
+      translation IS translation
+      rotation IS rotation
+      children [
+        CadShape {
+          url [
+            "meshes/wheel_mount.dae"
+          ]
+        }
+        Transform {
+          translation 0 0 -0.57825
+          children [
+            CadShape {
+              url [
+                "meshes/wheel_motor.dae"
+              ]
+            }
+            Transform {
+              translation 0 0.02 -0.011
+              rotation 1 0 0 -1.5708
+              children [
+                Shape {
+                  appearance PBRAppearance {
+                    baseColor 0.123 0.147 0.17
+                    roughness 1
+                    metalness 0
+                  }
+                  geometry Cylinder {
+                    height 0.12
+                    radius 0.071
+                  }
+                }
+              ]
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+              %< if (left) { >%
+                axis 0 -1 0
+              %< } else { >%
+                axis 0 1 0
+              %< } >%
+                anchor 0 0.13 -0.01
+                dampingConstant 30
+                staticFriction 15
+                suspensionSpringConstant 1e+06
+                suspensionDampingConstant 1e+04
+                suspensionAxis 0 0 1
+              }
+              device [
+                RotationalMotor {
+                  name %<= '"' + fields.name.value + '_joint_motor"' >%
+                  maxTorque 1e+08
+                }
+                PositionSensor {
+                  name %<= '"' + fields.name.value + '_joint_sensor"' >%
+                }
+              ]
+              endPoint Solid {
+                translation 0 0.13 -0.01
+                children [
+                  Transform {
+                    scale 0.72 0.264 0.72
+                    children [
+                      CadShape {
+                        url [
+                          "meshes/wheel.dae"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+                name IS name
+                contactMaterial "wheel_material"
+                boundingObject Transform {
+                  rotation 1 0 0 1.570796
+                  children [
+                    Cylinder {
+                      height 0.264
+                      radius 0.36
+                    }
+                  ]
+                }
+                %< if (fields.enablePhysics.value) { >%
+                  physics Physics {
+                    density -1
+                    mass 110.066
+                    centerOfMass [
+                      -5e-06 -0.034608 0.002335
+                    ]
+                    inertiaMatrix [
+                      6.122056 10.6502 6.21507
+                      -5.072528e-05 -0.0002030411 -0.0006095219
+                    ]
+                  }
+                %< } >%
+              }
+            }
+          ]
+        }
+      ]
+      name %<= '"' + fields.name.value + '_mount"' >%
+      boundingObject Group {
+        children [
+          Transform {
+            translation 0 -0.09967 -0.235125
+            children [
+              Box {
+                size 0.35 0.433 0.92625
+              }
+            ]
+          }
+          Transform {
+            translation -6.4e-05 -0.109405 -0.572777
+            children [
+              Box {
+                size 0.296312 0.2916 0.26194
+              }
+            ]
+          }
+        ]
+      }
+      %< if (fields.enablePhysics.value) { >%
+        physics Physics {
+          density -1
+          %< if (rear) { >%
+          mass 150
+          %< } else { >%
+          mass 130
+          %< } >%
+          centerOfMass [
+            0 -0.101 -0.502
+          ]
+          inertiaMatrix [
+            1.81065 1.852208 0.6175029
+            -3.015355e-09 3.192393e-08 -0.1268145
+          ]
+        }
+      %< } >%
+    }
+  }
+}

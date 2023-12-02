@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import torch.jit
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 
@@ -32,7 +31,7 @@ class BasicBlock(nn.Module):
         self.act = act_layers(activation)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.downsample = downsample
+        self.downsample = nn.Identity() if downsample is None else downsample
         self.stride = stride
 
     def forward(self, x):
@@ -45,7 +44,7 @@ class BasicBlock(nn.Module):
         out = self.conv2(out)
         out = self.bn2(out)
 
-        if self.downsample is not None:
+        if not isinstance(self.downsample, nn.Identity):
             residual = self.downsample(x)
 
         out += residual
@@ -130,10 +129,15 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.act = act_layers(self.activation)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layers = nn.ModuleList()
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+        self.layers.append(self.layer1)
+        self.layers.append(self.layer2)
+        self.layers.append(self.layer3)
+        self.layers.append(self.layer4)
         self.init_weights(pretrain=pretrain)
 
     def _make_layer(self, block, planes, blocks, stride=1):
@@ -160,19 +164,17 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.act(x)
         x = self.maxpool(x)
         output = []
-        for i in range(1, 5):
-            res_layer = getattr(self, "layer{}".format(i))
-            x = res_layer(x)
-            if i in self.out_stages:
-                output.append(x)
-
+        for i, res_layer in enumerate(self.layers):
+            if i in [1, 2, 3, 4]:
+                x = res_layer(x)
+                if i in self.out_stages:
+                    output.append(x)
         return output
 
     def init_weights(self, pretrain=True):

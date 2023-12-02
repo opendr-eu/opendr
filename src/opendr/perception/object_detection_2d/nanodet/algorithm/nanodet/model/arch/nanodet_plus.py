@@ -17,7 +17,8 @@ import copy
 import torch
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.head import build_head
-from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch.one_stage_detector import OneStageDetector
+from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.arch.one_stage_detector import \
+    OneStageDetector
 
 
 class NanoDetPlus(OneStageDetector):
@@ -28,6 +29,7 @@ class NanoDetPlus(OneStageDetector):
         aux_head,
         head,
         detach_epoch=0,
+        **kwargs
     ):
         super(NanoDetPlus, self).__init__(
             backbone_cfg=backbone, fpn_cfg=fpn, head_cfg=head

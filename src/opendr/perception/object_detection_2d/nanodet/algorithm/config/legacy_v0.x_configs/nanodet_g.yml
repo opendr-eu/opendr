@@ -27,14 +27,13 @@ model:
     head:
       name: NanoDetHead
       num_classes: 80
-      conv_type: Conv
+      use_depthwise: False
       activation: LeakyReLU
       input_channel: 128
       feat_channels: 128
       stacked_convs: 1
       share_cls_reg: True
       octave_base_scale: 8
-      scales_per_octave: 1
       strides: [8, 16, 32]
       reg_max: 10
       norm_cfg:

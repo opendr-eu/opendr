@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-import torch.jit
 import torch.nn as nn
 
 from opendr.perception.object_detection_2d.nanodet.algorithm.nanodet.model.module.activation import act_layers
@@ -104,10 +103,11 @@ class MobileNetV2(nn.Module):
             3, self.input_channel, stride=2, activation=self.activation
         )
         # building inverted residual blocks
+        self.stages = nn.ModuleList()
         for i in range(7):
             name = "stage{}".format(i)
             setattr(self, name, self.build_mobilenet_stage(stage_num=i))
-
+            self.stages.append(getattr(self, "stage{}".format(i)))
         self._initialize_weights()
 
     def build_mobilenet_stage(self, stage_num):
@@ -147,15 +147,14 @@ class MobileNetV2(nn.Module):
         stage = nn.Sequential(*stage)
         return stage
 
-    @torch.jit.unused
     def forward(self, x):
         x = self.first_layer(x)
         output = []
-        for i in range(0, 7):
-            stage = getattr(self, "stage{}".format(i))
-            x = stage(x)
-            if i in self.out_stages:
-                output.append(x)
+        for i, stage in enumerate(self.stages):
+            if i in [0, 1, 2, 3, 4, 5, 6]:
+                x = stage(x)
+                if i in self.out_stages:
+                    output.append(x)
         return output
 
     def _initialize_weights(self):

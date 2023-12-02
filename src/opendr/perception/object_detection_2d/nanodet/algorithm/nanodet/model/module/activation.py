@@ -37,5 +37,7 @@ def act_layers(name):
         return nn.GELU()
     elif name == "PReLU":
         return nn.PReLU()
+    elif name is None:
+        return nn.Identity()
     else:
         return activations[name](inplace=True)
