@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>opendr_data_generation</name>
-  <version>2.2.0</version>
+  <version>3.0.0</version>
   <description>OpenDR's ROS2 nodes for data generation package</description>
   <maintainer email="tefas@csd.auth.gr">tefas</maintainer>
   <license>Apache License v2.0</license>
