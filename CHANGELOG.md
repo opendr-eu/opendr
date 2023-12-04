@@ -1,7 +1,7 @@
 # OpenDR Toolkit Change Log
 
 ## Version 3.0.0
-Released on Dec, XXX, 2023.
+Released on Dec, 4, 2023.
 - New Features:  
   - Binary High Resolution Learner ([#402](https://github.com/opendr-eu/opendr/pull/402))
   - ROS2 node for EfficientLPS ([#404](https://github.com/opendr-eu/opendr/pull/404))
