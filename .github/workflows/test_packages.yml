@@ -79,6 +79,8 @@ jobs:
         python3 -m pip install wheel==0.38.4
         python3 -m pip install opendr-toolkit-engine
         python3 -m pip install opendr-toolkit
+        # Manually install the correct torch version to avoid failures
+        python3 -m pip install torch==1.13.1
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
