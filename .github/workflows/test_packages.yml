@@ -95,7 +95,7 @@ jobs:
           - perception/activity_recognition
           - perception/compressive_learning
           - perception/face_recognition
-          - perception/heart_anomaly_detection
+          # - perception/heart_anomaly_detection # docker only issues, not affecting functionality
           - perception/multimodal_human_centric
           - perception/pose_estimation
           - perception/fall_detection
@@ -124,7 +124,7 @@ jobs:
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           # - control/mobile_manipulation
-          - control/single_demo_grasp
+          # - control/single_demo_grasp  # disabled in the main suite, see #463
           - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
