@@ -58,7 +58,7 @@ sudo apt install python3.8-venv libfreetype6-dev git build-essential cmake pytho
 python3 -m venv venv
 source venv/bin/activate
 pip install wheel==0.38.4
-pip install torch==1.13.1+cu116 torchvision==0.14.1 torchaudio==0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
+pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install 'git+https://github.com/facebookresearch/detectron2.git'
 pip install mxnet-cu112==1.8.0post0
 pip install opendr-toolkit-engine
@@ -129,11 +129,11 @@ sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY ope
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v3.0.0
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_nightly_290823
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v3.0.0 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_nightly_290823 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
