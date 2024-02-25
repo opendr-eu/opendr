@@ -9,6 +9,13 @@ The *NanodetLearner* class is a wrapper of the Nanodet object detection algorith
 [Nanodet implementation](https://github.com/RangiLyu/nanodet).
 It can be used to perform object detection on images (inference) and train all predefined Nanodet object detection models and new modular models from the user.
 
+A plethora of different architectures can be used from the predefined models:*{"EfficientNet_Lite0_320", "EfficientNet_Lite1_416", "EfficientNet_Lite2_512", "RepVGG_A0_416",
+  "t", "g", "m", "m_416", "m_0.5x", "m_1.5x", "m_1.5x_416", "plus_m_320", "plus_m_1.5x_320", "plus_m_416",
+  "plus_m_1.5x_416"}* pretrained on MS COCO dataset.
+
+The *"plus_fast"* architecture can be used for high resolution real-time agricultural applications on embedded devices.
+A pre-trained model in the [RoboWeedMap](https://weed-ai.sydney.edu.au/datasets/aa0cb351-9b5a-400f-bb2e-ed02b2da3699) dataset is provided.
+
 The [NanodetLearner](../../src/opendr/perception/object_detection_2d/nanodet/nanodet_learner.py) class has the
 following public methods:
 
@@ -239,7 +246,9 @@ Parameters:
   Specifies the folder where data will be downloaded. If *None*, the *self.temp_path* directory is used instead.
 - **mode**: *{'pretrained', 'images', 'test_data'}, default='pretrained'*\
   If *'pretrained'*, downloads a pretrained detector model from the *model_to_use* architecture which was chosen at learner initialization.
-  If *'images'*, downloads an image to perform inference on. If *'test_data'* downloads a dummy dataset for testing purposes.
+  If *'images'*, downloads an image from MS COCO dataset to perform inference on.
+  If *'agricultural_image'*, downloads an image from RoboWeedMap dataset to perform inference on.
+  If *'test_data'* downloads a dummy dataset for testing purposes.
 - **verbose**: *bool, default=True*\
   Enables the maximum verbosity.
 - **url**: *str, default=OpenDR FTP URL*\

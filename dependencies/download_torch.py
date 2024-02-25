@@ -47,7 +47,8 @@ if __name__ == '__main__':
     parser.add_argument("--cuda_path", help="Path to installed cuda", type=str, default=None)
     parser.add_argument("--opendr_device", help="Target device for installation",
                         type=str, choices=["gpu", "cpu"], default="gpu")
-    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str, default="1.9.0")
+    parser.add_argument("--torch_version", help="Specifies LibTorch version to be installed", type=str,
+                        default="1.13.1")
     args = parser.parse_args()
 
     COMPATIBILITY_VERSIONS = {
