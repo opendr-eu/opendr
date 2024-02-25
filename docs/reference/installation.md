@@ -129,11 +129,11 @@ sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY ope
 If you want to use a CUDA-enabled container please install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
 Then, you can directly run the latest image with the command:
 ```bash
-sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_nightly_290823
+sudo docker run --gpus all -p 8888:8888 opendr/opendr-toolkit:cuda_v3.0.0
 ```
 or, for an interactive session:
 ```bash
-sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_nightly_290823 /bin/bash
+sudo docker run --gpus all -it opendr/opendr-toolkit:cuda_v3.0.0 /bin/bash
 ```
 In this case, do not forget to enable the virtual environment with:
 ```bash
