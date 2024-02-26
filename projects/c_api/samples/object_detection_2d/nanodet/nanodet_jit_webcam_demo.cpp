@@ -1,4 +1,4 @@
-// Copyright 2020-2023 OpenDR European Project
+// Copyright 2020-2024 OpenDR European Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   NanodetModelT model;
 
   printf("start init model\n");
-  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, &model);
+  loadNanodetModel("./data/object_detection_2d/nanodet/optimized_model", "m", "cuda", 0.35, 0, 0, 0, &model);
   printf("success\n");
 
   cv::Mat frameCap;

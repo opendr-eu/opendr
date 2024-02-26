@@ -28,3 +28,6 @@ provided by OpenDR. Specifically the following examples are provided:
    Note that this export will not be the same as the JIT optimization model used for inference in Python API, but it will perform the same.
 
 6. inference_tutorial.ipynb: A simple tutorial in jupyter for using the Nanodet tool for inference.
+
+7. agricultural_demo.py: A simple example to use the nanodet_plus_fast model, designed for agricultural applications.
+   Setting `--device cpu` performs inference on CPU.

@@ -1,4 +1,4 @@
-# Copyright 2020-2023 OpenDR European Project
+# Copyright 2020-2024 OpenDR European Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -261,11 +261,13 @@ class NanodetLearner(Learner):
 
         """
         Downloads all files necessary for inference, evaluation and training. Valid mode options are: ["pretrained",
-        "images", "test_data"].
+        "images", "agricultural_image", "test_data"].
         :param path: folder to which files will be downloaded, if None self.temp_path will be used
         :type path: str
-        :param mode: one of: ["pretrained", "images", "test_data"], where "pretrained" downloads a pretrained
-        network depending on the network chosen in the config file, "images" downloads example inference data,
+        :param mode: one of: ["pretrained", "images", "agricultural_image", "test_data"],
+        where "pretrained" downloads a pretrained network depending on the network chosen in the config file,
+        "images" downloads example inference data from COCO dataset,
+        "agricultural_image" downloads example inference data from RoboWeedMap dataset,
         and "test_data" downloads additional images and corresponding annotations files
         :type mode: str
         :param verbose: if True, additional information is printed on STDOUT
@@ -274,7 +276,7 @@ class NanodetLearner(Learner):
         :type url: str
         """
 
-        valid_modes = ["pretrained", "images", "test_data"]
+        valid_modes = ["pretrained", "images", "agricultural_image", "test_data"]
         if mode not in valid_modes:
             raise UserWarning("mode parameter not valid:", mode, ", file should be one of:", valid_modes)
 
@@ -295,17 +297,11 @@ class NanodetLearner(Learner):
             if os.path.isfile(checkpoint_file):
                 return
 
-            self._info("Downloading pretrained checkpoint...", verbose)
-            file_url = os.path.join(url, "pretrained",
-                                    "nanodet_{}".format(model),
-                                    "nanodet_{}.ckpt".format(model))
-
-            urlretrieve(file_url, checkpoint_file)
-
-            self._info("Downloading pretrained weights if provided...", verbose)
-            file_url = os.path.join(url, "pretrained", "nanodet_{}".format(model),
-                                    "nanodet_{}.pth".format(model))
             try:
+                self._info("Downloading pretrained weights if provided...", verbose)
+                file_url = os.path.join(url, "pretrained", "nanodet_{}".format(model),
+                                        "nanodet_{}.pth".format(model))
+
                 pytorch_save_file = os.path.join(path, f"nanodet_{model}.pth")
                 if os.path.isfile(pytorch_save_file):
                     return
@@ -324,7 +320,14 @@ class NanodetLearner(Learner):
 
             except:
                 self._info("Pretrained weights for this model are not provided. \n"
-                           "Only the whole checkpoint will be downloaded", True)
+                           "The whole checkpoint will be downloaded", True)
+
+                self._info("Downloading pretrained checkpoint...", verbose)
+                file_url = os.path.join(url, "pretrained",
+                                        "nanodet_{}".format(model),
+                                        "nanodet_{}.ckpt".format(model))
+
+                urlretrieve(file_url, checkpoint_file)
 
                 self._info("Making metadata...", verbose)
                 metadata = {"model_paths": [], "framework": "pytorch", "format": "pth", "has_data": False,
@@ -339,6 +342,15 @@ class NanodetLearner(Learner):
         elif mode == "images":
             file_url = os.path.join(url, "images", "000000000036.jpg")
             image_file = os.path.join(path, "000000000036.jpg")
+            if os.path.isfile(image_file):
+                return
+
+            self._info("Downloading example image...", verbose)
+            urlretrieve(file_url, image_file)
+
+        elif mode == "agricultural_image":
+            file_url = os.path.join(url, "images", "roboweedmap.jpg")
+            image_file = os.path.join(path, "roboweedmap.jpg")
             if os.path.isfile(image_file):
                 return
 
