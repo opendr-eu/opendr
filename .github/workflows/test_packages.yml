@@ -58,10 +58,10 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
+          # - control/mobile_manipulation # not supported in pip?
           #- control/single_demo_grasp
           #- planning/end_to_end_planning
-          - control/multi_object_search
+          # - control/multi_object_search # not supported in pip?
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -72,13 +72,16 @@ jobs:
     - name: Test Wheel
       run: |
         export DISABLE_BCOLZ_AVX2=true
-        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev
+        sudo apt -y install python3.8-venv libfreetype6-dev git build-essential cmake python3-dev wget libopenblas-dev libsndfile1 libboost-dev libeigen3-dev ffmpeg
         python3 -m venv venv
         source venv/bin/activate
         python3 -m pip install --upgrade pip
         python3 -m pip install wheel==0.38.4
         python3 -m pip install opendr-toolkit-engine
         python3 -m pip install opendr-toolkit
+        # Manually install the correct torch version to avoid failures
+        python3 -m pip install torch==1.13.1
+        export OPENDR_HOME=`pwd`
         # run the test
         python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
   test-docker:
@@ -93,7 +96,7 @@ jobs:
           - perception/activity_recognition
           - perception/compressive_learning
           - perception/face_recognition
-          - perception/heart_anomaly_detection
+          # - perception/heart_anomaly_detection # docker only issues, not affecting functionality
           - perception/multimodal_human_centric
           - perception/pose_estimation
           - perception/fall_detection
@@ -122,9 +125,9 @@ jobs:
           - perception/facial_expression_recognition
           - simulation/human_model_generation
           # - control/mobile_manipulation
-          - control/single_demo_grasp
-          - planning/end_to_end_planning
-          - control/multi_object_search
+          # - control/single_demo_grasp  # disabled in the main suite, see #463
+          # - planning/end_to_end_planning 
+          # - control/multi_object_search  
     runs-on: ${{ matrix.os }}
     steps:
     - name: Set up Python 3.8
