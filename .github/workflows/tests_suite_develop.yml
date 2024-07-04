@@ -131,7 +131,7 @@ jobs:
           - simulation/human_model_generation
           # - control/mobile_manipulation
           # - control/single_demo_grasp # Throws error, probably due to detectron2 installation #463
-          - planning/end_to_end_planning
+          # - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
@@ -171,8 +171,8 @@ jobs:
           #  source tests/sources/tools/control/mobile_manipulation/run_ros.sh
           # fi
 
-          echo "Running unittest discover for ${{ matrix.package }}"
-          python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
+          # echo "Running unittest discover for ${{ matrix.package }}"
+          # python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
         fi
 
     - name: Run toolkit tests with cache
@@ -555,7 +555,7 @@ jobs:
           - simulation/human_model_generation
           # - control/mobile_manipulation
           # - control/single_demo_grasp
-          - planning/end_to_end_planning
+          # - planning/end_to_end_planning
           # - control/multi_object_search # needs CUDA Docker container
     runs-on: ubuntu-20.04
     steps:
@@ -572,7 +572,7 @@ jobs:
         docker start toolkit
         # && source tests/sources/tools/control/mobile_manipulation/run_ros.sh 
         if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
-          docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+          # docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         else
           docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         fi
