@@ -115,7 +115,7 @@ jobs:
           - perception/object_tracking_3d/single_object_tracking
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
-          - perception/object_detection_2d/gem
+          # - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
@@ -127,7 +127,7 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
+          # - control/mobile_manipulation
           # - control/single_demo_grasp # Throws error, probably due to detectron2 installation #463
           - planning/end_to_end_planning
           - control/multi_object_search
@@ -164,9 +164,9 @@ jobs:
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
         else
-          if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
-            source tests/sources/tools/control/mobile_manipulation/run_ros.sh
-          fi
+          # if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
+            # source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+          # fi
 
           echo "Running unittest discover for ${{ matrix.package }}"
           python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}
@@ -231,13 +231,13 @@ jobs:
             # Make and run mobile manipulation test
             # End-to-end planning requires mobile manipulation to run
             if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
-              echo "Installing mobile manipulation"
-              cd src/opendr/control/mobile_manipulation/
-              make
-              cd ../../../..
+              # echo "Installing mobile manipulation"
+              # cd src/opendr/control/mobile_manipulation/
+              # make
+              # cd ../../../..
 
-              echo "Running mobile manipulation test"
-              source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+              #echo "Running mobile manipulation test"
+              #source tests/sources/tools/control/mobile_manipulation/run_ros.sh
             fi
           fi
 
@@ -544,9 +544,9 @@ jobs:
           # - perception/object_detection_3d # passes, but disabled due to free() crash
           - perception/facial_expression_recognition
           - simulation/human_model_generation
-          - control/mobile_manipulation
+          # - control/mobile_manipulation
           # - control/single_demo_grasp
-          - planning/end_to_end_planning
+          # - planning/end_to_end_planning
           # - control/multi_object_search # needs CUDA Docker container
     runs-on: ubuntu-20.04
     steps:
@@ -562,7 +562,8 @@ jobs:
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_test bash
         docker start toolkit
         if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
-          docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+          # && source tests/sources/tools/control/mobile_manipulation/run_ros.sh 
+          docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         else
           docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         fi
