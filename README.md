@@ -13,8 +13,9 @@ ______________________________________________________________________
   <a href="projects/opendr_ws_2">ROS2</a> •
   <a href="projects/c_api">C API</a> •
   <a href="docs/reference/customize.md">Customization</a> •
+  
   <a href="docs/reference/issues.md">Known Issues</a> •
-  <a href="#roadmap">Roadmap</a> •
+  <a href="TRC.md">Toolkit Review Committee</a> •
   <a href="CHANGELOG.md">Changelog</a> •
   <a href="LICENSE">License</a>
 </p>
@@ -70,14 +71,6 @@ Therefore, the main OpenDR interface is written in Python and it is available th
 Furthermore, OpenDR provides [ROS1](projects/opendr_ws) and [ROS2](projects/opendr_ws_2) interfaces, as well as a [C interface](projects/c_api).
 Note that you can use as many tools as you wish at the same time, since there is no hardware limitation on the number of tools that can run at the same time.
 However, hardware limitations (e.g., GPU memory) might restrict the number of tools that can run at any given moment.
-
-
-
-## Roadmap
-OpenDR has the following roadmap:
-- **v1.0 (2021)**: Baseline deep learning tools for core robotic functionalities
-- **v2.0 (2022)**: Optimized lightweight and high-resolution deep learning tools for robotics
-- **v3.0 (2023)**: Active perception-enabled deep learning tools for improved robotic perception
 
 ## How to contribute
 Please follow the instructions provided in the [wiki](https://github.com/opendr-eu/opendr/wiki).
