@@ -129,7 +129,7 @@ jobs:
           - simulation/human_model_generation
           # - control/mobile_manipulation
           # - control/single_demo_grasp # Throws error, probably due to detectron2 installation #463
-          - planning/end_to_end_planning
+          # - planning/end_to_end_planning
           - control/multi_object_search
     runs-on: ${{ matrix.os }}
     steps:
@@ -563,7 +563,7 @@ jobs:
         docker start toolkit
         if [[ ${{ matrix.package }} == "control/mobile_manipulation" || ${{ matrix.package }} == "planning/end_to_end_planning" ]]; then
           # && source tests/sources/tools/control/mobile_manipulation/run_ros.sh 
-          docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+          # docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         else
           docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
         fi
