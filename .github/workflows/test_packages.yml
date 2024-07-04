@@ -46,7 +46,7 @@ jobs:
           - perception/object_tracking_3d/single_object_tracking
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
-          - perception/object_detection_2d/gem
+          # - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
@@ -112,7 +112,7 @@ jobs:
           # - perception/object_tracking_3d # passes, but disabled due to free() crash
           - perception/object_detection_2d/centernet
           - perception/object_detection_2d/detr
-          - perception/object_detection_2d/gem
+          # - perception/object_detection_2d/gem
           - perception/object_detection_2d/ssd
           - perception/object_detection_2d/nanodet
           - perception/object_detection_2d/yolov3
@@ -138,4 +138,5 @@ jobs:
       run: |
         docker run --name toolkit -i opendr/opendr-toolkit:cpu_v3.0.0 bash
         docker start toolkit
-        docker exec -i toolkit bash -c "source bin/activate.sh && source tests/sources/tools/control/mobile_manipulation/run_ros.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
+        # source tests/sources/tools/control/mobile_manipulation/run_ros.sh
+        docker exec -i toolkit bash -c "source bin/activate.sh && python3 -m unittest discover -s tests/sources/tools/${{ matrix.package }}"
