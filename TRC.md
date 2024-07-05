@@ -15,6 +15,6 @@ The TRC  composition is listed below:
 - Nikolaos Passalis, AUTH (Coordinator, passalis@csd.auth.gr)
 - Anton Muravev, TAU
 - Illia Oleksiienko, AU
-- Jens Kober, TUD
+- Andre van der Kraan, TUD
 - Daniel Honerkamp, ALU-FR
 - Olivier Michel, CYB
