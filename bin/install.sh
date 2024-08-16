@@ -64,7 +64,7 @@ fi
 # Attempt to fix Cython issues
 source bin/activate.sh
 python3 -m pip uninstall -y Cython
-python3 -m pip install -y Cython==0.29.33
+python3 -m pip install Cython==0.29.33
 cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
 make
 cd $OPENDR_HOME
