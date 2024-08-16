@@ -190,11 +190,11 @@ jobs:
         
         source bin/activate.sh
 
-        echo "OpenDR env activated, running retinaface make"
+        # echo "OpenDR env activated, running retinaface make"
         # This should probably run conditionally for tools that need it
-        cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
-        make
-        cd $OPENDR_HOME
+        # cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
+        # make
+        # cd $OPENDR_HOME
         
         if [ ${{ matrix.package }} = "ctests" ]; then
           make ctests
