@@ -62,9 +62,13 @@ if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
 fi
 
 # Attempt to fix Cython issues
+source bin/activate.sh
 python3 -m pip uninstall -y Cython
 python3 -m pip install -y Cython==0.29.33
-
+cd $OPENDR_HOME/src/opendr/perception/object_detection_2d/retinaface
+make
+cd $OPENDR_HOME
+        
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   python3 -m pip uninstall -y mxnet
