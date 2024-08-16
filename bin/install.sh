@@ -63,7 +63,7 @@ fi
 
 # Attempt to fix Cython issues
 python3 -m pip uninstall -y Cython
-python3 -m pip uninstall -y Cython==0.29.33
+python3 -m pip install -y Cython==0.29.33
 
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
