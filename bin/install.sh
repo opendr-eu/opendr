@@ -61,6 +61,10 @@ if [[ ${ROS_DISTRO} == "foxy" || ${ROS_DISTRO} == "humble" ]]; then
   cd $OPENDR_HOME
 fi
 
+# Attempt to fix Cython issues
+python3 -m pip uninstall -y Cython
+python3 -m pip uninstall -y Cython==0.29.33
+
 # If working on GPU install GPU dependencies as needed
 if [[ "${OPENDR_DEVICE}" == "gpu" ]]; then
   python3 -m pip uninstall -y mxnet
