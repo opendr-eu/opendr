@@ -20,7 +20,7 @@ env:
 
 jobs:
   test-sources:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test sources')  }}
     strategy:
       fail-fast: false
       matrix:
@@ -86,7 +86,7 @@ jobs:
 
   test-tools:
     needs: install-toolkit
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test tools') }}
     strategy:
       fail-fast: false
       matrix:
@@ -271,7 +271,7 @@ jobs:
           dist/*.tar.gz
 
   build-docker:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') }}
     runs-on: ubuntu-20.04
     steps:
     - name: Free Disk Space
@@ -389,7 +389,7 @@ jobs:
 
   test-wheel-separate:
     needs: build-wheel
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') }}
     strategy:
       fail-fast: false
       matrix:
@@ -504,7 +504,7 @@ jobs:
 
   test-docker:
     needs: build-docker
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test release') }}
     strategy:
       fail-fast: false
       matrix:

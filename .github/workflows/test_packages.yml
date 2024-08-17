@@ -18,7 +18,7 @@ defaults:
 
 jobs:
   test-wheel:
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') || github.event_name == 'schedule' }}
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'test packages') }}
     strategy:
       fail-fast: false
       matrix:
