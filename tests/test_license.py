@@ -19,7 +19,6 @@
 import unittest
 import os
 import fnmatch
-import datetime
 import re
 
 from io import open
