@@ -19,29 +19,33 @@
 import unittest
 import os
 import fnmatch
-import datetime
+import re
 
 from io import open
 
-APACHE2_LICENSE_C = """/*
- * Copyright 2020-20XX OpenDR European Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */""".replace('20XX', str(datetime.datetime.now().year))
+# Dynamic regex pattern to match any end year (e.g., "2020-2025", "2020-2030", etc.)
+YEAR_PATTERN = r"2020-\d{4}"
 
-APACHE2_LICENSE_CPP = """// Copyright 2020-20XX OpenDR European Project
+# License templates with YEAR_PATTERN instead of fixed years
+APACHE2_LICENSE_C_REGEX = re.compile(rf"""/\*
+ \* Copyright {YEAR_PATTERN} OpenDR European Project
+ \*
+ \* Licensed under the Apache License, Version 2.0 \(the "License"\);
+ \* you may not use this file except in compliance with the License.
+ \* You may obtain a copy of the License at
+ \*
+ \*     http://www.apache.org/licenses/LICENSE-2.0
+ \*
+ \* Unless required by applicable law or agreed to in writing, software
+ \* distributed under the License is distributed on an "AS IS" BASIS,
+ \* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ \* See the License for the specific language governing permissions and
+ \* limitations under the License.
+ \*/""", re.MULTILINE)
+
+APACHE2_LICENSE_CPP_REGEX = re.compile(rf"""// Copyright {YEAR_PATTERN} OpenDR European Project
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 \(the "License"\);
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -51,11 +55,11 @@ APACHE2_LICENSE_CPP = """// Copyright 2020-20XX OpenDR European Project
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.""".replace('20XX', str(datetime.datetime.now().year))
+// limitations under the License.""", re.MULTILINE)
 
-APACHE2_LICENSE_PYTHON = """# Copyright 2020-20XX OpenDR European Project
+APACHE2_LICENSE_PYTHON_REGEX = re.compile(rf"""# Copyright {YEAR_PATTERN} OpenDR European Project
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
+# Licensed under the Apache License, Version 2.0 \(the "License"\);
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
@@ -65,7 +69,7 @@ APACHE2_LICENSE_PYTHON = """# Copyright 2020-20XX OpenDR European Project
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.""".replace('20XX', str(datetime.datetime.now().year))
+# limitations under the License.""", re.MULTILINE)
 
 PYTHON_OPTIONAL_HEADERS = [
     '#!/usr/bin/env python2',
@@ -182,28 +186,25 @@ class TestLicense(unittest.TestCase):
             with open(source, 'r', encoding='utf-8') as content_file:
                 content = content_file.read()
                 if source.endswith('.c') or source.endswith('.h'):
-                    self.assertTrue(
-                        APACHE2_LICENSE_C in content,
-                        msg='Source file "%s" doesn\'t contain the correct Apache 2.0 License:\n%s' %
-                            (source, APACHE2_LICENSE_C)
+                    self.assertRegex(
+                        content,
+                        APACHE2_LICENSE_C_REGEX,
+                        msg=f'Source file "{source}" doesn\'t contain the correct Apache 2.0 License.'
                     )
                 elif source.endswith('.cpp') or source.endswith('.hpp') or source.endswith('.java'):
-                    self.assertTrue(
-                        APACHE2_LICENSE_CPP in content,
-                        msg='Source file "%s" doesn\'t contain the correct Apache 2.0 License:\n%s' %
-                            (source, APACHE2_LICENSE_CPP)
+                    self.assertRegex(
+                        content,
+                        APACHE2_LICENSE_CPP_REGEX,
+                        msg=f'Source file "{source}" doesn\'t contain the correct Apache 2.0 License.'
                     )
                 elif source.endswith('.py') or source.endswith('Makefile'):
-                    self.assertTrue(
-                        APACHE2_LICENSE_PYTHON in content,
-                        msg='Source file "%s" doesn\'t contain the correct Apache 2.0 License:\n%s' %
-                            (source, APACHE2_LICENSE_PYTHON)
+                    self.assertRegex(
+                        content,
+                        APACHE2_LICENSE_PYTHON_REGEX,
+                        msg=f'Source file "{source}" doesn\'t contain the correct Apache 2.0 License.'
                     )
                 else:
-                    self.assertTrue(
-                        False,
-                        msg='Unsupported file extension "%s".' % source
-                    )
+                    self.fail(f'Unsupported file extension "{source}".')
 
 
 if __name__ == '__main__':
