@@ -44,14 +44,14 @@ def gendata(data_path, label_path,
         pickle.dump((sample_name, list(sample_label)), f)
 
     np.save(data_out_path, fp)
-    
-    
+
+
 def gendata_mmap(data_path, label_path,
-            data_out_path, label_out_path,
-            num_person_in=5,  # observe the first 5 persons
-            num_person_out=2,  # then choose 2 persons with the highest score
-            max_frame=300,
-            chunk_size=128):
+                 data_out_path, label_out_path,
+                 num_person_in=5,  # observe the first 5 persons
+                 num_person_out=2,  # then choose 2 persons with the highest score
+                 max_frame=300,
+                 chunk_size=128):
 
     feeder = KineticsFeeder(
         data_path=data_path,
@@ -75,24 +75,23 @@ def gendata_mmap(data_path, label_path,
         dtype=fp_dtype,
         shape=fp_shape
     )
-    
+
     for start_idx in range(0, num_samples, chunk_size):
         end_idx = min(start_idx + chunk_size, num_samples)
         current_size = end_idx - start_idx
 
         for i in tqdm(range(current_size), desc=f"Chunk {start_idx}-{end_idx}", leave=False):
-        
+
             idx_global = start_idx + i
             data, label = feeder[idx_global]
             T = data.shape[1]
 
             fp[idx_global, :, :T, :, :] = data
             sample_label[idx_global] = label
-            
+
         fp.flush()  # write to disk
     del fp
 
-    
     with open(label_out_path, 'wb') as f:
         pickle.dump((sample_name, sample_label), f)
 
