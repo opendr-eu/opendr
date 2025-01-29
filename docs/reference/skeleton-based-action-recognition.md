@@ -17,6 +17,12 @@ You need to specify the path of the downloaded data as `--data_path` and the pat
 ntu_samples_with_missing_skeletons.txt provides the NTU-RGB+D sample indices which don't contain any skeleton.
 You need to specify the path of this file with --ignored_sample_path.
 
+If you have limited RAM resources, you can enable memory mapping for the `kinetics_gendata.py` by adding the `--use_mmap` flag and optionally specifying a chunk size (e.g., `--chunk_size 256`). The default chunk size is set to 128.
+
+```bash
+python3 kinetics_gendata.py --data_path ./data/kinetics_raw_skeletons --out_folder ./data/preprocessed_kinetics_skeletons --use_mmap --chunk_size 256
+```
+
 ### Class SpatioTemporalGCNLearner
 Bases: `engine.learners.Learner`
 
