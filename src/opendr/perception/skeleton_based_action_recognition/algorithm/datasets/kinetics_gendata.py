@@ -10,9 +10,7 @@ import pickle
 from tqdm import tqdm
 import pandas
 from pathlib import Path
-
 from numpy.lib.format import open_memmap
-from opendr.perception.skeleton_based_action_recognition.algorithm.datasets.kinetics_feeder import KineticsFeeder
 
 KINETICS400_CLASSES = pandas.read_csv(Path(__file__).parent /
                                       'kinetics400_classes.csv', verbose=True, index_col=0).to_dict()["name"]
