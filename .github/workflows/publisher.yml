@@ -44,7 +44,7 @@ jobs:
         submodules: true
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v7
+      uses: tj-actions/branch-names@v9
     - name: Build Docker Image
       run: docker build --tag opendr-toolkit:cpu_$OPENDR_VERSION --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile .
     - name: Login to Docker Hub
@@ -64,7 +64,7 @@ jobs:
         submodules: true
     - name: Get branch name
       id: branch-name
-      uses: tj-actions/branch-names@v7
+      uses: tj-actions/branch-names@v9
     - name: Build Docker Image
       run: docker build --tag opendr-toolkit:cuda_$OPENDR_VERSION --build-arg branch=${{ steps.branch-name.outputs.current_branch }} --file Dockerfile-cuda .
     - name: Login to Docker Hub
